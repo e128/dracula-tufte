@@ -4,6 +4,13 @@ Arrr, gather 'round ye landlubbers — this here be the public contract for the 
 
 This repo be the canonical home fer the seven artifacts that fer too long were scattered like spilled grog. Consumers pull this repo in through a pinned git submodule at `external/dracula-tufte/` — one place, one truth, no driftin'.
 
+## Live Previews
+
+Rendered in-browser via GitHub Pages (main branch, served straight — no build step):
+
+- [sample.html](https://e128.github.io/dracula-tufte/sample.html) — component sample
+- [sample-conn-map.html](https://e128.github.io/dracula-tufte/sample-conn-map.html) — connections-map layout
+
 ## The Seven Files
 
 | File                  | What It Be |

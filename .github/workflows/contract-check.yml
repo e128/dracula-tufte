@@ -32,3 +32,16 @@ jobs:
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <script> block (canonical mermaid.js), found $n"; exit 1; }
           done
           echo "No hand-rolled style/script blocks."
+
+      - name: Install nu
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "*"
+
+      - name: Fixtures must be regenerated (fails if stale vs CSS/JS)
+        run: |
+          nu build-sample.nu
+          git diff --exit-code -- sample.html sample-conn-map.html || {
+            echo "sample.html / sample-conn-map.html are stale — run 'nu build-sample.nu' and commit the result."
+            exit 1
+          }
