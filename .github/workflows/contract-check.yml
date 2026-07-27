@@ -1,0 +1,24 @@
+name: contract-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the seven contract files exist
+        run: |
+          for f in tufte-dracula.css mermaid.js tokens.css sample.html sample-conn-map.html build-sample.nu README.md; do
+            test -f "$f" || { echo "MISSING: $f"; exit 1; }
+          done
+          echo "All 7 contract files present."
+
+      - name: Sanity check (no hand-rolled style blocks)
+        run: |
+          grep -n "<style" sample.html sample-conn-map.html && { echo "Inline style detected -- fixture should reference the canonical CSS"; exit 1; } || true
