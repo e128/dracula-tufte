@@ -1,13 +1,13 @@
   <style>
-    /* Dracula-Tufte (muted) — desaturated Dracula accents on Dracula surface. */
+    /* Dracula-Tufte (muted) v1.5.2 — desaturated Dracula accents on Dracula surface. */
     :root {
       --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
       --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
       --on-surface:  oklch(0.977 0.008 106.545);  /* was #f8f8f2 */
       --label:       oklch(0.767 0.054 275.492);  /* was #a9b1d6 */
-      --muted:       oklch(0.66 0.055 275);       /* AA-tuned: was #7a82a6 (3.78:1, sub-AA) */
+      --muted:       oklch(0.71 0.055 275);       /* AA-tuned: 4.55:1 vs --code-bg, 5.50:1 vs --surface */
       --rule:        var(--muted);                /* alias of --muted */
-      --rule-light:  oklch(0.403 0.032 277.832);  /* was #44475a */
+      --rule-light:  oklch(0.56 0.032 277.832);   /* UI-tuned: 3.05:1 vs --surface (WCAG 1.4.11) */
       --link:        oklch(0.802 0.064 216.782);  /* was #8fc9d9 */
       --code-bg:     oklch(0.340 0.027 276.046);  /* was #343746 */
       --orange:      oklch(0.773 0.092 61.444);   /* was #e0a878 */

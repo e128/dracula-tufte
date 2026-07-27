@@ -1,8 +1,11 @@
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    // securityLevel:'loose' lets `click <node> "<url>"` directives render as
-    // navigable links (strict — the default — sanitizes them away).
-    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+    // Defaults to 'strict' (sanitizes `click <node> "<url>"` directives away).
+    // Consumers with a trusted diagram source can opt into 'loose' (renders
+    // click directives as navigable links) by setting
+    // `window.mermaidSecurityLevel = 'loose'` in a preceding classic script
+    // tag (runs before this module script).
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: window.mermaidSecurityLevel || 'strict' });
     const overlay = document.getElementById('mermaid-zoom');
     const dismiss = () => { overlay.classList.remove('active'); overlay.innerHTML = ''; };
     document.querySelectorAll('pre.mermaid').forEach(pre => {
