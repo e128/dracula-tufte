@@ -18,13 +18,13 @@
       --link:        oklch(0.802 0.064 216.782);  /* was #8fc9d9 */
       --code-bg:     oklch(0.340 0.027 276.046);  /* was #343746 */
       --orange:      oklch(0.773 0.092 61.444);   /* was #e0a878 */
-      --red:         oklch(0.688 0.142 21.457);   /* was #e57373 */
+      --red:         oklch(0.700 0.142 21.457);   /* AA-tuned: 5.00:1 vs --surface (was 4.78:1 at L .688) */
       --purple:      oklch(0.698 0.107 300.909);  /* was #a98ed6 */
       --pink:        oklch(0.742 0.120 349.392);  /* was #e48bb7 */
       --green:       oklch(0.775 0.100 155.397);  /* was #7fc99a */
       --data-1:      oklch(0.790 0.100 216.800);
-      --data-2:      oklch(0.742 0.120 349.400);
-      --data-3:      oklch(0.775 0.100 155.400);
+      --data-2:      oklch(0.742 0.120 340.000);  /* shifted off --pink hue: one color, one meaning */
+      --data-3:      oklch(0.775 0.100 165.000);  /* shifted off --green hue: one color, one meaning */
       --data-4:      oklch(0.790 0.100 112.500);
       --gutter:      2rem;
       --radius:      4px;
@@ -135,7 +135,7 @@
     .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
     .verdict { justify-self: start; font-size: 0.72em; font-weight: 600; font-style: normal;
       padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
-      letter-spacing: 0.03em; white-space: nowrap; min-width: 5.2ch; text-align: center; }
+      letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
     .verdict-pass { background: var(--green); }
     .verdict-partial { background: var(--orange); }
     .verdict-failed { background: var(--red); }
@@ -245,7 +245,7 @@
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
-    @media print { body { background: #fff; color: #111; width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } h2 { page-break-after: avoid; } }
+    @media print { body { background: oklch(1 0 0); color: oklch(0.15 0 0); width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } h2 { page-break-after: avoid; } }
   </style>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
@@ -320,9 +320,9 @@
     <section>
       <h2>Proof-test scorecard</h2>
       <div class="scorecard">
-        <span class="sc-label">P1 Observability</span><span class="verdict verdict-pass">PASS</span><span class="sc-note">directly measured</span>
-        <span class="sc-label">P2 Mechanism</span><span class="verdict verdict-partial">PARTIAL</span><span class="sc-note">surrogate endpoint</span>
-        <span class="sc-label">P3 Prediction</span><span class="verdict verdict-failed">FAILED</span><span class="sc-note">model output, not measurement</span>
+        <span class="sc-label">P1 Observability</span><span class="verdict verdict-pass">Pass</span><span class="sc-note">directly measured</span>
+        <span class="sc-label">P2 Mechanism</span><span class="verdict verdict-partial">Partial</span><span class="sc-note">surrogate endpoint</span>
+        <span class="sc-label">P3 Prediction</span><span class="verdict verdict-failed">Failed</span><span class="sc-note">model output, not measurement</span>
         <span class="sc-label">P4 Coherence</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
         <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
       </div>
