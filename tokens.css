@@ -1,0 +1,25 @@
+/* Tufte-Dracula palette tokens (template v1.4.0).
+ * Reference extract of the :root custom-property block from tufte-dracula.css.
+ * This file is documentation of the palette; the renderer inlines the full
+ * tufte-dracula.css, which already contains these declarations. Edit
+ * tufte-dracula.css (the source the renderer reads), not this reference copy. */
+:root {
+  --surface:     #282a36;
+  --surface-alt: #1e1f29;
+  --on-surface:  #f8f8f2;
+  --label:       #a9b1d6;
+  --muted:       #7a82a6;
+  --rule:        #7a82a6;
+  --rule-light:  #44475a;
+  --link:        #8fc9d9;
+  --code-bg:     #343746;
+  --orange:      #e0a878;
+  --red:         #e57373;
+  --purple:      #a98ed6;
+  --pink:        #e48bb7;
+  --green:       #7fc99a;
+  --data-1:      #8fc9d9;
+  --data-2:      #e48bb7;
+  --data-3:      #7fc99a;
+  --data-4:      #d8df8e;
+}

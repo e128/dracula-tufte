@@ -1,0 +1,162 @@
+#!/usr/bin/env nu
+# build-sample.nu — regenerate data/html/sample.html, a living demo of every
+# component in tufte-dracula.css + mermaid.js. Re-inlines the two source files
+# verbatim (same bytes the renderer emits), so a CSS or mermaid edit shows up
+# here on the next run. Run: `nu data/html/build-sample.nu` (writes + git-adds).
+#
+# ponytail: static demo body, no markdown pipeline. This is a style fixture, not
+# a lode scroll — html-render.nu owns real content. Add a component here whenever
+# tufte-dracula.css gains one.
+
+const HERE = path self | path dirname
+
+def main [] {
+  let css = (open --raw ($HERE | path join "tufte-dracula.css") | str trim --right)
+  let mermaid = (open --raw ($HERE | path join "mermaid.js") | str trim --right)
+
+  # (filename, <body> tag, title, body-content) — one page per layout mode.
+  [
+    ["sample.html" "<body>" "Tufte-Dracula — component sample" (body)]
+    ["sample-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body)]
+  ] | each {|p|
+    let html = ([
+      "<!DOCTYPE html>"
+      "<html lang=\"en\">"
+      "<head>"
+      "  <meta charset=\"utf-8\"/>"
+      "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>"
+      $"  <title>($p.2)</title>"
+      "  <meta name=\"generated-by\" content=\"data/html/build-sample.nu\"/>"
+      $css
+      $mermaid
+      "</head>"
+      $p.1
+      $p.3
+      "</body>"
+      "</html>"
+    ] | str join "\n")
+    let out = ($HERE | path join $p.0)
+    $html | save -f $out
+    ^git add $out
+    print $"  → ($out)"
+  }
+  null
+}
+
+# Connections-map layout: body.conn-map, two sections in order (Graph, Links).
+# Wide screens float Links left+sticky, graph right; below 900px it stacks with a
+# full-bleed graph. flowchart BT + useMaxWidth:false is what the real maps emit.
+def conn-map-body [] {
+  [
+    "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <article>"
+    "    <h1>Connections-Map Layout Sample</h1>"
+    "    <p class=\"byline\">body.conn-map &mdash; Links column left, graph right (wide screens)</p>"
+    "    <section>"
+    "      <h2>Graph</h2>"
+    "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  focus[Focus Topic]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
+    "    </section>"
+    "    <section>"
+    "      <h3>Antecedents</h3>"
+    "      <ul class=\"nav-list\"><li><a href=\"#\">Antecedent A</a></li><li><a href=\"#\">Antecedent B</a></li></ul>"
+    "      <h3>Descendants</h3>"
+    "      <ul class=\"nav-list\"><li><a href=\"#\">Descendant X</a></li><li><a href=\"#\">Descendant Y</a></li></ul>"
+    "    </section>"
+    "  </article>"
+  ] | str join "\n"
+}
+
+def body [] {
+  [
+    # Mermaid click-to-zoom overlay target (id referenced by mermaid.js).
+    "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <article>"
+    "    <h1>Tufte-Dracula Component Sample</h1>"
+    "    <p class=\"byline\">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>"
+    ""
+    "    <section>"
+    "      <h2>Headings &amp; text</h2>"
+    "      <h3>Third-level heading</h3>"
+    "      <p><span class=\"newthought\">A new thought</span> opens in small-caps. Body copy is Palatino serif with <strong>strong (orange)</strong>, <em>emphasis (label)</em>, a <a href=\"#\">hyperlink</a>, and inline <code>code()</code>.</p>"
+    "      <p>Status spans: <span class=\"verified\">verified</span>, <span class=\"unverified\">unverified</span>, <span class=\"correction\">correction</span>.</p>"
+    "      <p>A sidenote lives here.<label for=\"sn-1\" class=\"margin-toggle sidenote-number\"></label><input type=\"checkbox\" id=\"sn-1\" class=\"margin-toggle\"/><span class=\"sidenote\">This is a Tufte sidenote &mdash; it floats to the right margin and auto-numbers.</span> And a margin note follows.<label for=\"mn-1\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-1\" class=\"margin-toggle\"/><span class=\"marginnote\">A margin note carries no number.</span></p>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Code block</h2>"
+    "      <pre><code>def greet [name: string] {\n    print $\"hello ($name)\"\n}</code></pre>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Table</h2>"
+    "      <table>"
+    "        <thead><tr><th>Column</th><th>Value</th><th>Note</th></tr></thead>"
+    "        <tbody>"
+    "          <tr><td>alpha</td><td>1234</td><td>odd row</td></tr>"
+    "          <tr><td>beta</td><td>5678</td><td>even row (striped)</td></tr>"
+    "          <tr><td>gamma</td><td>9012</td><td>hover me</td></tr>"
+    "        </tbody>"
+    "      </table>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Blockquote, aside, details</h2>"
+    "      <blockquote><p>Stat crux dum volvitur orbis &mdash; the Cross stands while the world turns.</p></blockquote>"
+    "      <aside>An aside: orange accent-bar, tinted background. For asides and callouts.</aside>"
+    "      <details><summary>Collapsible summary</summary><p>Hidden content revealed on click.</p></details>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Lists &amp; definitions</h2>"
+    "      <ul><li>Unstyled bullet one</li><li>Bullet two<ul><li>nested item</li></ul></li></ul>"
+    "      <ol><li>Ordered one</li><li>Ordered two</li></ol>"
+    "      <dl><dt>Term</dt><dd>Definition of the term.</dd><dt>Another</dt><dd>Its definition.</dd></dl>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Proof-test scorecard</h2>"
+    "      <div class=\"scorecard\">"
+    "        <span class=\"sc-label\">P1 Observability</span><span class=\"verdict verdict-pass\">PASS</span><span class=\"sc-note\">directly measured</span>"
+    "        <span class=\"sc-label\">P2 Mechanism</span><span class=\"verdict verdict-partial\">PARTIAL</span><span class=\"sc-note\">surrogate endpoint</span>"
+    "        <span class=\"sc-label\">P3 Prediction</span><span class=\"verdict verdict-failed\">FAILED</span><span class=\"sc-note\">model output, not measurement</span>"
+    "        <span class=\"sc-label\">P4 Coherence</span><span class=\"verdict verdict-neutral\">N/A</span><span class=\"sc-note\">not assessed</span>"
+    "        <span class=\"sc-full\">Full verdict spans all three columns for a summary line.</span>"
+    "      </div>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Navigation index components</h2>"
+    "      <input type=\"text\" class=\"filter-box\" placeholder=\"Type to filter&hellip;\"/>"
+    "      <ul class=\"nav-list\">"
+    "        <li><a href=\"#\">A tappable nav-list link</a></li>"
+    "        <li><a href=\"#\">Another entry <span class=\"badge badge-t1\">Tier 1</span></a></li>"
+    "        <li><a href=\"#\">Failed audit <span class=\"badge badge-t3\">Tier 3</span></a></li>"
+    "      </ul>"
+    "      <details class=\"nav-group\" open><summary>Subfolder group <span class=\"count\">3</span></summary>"
+    "        <ul class=\"nav-list\"><li><a href=\"#\">grouped item <span class=\"badge badge-t2\">Tier 2</span></a></li></ul>"
+    "      </details>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Connections edge-list</h2>"
+    "      <div class=\"edge-list\">"
+    "        <div><h3>Antecedents</h3><ul class=\"nav-list\"><li><a href=\"#\">prior node one</a></li><li><a href=\"#\">prior node two</a></li></ul></div>"
+    "        <div><h3>Descendants</h3><ul class=\"nav-list\"><li><a href=\"#\">later node one</a></li></ul></div>"
+    "      </div>"
+    "    </section>"
+    ""
+    "    <section class=\"col-2\">"
+    "      <h2>Two-column citation list</h2>"
+    "      <ol><li>First source, flows into balanced columns on wide screens.</li><li>Second source.</li><li>Third source.</li><li>Fourth source.</li></ol>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2>Mermaid diagram (click to zoom)</h2>"
+    "      <pre class=\"mermaid\">flowchart TD\n  A[Start] --> B{Decision}\n  B -->|yes| C[Do the thing]\n  B -->|no| D[Skip it]\n  C --> E[Done]\n  D --> E</pre>"
+    "    </section>"
+    ""
+    "    <hr/>"
+    "    <footer>Footer text &mdash; muted, small. Generated by data/html/build-sample.nu.</footer>"
+    "  </article>"
+  ] | str join "\n"
+}
