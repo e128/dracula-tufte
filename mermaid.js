@@ -7,7 +7,8 @@
     // tag (runs before this module script).
     mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: window.mermaidSecurityLevel || 'strict' });
     const overlay = document.getElementById('mermaid-zoom');
-    const dismiss = () => { overlay.classList.remove('active'); overlay.innerHTML = ''; };
+    const dismiss = () => { overlay.classList.remove('active'); };
+    overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
