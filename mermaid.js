@@ -1,5 +1,5 @@
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs';
     // Defaults to 'strict' (sanitizes `click <node> "<url>"` directives away).
     // Consumers with a trusted diagram source can opt into 'loose' (renders
     // click directives as navigable links) by setting
