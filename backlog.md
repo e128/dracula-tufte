@@ -9,29 +9,7 @@ nothing reads this file.
 
 ---
 
-## 1. Six of the nine italic rules
-
-**Where:** `tufte-dracula.css` — `h2`, `h3`, `th`, `summary`, `blockquote`, `.byline`,
-`details.nav-group > summary`, `.filter-box::placeholder`, `.filter-empty`
-
-**The original argument no longer holds as written.** This was raised when the body face
-was Georgia, whose italic at weight 400 was the lightest face in the theme and carried
-two heading levels plus every table header. Two things changed that: the body face is now
-Source Serif 4, with a continuous 200–900 axis and a true italic at every weight, and
-`th` was raised to 450 to match body copy. The rules still at weight 400 are `h2`, `h3`,
-`summary` and `details.nav-group > summary`.
-
-**Change:** drop `font-style: italic` from `h3`, keeping it on `h2` and `blockquote`.
-Both already have colour (`--label`, `--pink`) and size doing the work of distinguishing
-them. `th` no longer needs it — the weight question there is settled.
-
-**Why it is a decision:** italic headings and table headers are a deliberate Tufte
-convention, not an accident. The trade is no longer italic against stroke weight — a
-variable axis means italic *and* more weight are both available — so the only question
-left is whether italic on two heading levels plus table headers is more italic than the
-page wants. That is taste, and no measurement settles it.
-
-## 2. Outbound-link arrow has no alternative text
+## 1. Outbound-link arrow has no alternative text
 
 **Where:** `tufte-dracula.css`, `a[href^="http"]::after`
 
@@ -49,7 +27,7 @@ The `/ ""` alt-text syntax makes the marker decorative to assistive technology.
 ESR 128 among them — drop the *entire* declaration and lose the marker. Accessibility
 win against silently losing the affordance on an old ESR still in enterprise use.
 
-## 3. Sticky table header is inert below 600px
+## 2. Sticky table header is inert below 600px
 
 **Where:** `tufte-dracula.css`, `th { position: sticky; top: 0 }` and the
 `@media (max-width: 600px)` rule `table { display: block; overflow-x: auto }`
@@ -72,7 +50,7 @@ like it works because the rule is present.
 stylesheet change — it cannot ship from this repo alone. Either coordinate the wrapper
 across consumers, or accept that mobile tables scroll without a pinned header.
 
-## 4. Mermaid `background` does not match the container it renders in
+## 3. Mermaid `background` does not match the container it renders in
 
 **Where:** `mermaid.js` / `mermaid-palette.json`, `background: '#282a36'` (`--surface`)
 

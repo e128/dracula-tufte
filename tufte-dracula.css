@@ -153,7 +153,21 @@
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
     h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
-    h3 { font-weight: 400; line-height: 1.3; font-style: italic; font-size: 1.12em; color: var(--label); margin: 1.5rem 0 0.4rem; }
+    /* h3 is upright, h2 is italic — deliberately. These are adjacent levels, so while
+       both were italic the slant distinguished neither of them and the whole hierarchy
+       rested on size and colour alone. Dropping it here gives the pair a second axis of
+       difference (h2 italic --purple, h3 upright --label) and costs nothing: h3 already
+       carries size and colour. It also lands where italic is most expensive — 1.12em is
+       barely above text size, and on a dark surface a slanted stem at reading size loses
+       more definition than a 1.35em heading does. Italic is kept on h2 and blockquote,
+       where the Tufte convention earns its place.
+       500, not the 400 the other headings use: h3 is the one heading at text size
+       (1.12em, only 12% over body copy), so at 400 it rendered *lighter* than the
+       paragraph beneath it — a heading has to out-weigh its own body text. h1 and h2 can
+       stay at 400 because 25-35px carries itself. Being heavier than h2 is not an
+       inversion: h2 is 20% larger, italic and --purple, which is more than enough
+       seniority, and increasing weight as size drops is ordinary practice. */
+    h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: 1.5rem 0 0.4rem; }
     p { margin: 0.5rem 0; text-wrap: pretty; }
     /* NO measure cap on prose, deliberately. A 32em cap was tried and reverted: it
        does put lines in the 60–75 character band, but it strands prose in a narrow
@@ -270,7 +284,14 @@
     tbody tr:nth-child(even) td { background: var(--code-bg); }
     tr:hover td { background: color-mix(in oklch, var(--rule-light) 50%, transparent); }
     details { margin: .5rem 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
-    summary { cursor: pointer; font-weight: 400; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
+    /* 450, not 400: summary inherits the body font-size, so at 400 it was italic text at
+       reading size one step lighter than the body copy around it — the only place in the
+       theme where that was true. Headings can afford 400 because they are 22-35px; this
+       cannot. The italic stays: it marks the row as a label rather than prose, and the
+       weight axis means slant and weight are no longer a trade.
+       details.nav-group > summary inherits this weight, so both disclosure styles move
+       together. */
+    summary { cursor: pointer; font-weight: 450; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
     summary:hover { color: var(--on-surface); }
     details[open] summary { margin-bottom: 0.5rem; }
     aside {
