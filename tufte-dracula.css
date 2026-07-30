@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.5.3 — desaturated Dracula accents on Dracula surface. */
+    /* Dracula-Tufte (muted) v1.6.0 — desaturated Dracula accents on Dracula surface. */
     :root {
       --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
       --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
@@ -24,63 +24,129 @@
       --radius-sm:   2px;
       --accent-bar:  3px;
     }
+    /* Type scale — three steps, all relative to the body size, no absolute floors.
+       The previous `max(Xem, 12pt)` floors resolved to 16px on every viewport under
+       ~950px, which pinned nine different elements to one size and made body copy
+       the *smallest* text on a phone. pt is absolute like px, so those floors also
+       ignored the reader's own font-size setting.
+         1em    body copy, .filter-box
+         0.95em structural: li, table, aside, nav, .scorecard, .nav-list li
+         0.9em  annotation: .byline, .sidenote, cite, code, pre, footer
+         0.75em chips and markers: .badge, .verdict, the outbound arrow
+       Nested ratios compound — check the parent before adding a step. */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     /* Fluid, breakpoint-light layout: container width has no floor (the old
        clamp(960px,…) forced 960px and overflowed 601–959px viewports); the gutter
        lives in the margin so content adapts at every width. Type scales via clamp. */
     body {
-      font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      /* Georgia first: the most widely installed sturdy screen serif (Windows since
+         Win98, all macOS, iOS), cut by Carter for screen legibility — low stroke
+         contrast and a large x-height, so it holds weight against a dark surface where
+         Palatino's hairlines thin out. Charter and Palatino are gone from the stack
+         rather than kept as fallbacks: both exist only on platforms that already have
+         Georgia, so they were unreachable. Noto Serif covers Android and ChromeOS,
+         DejaVu Serif covers Linux; each entry earns its place by closing a gap the
+         previous one leaves. Trade-off: Georgia's figures are old-style with no `lnum`
+         or `tnum` to escape them, so data-table numerals vary in height — see
+         backlog.md item 1. */
+      font-family: Georgia, "Noto Serif", "DejaVu Serif", serif;
       width: min(100% - 2 * var(--gutter), 70ch); margin-inline: auto;
       padding-block: 3rem;
-      line-height: 1.6; font-size: clamp(15px, 0.9rem + 0.4vw, 20px);
+      /* Every bound is rem, never px: a reader who raises their browser default
+         font size scales the whole page with it. The old clamp(15px,…,20px)
+         capped them at 20px no matter what they set. Floor 1.0625rem = 17px at
+         a default root, above the 16px long-form minimum. */
+      line-height: 1.6; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.375rem);
       background: var(--surface); color: var(--on-surface);
-      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      /* No -webkit-font-smoothing: antialiased here. That declaration is standard
+         advice because macOS renders text heavier than intended — for dark text on
+         light. This theme is the inverse, and grayscale-only antialiasing thins strokes,
+         which is the opposite of what light-on-dark body copy needs — thin strokes are
+         already the first thing a dark surface eats. */
     }
     @media (min-width: 1200px) {
+      /* Deliberately uncapped: content flows the full 80vw. This runs a long
+         measure on a wide display (~160 characters per line at 1920px against the
+         conventional 60–75ch), which is a knowing trade for the width — the
+         stylesheet serves dense reference pages with tables and diagrams, not
+         book-length prose. Cap `p, li, dd, blockquote` at ~72ch to reverse it. */
       body:not(.conn-map) { width: 80vw; }
     }
     h1 { font-weight: 400; line-height: 1.15; font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.4rem); margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
-    .byline { font-size: max(0.85em, 12.5pt); color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
+    .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
     h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem); margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
     h3 { font-weight: 400; line-height: 1.3; font-style: italic; font-size: clamp(0.95rem, 0.88rem + 0.3vw, 1.1rem); color: var(--label); margin: 1.5rem 0 0.4rem; }
     p { margin: 0.5rem 0; text-wrap: pretty; }
-    .newthought { font-variant: small-caps; font-size: 1.15em; letter-spacing: 0.03em; color: var(--on-surface); }
+    /* Georgia has no true small-cap face, so the browser synthesises them by scaling
+       capitals down — thinner strokes at a smaller size, on the element that opens a
+       section. Size and weight compensate. NB: Georgia ships 400/700 only, so 600
+       resolves to 700 (real bold); drop the font-weight to keep the lighter opener. */
+    .newthought { font-variant-caps: small-caps; font-size: 1.2em; font-weight: 600; letter-spacing: 0.03em; color: var(--on-surface); }
     /* Tufte sidenotes — dark adaptation: float right (no reserved margin column) */
     article { counter-reset: sidenote-counter; }
     input.margin-toggle { display: none; }
     label.margin-toggle:not(.sidenote-number) { display: none; }
     .sidenote-number { counter-increment: sidenote-counter; }
     .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.75em; vertical-align: super; color: var(--link); }
-    .sidenote, .marginnote { float: right; clear: right; width: 28%; margin: 0.2rem 0 1rem 1.5rem; font-size: max(0.85em, 12pt); line-height: 1.4; color: var(--label); text-wrap: pretty; }
-    a { color: var(--link); text-decoration: underline; text-decoration-thickness: 0.05em; text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; transition: text-decoration-color 0.15s ease-out; }
+    .sidenote, .marginnote { float: right; clear: right; width: 28%; margin: 0.2rem 0 1rem 1.5rem; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; }
+    /* Underline thickness has a 1px floor: 0.05em resolves to 0.8px at the base size,
+       which paints as a faint partial-coverage line — and the underline is the only
+       thing marking a link, so it cannot be optional. overflow-wrap lets a long URL
+       or slug break instead of escaping its container (the connections-map Links
+       column is as narrow as 220px). */
+    a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
     /* Keyboard focus — visible ring on interactive elements (skips mouse clicks). */
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     label.margin-toggle:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 3px; }
+    /* Outbound links carry a marker so they read differently from internal
+       relative ones — destination is information, not decoration. \A0 = nbsp
+       keeps the arrow from orphaning onto its own line. */
+    a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
+    /* Citations: monospace + muted. Browser default is italic serif, which in
+       this theme is indistinguishable from <em> — the semantic distinction is
+       lost unless the italic is cancelled. */
+    /* 0.85em, a step below the annotation size the rest of the scale uses: the monospace
+       x-height runs larger than the serif's, so matched em sizes make inline code and
+       citations optically outweigh the prose around them. This was tuned against
+       Palatino; Georgia's x-height is larger, so the gap is narrower now and 0.85em may
+       be over-corrected — revisit if code reads small against the body. */
+    cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.85em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
     em { color: var(--label); }
     code {
       font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: max(0.85em, 12pt); color: var(--green);
+      font-size: 0.85em; color: var(--green);  /* see the note on cite */
       background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
+      overflow-wrap: break-word;
     }
     pre {
       background: var(--code-bg); color: var(--on-surface);
       padding: 1rem; overflow-x: auto;
       border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
-      font-size: max(0.85em, 12pt);
+      font-size: 0.9em;
     }
-    pre code { background: none; padding: 0; color: var(--on-surface); }
+    /* font-size: 1em halts em-compounding, same guard as `li li`: `code` carries
+       0.85em and `pre` carries 0.9em, so a bare <code> inside <pre> would render at
+       0.765em — smaller than the block it fills. The old absolute pt floor masked
+       this; without it the compounding is visible. */
+    pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     section { margin-bottom: 2rem; }
     table {
       box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
       border-collapse: collapse; width: 100%; margin: 0.5rem 0;
-      font-size: max(0.88em, 12pt);
+      font-size: 0.95em;
     }
     th {
       font-weight: 400; font-style: italic; text-align: left;
       padding: .4rem .6rem; color: var(--pink);
-      border-bottom: 1px solid var(--rule-light);
+      /* Header stays put while a long table scrolls. Opaque background is
+         required — zebra rows would otherwise show through. The rule is an inset
+         shadow, not border-bottom: under border-collapse:collapse the collapsed
+         border is painted by the table, so it scrolls away from the stuck header
+         and leaves it running straight into the first row. */
+      box-shadow: inset 0 -1px 0 var(--rule-light);
+      position: sticky; top: 0; background: var(--surface); z-index: 1;
     }
     td {
       border: none; padding: .35rem .6rem; text-align: left;
@@ -95,7 +161,7 @@
     details[open] summary { margin-bottom: 0.5rem; }
     aside {
       border-inline-start: var(--accent-bar) solid var(--orange); padding: .5rem 1rem;
-      margin: 1.5rem 0; color: var(--label); font-size: max(0.9em, 12pt);
+      margin: 1.5rem 0; color: var(--label); font-size: 0.95em;
       background: color-mix(in oklch, var(--rule-light) 30%, transparent);
     }
     blockquote {
@@ -110,23 +176,25 @@
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
     ul { list-style: none; padding-left: 0; }
     ol { padding-inline-start: 1.5rem; }
-    li { padding: 0.15rem 0; font-size: max(0.88em, 12pt); line-height: 1.5; }
+    li { padding: 0.15rem 0; font-size: 0.95em; line-height: 1.5; }
     li li { font-size: 1em; }  /* halt em-compounding in nested lists */
     li::marker { color: var(--muted); }
-    nav { margin: 1rem 0; padding: .5rem 0; color: var(--label); font-size: max(0.9em, 12pt); }
-    footer { margin-top: 3rem; color: var(--label); font-size: max(0.85em, 12pt); }
+    nav { margin: 1rem 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
+    footer { margin-top: 3rem; color: var(--label); font-size: 0.9em; }
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
     .correction { color: var(--red); }
     /* Proof-test scorecard — principle · colored verdict chip · note, aligned in a grid. */
     .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
       gap: 0.3rem 0.9rem; align-items: baseline; margin: 0.75rem 0 1.25rem;
-      font-size: max(0.9em, 12pt);
+      font-size: 0.95em;
       border: 1px solid var(--rule-light); border-radius: var(--radius); padding: 0.75rem 1rem; }
     .scorecard .sc-label { color: var(--on-surface); }
     .scorecard .sc-note { color: var(--muted); font-size: 0.92em; }
     .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
-    .verdict { justify-self: start; font-size: 0.72em; font-weight: 600; font-style: normal;
+    /* 0.75em, not 0.72em: these chips nest inside a 0.95em parent, so the ratios
+       compound — 0.72 of 0.95 lands under 12px at the base size. */
+    .verdict { justify-self: start; font-size: 0.75em; font-weight: 600; font-style: normal;
       padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
       letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
     .verdict-pass { background: var(--green); }
@@ -137,7 +205,9 @@
     /* Type-to-filter box (global on home, per-page on section indexes). */
     .filter-box {
       width: 100%; margin: 1rem 0 1.5rem; padding: 0.65rem 0.85rem;
-      font-family: inherit; font-size: max(1em, 16pt);
+      /* 1em, not the old max(1em, 16pt): 16pt is 21.3px, not 16px — the iOS-zoom
+         floor is 12pt. The base size now clears 16px on its own. */
+      font-family: inherit; font-size: 1em;
       color: var(--on-surface); background: var(--code-bg);
       border: 1px solid var(--rule-light); border-radius: var(--radius);
     }
@@ -150,7 +220,7 @@
     details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.82em; margin-inline-start: 0.4em; }
     details.nav-group .nav-list { border: none; padding: 0; }
     /* Verdict badges (proof-tests tier subfolders). */
-    .badge { display: inline-block; font-size: 0.7em; font-weight: 600; font-style: normal;
+    .badge { display: inline-block; font-size: 0.75em; font-weight: 600; font-style: normal;
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle; color: var(--surface); }
     .badge-t1 { background: var(--green); }
     .badge-t2 { background: var(--orange); }
@@ -158,7 +228,7 @@
     /* Tappable navigation lists — block links, ≥44px on touch. */
     .nav-list { list-style: none; padding-left: 0;
       border: 1px solid var(--rule-light); border-radius: var(--radius); padding: 0.3rem; }
-    .nav-list li { padding: 0; font-size: max(0.92em, 13pt); line-height: 1.4; }
+    .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation; }
     .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
     .nav-list li a:active { transform: scale(0.96); transition: scale 0.12s ease-out; }
@@ -177,8 +247,16 @@
       pointer-events: none;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
-    .mermaid-overlay svg { max-width: 95vw; max-height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
-    pre.mermaid { cursor: zoom-in; }
+    /* width/height, not max-*: the zoomed clone has its width/height/style stripped
+       by mermaid.js, so the viewBox scales the diagram to fit this box whatever its
+       natural size. max-width alone would leave a small diagram at natural size —
+       a zoom that does not zoom. preserveAspectRatio (xMidYMid meet by default)
+       keeps it undistorted and centered. */
+    .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
+    /* Centered in both layouts. This lived on body.conn-map only, so an inline
+       diagram narrower than its column hugged the left edge in sample.html while
+       the same diagram sat centered in a connections map. */
+    pre.mermaid { cursor: zoom-in; text-align: center; }
     /* Connections maps (flowchart BT): the diagram fills 90% of the viewport WIDTH and is fully
        responsive — vw units recompute on window resize, and the SVG (which carries a viewBox via
        useMaxWidth:false) rescales to fit while height:auto preserves the aspect ratio. The pre
@@ -188,7 +266,7 @@
     body.conn-map pre.mermaid {
       width: 90vw; max-width: 90vw;
       position: relative; left: 50%; margin-left: -45vw;
-      overflow: visible; text-align: center;
+      overflow: visible;  /* text-align: center is on pre.mermaid, for both layouts */
     }
     body.conn-map pre.mermaid svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
     /* Connections map — wide screens: Links column left, graph right. The map md has
@@ -238,5 +316,7 @@
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
-    @media print { body { background: oklch(1 0 0); color: oklch(0.15 0 0); width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } h2 { page-break-after: avoid; } img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); } }
+    /* Print drops link chrome — no underline, no outbound marker: on paper the
+       destination is unreachable either way, so both are noise. */
+    @media print { body { background: oklch(1 0 0); color: oklch(0.15 0 0); width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } a[href^="http"]::after { content: ""; } h2 { page-break-after: avoid; } img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); } }
   </style>

@@ -2,7 +2,7 @@
 
 Arrr, gather 'round ye landlubbers — this here be the public contract for the **Tufte-Dracula** HTML conventions, hoist high as the single source of truth for the stylesheet, palette, Mermaid init, and sample fixtures.
 
-This repo be the canonical home fer the seven artifacts that fer too long were scattered like spilled grog. Consumers pull this repo in through a pinned git submodule at `external/dracula-tufte/` — one place, one truth, no driftin'.
+This repo be the canonical home fer the eight artifacts that fer too long were scattered like spilled grog. Consumers pull this repo in through a pinned git submodule at `external/dracula-tufte/` — one place, one truth, no driftin'.
 
 ## Live Previews
 
@@ -11,34 +11,39 @@ Rendered in-browser via GitHub Pages (main branch, served straight — no build 
 - [sample.html](https://e128.github.io/dracula-tufte/sample.html) — component sample
 - [sample-conn-map.html](https://e128.github.io/dracula-tufte/sample-conn-map.html) — connections-map layout
 
-## The Seven Files
+## The Eight Files
 
 | File                  | What It Be |
 |-----------------------|------------|
-| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.5.3, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
-| `mermaid.js`          | **The Mermaid init script.** The complete `<script type="module">…</script>` block — the `mermaid@11` CDN import, `theme: 'dark'` init, and click-to-zoom overlay handler. Despite the `.js` name it holds the wrapping `<script>` tags. Consumers inline this only when the rendered scroll contains a ` ```mermaid ` fence. Bump the CDN pin here. |
-| `tokens.css`          | **Palette reference.** A `:root { … }` custom-property extract (oklch values). Documentation only — **not read by the renderer**. The same declarations live inside `tufte-dracula.css`. |
-| `build-sample.nu`     | **The sample regenerator.** Runs `nu build-sample.nu` to rebuild both `sample.html` and `sample-conn-map.html` from the canonical CSS + JS. Run after any stylesheet or Mermaid change. |
+| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.6.0, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
+| `mermaid.js`          | **The Mermaid init script.** The complete `<script type="module">…</script>` block — the `mermaid@11` CDN import, `theme: 'base'` + `darkMode` + hex `themeVariables` init, and click-to-zoom overlay handler. Despite the `.js` name it holds the wrapping `<script>` tags. Consumers inline this only when the rendered scroll contains a ` ```mermaid ` fence. Bump the CDN pin here. |
+| `mermaid-palette.json` | **Mermaid's hex palette.** The Tufte-Dracula palette as hex, per `themeVariables` key plus `classDef` node roles. Mermaid cannot consume `oklch()` (khroma throws `Unsupported color format` and *no* diagram renders) or `var()`, so this be the one place hex lives. Each entry names the `:root` variable it projects in its `from` field, and CI recomputes every hex from that variable's `oklch()` — hex here that disagrees with the stylesheet fails the build. `mermaid.js` carries the same values inline because consumers inline it with no build step; CI fails if the two disagree. Generators that emit their own `classDef` lines read the `classdef` block, whose fills draw only from the `--data-1..4` ramp (the prose accents `--pink`/`--green`/`--orange` already mean something in body copy). |
+| `tokens.css`          | **Palette reference. Generated.** The `:root { … }` block of `tufte-dracula.css`, sliced out verbatim by `build-sample.nu`. Not read by the renderer. Do not hand-edit — change `tufte-dracula.css` and regenerate. |
+| `build-sample.nu`     | **The regenerator.** Runs `nu build-sample.nu` to rebuild `tokens.css`, `sample.html` and `sample-conn-map.html` from the canonical CSS + JS. Run after any stylesheet or Mermaid change. |
 | `sample.html`         | **Living style fixture.** Generated default-body demo — headings, sidenotes, tables, scorecard, verdict chips, nav, badges, mermaid + zoom. Self-contained. Do not hand-edit — regenerate via `build-sample.nu`. |
 | `sample-conn-map.html` | **Conn-map fixture.** Generated `<body class="conn-map">` two-section layout (Graph, Links) — the connections-map split `sample.html` can't show inline. Resize past 900px to see Links float left+sticky. |
 | `README.md`           | **This here scroll.** |
 
 ## Consumers
 
-Consumers pin to a tag (currently **`v1.5.3`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
+Consumers pin to a tag (currently **`v1.6.0`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
+
+**Inline verbatim, or slice the body.** `tufte-dracula.css` ships wrapped in its own `<style>` tags for consumers that inline it whole. A consumer whose generator supplies the wrapper itself takes the bare body with `sed '1d;$d'` — the wrapper be exactly one line at each end, and CI holds it there, so the slice can't rot. Same for `mermaid.js` and its `<script>` tags. Consumers needing the overlay CSS conditionally should note it ships in the stylesheet unconditionally (a dozen inert lines when no diagram be present); `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` be the parts to omit, and the script throws a named error if the div be missing.
 
 ## Releases
 
-1. Edit the stylesheet or Mermaid script.
-2. Run `nu build-sample.nu` to regenerate both fixtures.
+1. Edit the stylesheet or Mermaid script. Colors change in the `tufte-dracula.css` `:root` block and nowhere else; if the color is one Mermaid needs, recompute its hex in `mermaid-palette.json` and `mermaid.js` (`nu maintain.nu check` tells ye which).
+2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
 3. Bump the version line in `tufte-dracula.css` (the template version).
 4. Commit with a conventional message (`feat: ...` / `fix: ...`).
-5. Tag with the next semver: `git tag v1.5.3 && git push origin v1.5.3`.
+5. Tag with the next semver: `git tag v1.6.0 && git push origin v1.6.0`.
 6. Each consumer repo runs `git submodule update --remote external/dracula-tufte` and commits the new pointer.
 
 ## Contract Enforcement
 
-The CI workflow `.github/workflows/contract-check.yml` verifies all seven files exist on every push and PR. Consumers run their own contract gates that scan for any hand-rolled `<style>` blocks bypassing the submodule — those gates fail CI.
+The CI workflow `.github/workflows/contract-check.yml` verifies all eight files exist on every push and PR, that the `<style>` wrapper be exactly the first and last line (so `sed '1d;$d'` stays a safe slice), that `mermaid.js` still uses `theme: 'base'`, that every `themeVariables` hex in `mermaid.js` matches `mermaid-palette.json`, and that `tokens.css` and both fixtures are freshly regenerated. Consumers run their own contract gates that scan for any hand-rolled `<style>` blocks bypassing the submodule — those gates fail CI.
+
+**One palette, several projections.** The `:root` block of `tufte-dracula.css` is the only source of color truth. Everything else is derived and machine-checked: `tokens.css` and the fixtures are sliced or inlined verbatim, and `.github/palette-check.py` converts each `oklch()` through Oklab to sRGB and asserts the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, and the `/* was #xxxxxx */` provenance comments all still agree. Run the whole set locally with `nu maintain.nu check`.
 
 If ye find a violation in a consumer, fix the consumer to read from `external/dracula-tufte/`. Don't add a copy.
 
