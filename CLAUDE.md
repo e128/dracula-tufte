@@ -37,7 +37,7 @@ consumer renders, forever.
 - `mermaid-palette.json` has `_comment` keys already; do not add more.
 - **Two exceptions exist, and neither is prose — both are machine-read. Do not remove:**
   - **Line 2 of `tufte-dracula.css`** must be a comment containing the template version,
-    e.g. `/* Dracula-Tufte (muted) v1.6.1 */`. `build-sample.nu` parses the version out of
+    in the form `/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`. `build-sample.nu` parses it out of
     `lines | get 1` to stamp `tokens.css`, and `maintain.nu bump` rewrites it. Remove it
     and regeneration dies with `index too large (empty content)` — which fails *silently*
     if you pipe the output, leaving stale fixtures that look fine.

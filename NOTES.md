@@ -6,7 +6,7 @@ live in them. Every number below was measured in Chromium, not reasoned about.
 
 **Two comments remain in the CSS, and both are machine-read data rather than prose:**
 
-- **Line 2, the version** (`/* Dracula-Tufte (muted) v1.6.1 */`). `build-sample.nu` reads
+- **Line 2, the version** (`/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`). `build-sample.nu` reads
   the version from `lines | get 1` to stamp `tokens.css`, and `maintain.nu bump` rewrites
   it. Stripping it broke regeneration with `index too large (empty content)`, and because
   that error was piped away the fixtures went stale while still looking correct.
