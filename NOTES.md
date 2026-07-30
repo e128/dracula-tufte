@@ -254,8 +254,30 @@ drift against the oklch source, and a font stack has no hex to drift. `fontSize`
 length string, so `1rem` tracks the reader's root size; mermaid's default is a hard-coded
 16px that ignores it.
 
-**`background` is inert.** It is set to `--code-bg` to match the `pre` a diagram renders
-in, but measured across 12 diagram types (flowchart, pie, ER, class, sequence, state,
+**`pre.mermaid` has no fill and no accent bar.** It inherited both from `pre`, so a diagram
+was framed as source code — on a connections map that slab was the dominant graphic on the
+page, mostly empty around a graph that renders at natural size by design. `background: none;
+border-inline-start: none` puts the diagram on `--surface`.
+
+Two consequences, both checked by rendering:
+
+- **Nodes gained a visible fill.** `mainBkg` / `primaryColor` are `--code-bg`, so on a
+  `--code-bg` `pre` every node was fill-less — only the purple border showed. On `--surface`
+  the fill separates from the page and a node reads as a box. This is a gain, and it is why
+  the themeVariable is left alone.
+- **Edge labels keep their `edgeLabelBackground` patch**, also `--code-bg`, previously
+  invisible for the same reason. It is now a small chip behind `yes` / `no` that masks the
+  edge line running under the text — which is what the variable is for. Inspected on the
+  flowchart: it reads as a label, not as a stray rectangle. Left as `--code-bg`; changing it
+  would mean recomputing hex in `mermaid.js` and `mermaid-palette.json` to fix something
+  that improved.
+
+The `:hover` ring now sits on `--surface` rather than `--code-bg`, where `--rule` measures
+5.47:1 instead of 4.53 — still the heavier of the two rule weights, just no longer the value
+the contrast note is about.
+
+**`background` is inert.** It is set to `--code-bg` to match the `pre` a diagram used to
+render in, but measured across 12 diagram types (flowchart, pie, ER, class, sequence, state,
 gantt, journey, quadrant, gitGraph, mindmap, timeline) the value never reaches the output:
 every SVG canvas is transparent, there is no full-size background rect, and the previous
 `--surface` hex appeared nowhere in mermaid's injected CSS. The `pre`'s own background
@@ -464,6 +486,53 @@ label markup, and dropping the rules would show raw checkboxes on every publishe
 label, and it no longer sits in the focus rule. If the pattern is ever revived it needs a
 focusable control, not a hidden checkbox.
 
+## Form follows role: filled chips, outlined chips, bars and boxes
+
+Three families were drawn the same way and meant different things. They are now separated
+by *form*, so the shape carries the role and colour is free to mean one thing.
+
+**A filled chip is a state. An outlined chip is a label.** `.verdict-*` keeps its fill —
+pass / partial / failed / N/A are states of a claim, and the hue is doing real work there.
+`.badge` is now `color: var(--label)` with `box-shadow: inset 0 0 0 1px currentColor` and no
+fill at all. It was three fills — `--green`, `--orange`, `--red` — for **Tier 1 / 2 / 3**,
+which are ordinal levels, not health states, so a green-to-red ramp told the reader tier 3
+was failing. It also put `--red` on three separate meanings at once (`.badge-t3`,
+`.verdict-failed`, `.correction`), against the rule the palette enforces elsewhere: one
+colour means one thing.
+
+`.badge-t1` / `-t2` / `-t3` no longer have rules of their own. **The classes are not
+removed** — consumers emit `class="badge badge-t3"` and that markup keeps working; the
+variants simply carry no declarations, so there is nothing to keep in step. Measured:
+`--label` on `--surface` 6.75:1, and 5.59:1 inside a `.nav-list li a:hover` row, which is
+the only other surface a badge lands on. The ring is `currentColor`, so it tracks the text
+and clears 1.4.11 at the same ratios.
+
+**What this trades away, and how to get it back.** With one colour, tier is no longer
+scannable at a glance down a long index — a reader has to read `Tier 3` rather than spot
+red. The badge's own text always carried the level (that is why the forced-colors fix
+below is a border and not a glyph), so nothing is *lost*, but ranking is now read rather
+than seen. The alternative was three steps of a single new hue, which was costed and
+rejected: a tier ramp needs three `:root` tokens **plus three print overrides**, every one
+of which has to clear 4.5:1 on all four backgrounds named below, and the free hue gaps left
+in this palette are 20–27° wide — inside them a three-step ramp is three values that read
+as one colour at 0.8em. If tier scanning turns out to matter, the cheap version is weight
+or ring thickness on the existing single hue, not a new hue.
+
+**A border means interactive; an accent bar means passive block.** `.scorecard` was a 1px
+`--rule-light` box, identical to `details`, `.nav-group`, `.nav-list`, `.filter-box` and
+`.mermaid-zoom` — eight bordered instances in the fixture, so a data panel, a disclosure
+widget, a form field and a button all read as the same object. `.scorecard` now takes
+`border-inline-start: var(--accent-bar) solid var(--rule-light)` with the `pre` / `aside` /
+`blockquote` padding, and every remaining bordered box in the sheet is something you can
+click, type in or open. `--rule-light` rather than a new accent hue because the scorecard is
+structural rather than semantic — and because it is the colour the border already was, so
+the change is a border becoming a bar and nothing else.
+
+The scorecard's text-only-zoom fix was re-verified after the padding change, since the
+container query is the thing standing between it and a sideways scroll: at a doubled root
+font size the document stays at viewport width at 320 / 390 / 480 / 601px, and the grid
+still collapses to a single track.
+
 ## The contrast budget covers four backgrounds
 
 For a long time it covered two. `--rule-light`, `--muted` and `--red` were tuned against
@@ -511,8 +580,7 @@ still marks the callout, which was the print rationale and holds identically her
 so `.correction` failed inside a zebra row, inside `pre`, and inside `.filter-box` — the
 budget had checked `--muted` against that surface (4.53, passing by 0.03) and not the
 accents. 0.735 gives **4.73 on `--code-bg`**, 5.72 on `--surface`, 6.57 on `--surface-alt`,
-and lifts `--surface`-on-`--red` (the `.verdict-failed` and `.badge-t3` chips) from 5.00 to
-5.72. 0.725 is the first value that clears 4.5 on the grey, at 4.56; 0.735 was taken for
+and lifts `--surface`-on-`--red` (the `.verdict-failed` chip) from 5.00 to 5.72. 0.725 is the first value that clears 4.5 on the grey, at 4.56; 0.735 was taken for
 headroom. Raising lightness moved `--red` closer to `--pink` in L (0.735 against 0.742) —
 checked, ΔE_ok 0.076, about 3.8 JND on a 32° hue separation, so a `--pink` `th` and a
 `--red` `.correction` in the same table stay distinct. `--red` is the one accent with no
@@ -537,16 +605,16 @@ sheet already has exactly two rule weights and this is the heavier one. The side
 wanted — a control now reads stronger than a passive container like `details`, which keeps
 `--rule-light` on `--surface` at 3.05.
 
-**Semantic chips outline themselves in forced colors.** `@media (forced-colors: active)` now
+**Semantic chips outline themselves in forced colors.** `@media (forced-colors: active)`
 carries `code, .verdict, .badge { border: 1px solid currentColor }`. Emulated, every
-`.verdict-*` fill resolves to `rgb(255,255,255)` with `rgb(0,0,0)` text and every `.badge-t*`
-to white with `rgb(0,0,159)`, so all four verdicts and all three tiers become one appearance
-and the chip stops reading as a chip. The **state** survives regardless, because the chip's
-own text says `PASS` / `PARTIAL` / `FAILED` / `N/A` and `Tier 1..3` — the fill is redundant
-with the label, which is why a border is enough and a generated glyph would be both
-unnecessary and unlocalisable. What the border restores is the boundary, not the meaning.
-`box-shadow` cannot do this job: forced-colors suppresses shadows, which is why the print
-block's `inset 0 0 0 1px currentColor` could not simply be reused.
+`.verdict-*` fill resolves to `rgb(255,255,255)` with `rgb(0,0,0)` text, so all four verdicts
+become one appearance and the chip stops reading as a chip. The **state** survives
+regardless, because the chip's own text says `PASS` / `PARTIAL` / `FAILED` / `N/A` — the fill
+is redundant with the label, which is why a border is enough and a generated glyph would be
+both unnecessary and unlocalisable. What the border restores is the boundary, not the
+meaning. `box-shadow` cannot do this job: forced-colors suppresses shadows, which is why the
+print block's `inset 0 0 0 1px currentColor` could not simply be reused — and why `.badge`,
+which uses exactly that ring on screen, still needs the border here.
 
 Zebra striping still disappears in forced colors — `--code-bg` resolves to `Canvas`. Left
 alone: the header rule and row rhythm survive, and reinstating stripes would mean per-row
@@ -580,12 +648,13 @@ on the grey and 4.97–5.06:1 on white, with `--on-surface` at `oklch(0.2 0 0)` 
 
 One rule could not be handled by tokens alone:
 
-- **`.verdict` / `.badge` print as outlined labels** — `background: none` plus
+- **`.verdict` prints as an outlined label** — `background: none` plus
   `box-shadow: inset 0 0 0 1px currentColor` and the semantic colour moved to `color`.
-  Their fill carried the meaning (pass / partial / failed), and `color: var(--surface)`
+  Its fill carried the meaning (pass / partial / failed), and `color: var(--surface)`
   would have become white-on-accent — fine with backgrounds on, invisible with them off.
   Outlining makes the chip identical either way, and each variant keeps its own hue at
-  ≥4.97:1.
+  ≥4.97:1. `.badge` needs no print rule: it is already an outlined `--label` chip on
+  screen, and `--label` is one of the tokens print reassigns, so it follows for free.
 
 The `aside` tint used to need a second exception here: it composited to `#d9dae1` on white
 and `--label` on that measured 3.58:1, the one pair the token pass left failing. The tint is
