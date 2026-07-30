@@ -22,6 +22,15 @@
   --data-2:      oklch(0.742 0.120 340.000);  /* shifted off --pink hue: one color, one meaning */
   --data-3:      oklch(0.775 0.100 165.000);  /* shifted off --green hue: one color, one meaning */
   --data-4:      oklch(0.790 0.100 112.500);
+  /* Page width, ONE convention for both layouts. Every container that wants "as
+     wide as the page gets" references this token — body in the default layout and
+     body.conn-map's article alike — so the two cannot drift apart. Previously
+     conn-map carried three competing numbers of its own (article at 96vw/1600px,
+     pre.mermaid at 90vw, body at 90vw/160rem), which is why its graph column and
+     the default layout never lined up.
+     90vw is the proportional side margin (5% each side); 160rem is the ultrawide
+     backstop. Change page width here and both layouts move together. */
+  --page-width:  min(90vw, 160rem);
   --gutter:      2rem;
   --radius:      4px;
   --radius-sm:   2px;

@@ -1,5 +1,30 @@
   <style>
     /* Dracula-Tufte (muted) v1.6.1 — desaturated Dracula accents on Dracula surface. */
+    /* Source Serif 4 — a variable serif, pinned to an exact CDN version the same way
+       mermaid.js is. Two faces (roman + italic), ~50KB each, served immutable.
+       Why a webfont at all: every system serif ships 400/700 and nothing between, so
+       there was no way to ask for the ~450 that light-on-dark body copy wants — Georgia
+       at font-weight 400 and at 450 render *identically*, because the 450 does not
+       exist. This face has a continuous 200-900 axis, so 450 is a real weight, and 600
+       on .newthought/strong/dt is a real 600 instead of snapping to bold.
+       Why this face specifically: its figures are tabular AND lining by construction, so
+       data tables align in the body serif with no OpenType feature support required —
+       which is what let tables drop the monospace stack they briefly carried (that cost
+       ~27% table width). x-height is 475/1000 against Georgia's 481, a 1.2% difference,
+       so the em-relative values throughout this file did not need re-deriving.
+       Offline it degrades gracefully: the stack falls through to Georgia and text still
+       renders, unlike the mermaid CDN, which renders no diagram at all. font-display:
+       swap so text is never invisible while the face loads. */
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: italic; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
+    }
     :root {
       --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
       --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
@@ -19,6 +44,15 @@
       --data-2:      oklch(0.742 0.120 340.000);  /* shifted off --pink hue: one color, one meaning */
       --data-3:      oklch(0.775 0.100 165.000);  /* shifted off --green hue: one color, one meaning */
       --data-4:      oklch(0.790 0.100 112.500);
+      /* Page width, ONE convention for both layouts. Every container that wants "as
+         wide as the page gets" references this token — body in the default layout and
+         body.conn-map's article alike — so the two cannot drift apart. Previously
+         conn-map carried three competing numbers of its own (article at 96vw/1600px,
+         pre.mermaid at 90vw, body at 90vw/160rem), which is why its graph column and
+         the default layout never lined up.
+         90vw is the proportional side margin (5% each side); 160rem is the ultrawide
+         backstop. Change page width here and both layouts move together. */
+      --page-width:  min(90vw, 160rem);
       --gutter:      2rem;
       --radius:      4px;
       --radius-sm:   2px;
@@ -29,6 +63,9 @@
        ~950px, which pinned nine different elements to one size and made body copy
        the *smallest* text on a phone. pt is absolute like px, so those floors also
        ignored the reader's own font-size setting.
+         1.75em h1        ┐ headings, em so they track the body clamp rather than
+         1.35em h2        │ the fixed root — see the note above the h1 rule
+         1.12em h3        ┘
          1em    body copy, .filter-box
          0.95em structural: li, table, aside, nav, .scorecard, .nav-list li
          0.9em  annotation: .byline, .sidenote, cite, code, pre, footer
@@ -39,24 +76,53 @@
        clamp(960px,…) forced 960px and overflowed 601–959px viewports); the gutter
        lives in the margin so content adapts at every width. Type scales via clamp. */
     body {
-      /* Georgia first: the most widely installed sturdy screen serif (Windows since
-         Win98, all macOS, iOS), cut by Carter for screen legibility — low stroke
-         contrast and a large x-height, so it holds weight against a dark surface where
-         Palatino's hairlines thin out. Charter and Palatino are gone from the stack
-         rather than kept as fallbacks: both exist only on platforms that already have
-         Georgia, so they were unreachable. Noto Serif covers Android and ChromeOS,
-         DejaVu Serif covers Linux; each entry earns its place by closing a gap the
-         previous one leaves. Trade-off: Georgia's figures are old-style with no `lnum`
-         or `tnum` to escape them, so data-table numerals vary in height — see
-         backlog.md item 1. */
-      font-family: Georgia, "Noto Serif", "DejaVu Serif", serif;
-      width: min(100% - 2 * var(--gutter), 70ch); margin-inline: auto;
+      /* Source Serif 4 (webfont, see the @font-face above) with the previous
+         system-serif stack kept intact behind it as the offline fallback. Georgia is
+         still the right first fallback — the most widely installed sturdy screen serif
+         (Windows since Win98, all macOS, iOS), cut by Carter for screen legibility, low
+         stroke contrast and a large x-height. Noto Serif covers Android and ChromeOS,
+         DejaVu Serif covers Linux; each entry closes a gap the previous one leaves.
+         Charter and Palatino are absent on purpose: both exist only on platforms that
+         already have Georgia, so they were unreachable.
+         Note the fallback path is a genuine downgrade, not an equivalent: Georgia has no
+         450 (font-weight below collapses to 400) and its figures are old-style and
+         proportional, so tables lose their alignment offline. Acceptable because text
+         still renders and reads. */
+      font-family: 'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
+      /* 450, not 400: a continuous weight axis is the entire reason for the webfont.
+         Light-on-dark eats thin strokes, and 400 is measurably too light against this
+         surface — but 500 starts to read as emphasis in long-form copy. Headings stay
+         at 400 deliberately: they are 28-38px, where the dark surface no longer thins
+         them, and the lighter display weight is the theme's voice. */
+      font-weight: 450;
+      /* One continuous width rule, no breakpoint jump. This replaced
+         `min(100% - 2 * var(--gutter), 70ch)` plus an `@media (min-width: 1200px)`
+         override to `80vw`, which had two problems: the 70ch cap left 34.8% of a
+         1199px window empty (body 782px), and crossing 1200px snapped the content
+         from 782px to 960px in one step. Measured unused width in that band ran
+         16.7% at 900px rising to 34.8% at 1199px.
+         Two terms: --page-width carries the shared convention (see :root), and the
+         gutter term is the floor that respects the safe-area insets the mobile rule
+         folds into --gutter. body.conn-map's article uses the same --page-width, so the
+         two layouts stay in step by construction rather than by matching numbers.
+         Two earlier attempts, both wrong, recorded so they are not retried: a 100rem cap
+         left 16.7% of a 1920px window empty and cut 2560px down to 1600px; dropping the
+         proportional term entirely (gutter + 160rem only) made the page effectively
+         full-bleed — 32px margins at every size, 2.5% at 2560px. "Unused space" is not
+         the metric to minimise; a page needs side margins that scale. */
+      width: min(100% - 2 * var(--gutter), var(--page-width)); margin-inline: auto;
       padding-block: 3rem;
       /* Every bound is rem, never px: a reader who raises their browser default
          font size scales the whole page with it. The old clamp(15px,…,20px)
-         capped them at 20px no matter what they set. Floor 1.0625rem = 17px at
-         a default root, above the 16px long-form minimum. */
-      line-height: 1.6; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.375rem);
+         capped them at 20px no matter what they set.
+         This is the ONLY size lever in the theme — every other step, headings
+         included, is em-relative to it, so nudging this rescales the whole page
+         proportionally and nothing else needs touching. Floor 1rem = 16px at a
+         default root (the long-form minimum, and the iOS input-zoom threshold
+         that .filter-box inherits); cap 1.25rem = 20px. The previous
+         clamp(1.0625rem, 1rem + 0.35vw, 1.375rem) ran 17px→22px, which read
+         oversized for body copy on a desktop. */
+      line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
       background: var(--surface); color: var(--on-surface);
       /* No -webkit-font-smoothing: antialiased here. That declaration is standard
          advice because macOS renders text heavier than intended — for dark text on
@@ -64,23 +130,42 @@
          which is the opposite of what light-on-dark body copy needs — thin strokes are
          already the first thing a dark surface eats. */
     }
-    @media (min-width: 1200px) {
-      /* Deliberately uncapped: content flows the full 80vw. This runs a long
-         measure on a wide display (~160 characters per line at 1920px against the
-         conventional 60–75ch), which is a knowing trade for the width — the
-         stylesheet serves dense reference pages with tables and diagrams, not
-         book-length prose. Cap `p, li, dd, blockquote` at ~72ch to reverse it. */
-      body:not(.conn-map) { width: 80vw; }
-    }
-    h1 { font-weight: 400; line-height: 1.15; font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.4rem); margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
+    /* Measure is deliberately long, and that is a standing decision, not an oversight.
+       Content flows nearly the full window (see the width rule above), which runs ~178
+       characters per line at 1920px against the conventional 60–75. The stylesheet
+       serves dense reference pages with tables and diagrams, not book-length prose, and
+       width is what those pages need.
+       Re-litigated once; the answer did not change. Capping prose at `max-width: 32em`
+       does hit ~74 characters per line at every width, but it strands body copy in a
+       narrow left column with the rest of the container empty. Width wins here; the
+       character count is what is knowingly traded away. If it is ever revisited: the cap
+       belongs in `em`, not `ch` (Georgia's `0` is 0.614em against a 0.433em average
+       prose advance, so a `ch` cap resolves ~1.42x wider than it reads), and it must be
+       scoped to section children — a bare `p` selector also hits `.byline` and mermaid's
+       foreignObject labels, which breaks the conn-map header. */
+    /* Headings are em, not rem: em resolves against the *body* size, so the ratios
+       below hold at every viewport. The previous rem clamps were anchored to the
+       root (a fixed 16px) while body copy grew on a vw clamp toward 22px, so the
+       two scales converged and then crossed — measured, h3 rendered SMALLER than
+       the paragraphs it introduced at every width (15.3 vs 17.4 at 390px, 17.6 vs
+       22 at 1920px), and h2 fell to 1.16x body. A subordinate heading that reads
+       smaller than its own body copy inverts the hierarchy it exists to express. */
+    h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
-    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem); margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
-    h3 { font-weight: 400; line-height: 1.3; font-style: italic; font-size: clamp(0.95rem, 0.88rem + 0.3vw, 1.1rem); color: var(--label); margin: 1.5rem 0 0.4rem; }
+    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
+    h3 { font-weight: 400; line-height: 1.3; font-style: italic; font-size: 1.12em; color: var(--label); margin: 1.5rem 0 0.4rem; }
     p { margin: 0.5rem 0; text-wrap: pretty; }
-    /* Georgia has no true small-cap face, so the browser synthesises them by scaling
-       capitals down — thinner strokes at a smaller size, on the element that opens a
-       section. Size and weight compensate. NB: Georgia ships 400/700 only, so 600
-       resolves to 700 (real bold); drop the font-weight to keep the lighter opener. */
+    /* NO measure cap on prose, deliberately. A 32em cap was tried and reverted: it
+       does put lines in the 60–75 character band, but it strands prose in a narrow
+       left column and leaves the rest of the container empty, which is not what this
+       stylesheet is for. The wide measure is a knowing trade — see the note in the
+       @media (min-width: 1200px) block. Do not "fix" it without reading that first. */
+    /* Small caps are synthesised here, by scaling capitals down — Source Serif 4 does not
+       ship `smcp` either (none of the variable serifs evaluated did, so the webfont did
+       not buy true small caps, only the weight axis). Synthesis means thinner strokes at
+       a smaller size, on the element that opens a section, so size and weight compensate.
+       600 is now a *real* 600: under Georgia it snapped to 700 and the opener read as
+       shouting, which was the whole objection to it. */
     .newthought { font-variant-caps: small-caps; font-size: 1.2em; font-weight: 600; letter-spacing: 0.03em; color: var(--on-surface); }
     /* Tufte sidenotes — dark adaptation: float right (no reserved margin column) */
     /* Both root wrappers: the fixtures here use <article>, consumers whose
@@ -112,17 +197,19 @@
     /* Citations: monospace + muted. Browser default is italic serif, which in
        this theme is indistinguishable from <em> — the semantic distinction is
        lost unless the italic is cancelled. */
-    /* 0.85em, a step below the annotation size the rest of the scale uses: the monospace
-       x-height runs larger than the serif's, so matched em sizes make inline code and
-       citations optically outweigh the prose around them. This was tuned against
-       Palatino; Georgia's x-height is larger, so the gap is narrower now and 0.85em may
-       be over-corrected — revisit if code reads small against the body. */
-    cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.85em; color: var(--muted); overflow-wrap: break-word; }
+    /* 0.9em: the monospace x-height runs larger than the serif's, so matched em sizes
+       make inline code and citations optically outweigh the prose around them. The
+       correction is measured, not guessed — SF Mono's x-height is 526/1000 against
+       Georgia's 481, a ratio of 1.094, so the x-height-matched size is 0.914em. The
+       previous 0.85em was tuned against Palatino (x-height 471, ratio 1.117) and
+       over-corrected by ~7% once the body face changed; it also put inline code at
+       13.7px on a phone after the type scale came down. */
+    cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
     em { color: var(--label); }
     code {
       font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 0.85em; color: var(--green);  /* see the note on cite */
+      font-size: 0.9em; color: var(--green);  /* see the note on cite */
       background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
       overflow-wrap: break-word;
     }
@@ -132,19 +219,36 @@
       border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
       font-size: 0.9em;
     }
-    /* font-size: 1em halts em-compounding, same guard as `li li`: `code` carries
-       0.85em and `pre` carries 0.9em, so a bare <code> inside <pre> would render at
-       0.765em — smaller than the block it fills. The old absolute pt floor masked
-       this; without it the compounding is visible. */
+    /* font-size: 1em halts em-compounding, same guard as `li li`: `code` and `pre`
+       each carry 0.9em, so a bare <code> inside <pre> would render at 0.81em —
+       smaller than the block it fills. The old absolute pt floor masked this;
+       without it the compounding is visible. */
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     section { margin-bottom: 2rem; }
     table {
+      /* No font-family here: tables inherit the body serif, which is correct again now
+         that the body face is Source Serif 4 — its digits are tabular (all ten at
+         529/1000) and lining, by construction, so columns align with no feature support
+         required. Tables briefly carried the monospace stack because Georgia could not
+         do this: Georgia's figures are old-style AND proportional (9 distinct advances,
+         `1` at 430/1000 against `0` at 614/1000) with no `lnum`/`tnum` to escape them —
+         its whole GSUB feature list is `aalt, locl`. That workaround cost ~27% table
+         width (807px vs 634px natural at 1280px on a 6-column table) and put tables in
+         a different register from the prose; both are now unnecessary.
+         Offline this regresses with the rest of the page: the Georgia fallback brings the
+         old-style figures back. `font-variant-numeric: tabular-nums` on `td` is the
+         partial mitigation — inert in Georgia, but it does the work in any fallback that
+         exposes `tnum`. */
       box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
       border-collapse: collapse; width: 100%; margin: 0.5rem 0;
       font-size: 0.95em;
     }
     th {
-      font-weight: 400; font-style: italic; text-align: left;
+      /* 450, matching the body weight: a header row lighter than the data beneath it
+         reads as subordinate to it. Italic and --pink already carry the distinction, so
+         weight does not need to, but it must not work against it. The declaration cannot
+         just be dropped — the UA default for th is bold. */
+      font-weight: 450; font-style: italic; text-align: left;
       padding: .4rem .6rem; color: var(--pink);
       /* Header stays put while a long table scrolls. Opaque background is
          required — zebra rows would otherwise show through. The rule is an inset
@@ -156,6 +260,10 @@
     }
     td {
       border: none; padding: .35rem .6rem; text-align: left;
+      /* Belt-and-braces, not the load-bearing fix: Source Serif 4's figures are already
+         tabular by construction. This earns its place on the fallback path, where it
+         does the work in any face that exposes `tnum` — it is inert in Georgia, which
+         exposes neither `tnum` nor `lnum`. */
       vertical-align: top; font-variant-numeric: tabular-nums;
       transition: background-color 0.12s ease-out;
     }
@@ -198,9 +306,11 @@
     .scorecard .sc-label { color: var(--on-surface); }
     .scorecard .sc-note { color: var(--muted); font-size: 0.92em; }
     .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
-    /* 0.75em, not 0.72em: these chips nest inside a 0.95em parent, so the ratios
-       compound — 0.72 of 0.95 lands under 12px at the base size. */
-    .verdict { justify-self: start; font-size: 0.75em; font-weight: 600; font-style: normal;
+    /* 0.8em, not 0.75em: these chips nest inside a 0.95em parent, so the ratios
+       compound, and 0.75 of 0.95 of a 1rem base lands at 11.5px — under the 12px
+       floor. 0.8 of 0.95 gives 12.3px at the clamp floor. Raised when the body
+       clamp came down from a 17px floor to 16px; the two are coupled. */
+    .verdict { justify-self: start; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
       letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
     .verdict-pass { background: var(--green); }
@@ -212,7 +322,10 @@
     .filter-box {
       width: 100%; margin: 1rem 0 1.5rem; padding: 0.65rem 0.85rem;
       /* 1em, not the old max(1em, 16pt): 16pt is 21.3px, not 16px — the iOS-zoom
-         floor is 12pt. The base size now clears 16px on its own. */
+         floor is 12pt. The base size meets 16px exactly at its clamp floor, and
+         iOS zooms only *below* 16px, so this sits right on the threshold rather
+         than above it. Do not lower the body clamp floor past 1rem without giving
+         this input its own 16px floor. */
       font-family: inherit; font-size: 1em;
       color: var(--on-surface); background: var(--code-bg);
       border: 1px solid var(--rule-light); border-radius: var(--radius);
@@ -226,7 +339,8 @@
     details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.82em; margin-inline-start: 0.4em; }
     details.nav-group .nav-list { border: none; padding: 0; }
     /* Verdict badges (proof-tests tier subfolders). */
-    .badge { display: inline-block; font-size: 0.75em; font-weight: 600; font-style: normal;
+    /* 0.8em for the same reason as .verdict — nests inside a 0.95em .nav-list li. */
+    .badge { display: inline-block; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle; color: var(--surface); }
     .badge-t1 { background: var(--green); }
     .badge-t2 { background: var(--orange); }
@@ -263,27 +377,39 @@
        diagram narrower than its column hugged the left edge in sample.html while
        the same diagram sat centered in a connections map. */
     pre.mermaid { cursor: zoom-in; text-align: center; }
-    /* Connections maps (flowchart BT): the diagram fills 90% of the viewport WIDTH and is fully
-       responsive — vw units recompute on window resize, and the SVG (which carries a viewBox via
-       useMaxWidth:false) rescales to fit while height:auto preserves the aspect ratio. The pre
-       "breaks out" of the centered article column with the full-bleed trick (left:50% + negative
-       margin) so it can reach 90vw regardless of the article's max-width. The click-to-zoom overlay
-       above still works for fine detail. */
-    body.conn-map pre.mermaid {
-      width: 90vw; max-width: 90vw;
-      position: relative; left: 50%; margin-left: -45vw;
-      overflow: visible;  /* text-align: center is on pre.mermaid, for both layouts */
-    }
-    body.conn-map pre.mermaid svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
+    /* No full-bleed breakout. This used to be `width: 90vw; left: 50%; margin-left: -45vw`,
+       escaping the article column to reach 90vw — a third width convention on top of the
+       article's 96vw/1600px and the body's own. It is unnecessary now for two reasons: the
+       page container is itself --page-width (90vw), so there is nothing left to escape
+       *to*; and the SVG renders at its natural size (see below) rather than stretching to
+       its container, so extra container width no longer changes the diagram at all.
+       overflow: visible because the base `pre` rule sets overflow-x: auto, which would
+       otherwise clip a diagram's drop shadow; text-align: center is on pre.mermaid, for
+       both layouts. */
+    body.conn-map pre.mermaid { overflow: visible; }
+    /* width:auto, NOT width:100% — the SVG carries a viewBox (useMaxWidth:false), so
+       stretching it to the container multiplies every label with it. This rule used to
+       read width:100%, which upscaled a small graph without limit: measured label sizes
+       on the conn-map fixture ran 13.9px at 390px -> 36.8px at 1280px -> 51.7px at
+       1920px (scale 0.87x -> 3.23x), i.e. 1.35x the h1 and the largest text on the page,
+       set by nothing but how few nodes the graph happens to have. auto pins labels to
+       the size mermaid actually asked for; max-width:100% still shrinks a graph too wide
+       to fit, and text-align:center on pre.mermaid keeps a small one centered. */
+    body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     /* Connections map — wide screens: Links column left, graph right. The map md has
        exactly two sections in order: (1) Graph, (2) Links — for topic maps the Links
        column is antecedents/descendants of the focus; for year-slice maps it is the
-       drawn items newest-first. Below 900px it stays stacked with the full-bleed graph
-       above (rule set). */
+       drawn items newest-first. Below 900px it stays stacked.
+       This rule sets layout only, never width. It used to also carry
+       `width: min(96vw, 1600px); max-width: 96vw; left: 50%; transform: translateX(-50%)`,
+       breaking the article out of the page container to be *wider* than the default
+       layout — so a connections map and an ordinary page never shared a left edge, and
+       the 1600px cap silently disagreed with the body's own cap. The article now simply
+       fills the shared container from :root, which is what keeps the two layouts in
+       synchronized step: there is one width number in this stylesheet, and it is
+       --page-width. */
     @media (min-width: 900px) {
       body.conn-map article {
-        width: min(96vw, 1600px); max-width: 96vw;
-        position: relative; left: 50%; transform: translateX(-50%); margin-inline: 0;
         display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 2.5rem;
       }
       body.conn-map article > h1,
@@ -297,9 +423,9 @@
       body.conn-map article > section:nth-of-type(1) {  /* Graph */
         order: 2; flex: 1 1 0; min-width: 0;
       }
-      body.conn-map article > section:nth-of-type(1) pre.mermaid {
-        width: 100%; max-width: 100%; left: auto; margin-left: 0;  /* contained, not full-bleed */
-      }
+      /* No `pre.mermaid { width: 100%; left: auto; margin-left: 0 }` reset needed here
+         any more. It existed only to undo the full-bleed breakout above for the graph
+         column; with the breakout gone there is nothing to undo. */
     }
     ::selection { background: var(--purple); color: var(--surface); }
     @media (max-width: 600px) {

@@ -105,7 +105,7 @@ def body [] {
     "    <section>"
     "      <h2>Headings &amp; text</h2>"
     "      <h3>Third-level heading</h3>"
-    "      <p><span class=\"newthought\">A new thought</span> opens in small-caps. Body copy is Georgia, with <strong>strong (orange)</strong>, <em>emphasis (label)</em>, an <a href=\"#\">internal hyperlink</a>, an <a href=\"https://example.com\">outbound link</a> carrying its marker, a source citation <cite>src/theme/tokens.css:14</cite>, and inline <code>code()</code>.</p>"
+    "      <p><span class=\"newthought\">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (orange)</strong>, <em>emphasis (label)</em>, an <a href=\"#\">internal hyperlink</a>, an <a href=\"https://example.com\">outbound link</a> carrying its marker, a source citation <cite>src/theme/tokens.css:14</cite>, and inline <code>code()</code>.</p>"
     "      <p>Status spans: <span class=\"verified\">verified</span>, <span class=\"unverified\">unverified</span>, <span class=\"correction\">correction</span>.</p>"
     "      <p>A sidenote lives here.<label for=\"sn-1\" class=\"margin-toggle sidenote-number\"></label><input type=\"checkbox\" id=\"sn-1\" class=\"margin-toggle\"/><span class=\"sidenote\">This is a Tufte sidenote &mdash; it floats to the right margin and auto-numbers.</span> And a margin note follows.<label for=\"mn-1\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-1\" class=\"margin-toggle\"/><span class=\"marginnote\">A margin note carries no number.</span></p>"
     "    </section>"

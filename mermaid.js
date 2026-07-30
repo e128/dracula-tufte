@@ -18,6 +18,17 @@
       securityLevel: window.mermaidSecurityLevel || 'strict',
       themeVariables: {
         darkMode: true,
+        // The only two non-color themeVariables. Deliberately NOT mirrored into
+        // mermaid-palette.json: that file and palette-check.py exist to catch hex
+        // drift against the oklch source, and a font stack has no hex to drift.
+        // fontSize is a CSS length string, so 1rem tracks the reader's own root
+        // font-size; mermaid's default is a hard-coded 16px that ignores it, the
+        // same defect as the max(Xem, 12pt) floors removed from the stylesheet.
+        // Pair this with `width: auto` on the conn-map svg — while the SVG was
+        // stretched to its container, whatever is set here was multiplied by up
+        // to 3.23x on the way to the screen.
+        fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
+        fontSize:   '1rem',
         background:          '#282a36',  /* --surface */
         mainBkg:             '#343746',  /* --code-bg */
         primaryColor:        '#343746',  /* --code-bg */
