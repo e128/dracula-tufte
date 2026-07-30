@@ -208,6 +208,21 @@
        relative ones — destination is information, not decoration. \A0 = nbsp
        keeps the arrow from orphaning onto its own line. */
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
+    /* The marker is decorative, but generated content lands in the accessible name:
+       measured, the outbound link computed as "outbound link\A0↗", so a screen reader
+       reads out "north east arrow" after every external label. `content: "…" / ""` gives
+       the pseudo-element empty alternative text, which suppresses both the arrow and the
+       nbsp for assistive tech while leaving the glyph visible.
+       Behind @supports on purpose. The alt-text syntax is a single value, so a browser
+       that cannot parse it discards the WHOLE declaration and the marker disappears
+       outright — Firefox ESR 128 is in that group and is still deployed in enterprises.
+       Layering it this way means unsupported browsers keep the visual affordance and
+       merely retain the old announcement; nothing regresses either way.
+       Deliberately re-declaring only `content` here: font-size and color are inherited
+       from the rule above, so there is one place to change the glyph's appearance. */
+    @supports (content: "x" / "y") {
+      a[href^="http"]::after { content: "\A0↗" / ""; }
+    }
     /* Citations: monospace + muted. Browser default is italic serif, which in
        this theme is indistinguishable from <em> — the semantic distinction is
        lost unless the italic is cancelled. */

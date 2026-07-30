@@ -9,25 +9,7 @@ nothing reads this file.
 
 ---
 
-## 1. Outbound-link arrow has no alternative text
-
-**Where:** `tufte-dracula.css`, `a[href^="http"]::after`
-
-Screen readers announce "north east arrow" after every external link label.
-
-**Change:**
-
-```css
-a[href^="http"]::after { content: "\A0↗" / ""; … }
-```
-
-The `/ ""` alt-text syntax makes the marker decorative to assistive technology.
-
-**Why it is a decision:** browsers that do not support alt text in `content` — Firefox
-ESR 128 among them — drop the *entire* declaration and lose the marker. Accessibility
-win against silently losing the affordance on an old ESR still in enterprise use.
-
-## 2. Sticky table header is inert below 600px
+## 1. Sticky table header is inert below 600px
 
 **Where:** `tufte-dracula.css`, `th { position: sticky; top: 0 }` and the
 `@media (max-width: 600px)` rule `table { display: block; overflow-x: auto }`
@@ -50,7 +32,7 @@ like it works because the rule is present.
 stylesheet change — it cannot ship from this repo alone. Either coordinate the wrapper
 across consumers, or accept that mobile tables scroll without a pinned header.
 
-## 3. Mermaid `background` does not match the container it renders in
+## 2. Mermaid `background` does not match the container it renders in
 
 **Where:** `mermaid.js` / `mermaid-palette.json`, `background: '#282a36'` (`--surface`)
 
