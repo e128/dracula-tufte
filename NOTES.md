@@ -398,6 +398,53 @@ hover rule, no focus style. A cursor does not exist on touch and is never announ
 a phone the diagram was an unmarked click target. The ring is instant, not transitioned:
 hover is high-frequency and does not want motion.
 
+**The overlay's way out is a `✕` glyph on `.mermaid-overlay::after`**, top-trailing corner,
+`--label` on the backdrop. Click-anywhere and Escape both dismissed it before and still do;
+neither was advertised, and `cursor: zoom-out` is invisible on touch. A glyph rather than a
+word because this stylesheet is inlined verbatim by consumers who cannot localise a string
+in it, and `content: "✕" / ""` behind `@supports` for the same reason the outbound arrow
+uses that pattern: measured through CDP `Accessibility.getFullAXTree`, zero nodes name the
+glyph, so a screen reader is not told about a control it cannot reach. It is a cue on an
+already-clickable surface, not a new target — the overlay dismisses on any click.
+
+## Print
+
+**The print block overrides the palette tokens, not the elements.** It used to set
+`background`/`color` on `body` alone, which left every accent at its dark-theme value on a
+white page. Measured on white: `.newthought` **1.05:1**, `summary` 1.82, `.verified` 1.96,
+`strong` 2.09, `h3`/`em`/`blockquote`/`footer` 2.11, `h1` 2.42, `.byline`/`cite` 2.60,
+`h2` 2.79. The dark fills survived too, so with background graphics on, near-black print
+text sat on `--code-bg` zebra rows at **1.67:1**, and with them off (Chrome's default) the
+light text that those fills had backed was stranded on white — inline `code` 1.85:1, `pre`
+1.05:1.
+
+Reassigning the tokens fixes every element at once and fixes both print paths, because the
+accents become dark and the fills become near-white: whichever way the background-graphics
+checkbox is set, the pair is legible. Accent lightness is chosen against the **`0.97` grey**
+`--code-bg`, not white, because that is the harder of the two backgrounds — measured 4.56–4.64:1
+on the grey and 4.97–5.06:1 on white, with `--on-surface` at `oklch(0.2 0 0)` giving 18.1:1.
+
+Two rules could not be handled by tokens alone:
+
+- **`aside` drops its tint.** `color-mix(in oklch, var(--rule-light) 30%, transparent)` over
+  white composites to `#d9dae1`, and `--label` on that measured 3.58:1 — the one pair the
+  token pass left failing. `background: none` in print puts it on white at 4.99:1; the
+  orange accent bar still marks the callout. Measured from rendered pixels, not computed
+  values: a computed reading reports the un-composited mix and is wrong by ~3.5:1 here.
+- **`.verdict` / `.badge` print as outlined labels** — `background: none` plus
+  `box-shadow: inset 0 0 0 1px currentColor` and the semantic colour moved to `color`.
+  Their fill carried the meaning (pass / partial / failed), and `color: var(--surface)`
+  would have become white-on-accent — fine with backgrounds on, invisible with them off.
+  Outlining makes the chip identical either way, and each variant keeps its own hue at
+  ≥4.97:1.
+
+`--rule-light` sits at `oklch(0.620 …)` in print: 3:1 against white for WCAG 1.4.11 without
+becoming a heavy line on paper.
+
+`--surface-alt` goes white as well. It is only the overlay backdrop, which cannot be on
+screen and on paper at once, but leaving it dark would put a near-black rectangle in the
+print stylesheet waiting for someone to reuse the token.
+
 The overlay is `transition: opacity 0.2s ease-out`. With the default `ease` the backdrop
 measured 0.026 → 0.497 → 0.80 → 0.94 → 0.999 at 40ms intervals — near-invisible for the
 first frame, then a rush; the click felt late. Every other transition in the sheet was
@@ -419,3 +466,40 @@ unreachable either way, so both are noise.
 `--muted` to 4.55:1 against `--code-bg` and 5.50:1 against `--surface`; `--red` to 5.00:1
 against `--surface`. `--data-2` and `--data-3` are shifted off the `--pink` and `--green`
 hues so one colour means one thing.
+
+**`--data-1` is `oklch(0.790 0.077 255)`, moved off the link hue.** It was
+`oklch(0.790 0.100 216.800)` against `--link` at 216.782 — a 0.02° collision, ΔE_ok 0.038, so
+the `ext` classDef fill and the pie's first slice *were* the link colour. 255 puts it 38.2°
+from `--link` and 45.9° from `--purple`, and ≥85° from every other member of the ramp, which
+is the comparison that matters since those appear together in one diagram. Chroma is 0.077 =
+71% of the maximum in-gamut chroma at that lightness and hue, matching the ratio the old
+value held at its own hue; `--surface` text on the new fill measures 7.39:1. Verified by
+rendering a pie and a `classDef` flowchart: slice fills come out
+`#99bdec / #de8dc3 / #74caa6 / #bbc175`, four visibly distinct categories.
+
+`--data-2` (9.4° off `--pink`) and `--data-3` (9.6° off `--green`) are still under the ~10°
+threshold where a hue shift becomes visible — ΔE_ok 0.020 and 0.017, about one JND. They are
+separated in name more than in appearance. Left alone deliberately: nothing in a diagram puts
+a category fill beside body copy, so the collision costs less than `--data-1`'s did, and
+moving them means recomputing two more hex projections.
+
+**The `.scorecard` overflow under text-only zoom is fixed with a container query, not a media
+query.** `section:has(> .scorecard)` becomes an inline-size container and
+`@container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr) } }` stacks
+it. `em` inside a container query resolves against the *container's* font size, so the query
+is really "is the text large relative to the space" — which is exactly the failure condition,
+and something a media query cannot see (`em` there resolves against the browser's initial font
+size; a `max-width: 19em` media rule measured no change at a doubled root).
+
+The `:has()` scoping matters: `container-type: inline-size` on every `section` also applied
+inline-size containment to the conn-map columns, which changed the sticky sidebar from 276px
+to 220px at 200% zoom because the content could no longer expand the flex basis. Scoped to
+sections that actually hold a scorecard, the conn-map measures identically to before at all
+eight widths.
+
+The `@container` rule sits after the `max-width: 600px` block on purpose — container queries
+add no specificity, so source order is what makes it win over the two-column rule there.
+
+Fixed through 200% text zoom at every width from 320 to 2560px. At **400%** text-only zoom
+the page still scrolls sideways (`.sc-note`, and the table at ≥601px); that is past what
+WCAG 1.4.4 asks for and is not chased.

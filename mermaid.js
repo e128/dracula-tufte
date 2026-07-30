@@ -19,7 +19,7 @@
         clusterBorder:       '#707388',
         nodeBorder:          '#a98ed6',
         edgeLabelBackground: '#343746',
-        pie1: '#67cbe4', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
     const overlay = document.getElementById('mermaid-zoom');

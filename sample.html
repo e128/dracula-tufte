@@ -32,7 +32,7 @@
       --purple:      oklch(0.698 0.107 300.909);  /* was #a98ed6 */
       --pink:        oklch(0.742 0.120 349.392);  /* was #e48bb7 */
       --green:       oklch(0.775 0.100 155.397);  /* was #7fc99a */
-      --data-1:      oklch(0.790 0.100 216.800);
+      --data-1:      oklch(0.790 0.077 255.000);
       --data-2:      oklch(0.742 0.120 340.000);
       --data-3:      oklch(0.775 0.100 165.000);
       --data-4:      oklch(0.790 0.100 112.500);
@@ -137,6 +137,7 @@
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
     .correction { color: var(--red); }
+    section:has(> .scorecard) { container-type: inline-size; }
     .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
       gap: 0.3rem 0.9rem; align-items: baseline; margin: 0.75rem 0 1.25rem;
       font-size: 0.95em;
@@ -188,6 +189,11 @@
       pointer-events: none;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
+    .mermaid-overlay::after { content: "✕"; position: absolute; top: 0.75rem; inset-inline-end: 1rem;
+      font-size: 1.75rem; line-height: 1; color: var(--label); }
+    @supports (content: "x" / "y") {
+      .mermaid-overlay::after { content: "✕" / ""; }
+    }
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
     pre.mermaid { cursor: zoom-in; text-align: center; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule-light); }
@@ -225,10 +231,38 @@
       .nav-list li a { padding: 0.7rem 0.5rem; min-height: 44px; }
       details.nav-group > summary { padding: 0.75rem 0; min-height: 44px; }
     }
+    @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
-    @media print { body { background: oklch(1 0 0); color: oklch(0.15 0 0); width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } a[href^="http"]::after { content: ""; } h2 { page-break-after: avoid; } img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); } }
+    @media print {
+      :root {
+        --surface:     oklch(1 0 0);
+        --surface-alt: oklch(1 0 0);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.970 0 0);
+        --rule-light:  oklch(0.620 0.032 277.832);
+        --label:       oklch(0.545 0.054 275.492);
+        --muted:       oklch(0.545 0.055 275);
+        --link:        oklch(0.535 0.064 216.782);
+        --pink:        oklch(0.560 0.120 349.392);
+        --purple:      oklch(0.550 0.107 300.909);
+        --green:       oklch(0.530 0.100 155.397);
+        --orange:      oklch(0.550 0.092 61.444);
+        --red:         oklch(0.560 0.142 21.457);
+      }
+      body { width: auto; max-width: none; padding: 1rem; }
+      aside { background: none; }
+      a { color: inherit; text-decoration: none; }
+      a[href^="http"]::after { content: ""; }
+      h2 { page-break-after: avoid; }
+      img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); }
+      .verdict, .badge { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+      .verdict-pass, .badge-t1 { color: var(--green); }
+      .verdict-partial, .badge-t2 { color: var(--orange); }
+      .verdict-failed, .badge-t3 { color: var(--red); }
+      .verdict-neutral { color: var(--muted); }
+    }
   </style>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs';
@@ -251,7 +285,7 @@
         clusterBorder:       '#707388',
         nodeBorder:          '#a98ed6',
         edgeLabelBackground: '#343746',
-        pie1: '#67cbe4', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
     const overlay = document.getElementById('mermaid-zoom');
