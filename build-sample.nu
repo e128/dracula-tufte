@@ -82,10 +82,12 @@ def tokens [css: string] {
 def conn-map-body [] {
   [
     "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <main>"
     "  <article>"
     "    <h1>Connections-Map Layout Sample</h1>"
     "    <p class=\"byline\">body.conn-map &mdash; Links column left, graph right (wide screens)</p>"
     "    <section>"
+    "      <h2>Links</h2>"
     "      <h3>Antecedents</h3>"
     "      <ul class=\"nav-list\"><li><a href=\"#\">Antecedent A</a></li><li><a href=\"#\">Antecedent B</a></li></ul>"
     "      <h3>Descendants</h3>"
@@ -93,9 +95,10 @@ def conn-map-body [] {
     "    </section>"
     "    <section>"
     "      <h2>Graph</h2>"
-    "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  focus[Focus Topic]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
+    "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  accTitle: Connections map for the focus topic\n  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y.\n  focus[Focus Topic]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
     "    </section>"
     "  </article>"
+    "  </main>"
   ] | str join "\n"
 }
 
@@ -103,6 +106,7 @@ def body [] {
   [
     # Mermaid click-to-zoom overlay target (id referenced by mermaid.js).
     "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <main>"
     "  <article>"
     "    <h1>Tufte-Dracula Component Sample</h1>"
     "    <p class=\"byline\">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>"
@@ -123,7 +127,7 @@ def body [] {
     "    <section>"
     "      <h2>Table</h2>"
     "      <table>"
-    "        <thead><tr><th>Column</th><th>Value</th><th>Note</th></tr></thead>"
+    "        <thead><tr><th scope=\"col\">Column</th><th scope=\"col\">Value</th><th scope=\"col\">Note</th></tr></thead>"
     "        <tbody>"
     "          <tr><td>alpha</td><td>1234</td><td>odd row</td></tr>"
     "          <tr><td>beta</td><td>5678</td><td>even row (striped)</td></tr>"
@@ -159,7 +163,8 @@ def body [] {
     ""
     "    <section>"
     "      <h2>Navigation index components</h2>"
-    "      <input type=\"text\" class=\"filter-box\" placeholder=\"Type to filter&hellip;\"/>"
+    "      <label class=\"filter-label\" for=\"nav-filter\">Filter entries</label>"
+    "      <input id=\"nav-filter\" type=\"search\" class=\"filter-box\" autocomplete=\"off\" placeholder=\"Type to filter&hellip;\"/>"
     "      <ul class=\"nav-list\">"
     "        <li><a href=\"#\">A tappable nav-list link</a></li>"
     "        <li><a href=\"#\">Another entry <span class=\"badge badge-t1\">Tier 1</span></a></li>"
@@ -185,7 +190,7 @@ def body [] {
     ""
     "    <section>"
     "      <h2>Mermaid diagram (click to zoom)</h2>"
-    "      <pre class=\"mermaid\">flowchart TD\n  A[Start] --> B{Decision}\n  B -->|yes| C[Do the thing]\n  B -->|no| D[Skip it]\n  C --> E[Done]\n  D --> E</pre>"
+    "      <pre class=\"mermaid\">flowchart TD\n  accTitle: Decision flow sample\n  accDescr: Start leads to a decision; yes does the thing, no skips it, and both reach done.\n  A[Start] --> B{Decision}\n  B -->|yes| C[Do the thing]\n  B -->|no| D[Skip it]\n  C --> E[Done]\n  D --> E</pre>"
     "    </section>"
     ""
     "    <hr/>"

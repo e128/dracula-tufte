@@ -68,7 +68,7 @@
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
-    label.margin-toggle:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    .mermaid-zoom:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -152,6 +152,8 @@
     .verdict-partial { background: var(--orange); }
     .verdict-failed { background: var(--red); }
     .verdict-neutral { background: var(--muted); }
+    .filter-label { display: block; margin-top: 1rem; color: var(--label); font-size: 0.95em; }
+    .filter-label + .filter-box { margin-top: 0.3rem; }
     .filter-box {
       width: 100%; margin: 1rem 0 1.5rem; padding: 0.65rem 0.85rem;
       font-family: inherit; font-size: 1em;
@@ -186,7 +188,7 @@
       background: oklch(from var(--surface-alt) l c h / 0.92);
       display: flex; align-items: center; justify-content: center;
       cursor: zoom-out; opacity: 0; transition: opacity 0.2s ease-out;
-      pointer-events: none;
+      pointer-events: none; overscroll-behavior: contain;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
     .mermaid-overlay::after { content: "✕"; position: absolute; top: 0.75rem; inset-inline-end: 1rem;
@@ -197,6 +199,10 @@
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
     pre.mermaid { cursor: zoom-in; text-align: center; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule-light); }
+    .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
+      font: inherit; font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
+      border: 1px solid var(--rule-light); border-radius: var(--radius); touch-action: manipulation; }
+    .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     body.conn-map pre.mermaid { overflow: visible; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
@@ -232,6 +238,9 @@
       details.nav-group > summary { padding: 0.75rem 0; min-height: 44px; }
     }
     @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @media (forced-colors: active) {
+      code { border: 1px solid currentColor; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
@@ -253,6 +262,7 @@
       }
       body { width: auto; max-width: none; padding: 1rem; }
       aside { background: none; }
+      .mermaid-zoom { display: none; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h2 { page-break-after: avoid; }
@@ -290,19 +300,45 @@
     });
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
-    const dismiss = () => { overlay.classList.remove('active'); };
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Zoomed diagram');
+    overlay.tabIndex = -1;
+    const siblings = () => [...document.body.children].filter(el => el !== overlay);
+    let opener = null;
+    const dismiss = () => {
+      overlay.classList.remove('active');
+      siblings().forEach(el => { el.inert = false; });
+      if (opener) { opener.focus(); opener = null; }
+    };
+    const zoom = (svg, trigger) => {
+      const zoomed = svg.cloneNode(true);
+      zoomed.removeAttribute('width');
+      zoomed.removeAttribute('height');
+      zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.replaceChildren(zoomed);
+      overlay.classList.add('active');
+      siblings().forEach(el => { el.inert = true; });
+      opener = trigger;
+      overlay.focus();
+    };
     overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
-        if (svg) svg.addEventListener('click', () => {
-          const zoomed = svg.cloneNode(true);
-          zoomed.removeAttribute('width');
-          zoomed.removeAttribute('height');
-          zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
-          overlay.replaceChildren(zoomed);
-          overlay.classList.add('active');
-        });
+        if (!svg) return;
+        if (!svg.dataset.zoomable) {
+          svg.dataset.zoomable = 'true';
+          svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
+        }
+        if (!pre.querySelector('.mermaid-zoom')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mermaid-zoom';
+          button.textContent = 'Zoom diagram';
+          button.addEventListener('click', () => zoom(svg, button));
+          pre.append(button);
+        }
       }).observe(pre, { childList: true });
     });
     overlay.addEventListener('click', dismiss);
@@ -311,10 +347,12 @@
 </head>
 <body class="conn-map">
   <div class="mermaid-overlay" id="mermaid-zoom"></div>
+  <main>
   <article>
     <h1>Connections-Map Layout Sample</h1>
     <p class="byline">body.conn-map &mdash; Links column left, graph right (wide screens)</p>
     <section>
+      <h2>Links</h2>
       <h3>Antecedents</h3>
       <ul class="nav-list"><li><a href="#">Antecedent A</a></li><li><a href="#">Antecedent B</a></li></ul>
       <h3>Descendants</h3>
@@ -324,6 +362,8 @@
       <h2>Graph</h2>
       <pre class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
 flowchart BT
+  accTitle: Connections map for the focus topic
+  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y.
   focus[Focus Topic]
   a1[Antecedent A] --> focus
   a2[Antecedent B] --> focus
@@ -331,5 +371,6 @@ flowchart BT
   focus --> d2[Descendant Y]</pre>
     </section>
   </article>
+  </main>
 </body>
 </html>

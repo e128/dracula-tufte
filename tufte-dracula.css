@@ -61,7 +61,7 @@
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
-    label.margin-toggle:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    .mermaid-zoom:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -145,6 +145,8 @@
     .verdict-partial { background: var(--orange); }
     .verdict-failed { background: var(--red); }
     .verdict-neutral { background: var(--muted); }
+    .filter-label { display: block; margin-top: 1rem; color: var(--label); font-size: 0.95em; }
+    .filter-label + .filter-box { margin-top: 0.3rem; }
     .filter-box {
       width: 100%; margin: 1rem 0 1.5rem; padding: 0.65rem 0.85rem;
       font-family: inherit; font-size: 1em;
@@ -179,7 +181,7 @@
       background: oklch(from var(--surface-alt) l c h / 0.92);
       display: flex; align-items: center; justify-content: center;
       cursor: zoom-out; opacity: 0; transition: opacity 0.2s ease-out;
-      pointer-events: none;
+      pointer-events: none; overscroll-behavior: contain;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
     .mermaid-overlay::after { content: "✕"; position: absolute; top: 0.75rem; inset-inline-end: 1rem;
@@ -190,6 +192,10 @@
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
     pre.mermaid { cursor: zoom-in; text-align: center; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule-light); }
+    .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
+      font: inherit; font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
+      border: 1px solid var(--rule-light); border-radius: var(--radius); touch-action: manipulation; }
+    .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     body.conn-map pre.mermaid { overflow: visible; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
@@ -225,6 +231,9 @@
       details.nav-group > summary { padding: 0.75rem 0; min-height: 44px; }
     }
     @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @media (forced-colors: active) {
+      code { border: 1px solid currentColor; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
@@ -246,6 +255,7 @@
       }
       body { width: auto; max-width: none; padding: 1rem; }
       aside { background: none; }
+      .mermaid-zoom { display: none; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h2 { page-break-after: avoid; }

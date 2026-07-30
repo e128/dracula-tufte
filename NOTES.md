@@ -407,6 +407,54 @@ uses that pattern: measured through CDP `Accessibility.getFullAXTree`, zero node
 glyph, so a screen reader is not told about a control it cannot reach. It is a cue on an
 already-clickable surface, not a new target — the overlay dismisses on any click.
 
+## Keyboard and assistive technology
+
+**Zoom is a real `<button>` that `mermaid.js` injects, not a focusable `pre`.** Before it,
+the only way to zoom was clicking the SVG: measured `tabindex` null on both `pre` and `svg`
+with zero focusable descendants, so Tab produced 12 stops in `sample.html` and none was the
+diagram (WCAG 2.1.1). Two cheaper fixes were rejected —
+
+- `tabindex="0"` + `role="button"` on `pre.mermaid` makes the button's content
+  presentational, which would hide the SVG's own `graphics-document` node and its name from
+  assistive tech. The control would work and the diagram would stop existing.
+- `tabindex="0"` with no role leaves a focusable generic. `aria-label` is not allowed to
+  name `role=generic`, so it announces nothing and nothing hints that Enter zooms.
+
+The injected button is a native control: keyboard and pointer for free, an accessible name
+of its own, and the SVG untouched. It doubles as the touch affordance that `cursor: zoom-in`
+could never be. Measured 138×42, in the tab order, focus ring from the shared
+`:focus-visible` rule, `display: none` in print.
+
+**The observer that creates it has to be idempotent.** Mermaid rewrites the `pre`'s children
+after the first render, so a one-shot `if (pre.dataset.zoomable) return` guard let the second
+pass delete the button and then blocked recreating it — measured: `dataset.zoomable` set,
+zero buttons in the DOM. It now re-adds the button whenever one is missing and marks the
+*SVG* rather than the `pre` for the click listener, so appending the button (itself a
+`childList` mutation) is a no-op on the next tick instead of a loop.
+
+**The overlay is a modal and now says so.** It measured `role` null, `aria-modal` null, no
+name, no `tabindex`, `overscroll-behavior: auto`, with focus never entering and never
+returning. It now carries `role="dialog"`, `aria-modal="true"`, `aria-label="Zoomed diagram"`,
+`tabindex="-1"`, takes focus on open, sets `inert` on every other `body` child, and restores
+focus to the button that opened it. Verified: Enter on the button gives focus inside the
+overlay with both siblings `inert`, and Escape returns focus to `.mermaid-zoom` and clears
+`inert`. `overscroll-behavior: contain` keeps the page underneath from scrolling.
+
+**`accTitle` / `accDescr` in both fixture diagrams.** The SVG had a `graphics-document` role
+with no accessible name at all — an unnamed graphic carrying the page's structure. These are
+Mermaid directives inside the fence, so no stylesheet change can supply them; the fixtures
+model them because whoever writes the fence has to.
+
+**The sidenote margin-toggle is inert by design, and its two `display: none` rules must
+stay.** `input.margin-toggle` is never focusable and the ⊕ label is hidden, so the Tufte
+collapse pattern does nothing here — measured at 1280 and 390px, `.sidenote` is
+`display: block` at every width, so sidenotes are always visible and there is nothing to
+toggle. The rules are not dead weight though: consumer generators emit that checkbox and
+label markup, and dropping the rules would show raw checkboxes on every published page. What
+*was* dead is gone — `label.margin-toggle:focus-visible` could never match a `display: none`
+label, and it no longer sits in the focus rule. If the pattern is ever revived it needs a
+focusable control, not a hidden checkbox.
+
 ## Print
 
 **The print block overrides the palette tokens, not the elements.** It used to set
