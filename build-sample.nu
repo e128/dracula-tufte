@@ -139,7 +139,7 @@ def body [] {
     "    <section>"
     "      <h2>Blockquote, aside, details</h2>"
     "      <blockquote><p>Stat crux dum volvitur orbis &mdash; the Cross stands while the world turns.</p></blockquote>"
-    "      <aside>An aside: orange accent-bar, tinted background. For asides and callouts.</aside>"
+    "      <aside>An aside: orange accent-bar, no fill. For asides and callouts.</aside>"
     "      <details><summary>Collapsible summary</summary><p>Hidden content revealed on click.</p></details>"
     "    </section>"
     ""
