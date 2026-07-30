@@ -84,8 +84,8 @@ Steps, all relative to body size:
 1.75em  h1  ┐ headings in em so they track the body clamp, not the fixed root
 1.35em  h2  │
 1.12em  h3  ┘
-1em     body copy, .filter-box
-0.95em  structural: li, table, aside, nav, .scorecard, .nav-list li
+1em     body copy, prose li, .filter-box
+0.95em  structural: table, aside, nav, .scorecard, .nav-list li
 0.9em   annotation: .byline, .sidenote, cite, code, pre, footer
 0.8em   chips: .badge, .verdict
 0.75em  the outbound arrow
@@ -117,7 +117,16 @@ against Palatino (x-height 471) and over-corrected by ~7%.
 
 `pre code` is `font-size: 1em` to halt em-compounding — `code` and `pre` each carry 0.9em,
 so a bare `<code>` inside `<pre>` would render at 0.81em, smaller than the block it fills.
-Same guard as `li li`.
+
+**`li` carries no `font-size` of its own.** It sat at 0.95em in the structural tier with
+tables and nav, which made a bulleted list inside an `<article>` render at 17.48px against
+18.4px paragraphs — body copy reading as subordinate to the body copy beside it. A prose
+list is prose. The two contexts that do want 0.95em already ask for it themselves:
+`.nav-list li` sets it directly, and `nav` sets it on the container. That last one was
+double-counting while `li` had its own value — `nav > ul > li` compounded to 0.9025em, the
+smallest text on any page that used a `<nav>`. Dropping the `li` declaration also retired
+`li li { font-size: 1em }`, which existed only to stop the same compounding one level down;
+with nothing to compound, the guard has nothing to guard.
 
 ## Italics
 
@@ -178,10 +187,49 @@ rest of the container empty. If it is ever revisited:
 - Smaller type makes the measure *worse*, not better: container width is `vw`/`%`-driven,
   so shrinking type just fits more characters per line.
 
+## Lists
+
+**Prose `ul` keeps its markers.** `ul { list-style: none; padding-inline-start: 0 }` was a
+global reset, so a bulleted list inside an `<article>` rendered as a run of short paragraphs
+— measured, `list-style-type: none` with `padding-inline-start: 0px` and a nested `ul`
+indenting by **0px**, so nesting was invisible too. It also made `li::marker { color:
+var(--muted) }` dead code for every `ul`, since a list with no marker has no marker box to
+colour. `ul, ol { padding-inline-start: 1.5rem }` gives both list types one indent and lets
+`ul` keep the UA's `disc` / `circle` / `square` progression, now muted.
+
+The reset bought nothing that needed it: `.nav-list` sets `list-style: none` and
+`padding-inline-start: 0` on its own rule, so navigation lists are unaffected.
+
+**This is also half of the VoiceOver list-semantics problem.** WebKit drops list semantics
+from a list with `list-style: none` — no "list, N items", no item position. With markers
+restored, prose lists keep their semantics natively and only `.nav-list` still needs
+`role="list"` in the markup, which is now a documented consumer obligation in `README.md`.
+Verified through the real accessibility tree (CDP `Accessibility.getFullAXTree`): eight
+`list` nodes in `sample.html`, the four nav lists by explicit role and the prose lists by
+having markers again.
+
 ## Tables
 
 **No `font-family` on `table`** — tables inherit the body serif, which is correct because
 Source Serif 4's digits are tabular and lining by construction.
+
+**`width: auto; max-width: 100%`, not `width: 100%`.** A three-column table stretched to the
+full page: measured 1152px rendered against 315px of content at 1280px, so the zebra stripes
+ran 3.7× past the data and the two mobile paths disagreed — `display: block` below 600px let
+the same table shrink to content, stopping the stripes mid-row.
+
+Checked against the failure mode this repo has a history of, by measuring a narrow and a
+**wide** (six-column) table side by side at 390 / 601 / 768 / 1024 / 1280px. A wide table is
+unchanged: its min-content width is the floor either way, so it still fills the container
+(922px at 1024, 1152px at 1280) and `width` never entered into it. Only tables narrower than
+their container move, which is the whole intent. The narrow table now measures 316px at
+1280px and 338px at 1920px.
+
+That comparison turned up a **pre-existing** overflow that has nothing to do with `width`:
+between 601px and roughly 1000px a wide table's min-content width exceeds the body and the
+*document* scrolls sideways — 731px against a 537px body at 601px, 746 against 691 at 768 —
+because the `overflow-x: auto` escape hatch only exists below 600px. Identical with
+`width: 100%` and with `width: auto`, so it predates both. See `backlog.md`.
 
 Tables briefly carried the monospace stack because Georgia could not do this: its figures
 are old-style *and* proportional (9 distinct advances, `1` at 430/1000 against `0` at
@@ -245,8 +293,30 @@ drift against the oklch source, and a font stack has no hex to drift. `fontSize`
 length string, so `1rem` tracks the reader's root size; mermaid's default is a hard-coded
 16px that ignores it.
 
-**`background` is inert.** It is set to `--code-bg` to match the `pre` a diagram renders
-in, but measured across 12 diagram types (flowchart, pie, ER, class, sequence, state,
+**`pre.mermaid` has no fill and no accent bar.** It inherited both from `pre`, so a diagram
+was framed as source code — on a connections map that slab was the dominant graphic on the
+page, mostly empty around a graph that renders at natural size by design. `background: none;
+border-inline-start: none` puts the diagram on `--surface`.
+
+Two consequences, both checked by rendering:
+
+- **Nodes gained a visible fill.** `mainBkg` / `primaryColor` are `--code-bg`, so on a
+  `--code-bg` `pre` every node was fill-less — only the purple border showed. On `--surface`
+  the fill separates from the page and a node reads as a box. This is a gain, and it is why
+  the themeVariable is left alone.
+- **Edge labels keep their `edgeLabelBackground` patch**, also `--code-bg`, previously
+  invisible for the same reason. It is now a small chip behind `yes` / `no` that masks the
+  edge line running under the text — which is what the variable is for. Inspected on the
+  flowchart: it reads as a label, not as a stray rectangle. Left as `--code-bg`; changing it
+  would mean recomputing hex in `mermaid.js` and `mermaid-palette.json` to fix something
+  that improved.
+
+The `:hover` ring now sits on `--surface` rather than `--code-bg`, where `--rule` measures
+5.47:1 instead of 4.53 — still the heavier of the two rule weights, just no longer the value
+the contrast note is about.
+
+**`background` is inert.** It is set to `--code-bg` to match the `pre` a diagram used to
+render in, but measured across 12 diagram types (flowchart, pie, ER, class, sequence, state,
 gantt, journey, quadrant, gitGraph, mindmap, timeline) the value never reaches the output:
 every SVG canvas is transparent, there is no full-size background rect, and the previous
 `--surface` hex appeared nowhere in mermaid's injected CSS. The `pre`'s own background
@@ -455,6 +525,149 @@ label markup, and dropping the rules would show raw checkboxes on every publishe
 label, and it no longer sits in the focus rule. If the pattern is ever revived it needs a
 focusable control, not a hidden checkbox.
 
+## Form follows role: filled chips, outlined chips, bars and boxes
+
+Three families were drawn the same way and meant different things. They are now separated
+by *form*, so the shape carries the role and colour is free to mean one thing.
+
+**A filled chip is a state. An outlined chip is a label.** `.verdict-*` keeps its fill —
+pass / partial / failed / N/A are states of a claim, and the hue is doing real work there.
+`.badge` is now `color: var(--label)` with `box-shadow: inset 0 0 0 1px currentColor` and no
+fill at all. It was three fills — `--green`, `--orange`, `--red` — for **Tier 1 / 2 / 3**,
+which are ordinal levels, not health states, so a green-to-red ramp told the reader tier 3
+was failing. It also put `--red` on three separate meanings at once (`.badge-t3`,
+`.verdict-failed`, `.correction`), against the rule the palette enforces elsewhere: one
+colour means one thing.
+
+`.badge-t1` / `-t2` / `-t3` no longer have rules of their own. **The classes are not
+removed** — consumers emit `class="badge badge-t3"` and that markup keeps working; the
+variants simply carry no declarations, so there is nothing to keep in step. Measured:
+`--label` on `--surface` 6.75:1, and 5.59:1 inside a `.nav-list li a:hover` row, which is
+the only other surface a badge lands on. The ring is `currentColor`, so it tracks the text
+and clears 1.4.11 at the same ratios.
+
+**What this trades away, and how to get it back.** With one colour, tier is no longer
+scannable at a glance down a long index — a reader has to read `Tier 3` rather than spot
+red. The badge's own text always carried the level (that is why the forced-colors fix
+below is a border and not a glyph), so nothing is *lost*, but ranking is now read rather
+than seen. The alternative was three steps of a single new hue, which was costed and
+rejected: a tier ramp needs three `:root` tokens **plus three print overrides**, every one
+of which has to clear 4.5:1 on all four backgrounds named below, and the free hue gaps left
+in this palette are 20–27° wide — inside them a three-step ramp is three values that read
+as one colour at 0.8em. If tier scanning turns out to matter, the cheap version is weight
+or ring thickness on the existing single hue, not a new hue.
+
+**A border means interactive; an accent bar means passive block.** `.scorecard` was a 1px
+`--rule-light` box, identical to `details`, `.nav-group`, `.nav-list`, `.filter-box` and
+`.mermaid-zoom` — eight bordered instances in the fixture, so a data panel, a disclosure
+widget, a form field and a button all read as the same object. `.scorecard` now takes
+`border-inline-start: var(--accent-bar) solid var(--rule-light)` with the `pre` / `aside` /
+`blockquote` padding, and every remaining bordered box in the sheet is something you can
+click, type in or open. `--rule-light` rather than a new accent hue because the scorecard is
+structural rather than semantic — and because it is the colour the border already was, so
+the change is a border becoming a bar and nothing else.
+
+The scorecard's text-only-zoom fix was re-verified after the padding change, since the
+container query is the thing standing between it and a sideways scroll: at a doubled root
+font size the document stays at viewport width at 320 / 390 / 480 / 601px, and the grid
+still collapses to a single track.
+
+## The contrast budget covers four backgrounds
+
+For a long time it covered two. `--rule-light`, `--muted` and `--red` were tuned against
+`--surface` and `--code-bg`, and two further backgrounds existed unmeasured — both produced
+by `color-mix`, which is why they went unnoticed: **a computed-value reading reports the
+un-composited mix and is wrong.** Every number below was sampled from rendered pixels
+through a 1×1 canvas, the same method the print `aside` finding needed.
+
+The four surfaces text can land on are `--surface`, `--code-bg` (zebra rows, `pre`, inline
+`code`, `.filter-box`), the row-hover fill, and — until v1.9.0 — the `aside` tint. A new
+token has to clear its ratio against **all** of them, not the easiest one.
+
+**The row-hover fill now darkens instead of lightening, and it is a flat token.** It was
+`color-mix(in oklch, var(--rule-light) 50%, transparent)`, which composites to
+`rgb(76,79,95)` over `--surface`. That lifted the row toward the accents sitting on it and
+took every one of them below 4.5:1 — `--red` 2.84, `--purple` 2.91, `--muted` 3.12,
+`--pink` 3.35, `--label` 3.84, `--link` 4.45, with only `--on-surface` surviving at 7.60.
+Hovering a row made every coloured or linked cell in it fail 1.4.3 for as long as the
+pointer rested there. It is now `background: var(--surface-alt)`: measured 5.87 (`--purple`)
+to 15.35 (`--on-surface`), every accent clear. Darker-on-dark is the weaker affordance of
+the two, and it is worth it — the fill is 1.15:1 against `--surface` and 1.39:1 against a
+zebra row, both the same order as the zebra striping itself, which reads fine.
+
+`--surface-alt` rather than another `color-mix`: the token already exists, it needs no
+compositing to reason about, and it is the only other flat surface in the sheet.
+
+**The hover rule is `tbody tr:hover td`, not `tr:hover td`.** At `tr:hover td` (0,1,2) it
+lost to `tbody tr:nth-child(even) td` (0,1,3), so **hover never applied to a zebra row at
+all** — half the rows in every table were inert and looked deliberate. Found while
+verifying the fill change, not before it: the old fill's even-row ratios were computed from
+the rule rather than from a real hover. Measured after the fix, all three sample rows go to
+`oklch(0.243 0.019 280.395)` on hover and the striping is intact at rest.
+
+**`aside` has no fill at all now, on screen as well as on paper.** The tint composited to
+`rgb(61,64,78)`, on which `--muted` measured 3.95, `--red` 3.61, `--purple` 3.69 and
+`--pink` 4.25 — so a `cite`, `.sc-note`, `.count`, `::marker` or status span inside a
+callout failed while `--label`, the aside's own colour, passed at 4.87. The print block had
+already found this exact defect on white (`--label` at 3.58:1) and dropped the tint there;
+the screen case was the same failure one step milder and the fix was never carried back.
+Deleting the declaration outright means the print override `aside { background: none }` is
+redundant and is gone too — two declarations removed, one behaviour. The orange accent bar
+still marks the callout, which was the print rationale and holds identically here.
+
+**`--red` is `oklch(0.735 …)`, up from 0.700.** At 0.700 it measured 4.14:1 on `--code-bg`,
+so `.correction` failed inside a zebra row, inside `pre`, and inside `.filter-box` — the
+budget had checked `--muted` against that surface (4.53, passing by 0.03) and not the
+accents. 0.735 gives **4.73 on `--code-bg`**, 5.72 on `--surface`, 6.57 on `--surface-alt`,
+and lifts `--surface`-on-`--red` (the `.verdict-failed` chip) from 5.00 to 5.72. 0.725 is the first value that clears 4.5 on the grey, at 4.56; 0.735 was taken for
+headroom. Raising lightness moved `--red` closer to `--pink` in L (0.735 against 0.742) —
+checked, ΔE_ok 0.076, about 3.8 JND on a 32° hue separation, so a `--pink` `th` and a
+`--red` `.correction` in the same table stay distinct. `--red` is the one accent with no
+`/* was */` note and no entry in `mermaid-palette.json`, so the change has no hex projection
+to keep in step.
+
+**`--purple` on `--code-bg` is 4.23 and was left alone.** Purple is `h2`, the `pre` accent
+bar and `::selection`. The bar is non-text and clears 1.4.11 at that ratio; nothing puts
+purple *text* on the grey, since an `h2` never renders inside a `pre` or a table cell. It is
+mirrored into `mermaid-palette.json` twice and carries a `/* was #a98ed6 */` note, so moving
+it costs a hex recomputation in two files to fix a case that does not occur. Recorded rather
+than fixed.
+
+**Borders drawn on `--code-bg` take `--rule`, not `--rule-light`.** `--rule-light` is tuned
+to 3.05:1 against `--surface` — exactly the 1.4.11 floor, deliberately — and measures
+**2.52** on `--code-bg`. Three components draw their only boundary there and all three
+failed: `.filter-box` (border on its own `--code-bg` fill, and that border is the only thing
+marking the element as an input), `.mermaid-zoom` (sits on the `pre`), and
+`pre.mermaid:hover` (the ring that makes a diagram read as clickable on touch). `--rule` is
+`var(--muted)`, which measures 4.53 on `--code-bg` and 5.47 on `--surface`. No new token: the
+sheet already has exactly two rule weights and this is the heavier one. The side effect is
+wanted — a control now reads stronger than a passive container like `details`, which keeps
+`--rule-light` on `--surface` at 3.05.
+
+**Semantic chips outline themselves in forced colors.** `@media (forced-colors: active)`
+carries `code, .verdict, .badge { border: 1px solid currentColor }`. Emulated, every
+`.verdict-*` fill resolves to `rgb(255,255,255)` with `rgb(0,0,0)` text, so all four verdicts
+become one appearance and the chip stops reading as a chip. The **state** survives
+regardless, because the chip's own text says `PASS` / `PARTIAL` / `FAILED` / `N/A` — the fill
+is redundant with the label, which is why a border is enough and a generated glyph would be
+both unnecessary and unlocalisable. What the border restores is the boundary, not the
+meaning. `box-shadow` cannot do this job: forced-colors suppresses shadows, which is why the
+print block's `inset 0 0 0 1px currentColor` could not simply be reused — and why `.badge`,
+which uses exactly that ring on screen, still needs the border here.
+
+Zebra striping still disappears in forced colors — `--code-bg` resolves to `Canvas`. Left
+alone: the header rule and row rhythm survive, and reinstating stripes would mean per-row
+borders in a mode where the user's own table rendering is the point.
+
+**`em` carries no colour.** It was `--label`, 6.75:1 against `--surface` where the copy
+around it is 13.36:1 — emphasis rendering at half the contrast of the text it emphasises.
+The rule is deleted rather than reassigned, so `em` inherits, which is what makes it correct
+inside an `aside`, a `blockquote` or a `.sidenote`: it now matches its surroundings instead
+of overriding them with a colour those containers had already chosen. The italic carries the
+emphasis, and it is a real italic from the variable font's italic face, not a synthesised
+slant. `cite` stays distinguishable from `em` on family and upright stance, which is what
+that distinction always rested on — the colour was never doing that work.
+
 ## Print
 
 **The print block overrides the palette tokens, not the elements.** It used to set
@@ -472,19 +685,21 @@ checkbox is set, the pair is legible. Accent lightness is chosen against the **`
 `--code-bg`, not white, because that is the harder of the two backgrounds — measured 4.56–4.64:1
 on the grey and 4.97–5.06:1 on white, with `--on-surface` at `oklch(0.2 0 0)` giving 18.1:1.
 
-Two rules could not be handled by tokens alone:
+One rule could not be handled by tokens alone:
 
-- **`aside` drops its tint.** `color-mix(in oklch, var(--rule-light) 30%, transparent)` over
-  white composites to `#d9dae1`, and `--label` on that measured 3.58:1 — the one pair the
-  token pass left failing. `background: none` in print puts it on white at 4.99:1; the
-  orange accent bar still marks the callout. Measured from rendered pixels, not computed
-  values: a computed reading reports the un-composited mix and is wrong by ~3.5:1 here.
-- **`.verdict` / `.badge` print as outlined labels** — `background: none` plus
+- **`.verdict` prints as an outlined label** — `background: none` plus
   `box-shadow: inset 0 0 0 1px currentColor` and the semantic colour moved to `color`.
-  Their fill carried the meaning (pass / partial / failed), and `color: var(--surface)`
+  Its fill carried the meaning (pass / partial / failed), and `color: var(--surface)`
   would have become white-on-accent — fine with backgrounds on, invisible with them off.
   Outlining makes the chip identical either way, and each variant keeps its own hue at
-  ≥4.97:1.
+  ≥4.97:1. `.badge` needs no print rule: it is already an outlined `--label` chip on
+  screen, and `--label` is one of the tokens print reassigns, so it follows for free.
+
+The `aside` tint used to need a second exception here: it composited to `#d9dae1` on white
+and `--label` on that measured 3.58:1, the one pair the token pass left failing. The tint is
+gone from the base rule as of v1.9.0 for the same reason it failed on screen, so
+`aside { background: none }` no longer has anything to override. See "The contrast budget
+covers four backgrounds".
 
 `--rule-light` sits at `oklch(0.620 …)` in print: 3:1 against white for WCAG 1.4.11 without
 becoming a heavy line on paper.
@@ -510,10 +725,12 @@ the iOS-zoom floor is 12pt.
 Print drops link chrome — no underline, no outbound marker: on paper the destination is
 unreachable either way, so both are noise.
 
-`--rule-light` is tuned to 3.05:1 against `--surface` for WCAG 1.4.11 (non-text contrast);
-`--muted` to 4.55:1 against `--code-bg` and 5.50:1 against `--surface`; `--red` to 5.00:1
-against `--surface`. `--data-2` and `--data-3` are shifted off the `--pink` and `--green`
-hues so one colour means one thing.
+`--rule-light` is tuned to 3.05:1 against `--surface` for WCAG 1.4.11 (non-text contrast) and
+is only ever drawn on that surface — see the contrast-budget section for why borders on
+`--code-bg` take `--rule` instead. `--muted` sits at 4.53:1 against `--code-bg` and 5.47:1
+against `--surface`; `--red` at 4.73:1 against `--code-bg` and 5.72:1 against `--surface`.
+`--data-2` and `--data-3` are shifted off the `--pink` and `--green` hues so one colour means
+one thing.
 
 **`--data-1` is `oklch(0.790 0.077 255)`, moved off the link hue.** It was
 `oklch(0.790 0.100 216.800)` against `--link` at 216.782 — a 0.02° collision, ΔE_ok 0.038, so
