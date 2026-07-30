@@ -6,130 +6,77 @@
   <title>Tufte-Dracula — component sample</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.6.1 — desaturated Dracula accents on Dracula surface. */
+    /* Dracula-Tufte (muted) v1.7.0 */
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: italic; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
+    }
     :root {
       --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
       --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
       --on-surface:  oklch(0.977 0.008 106.545);  /* was #f8f8f2 */
       --label:       oklch(0.767 0.054 275.492);  /* was #a9b1d6 */
-      --muted:       oklch(0.71 0.055 275);       /* AA-tuned: 4.55:1 vs --code-bg, 5.50:1 vs --surface */
-      --rule:        var(--muted);                /* alias of --muted */
-      --rule-light:  oklch(0.56 0.032 277.832);   /* UI-tuned: 3.05:1 vs --surface (WCAG 1.4.11) */
+      --muted:       oklch(0.71 0.055 275);
+      --rule:        var(--muted);
+      --rule-light:  oklch(0.56 0.032 277.832);
       --link:        oklch(0.802 0.064 216.782);  /* was #8fc9d9 */
       --code-bg:     oklch(0.340 0.027 276.046);  /* was #343746 */
       --orange:      oklch(0.773 0.092 61.444);   /* was #e0a878 */
-      --red:         oklch(0.700 0.142 21.457);   /* AA-tuned: 5.00:1 vs --surface (was 4.78:1 at L .688) */
+      --red:         oklch(0.700 0.142 21.457);
       --purple:      oklch(0.698 0.107 300.909);  /* was #a98ed6 */
       --pink:        oklch(0.742 0.120 349.392);  /* was #e48bb7 */
       --green:       oklch(0.775 0.100 155.397);  /* was #7fc99a */
       --data-1:      oklch(0.790 0.100 216.800);
-      --data-2:      oklch(0.742 0.120 340.000);  /* shifted off --pink hue: one color, one meaning */
-      --data-3:      oklch(0.775 0.100 165.000);  /* shifted off --green hue: one color, one meaning */
+      --data-2:      oklch(0.742 0.120 340.000);
+      --data-3:      oklch(0.775 0.100 165.000);
       --data-4:      oklch(0.790 0.100 112.500);
+      --page-width:  min(90vw, 160rem);
       --gutter:      2rem;
       --radius:      4px;
       --radius-sm:   2px;
       --accent-bar:  3px;
     }
-    /* Type scale — three steps, all relative to the body size, no absolute floors.
-       The previous `max(Xem, 12pt)` floors resolved to 16px on every viewport under
-       ~950px, which pinned nine different elements to one size and made body copy
-       the *smallest* text on a phone. pt is absolute like px, so those floors also
-       ignored the reader's own font-size setting.
-         1em    body copy, .filter-box
-         0.95em structural: li, table, aside, nav, .scorecard, .nav-list li
-         0.9em  annotation: .byline, .sidenote, cite, code, pre, footer
-         0.75em chips and markers: .badge, .verdict, the outbound arrow
-       Nested ratios compound — check the parent before adding a step. */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    /* Fluid, breakpoint-light layout: container width has no floor (the old
-       clamp(960px,…) forced 960px and overflowed 601–959px viewports); the gutter
-       lives in the margin so content adapts at every width. Type scales via clamp. */
     body {
-      /* Georgia first: the most widely installed sturdy screen serif (Windows since
-         Win98, all macOS, iOS), cut by Carter for screen legibility — low stroke
-         contrast and a large x-height, so it holds weight against a dark surface where
-         Palatino's hairlines thin out. Charter and Palatino are gone from the stack
-         rather than kept as fallbacks: both exist only on platforms that already have
-         Georgia, so they were unreachable. Noto Serif covers Android and ChromeOS,
-         DejaVu Serif covers Linux; each entry earns its place by closing a gap the
-         previous one leaves. Trade-off: Georgia's figures are old-style with no `lnum`
-         or `tnum` to escape them, so data-table numerals vary in height — see
-         backlog.md item 1. */
-      font-family: Georgia, "Noto Serif", "DejaVu Serif", serif;
-      width: min(100% - 2 * var(--gutter), 70ch); margin-inline: auto;
+      font-family: 'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
+      font-weight: 450;
+      width: min(100% - 2 * var(--gutter), var(--page-width)); margin-inline: auto;
       padding-block: 3rem;
-      /* Every bound is rem, never px: a reader who raises their browser default
-         font size scales the whole page with it. The old clamp(15px,…,20px)
-         capped them at 20px no matter what they set. Floor 1.0625rem = 17px at
-         a default root, above the 16px long-form minimum. */
-      line-height: 1.6; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.375rem);
+      line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
       background: var(--surface); color: var(--on-surface);
-      /* No -webkit-font-smoothing: antialiased here. That declaration is standard
-         advice because macOS renders text heavier than intended — for dark text on
-         light. This theme is the inverse, and grayscale-only antialiasing thins strokes,
-         which is the opposite of what light-on-dark body copy needs — thin strokes are
-         already the first thing a dark surface eats. */
     }
-    @media (min-width: 1200px) {
-      /* Deliberately uncapped: content flows the full 80vw. This runs a long
-         measure on a wide display (~160 characters per line at 1920px against the
-         conventional 60–75ch), which is a knowing trade for the width — the
-         stylesheet serves dense reference pages with tables and diagrams, not
-         book-length prose. Cap `p, li, dd, blockquote` at ~72ch to reverse it. */
-      body:not(.conn-map) { width: 80vw; }
-    }
-    h1 { font-weight: 400; line-height: 1.15; font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.4rem); margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
+    h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
-    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem); margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
-    h3 { font-weight: 400; line-height: 1.3; font-style: italic; font-size: clamp(0.95rem, 0.88rem + 0.3vw, 1.1rem); color: var(--label); margin: 1.5rem 0 0.4rem; }
+    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
+    h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: 1.5rem 0 0.4rem; }
     p { margin: 0.5rem 0; text-wrap: pretty; }
-    /* Georgia has no true small-cap face, so the browser synthesises them by scaling
-       capitals down — thinner strokes at a smaller size, on the element that opens a
-       section. Size and weight compensate. NB: Georgia ships 400/700 only, so 600
-       resolves to 700 (real bold); drop the font-weight to keep the lighter opener. */
     .newthought { font-variant-caps: small-caps; font-size: 1.2em; font-weight: 600; letter-spacing: 0.03em; color: var(--on-surface); }
-    /* Tufte sidenotes — dark adaptation: float right (no reserved margin column) */
-    /* Both root wrappers: the fixtures here use <article>, consumers whose
-       generators emit <main> get numbered sidenotes for free. Without the
-       matching wrapper the counter never initializes and every note renders
-       unnumbered. The body.conn-map rules below stay article-only on purpose:
-       that layout needs h1 as a direct child, which a <main> consumer with a
-       separate <header> does not have. */
     article, main { counter-reset: sidenote-counter; }
     input.margin-toggle { display: none; }
     label.margin-toggle:not(.sidenote-number) { display: none; }
     .sidenote-number { counter-increment: sidenote-counter; }
     .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.75em; vertical-align: super; color: var(--link); }
     .sidenote, .marginnote { float: right; clear: right; width: 28%; margin: 0.2rem 0 1rem 1.5rem; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; }
-    /* Underline thickness has a 1px floor: 0.05em resolves to 0.8px at the base size,
-       which paints as a faint partial-coverage line — and the underline is the only
-       thing marking a link, so it cannot be optional. overflow-wrap lets a long URL
-       or slug break instead of escaping its container (the connections-map Links
-       column is as narrow as 220px). */
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
-    /* Keyboard focus — visible ring on interactive elements (skips mouse clicks). */
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     label.margin-toggle:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 3px; }
-    /* Outbound links carry a marker so they read differently from internal
-       relative ones — destination is information, not decoration. \A0 = nbsp
-       keeps the arrow from orphaning onto its own line. */
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
-    /* Citations: monospace + muted. Browser default is italic serif, which in
-       this theme is indistinguishable from <em> — the semantic distinction is
-       lost unless the italic is cancelled. */
-    /* 0.85em, a step below the annotation size the rest of the scale uses: the monospace
-       x-height runs larger than the serif's, so matched em sizes make inline code and
-       citations optically outweigh the prose around them. This was tuned against
-       Palatino; Georgia's x-height is larger, so the gap is narrower now and 0.85em may
-       be over-corrected — revisit if code reads small against the body. */
-    cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.85em; color: var(--muted); overflow-wrap: break-word; }
+    @supports (content: "x" / "y") {
+      a[href^="http"]::after { content: "\A0↗" / ""; }
+    }
+    cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
     em { color: var(--label); }
     code {
       font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 0.85em; color: var(--green);  /* see the note on cite */
+      font-size: 0.9em; color: var(--green);
       background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
       overflow-wrap: break-word;
     }
@@ -139,10 +86,6 @@
       border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
       font-size: 0.9em;
     }
-    /* font-size: 1em halts em-compounding, same guard as `li li`: `code` carries
-       0.85em and `pre` carries 0.9em, so a bare <code> inside <pre> would render at
-       0.765em — smaller than the block it fills. The old absolute pt floor masked
-       this; without it the compounding is visible. */
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     section { margin-bottom: 2rem; }
     table {
@@ -151,13 +94,8 @@
       font-size: 0.95em;
     }
     th {
-      font-weight: 400; font-style: italic; text-align: left;
+      font-weight: 450; font-style: italic; text-align: left;
       padding: .4rem .6rem; color: var(--pink);
-      /* Header stays put while a long table scrolls. Opaque background is
-         required — zebra rows would otherwise show through. The rule is an inset
-         shadow, not border-bottom: under border-collapse:collapse the collapsed
-         border is painted by the table, so it scrolls away from the stuck header
-         and leaves it running straight into the first row. */
       box-shadow: inset 0 -1px 0 var(--rule-light);
       position: sticky; top: 0; background: var(--surface); z-index: 1;
     }
@@ -169,7 +107,7 @@
     tbody tr:nth-child(even) td { background: var(--code-bg); }
     tr:hover td { background: color-mix(in oklch, var(--rule-light) 50%, transparent); }
     details { margin: .5rem 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
-    summary { cursor: pointer; font-weight: 400; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
+    summary { cursor: pointer; font-weight: 450; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
     summary:hover { color: var(--on-surface); }
     details[open] summary { margin-bottom: 0.5rem; }
     aside {
@@ -190,14 +128,13 @@
     ul { list-style: none; padding-left: 0; }
     ol { padding-inline-start: 1.5rem; }
     li { padding: 0.15rem 0; font-size: 0.95em; line-height: 1.5; }
-    li li { font-size: 1em; }  /* halt em-compounding in nested lists */
+    li li { font-size: 1em; }
     li::marker { color: var(--muted); }
     nav { margin: 1rem 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
     footer { margin-top: 3rem; color: var(--label); font-size: 0.9em; }
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
     .correction { color: var(--red); }
-    /* Proof-test scorecard — principle · colored verdict chip · note, aligned in a grid. */
     .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
       gap: 0.3rem 0.9rem; align-items: baseline; margin: 0.75rem 0 1.25rem;
       font-size: 0.95em;
@@ -205,21 +142,15 @@
     .scorecard .sc-label { color: var(--on-surface); }
     .scorecard .sc-note { color: var(--muted); font-size: 0.92em; }
     .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
-    /* 0.75em, not 0.72em: these chips nest inside a 0.95em parent, so the ratios
-       compound — 0.72 of 0.95 lands under 12px at the base size. */
-    .verdict { justify-self: start; font-size: 0.75em; font-weight: 600; font-style: normal;
+    .verdict { justify-self: start; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
       letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
     .verdict-pass { background: var(--green); }
     .verdict-partial { background: var(--orange); }
     .verdict-failed { background: var(--red); }
     .verdict-neutral { background: var(--muted); }
-    /* ── Navigation index components (index/_index pages) ────────────────────── */
-    /* Type-to-filter box (global on home, per-page on section indexes). */
     .filter-box {
       width: 100%; margin: 1rem 0 1.5rem; padding: 0.65rem 0.85rem;
-      /* 1em, not the old max(1em, 16pt): 16pt is 21.3px, not 16px — the iOS-zoom
-         floor is 12pt. The base size now clears 16px on its own. */
       font-family: inherit; font-size: 1em;
       color: var(--on-surface); background: var(--code-bg);
       border: 1px solid var(--rule-light); border-radius: var(--radius);
@@ -227,31 +158,25 @@
     .filter-box::placeholder { color: var(--muted); font-style: italic; }
     .filter-hidden { display: none !important; }
     .filter-empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; }
-    /* Collapsible subfolder groups. */
     details.nav-group { border: 1px solid var(--rule-light); border-radius: var(--radius); margin: 0.6rem 0; padding: 0.2rem 0.85rem; }
     details.nav-group > summary { font-style: italic; color: var(--link); padding: 0.6rem 0; }
     details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.82em; margin-inline-start: 0.4em; }
     details.nav-group .nav-list { border: none; padding: 0; }
-    /* Verdict badges (proof-tests tier subfolders). */
-    .badge { display: inline-block; font-size: 0.75em; font-weight: 600; font-style: normal;
+    .badge { display: inline-block; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle; color: var(--surface); }
     .badge-t1 { background: var(--green); }
     .badge-t2 { background: var(--orange); }
     .badge-t3 { background: var(--red); }
-    /* Tappable navigation lists — block links, ≥44px on touch. */
     .nav-list { list-style: none; padding-left: 0;
       border: 1px solid var(--rule-light); border-radius: var(--radius); padding: 0.3rem; }
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation; }
     .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
     .nav-list li a:active { transform: scale(0.96); transition: scale 0.12s ease-out; }
-    /* Connections map edge-list (antecedents / descendants). */
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: 1.5rem 0; }
     .edge-list h3 { margin-top: 0; }
-    /* Long citation lists (Sources, See Also) flow into 2 balanced columns on wide screens. */
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
-    /* Mermaid click-to-zoom overlay */
     .mermaid-overlay {
       position: fixed; inset: 0; z-index: 1000;
       background: oklch(from var(--surface-alt) l c h / 0.92);
@@ -260,52 +185,24 @@
       pointer-events: none;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
-    /* width/height, not max-*: the zoomed clone has its width/height/style stripped
-       by mermaid.js, so the viewBox scales the diagram to fit this box whatever its
-       natural size. max-width alone would leave a small diagram at natural size —
-       a zoom that does not zoom. preserveAspectRatio (xMidYMid meet by default)
-       keeps it undistorted and centered. */
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
-    /* Centered in both layouts. This lived on body.conn-map only, so an inline
-       diagram narrower than its column hugged the left edge in sample.html while
-       the same diagram sat centered in a connections map. */
     pre.mermaid { cursor: zoom-in; text-align: center; }
-    /* Connections maps (flowchart BT): the diagram fills 90% of the viewport WIDTH and is fully
-       responsive — vw units recompute on window resize, and the SVG (which carries a viewBox via
-       useMaxWidth:false) rescales to fit while height:auto preserves the aspect ratio. The pre
-       "breaks out" of the centered article column with the full-bleed trick (left:50% + negative
-       margin) so it can reach 90vw regardless of the article's max-width. The click-to-zoom overlay
-       above still works for fine detail. */
-    body.conn-map pre.mermaid {
-      width: 90vw; max-width: 90vw;
-      position: relative; left: 50%; margin-left: -45vw;
-      overflow: visible;  /* text-align: center is on pre.mermaid, for both layouts */
-    }
-    body.conn-map pre.mermaid svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
-    /* Connections map — wide screens: Links column left, graph right. The map md has
-       exactly two sections in order: (1) Graph, (2) Links — for topic maps the Links
-       column is antecedents/descendants of the focus; for year-slice maps it is the
-       drawn items newest-first. Below 900px it stays stacked with the full-bleed graph
-       above (rule set). */
+    body.conn-map pre.mermaid { overflow: visible; }
+    body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
       body.conn-map article {
-        width: min(96vw, 1600px); max-width: 96vw;
-        position: relative; left: 50%; transform: translateX(-50%); margin-inline: 0;
         display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 2.5rem;
       }
       body.conn-map article > h1,
       body.conn-map article > .byline,
       body.conn-map article > .subtitle { flex: 1 1 100%; }
-      body.conn-map article > section:nth-of-type(2) {  /* Links */
+      body.conn-map article > section:nth-of-type(2) {
         order: 1; flex: 0 0 clamp(220px, 22vw, 300px);
         position: sticky; top: 1rem;
         border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem;
       }
-      body.conn-map article > section:nth-of-type(1) {  /* Graph */
+      body.conn-map article > section:nth-of-type(1) {
         order: 2; flex: 1 1 0; min-width: 0;
-      }
-      body.conn-map article > section:nth-of-type(1) pre.mermaid {
-        width: 100%; max-width: 100%; left: auto; margin-left: 0;  /* contained, not full-bleed */
       }
     }
     ::selection { background: var(--purple); color: var(--surface); }
@@ -316,11 +213,9 @@
       pre { padding: 0.6rem; }
       aside, blockquote { padding: 0.4rem 0.85rem; }
       details, details.nav-group { padding: 0.3rem 0.6rem; }
-      /* Wide tables scroll within their column instead of overflowing the page. */
       table { display: block; overflow-x: auto; }
       .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
       .col-2 > ol, .col-2 > ul { columns: 1; }
-      /* Scorecard: drop to label · chip, note wraps to its own full-width row. */
       .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
       .scorecard .sc-note { grid-column: 1 / -1; }
       .nav-list li a { padding: 0.7rem 0.5rem; min-height: 44px; }
@@ -329,47 +224,32 @@
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
-    /* Print drops link chrome — no underline, no outbound marker: on paper the
-       destination is unreachable either way, so both are noise. */
     @media print { body { background: oklch(1 0 0); color: oklch(0.15 0 0); width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } a[href^="http"]::after { content: ""; } h2 { page-break-after: avoid; } img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); } }
   </style>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs';
-    // Defaults to 'strict' (sanitizes `click <node> "<url>"` directives away).
-    // Consumers with a trusted diagram source can opt into 'loose' (renders
-    // click directives as navigable links) by setting
-    // `window.mermaidSecurityLevel = 'loose'` in a preceding classic script
-    // tag (runs before this module script).
-    // theme:'base' + explicit themeVariables, never theme:'dark' — the stock dark
-    // theme ignores this palette entirely. Hex, never oklch(): khroma throws
-    // "Unsupported color format" on an oklch() string and aborts init, so no
-    // diagram renders. Values mirror mermaid-palette.json (CI enforces).
-    // darkMode belongs *inside* themeVariables: mermaidAPI passes only
-    // config.themeVariables to base.getThemeVariables(), so a root-level darkMode
-    // never reaches the theme and every derived color is computed light-mode
-    // (ER rows come out lighten(mainBkg, 75) — near-white under light textColor).
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
       securityLevel: window.mermaidSecurityLevel || 'strict',
       themeVariables: {
         darkMode: true,
-        background:          '#282a36',  /* --surface */
-        mainBkg:             '#343746',  /* --code-bg */
-        primaryColor:        '#343746',  /* --code-bg */
-        primaryTextColor:    '#f8f8f2',  /* --on-surface */
-        primaryBorderColor:  '#a98ed6',  /* --purple */
-        lineColor:           '#979fc4',  /* --muted */
-        textColor:           '#f8f8f2',  /* --on-surface */
-        secondaryColor:      '#1e1f29',  /* --surface-alt */
-        clusterBkg:          '#343746',  /* --code-bg */
-        clusterBorder:       '#707388',  /* --rule-light */
-        nodeBorder:          '#a98ed6',  /* --purple */
-        edgeLabelBackground: '#343746',  /* --code-bg, matching the pre it renders in */
-        pie1: '#67cbe4', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',  /* --data-1..4 */
+        fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
+        fontSize:   '1rem',
+        background:          '#343746',
+        mainBkg:             '#343746',
+        primaryColor:        '#343746',
+        primaryTextColor:    '#f8f8f2',
+        primaryBorderColor:  '#a98ed6',
+        lineColor:           '#979fc4',
+        textColor:           '#f8f8f2',
+        secondaryColor:      '#1e1f29',
+        clusterBkg:          '#343746',
+        clusterBorder:       '#707388',
+        nodeBorder:          '#a98ed6',
+        edgeLabelBackground: '#343746',
+        pie1: '#67cbe4', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
-    // Fail loudly: without the overlay div, click-to-zoom silently dies on a bare
-    // TypeError that points nowhere near the missing element.
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
     const dismiss = () => { overlay.classList.remove('active'); };
@@ -379,13 +259,6 @@
         const svg = pre.querySelector('svg');
         if (svg) svg.addEventListener('click', () => {
           const zoomed = svg.cloneNode(true);
-          // Strip mermaid's own sizing so the overlay's CSS governs it, identically
-          // for every diagram. calculateSvgSizeAttrs writes width="100%" plus an
-          // INLINE style="max-width:NNNpx" when flowchart.useMaxWidth is true (the
-          // default), and width/height attributes when it is false (what the
-          // connections maps set). An inline max-width outranks the stylesheet, so
-          // left in place the zoom magnifies in one layout and does nothing in the
-          // other. setupGraphViewbox always emits a viewBox, and that is what scales.
           zoomed.removeAttribute('width');
           zoomed.removeAttribute('height');
           zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
@@ -407,7 +280,7 @@
     <section>
       <h2>Headings &amp; text</h2>
       <h3>Third-level heading</h3>
-      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Georgia, with <strong>strong (orange)</strong>, <em>emphasis (label)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <cite>src/theme/tokens.css:14</cite>, and inline <code>code()</code>.</p>
+      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (orange)</strong>, <em>emphasis (label)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <cite>src/theme/tokens.css:14</cite>, and inline <code>code()</code>.</p>
       <p>Status spans: <span class="verified">verified</span>, <span class="unverified">unverified</span>, <span class="correction">correction</span>.</p>
       <p>A sidenote lives here.<label for="sn-1" class="margin-toggle sidenote-number"></label><input type="checkbox" id="sn-1" class="margin-toggle"/><span class="sidenote">This is a Tufte sidenote &mdash; it floats to the right margin and auto-numbers.</span> And a margin note follows.<label for="mn-1" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-1" class="margin-toggle"/><span class="marginnote">A margin note carries no number.</span></p>
     </section>
