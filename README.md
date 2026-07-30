@@ -15,18 +15,18 @@ Rendered in-browser via GitHub Pages (main branch, served straight — no build 
 
 | File                  | What It Be |
 |-----------------------|------------|
-| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.7.0, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
+| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.8.0, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
 | `mermaid.js`          | **The Mermaid init script.** The complete `<script type="module">…</script>` block — the `mermaid@11` CDN import, `theme: 'base'` + `darkMode` + hex `themeVariables` init, and click-to-zoom overlay handler. Despite the `.js` name it holds the wrapping `<script>` tags. Consumers inline this only when the rendered scroll contains a ` ```mermaid ` fence. Bump the CDN pin here. |
 | `mermaid-palette.json` | **Mermaid's hex palette.** The Tufte-Dracula palette as hex, per `themeVariables` key plus `classDef` node roles. Mermaid cannot consume `oklch()` (khroma throws `Unsupported color format` and *no* diagram renders) or `var()`, so this be the one place hex lives. Each entry names the `:root` variable it projects in its `from` field, and CI recomputes every hex from that variable's `oklch()` — hex here that disagrees with the stylesheet fails the build. `mermaid.js` carries the same values inline because consumers inline it with no build step; CI fails if the two disagree. Generators that emit their own `classDef` lines read the `classdef` block, whose fills draw only from the `--data-1..4` ramp (the prose accents `--pink`/`--green`/`--orange` already mean something in body copy). |
 | `tokens.css`          | **Palette reference. Generated.** The `:root { … }` block of `tufte-dracula.css`, sliced out verbatim by `build-sample.nu`. Not read by the renderer. Do not hand-edit — change `tufte-dracula.css` and regenerate. |
 | `build-sample.nu`     | **The regenerator.** Runs `nu build-sample.nu` to rebuild `tokens.css`, `sample.html` and `sample-conn-map.html` from the canonical CSS + JS. Run after any stylesheet or Mermaid change. |
 | `sample.html`         | **Living style fixture.** Generated default-body demo — headings, sidenotes, tables, scorecard, verdict chips, nav, badges, mermaid + zoom. Self-contained. Do not hand-edit — regenerate via `build-sample.nu`. |
-| `sample-conn-map.html` | **Conn-map fixture.** Generated `<body class="conn-map">` two-section layout (Graph, Links) — the connections-map split `sample.html` can't show inline. Resize past 900px to see Links float left+sticky. |
+| `sample-conn-map.html` | **Conn-map fixture.** Generated `<body class="conn-map">` two-section layout (Links, Graph — that DOM order is required) — the connections-map split `sample.html` can't show inline. Resize past 900px to see Links go left+sticky. |
 | `README.md`           | **This here scroll.** |
 
 ## Consumers
 
-Consumers pin to a tag (currently **`v1.7.0`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
+Consumers pin to a tag (currently **`v1.8.0`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
 
 **Inline verbatim, or slice the body.** `tufte-dracula.css` ships wrapped in its own `<style>` tags for consumers that inline it whole. A consumer whose generator supplies the wrapper itself takes the bare body with `sed '1d;$d'` — the wrapper be exactly one line at each end, and CI holds it there, so the slice can't rot. Same for `mermaid.js` and its `<script>` tags. Consumers needing the overlay CSS conditionally should note it ships in the stylesheet unconditionally (a dozen inert lines when no diagram be present); `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` be the parts to omit, and the script throws a named error if the div be missing.
 
@@ -36,7 +36,7 @@ Consumers pin to a tag (currently **`v1.7.0`**) via a git submodule at `external
 2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
 3. Bump the version line in `tufte-dracula.css` (the template version).
 4. Commit with a conventional message (`feat: ...` / `fix: ...`).
-5. Tag with the next semver: `git tag v1.7.0 && git push origin v1.7.0`.
+5. Tag with the next semver: `git tag v1.8.0 && git push origin v1.8.0`.
 6. Each consumer repo runs `git submodule update --remote external/dracula-tufte` and commits the new pointer.
 
 ## Contract Enforcement

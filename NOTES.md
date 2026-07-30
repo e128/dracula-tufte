@@ -277,9 +277,29 @@ a bare `TypeError` pointing nowhere near the missing element.
 
 ## Connections-map layout
 
-`body.conn-map` has exactly two sections in order: (1) Graph, (2) Links. For topic maps the
-Links column is antecedents/descendants of the focus; for year-slice maps it is the drawn
-items newest-first. Above 900px Links floats left and sticky, graph right; below it stacks.
+`body.conn-map` has exactly two sections in order: **(1) Links, (2) Graph**. For topic maps
+the Links column is antecedents/descendants of the focus; for year-slice maps it is the drawn
+items newest-first. Above 900px Links sits left and sticky, graph right; below it stacks.
+
+**Markup order is the layout order — the stylesheet no longer reorders.** Until v1.8.0 the
+markup was (1) Graph, (2) Links and the CSS reversed it with `order: 1` / `order: 2`, so the
+visual leading column was Links while tab and screen-reader order started in the graph on
+the right. Measured at 900 and 1280px: Links rendered at x=45 / x=64, Graph at x=305 / x=386,
+against a DOM order that was the reverse. A sighted keyboard user tabbed away from where
+their eye had started.
+
+Deleting the two `order` declarations and swapping the sections in the markup produces a
+pixel-identical layout — verified at 899 / 900 / 1280px, Links 220–282px sticky at the
+leading edge, graph filling the rest, sticky column holding at y=120 after a 1200px scroll —
+with reading order and visual order finally agreeing.
+
+**This is a breaking change for consumers, and the break is silent.** The two files are
+version-coupled: a page emitted with the old (Graph, Links) markup that inlines a v1.8.0+
+stylesheet renders with the graph in the narrow sticky column and the link list filling the
+page. Nothing errors; it just looks wrong. Consumers must swap their section order in the
+same change that picks up the new CSS. The alternative — supporting both orders behind
+`:has(> .links)` — was considered and rejected as two layout paths in a file that every
+consumer inlines verbatim.
 
 **The article sets layout only, never width.** It previously carried
 `width: min(96vw, 1600px); max-width: 96vw; left: 50%; transform: translateX(-50%)`,
@@ -295,6 +315,93 @@ width and h1 left edge identical across both fixtures at eight viewports.
 
 `overflow: visible` on `body.conn-map pre.mermaid` because the base `pre` rule sets
 `overflow-x: auto`, which would otherwise clip a diagram's drop shadow.
+
+## Direction and growth
+
+**Sidenotes float to the inline end, with the physical value first as the fallback:**
+`float: right; float: inline-end; clear: right; clear: inline-end`. Under `dir="rtl"` the
+old physical-only rule kept the note on the page's right with a 24px `margin-left`, while
+the `pre` and `aside` accent bars — already logical — correctly flipped. Measured after the
+change: `float` computes `inline-end` in both directions, the note renders page-right in
+LTR and page-left in RTL, and the 24px gap moves from `margin-left` to `margin-right`. The
+duplicate physical declaration is deliberate: a browser that cannot parse `inline-end`
+drops that line and keeps `right`, which is the LTR behaviour it had before. `margin` became
+`margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0` for the same reason.
+
+**`th` / `td` are `text-align: start`, not `left`.** With `left` every cell stayed
+left-aligned in RTL while the prose around it flipped. Verified by range-measuring the
+header text inside its cell: LTR text starts 10px from the cell's left edge, RTL 10px from
+its right.
+
+**`h1`/`h2`/`h3` carry `overflow-wrap: break-word`.** They were the only text in the sheet
+without a break rule (`a`, `code`, `cite`, `.sidenote` all had one), so a long title word
+ran straight off the page under text-only zoom: at a 320px viewport with the root at 32px,
+`h1` measured `scrollWidth 301` inside `clientWidth 262`, and the connections-map title
+pushed the document to 367px. After the change the conn-map fixture reflows clean at 200%
+text zoom (320px document on a 320px viewport) and still overflows only 23px at 400%.
+
+**`--gutter` folds the safe-area insets at every width, not just under 600px:**
+`max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px))`. A landscape
+phone is 700–950px wide — above the mobile breakpoint — with lateral insets around 44–50px,
+larger than the 32px gutter that used to apply there, so text ran under the notch. The
+`0px` fallbacks inside `env()` are load-bearing: without them, a browser that does not
+support the variable makes the whole custom property invalid at computed-value time, which
+takes `width: min(100% - 2 * var(--gutter), …)` down with it. Unverified on a real device —
+Chromium does not emulate the insets.
+
+**The `.scorecard` grid still overflows under text-only zoom; `minmax(0, …)` was tried and
+reverted.** At a 320–601px viewport with the root font size doubled, `max-content` tracks
+plus the `.verdict` chip exceed the container and the document scrolls sideways (460px on a
+320px viewport). Rewriting the tracks as `minmax(0, max-content)` lets the *track* shrink to
+zero without letting the chip shrink with it: measured `174px 0px` at 320px, with the chip
+spilling out of a zero-width column — a different failure, not a smaller one. `auto` tracks
+and `overflow-wrap: break-word` on the children move the number by ~40px and fix 601px
+only; `break-word` does not reduce a box's min-content contribution (`anywhere` does).
+A media query cannot see this at all — `em` in a media query resolves against the browser's
+initial font size, not the document root, so the query never fires when a reader zooms text
+only. The fix is a container query, which needs a wrapper element the consumers emit. See
+`backlog.md`.
+
+## Interaction states
+
+**The press feedback on `.nav-list li a` was inert for two reasons, both measured.** It
+read `:active { transform: scale(0.96); transition: scale 0.12s ease-out }`. The
+transition named the independent `scale` property while the rule set `transform`, so
+nothing animated — sampled every 25ms through a real mousedown, `transform` was
+`matrix(0.96, 0, 0, 0.96, 0, 0)` on the first frame and identical on all six. And the
+declaration sat inside `:active`, so it vanished with the state: `transform: none` 30ms
+after mouseup. Press and release both snapped.
+
+It is now `scale: 0.96` in `:active` with the transition on the base rule alongside the
+existing `text-decoration-color`. Measured 0.987 → 0.976 → 0.968 → 0.962 → 0.96 pressing
+and 0.964 → 0.976 → 0.987 → 0.995 → 0.999 releasing. The lesson generalises: a transition
+belongs on the resting rule, and `transform` and `scale` are different properties.
+
+**No `border-radius` in the `:focus-visible` rule.** It carried `border-radius: 3px`,
+which made `.filter-box` corners tighten 4px → 3px at the moment the ring appeared, and
+applied unevenly — `.nav-list li a` (specificity 0,1,2) outranks `a:focus-visible`
+(0,1,1), so nav links kept 2px while plain links took 3px in the same keyboard state.
+Chromium already rounds an outline to the element's own radius plus offset, so removing it
+is what makes the ring follow each surface. Verified by Tab: `a`, `summary` and
+`.filter-box` all still render `solid 2px` at `2px` offset; inline links now get
+square-cornered rings, which is the shape of an inline box.
+
+**`.nav-list` radius is `calc(var(--radius-sm) + 0.3rem)`**, not `var(--radius)`. Outer
+radius = inner radius + padding: the child link is `--radius-sm` (2px) inside 0.3rem
+(4.8px) of padding, so 6.8px is concentric where a flat 4px left the hovered row's corners
+pinched against the container's. The `calc` tracks the padding — change one and the other
+follows.
+
+**`pre.mermaid:hover` gets a 1px `--rule-light` ring.** Before it, `cursor: zoom-in` was
+the *only* signal a diagram was clickable — measured `tabindex` null, `role` null, no
+hover rule, no focus style. A cursor does not exist on touch and is never announced, so on
+a phone the diagram was an unmarked click target. The ring is instant, not transitioned:
+hover is high-frequency and does not want motion.
+
+The overlay is `transition: opacity 0.2s ease-out`. With the default `ease` the backdrop
+measured 0.026 → 0.497 → 0.80 → 0.94 → 0.999 at 40ms intervals — near-invisible for the
+first frame, then a rush; the click felt late. Every other transition in the sheet was
+already `ease-out`.
 
 ## Misc
 

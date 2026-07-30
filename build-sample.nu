@@ -71,9 +71,14 @@ def tokens [css: string] {
   print $"  → ($out)"
 }
 
-# Connections-map layout: body.conn-map, two sections in order (Graph, Links).
-# Wide screens float Links left+sticky, graph right; below 900px it stacks with a
+# Connections-map layout: body.conn-map, two sections in order (Links, Graph).
+# Wide screens put Links left+sticky, graph right; below 900px it stacks with a
 # full-bleed graph. flowchart BT + useMaxWidth:false is what the real maps emit.
+#
+# Links comes FIRST in the DOM as of v1.8.0 so tab and screen-reader order match
+# the visual order. The stylesheet no longer reorders; markup order is the layout
+# order. A page emitted with the old (Graph, Links) markup renders reversed under
+# this stylesheet — see NOTES.md.
 def conn-map-body [] {
   [
     "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
@@ -81,14 +86,14 @@ def conn-map-body [] {
     "    <h1>Connections-Map Layout Sample</h1>"
     "    <p class=\"byline\">body.conn-map &mdash; Links column left, graph right (wide screens)</p>"
     "    <section>"
-    "      <h2>Graph</h2>"
-    "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  focus[Focus Topic]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
-    "    </section>"
-    "    <section>"
     "      <h3>Antecedents</h3>"
     "      <ul class=\"nav-list\"><li><a href=\"#\">Antecedent A</a></li><li><a href=\"#\">Antecedent B</a></li></ul>"
     "      <h3>Descendants</h3>"
     "      <ul class=\"nav-list\"><li><a href=\"#\">Descendant X</a></li><li><a href=\"#\">Descendant Y</a></li></ul>"
+    "    </section>"
+    "    <section>"
+    "      <h2>Graph</h2>"
+    "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  focus[Focus Topic]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
     "    </section>"
     "  </article>"
   ] | str join "\n"
