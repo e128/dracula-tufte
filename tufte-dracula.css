@@ -84,7 +84,7 @@
     section { margin-bottom: 2rem; }
     table {
       box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
-      border-collapse: collapse; width: 100%; margin: 0.5rem 0;
+      border-collapse: collapse; width: auto; max-width: 100%; margin: 0.5rem 0;
       font-size: 0.95em;
     }
     th {
@@ -118,8 +118,7 @@
     dl { margin: 1rem 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
-    ul { list-style: none; padding-inline-start: 0; }
-    ol { padding-inline-start: 1.5rem; }
+    ul, ol { padding-inline-start: 1.5rem; }
     li { padding: 0.15rem 0; line-height: 1.5; }
     li::marker { color: var(--muted); }
     nav { margin: 1rem 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }

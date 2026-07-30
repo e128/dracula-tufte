@@ -32,12 +32,14 @@ Consumers pin to a tag (currently **`v1.8.1`**) via a git submodule at `external
 
 ## What the Markup Must Supply
 
-The stylesheet and script cannot fix markup they don't emit. A consumer's generator owes four things, each modelled in `sample.html` / `sample-conn-map.html`:
+The stylesheet and script cannot fix markup they don't emit. A consumer's generator owes six things, each modelled in `sample.html` / `sample-conn-map.html`:
 
 - **`<main>` around the content**, so there be a primary landmark to jump to. `<article>` inside it keeps the sidenote counter and the conn-map layout selectors working.
 - **A real `<label for>` on the filter input.** A placeholder be not a label — it announces as an unnamed field and vanishes on the first keystroke. The fixture uses `<label class="filter-label" for="nav-filter">` with `type="search"` and `autocomplete="off"`. A consumer that wires the filter's behaviour also owes a `role="status"` region for the result count, and `.filter-empty` for the no-matches line.
 - **`accTitle:` and `accDescr:` inside every ` ```mermaid ` fence.** Mermaid renders the SVG as an unnamed `graphics-document` otherwise — a diagram carrying real structure with no text alternative. These be fence directives; no stylesheet change can supply them.
 - **`scope="col"` on table headers**, and heading levels that nest (`h1` → `h2` → `h3`, no skips). For conn-map pages that means the Links section carries its own `<h2>`, since it now comes first in the DOM.
+- **`role="list"` on every `<ul class="nav-list">`.** `.nav-list` sets `list-style: none`, and WebKit drops list semantics when it sees that — VoiceOver stops saying "list, N items" and stops giving item position, so a nav index becomes a run of loose links. Prose `<ul>` needs nothing: it keeps its markers, so it keeps its semantics.
+- **`tabindex="0"` on anything that scrolls sideways**, with a `role="region"` and a label so the stop announces itself. `pre` be `overflow-x: auto`, and a table below 600px be its own scroll container, so a keyboard user cannot reach the overflowed content otherwise (WCAG 2.1.1). The fixture uses `<pre tabindex="0" role="region" aria-label="Code block">`; the label be a consumer string, so localise it.
 
 **`.verified` / `.unverified` / `.correction` carry meaning by colour alone.** Pair each with a word or a mark — the fixture's `verified` / `unverified` / `correction` text be the cue, not the hue. Under forced-colors all three resolve to the same foreground, and a colour-blind reader never had the distinction.
 

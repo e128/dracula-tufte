@@ -187,10 +187,49 @@ rest of the container empty. If it is ever revisited:
 - Smaller type makes the measure *worse*, not better: container width is `vw`/`%`-driven,
   so shrinking type just fits more characters per line.
 
+## Lists
+
+**Prose `ul` keeps its markers.** `ul { list-style: none; padding-inline-start: 0 }` was a
+global reset, so a bulleted list inside an `<article>` rendered as a run of short paragraphs
+— measured, `list-style-type: none` with `padding-inline-start: 0px` and a nested `ul`
+indenting by **0px**, so nesting was invisible too. It also made `li::marker { color:
+var(--muted) }` dead code for every `ul`, since a list with no marker has no marker box to
+colour. `ul, ol { padding-inline-start: 1.5rem }` gives both list types one indent and lets
+`ul` keep the UA's `disc` / `circle` / `square` progression, now muted.
+
+The reset bought nothing that needed it: `.nav-list` sets `list-style: none` and
+`padding-inline-start: 0` on its own rule, so navigation lists are unaffected.
+
+**This is also half of the VoiceOver list-semantics problem.** WebKit drops list semantics
+from a list with `list-style: none` — no "list, N items", no item position. With markers
+restored, prose lists keep their semantics natively and only `.nav-list` still needs
+`role="list"` in the markup, which is now a documented consumer obligation in `README.md`.
+Verified through the real accessibility tree (CDP `Accessibility.getFullAXTree`): eight
+`list` nodes in `sample.html`, the four nav lists by explicit role and the prose lists by
+having markers again.
+
 ## Tables
 
 **No `font-family` on `table`** — tables inherit the body serif, which is correct because
 Source Serif 4's digits are tabular and lining by construction.
+
+**`width: auto; max-width: 100%`, not `width: 100%`.** A three-column table stretched to the
+full page: measured 1152px rendered against 315px of content at 1280px, so the zebra stripes
+ran 3.7× past the data and the two mobile paths disagreed — `display: block` below 600px let
+the same table shrink to content, stopping the stripes mid-row.
+
+Checked against the failure mode this repo has a history of, by measuring a narrow and a
+**wide** (six-column) table side by side at 390 / 601 / 768 / 1024 / 1280px. A wide table is
+unchanged: its min-content width is the floor either way, so it still fills the container
+(922px at 1024, 1152px at 1280) and `width` never entered into it. Only tables narrower than
+their container move, which is the whole intent. The narrow table now measures 316px at
+1280px and 338px at 1920px.
+
+That comparison turned up a **pre-existing** overflow that has nothing to do with `width`:
+between 601px and roughly 1000px a wide table's min-content width exceeds the body and the
+*document* scrolls sideways — 731px against a 537px body at 601px, 746 against 691 at 768 —
+because the `overflow-x: auto` escape hatch only exists below 600px. Identical with
+`width: 100%` and with `width: auto`, so it predates both. See `backlog.md`.
 
 Tables briefly carried the monospace stack because Georgia could not do this: its figures
 are old-style *and* proportional (9 distinct advances, `1` at 430/1000 against `0` at

@@ -13,75 +13,63 @@ the narrative goes in the commit.
 
 ---
 
-## 1. Sticky table header is inert below 600px
+## 1. Wide tables need one decision that covers three failures
 
-**Where:** `tufte-dracula.css`, `th { position: sticky; top: 0 }` and the
+**Where:** `tufte-dracula.css`, `table`, `th { position: sticky; top: 0 }`, and the
 `@media (max-width: 600px)` rule `table { display: block; overflow-x: auto }`
 
-Making the table its own scroll container means `top: 0` resolves against a box that
-never scrolls vertically, so the header does not stick on small screens. It looks
-like it works because the rule is present.
+Three problems, one shape. All measured on a six-column table, Chromium.
 
-**Change:** wrap tables in a scroll container and let the table stay a table:
+**a. A wide table scrolls the document sideways between 601px and ~1000px.** Its
+min-content width exceeds the body — 731px against a 537px body at 601px, 746 against 691
+at 768 — and the `overflow-x: auto` escape hatch only exists below 600px. WCAG 1.4.10.
+Identical with `width: 100%` and `width: auto`, so this predates the v1.8.1 width change
+and is not caused by it. 601px is a real viewport: small tablets and landscape phones.
+
+**b. The sticky header is inert below 600px.** `display: block` makes the table its own
+scroll container, so `top: 0` resolves against a box that never scrolls vertically. It
+looks like it works because the rule is present.
+
+**c. Neither scroll container is reachable by keyboard.** A scrollable `pre` and a
+scrollable table with no focusable owner strand their overflowed content (WCAG 2.1.1). The
+`pre` half of this shipped in v1.8.1 — `tabindex="0"` plus `role="region"` and a label, now
+a documented consumer obligation. The table half is still open because the table's own
+`tabindex` is the wrong place for it if a wrapper is coming.
+
+**The wrapper this entry used to propose does not fix (b).** Measured: a
+`div` with `overflow-x: auto` around the table computes `overflow-y: auto` as well — one
+axis auto forces the other off `visible` — so the wrapper becomes the scrollport and the
+header still scrolls away. Probed at 390px on a 43-row table, `th` top went to **-600 after
+a 600px page scroll, identical to no wrapper at all**, against a control at 1280px where it
+pins at 0. Recorded so the obvious fix is not tried a third time.
+
+**What does work, measured:** a wrapper that scrolls *both* axes and caps its height.
+`.table-scroll { overflow: auto; max-height: 70vh }` with `.table-scroll > table
+{ display: table }` pins the header — `th` top holds at **0 relative to the wrapper** after
+scrolling 400px inside it — and, applied at every width rather than only below 600px, it
+also fixes (a). Add `tabindex="0"` and it fixes (c).
 
 ```html
-<div class="table-scroll"><table>…</table></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="…"><table>…</table></div>
 ```
 
 ```css
-@media (max-width: 600px) { .table-scroll { overflow-x: auto; } }
+.table-scroll { overflow: auto; max-height: 70vh; }
+.table-scroll > table { display: table; }
 ```
 
-**Why it is deferred:** this is an HTML change in every consumer's renderer, not a
-stylesheet change — it cannot ship from this repo alone. Either coordinate the wrapper
-across consumers, or accept that mobile tables scroll without a pinned header.
+**Why it is deferred, and what the call actually is:**
 
-**Bundle the keyboard fix into the same change.** `pre { overflow-x: auto }` and the
-mobile `table { display: block; overflow-x: auto }` both create horizontal scroll
-containers with no focusable owner, so a keyboard user cannot reach the overflowed
-content (WCAG 2.1.1). The wrapper this entry already proposes is the place to put
-`tabindex="0"`, and `pre` needs the same treatment. One coordinated markup change
-covers the sticky header and both scrollers; doing them separately means asking
-consumers to edit their renderer twice.
+- It is consumer markup in every renderer, like the other obligations in `README.md` — it
+  cannot ship from this repo alone.
+- It trades a page-level scroll for a **nested scroll region on every table**, with a
+  viewport-relative height cap. That is a real UX cost on a phone, and `70vh` is a guess
+  that wants testing against real content, not a fixture.
+- Shipping the CSS without the markup is safe (the class matches nothing), but moving
+  `overflow-x: auto` off `table` at the same time would silently break any consumer that
+  has not wrapped yet — wide tables would overflow the page with no scroller. Either keep
+  both paths for a release, or coordinate the bump.
 
----
-
-## 2. `ul { list-style: none }` strips list semantics in Safari/VoiceOver
-
-**Where:** `tufte-dracula.css`, `ul` and `.nav-list`
-
-Known WebKit behaviour: a list with `list-style: none` stops being announced as a list,
-so VoiceOver no longer says "list, N items" or gives item position. It applies globally
-here, and again on `.nav-list` — which is the navigation structure of every index page.
-
-Side effect worth knowing while this is open: `li::marker { color: var(--muted) }` is
-inert for every `ul`, because there is no marker box to colour. It still works for `ol`.
-
-**Change:** `role="list"` on the affected lists.
-
-**Why it is deferred:** same shape as entry 1 — an attribute in every consumer's
-renderer, not a stylesheet change. Either coordinate it, or state it in `README.md` as a
-consumer requirement so a page that wants the nav list announced knows what to emit.
-
----
-
-## 3. `table { width: 100% }` stretches tables past their content
-
-**Where:** `tufte-dracula.css`, `table`
-
-Measured at 1280px on the sample's three-column table: renders **1152px** against
-**315px** of natural content width, a 3.7× stretch, with zebra stripes running the whole
-way. Below 600px the sheet disagrees with itself — `display: block` lets the table shrink
-to content, so the same stripes stop mid-row there.
-
-`NOTES.md` ("Tables") is about the font stack and the ~27% width cost of the monospace
-experiment; `width: 100%` itself has not been examined.
-
-**Change:** `width: auto; max-width: 100%`.
-
-**Why it is here and not just done:** this is the one entry that touches the width
-question, and width decisions in this repo have a history of being right on paper and
-wrong on screen (`NOTES.md`, "Width and measure" — three recorded failures). A table that
-sizes to its data is correct for a 3-column table and may read as under-filled next to
-full-width prose. Verify at 390 / 768 / 1280 / 1920 / 2560 on both a narrow and a wide
-table before keeping it.
+The cheap alternative is to accept (b), fix (a) by extending the existing `overflow-x: auto`
+rule above 600px, and fix (c) with `tabindex="0"` on the table itself. That is CSS plus one
+attribute, no wrapper, no nested scroll region — and it gives up the pinned header for good.
