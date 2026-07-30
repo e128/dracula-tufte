@@ -6,7 +6,7 @@
   <title>Tufte-Dracula — component sample</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.6.0 — desaturated Dracula accents on Dracula surface. */
+    /* Dracula-Tufte (muted) v1.6.1 — desaturated Dracula accents on Dracula surface. */
     :root {
       --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
       --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
@@ -90,7 +90,13 @@
        resolves to 700 (real bold); drop the font-weight to keep the lighter opener. */
     .newthought { font-variant-caps: small-caps; font-size: 1.2em; font-weight: 600; letter-spacing: 0.03em; color: var(--on-surface); }
     /* Tufte sidenotes — dark adaptation: float right (no reserved margin column) */
-    article { counter-reset: sidenote-counter; }
+    /* Both root wrappers: the fixtures here use <article>, consumers whose
+       generators emit <main> get numbered sidenotes for free. Without the
+       matching wrapper the counter never initializes and every note renders
+       unnumbered. The body.conn-map rules below stay article-only on purpose:
+       that layout needs h1 as a direct child, which a <main> consumer with a
+       separate <header> does not have. */
+    article, main { counter-reset: sidenote-counter; }
     input.margin-toggle { display: none; }
     label.margin-toggle:not(.sidenote-number) { display: none; }
     .sidenote-number { counter-increment: sidenote-counter; }
