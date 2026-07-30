@@ -7,16 +7,9 @@ bug — the bugs get fixed, these wait for a call.
 Not a contract artifact. Consumers inline `tufte-dracula.css` and `mermaid.js`;
 nothing reads this file.
 
-Ten entries closed in v1.8.1: the row-hover contrast failure, the `aside` tint, `--red`
-on `--code-bg`, the `--rule-light` borders on `--code-bg`, the forced-colors chip outline,
-the `em` colour, the `li` size, `--red`'s three meanings, the shared container treatment
-and `pre.mermaid`'s code-block chrome. Their measurements and the alternatives that were
-costed and rejected moved to [NOTES.md](NOTES.md) — "Form follows role", "The contrast
-budget covers four backgrounds", the "Mermaid" section and the type scale — rather than
-staying here as closed items.
-
-What is left needs consumer markup this repo cannot ship, or is the one change with a
-history of going wrong.
+A closed entry leaves this file rather than accumulating in it. Its measurements and
+rejected alternatives go to [NOTES.md](NOTES.md), which is where a future agent looks;
+the narrative goes in the commit.
 
 ---
 
