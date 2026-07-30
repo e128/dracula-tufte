@@ -19,24 +19,50 @@
         clusterBorder:       '#707388',
         nodeBorder:          '#a98ed6',
         edgeLabelBackground: '#343746',
-        pie1: '#67cbe4', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
-    const dismiss = () => { overlay.classList.remove('active'); };
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Zoomed diagram');
+    overlay.tabIndex = -1;
+    const siblings = () => [...document.body.children].filter(el => el !== overlay);
+    let opener = null;
+    const dismiss = () => {
+      overlay.classList.remove('active');
+      siblings().forEach(el => { el.inert = false; });
+      if (opener) { opener.focus(); opener = null; }
+    };
+    const zoom = (svg, trigger) => {
+      const zoomed = svg.cloneNode(true);
+      zoomed.removeAttribute('width');
+      zoomed.removeAttribute('height');
+      zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.replaceChildren(zoomed);
+      overlay.classList.add('active');
+      siblings().forEach(el => { el.inert = true; });
+      opener = trigger;
+      overlay.focus();
+    };
     overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
-        if (svg) svg.addEventListener('click', () => {
-          const zoomed = svg.cloneNode(true);
-          zoomed.removeAttribute('width');
-          zoomed.removeAttribute('height');
-          zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
-          overlay.replaceChildren(zoomed);
-          overlay.classList.add('active');
-        });
+        if (!svg) return;
+        if (!svg.dataset.zoomable) {
+          svg.dataset.zoomable = 'true';
+          svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
+        }
+        if (!pre.querySelector('.mermaid-zoom')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mermaid-zoom';
+          button.textContent = 'Zoom diagram';
+          button.addEventListener('click', () => zoom(svg, button));
+          pre.append(button);
+        }
       }).observe(pre, { childList: true });
     });
     overlay.addEventListener('click', dismiss);

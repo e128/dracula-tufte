@@ -6,7 +6,7 @@
   <title>Tufte-Dracula — component sample</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.7.0 */
+    /* Dracula-Tufte (muted) v1.8.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -32,12 +32,12 @@
       --purple:      oklch(0.698 0.107 300.909);  /* was #a98ed6 */
       --pink:        oklch(0.742 0.120 349.392);  /* was #e48bb7 */
       --green:       oklch(0.775 0.100 155.397);  /* was #7fc99a */
-      --data-1:      oklch(0.790 0.100 216.800);
+      --data-1:      oklch(0.790 0.077 255.000);
       --data-2:      oklch(0.742 0.120 340.000);
       --data-3:      oklch(0.775 0.100 165.000);
       --data-4:      oklch(0.790 0.100 112.500);
       --page-width:  min(90vw, 160rem);
-      --gutter:      2rem;
+      --gutter:      max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
       --radius:      4px;
       --radius-sm:   2px;
       --accent-bar:  3px;
@@ -51,6 +51,7 @@
       line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
       background: var(--surface); color: var(--on-surface);
     }
+    h1, h2, h3 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
     h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: 2.5rem 0 0.75rem; color: var(--purple); text-wrap: balance; }
@@ -62,11 +63,12 @@
     label.margin-toggle:not(.sidenote-number) { display: none; }
     .sidenote-number { counter-increment: sidenote-counter; }
     .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.75em; vertical-align: super; color: var(--link); }
-    .sidenote, .marginnote { float: right; clear: right; width: 28%; margin: 0.2rem 0 1rem 1.5rem; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; }
+    .sidenote, .marginnote { float: right; float: inline-end; clear: right; clear: inline-end; width: 28%;
+      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; }
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
-    label.margin-toggle:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 3px; }
+    .mermaid-zoom:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -94,13 +96,13 @@
       font-size: 0.95em;
     }
     th {
-      font-weight: 450; font-style: italic; text-align: left;
+      font-weight: 450; font-style: italic; text-align: start;
       padding: .4rem .6rem; color: var(--pink);
       box-shadow: inset 0 -1px 0 var(--rule-light);
       position: sticky; top: 0; background: var(--surface); z-index: 1;
     }
     td {
-      border: none; padding: .35rem .6rem; text-align: left;
+      border: none; padding: .35rem .6rem; text-align: start;
       vertical-align: top; font-variant-numeric: tabular-nums;
       transition: background-color 0.12s ease-out;
     }
@@ -125,7 +127,7 @@
     dl { margin: 1rem 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
-    ul { list-style: none; padding-left: 0; }
+    ul { list-style: none; padding-inline-start: 0; }
     ol { padding-inline-start: 1.5rem; }
     li { padding: 0.15rem 0; font-size: 0.95em; line-height: 1.5; }
     li li { font-size: 1em; }
@@ -135,6 +137,7 @@
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
     .correction { color: var(--red); }
+    section:has(> .scorecard) { container-type: inline-size; }
     .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
       gap: 0.3rem 0.9rem; align-items: baseline; margin: 0.75rem 0 1.25rem;
       font-size: 0.95em;
@@ -149,6 +152,8 @@
     .verdict-partial { background: var(--orange); }
     .verdict-failed { background: var(--red); }
     .verdict-neutral { background: var(--muted); }
+    .filter-label { display: block; margin-top: 1rem; color: var(--label); font-size: 0.95em; }
+    .filter-label + .filter-box { margin-top: 0.3rem; }
     .filter-box {
       width: 100%; margin: 1rem 0 1.5rem; padding: 0.65rem 0.85rem;
       font-family: inherit; font-size: 1em;
@@ -167,12 +172,13 @@
     .badge-t1 { background: var(--green); }
     .badge-t2 { background: var(--orange); }
     .badge-t3 { background: var(--red); }
-    .nav-list { list-style: none; padding-left: 0;
-      border: 1px solid var(--rule-light); border-radius: var(--radius); padding: 0.3rem; }
+    .nav-list { list-style: none; padding-inline-start: 0;
+      border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
-    .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation; }
+    .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
+      transition: text-decoration-color 0.15s ease-out, scale 0.12s ease-out; }
     .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
-    .nav-list li a:active { transform: scale(0.96); transition: scale 0.12s ease-out; }
+    .nav-list li a:active { scale: 0.96; }
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: 1.5rem 0; }
     .edge-list h3 { margin-top: 0; }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; }
@@ -181,12 +187,22 @@
       position: fixed; inset: 0; z-index: 1000;
       background: oklch(from var(--surface-alt) l c h / 0.92);
       display: flex; align-items: center; justify-content: center;
-      cursor: zoom-out; opacity: 0; transition: opacity 0.2s;
-      pointer-events: none;
+      cursor: zoom-out; opacity: 0; transition: opacity 0.2s ease-out;
+      pointer-events: none; overscroll-behavior: contain;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
+    .mermaid-overlay::after { content: "✕"; position: absolute; top: 0.75rem; inset-inline-end: 1rem;
+      font-size: 1.75rem; line-height: 1; color: var(--label); }
+    @supports (content: "x" / "y") {
+      .mermaid-overlay::after { content: "✕" / ""; }
+    }
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
     pre.mermaid { cursor: zoom-in; text-align: center; }
+    pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule-light); }
+    .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
+      font: inherit; font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
+      border: 1px solid var(--rule-light); border-radius: var(--radius); touch-action: manipulation; }
+    .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     body.conn-map pre.mermaid { overflow: visible; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
@@ -196,18 +212,18 @@
       body.conn-map article > h1,
       body.conn-map article > .byline,
       body.conn-map article > .subtitle { flex: 1 1 100%; }
-      body.conn-map article > section:nth-of-type(2) {
-        order: 1; flex: 0 0 clamp(220px, 22vw, 300px);
+      body.conn-map article > section:nth-of-type(1) {
+        flex: 0 0 clamp(220px, 22vw, 300px);
         position: sticky; top: 1rem;
         border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem;
       }
-      body.conn-map article > section:nth-of-type(1) {
-        order: 2; flex: 1 1 0; min-width: 0;
+      body.conn-map article > section:nth-of-type(2) {
+        flex: 1 1 0; min-width: 0;
       }
     }
     ::selection { background: var(--purple); color: var(--surface); }
     @media (max-width: 600px) {
-      :root { --gutter: max(0.9rem, env(safe-area-inset-left), env(safe-area-inset-right)); }
+      :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
       body { padding-block: 1.5rem; }
       .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
       pre { padding: 0.6rem; }
@@ -221,10 +237,42 @@
       .nav-list li a { padding: 0.7rem 0.5rem; min-height: 44px; }
       details.nav-group > summary { padding: 0.75rem 0; min-height: 44px; }
     }
+    @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @media (forced-colors: active) {
+      code { border: 1px solid currentColor; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
     }
-    @media print { body { background: oklch(1 0 0); color: oklch(0.15 0 0); width: auto; max-width: none; padding: 1rem; } a { color: inherit; text-decoration: none; } a[href^="http"]::after { content: ""; } h2 { page-break-after: avoid; } img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); } }
+    @media print {
+      :root {
+        --surface:     oklch(1 0 0);
+        --surface-alt: oklch(1 0 0);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.970 0 0);
+        --rule-light:  oklch(0.620 0.032 277.832);
+        --label:       oklch(0.545 0.054 275.492);
+        --muted:       oklch(0.545 0.055 275);
+        --link:        oklch(0.535 0.064 216.782);
+        --pink:        oklch(0.560 0.120 349.392);
+        --purple:      oklch(0.550 0.107 300.909);
+        --green:       oklch(0.530 0.100 155.397);
+        --orange:      oklch(0.550 0.092 61.444);
+        --red:         oklch(0.560 0.142 21.457);
+      }
+      body { width: auto; max-width: none; padding: 1rem; }
+      aside { background: none; }
+      .mermaid-zoom { display: none; }
+      a { color: inherit; text-decoration: none; }
+      a[href^="http"]::after { content: ""; }
+      h2 { page-break-after: avoid; }
+      img { box-shadow: 0 0 0 1px oklch(0 0 0 / 0.1); }
+      .verdict, .badge { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+      .verdict-pass, .badge-t1 { color: var(--green); }
+      .verdict-partial, .badge-t2 { color: var(--orange); }
+      .verdict-failed, .badge-t3 { color: var(--red); }
+      .verdict-neutral { color: var(--muted); }
+    }
   </style>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs';
@@ -247,24 +295,50 @@
         clusterBorder:       '#707388',
         nodeBorder:          '#a98ed6',
         edgeLabelBackground: '#343746',
-        pie1: '#67cbe4', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
-    const dismiss = () => { overlay.classList.remove('active'); };
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Zoomed diagram');
+    overlay.tabIndex = -1;
+    const siblings = () => [...document.body.children].filter(el => el !== overlay);
+    let opener = null;
+    const dismiss = () => {
+      overlay.classList.remove('active');
+      siblings().forEach(el => { el.inert = false; });
+      if (opener) { opener.focus(); opener = null; }
+    };
+    const zoom = (svg, trigger) => {
+      const zoomed = svg.cloneNode(true);
+      zoomed.removeAttribute('width');
+      zoomed.removeAttribute('height');
+      zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.replaceChildren(zoomed);
+      overlay.classList.add('active');
+      siblings().forEach(el => { el.inert = true; });
+      opener = trigger;
+      overlay.focus();
+    };
     overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
-        if (svg) svg.addEventListener('click', () => {
-          const zoomed = svg.cloneNode(true);
-          zoomed.removeAttribute('width');
-          zoomed.removeAttribute('height');
-          zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
-          overlay.replaceChildren(zoomed);
-          overlay.classList.add('active');
-        });
+        if (!svg) return;
+        if (!svg.dataset.zoomable) {
+          svg.dataset.zoomable = 'true';
+          svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
+        }
+        if (!pre.querySelector('.mermaid-zoom')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mermaid-zoom';
+          button.textContent = 'Zoom diagram';
+          button.addEventListener('click', () => zoom(svg, button));
+          pre.append(button);
+        }
       }).observe(pre, { childList: true });
     });
     overlay.addEventListener('click', dismiss);
@@ -273,6 +347,7 @@
 </head>
 <body>
   <div class="mermaid-overlay" id="mermaid-zoom"></div>
+  <main>
   <article>
     <h1>Tufte-Dracula Component Sample</h1>
     <p class="byline">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>
@@ -295,7 +370,7 @@
     <section>
       <h2>Table</h2>
       <table>
-        <thead><tr><th>Column</th><th>Value</th><th>Note</th></tr></thead>
+        <thead><tr><th scope="col">Column</th><th scope="col">Value</th><th scope="col">Note</th></tr></thead>
         <tbody>
           <tr><td>alpha</td><td>1234</td><td>odd row</td></tr>
           <tr><td>beta</td><td>5678</td><td>even row (striped)</td></tr>
@@ -331,7 +406,8 @@
 
     <section>
       <h2>Navigation index components</h2>
-      <input type="text" class="filter-box" placeholder="Type to filter&hellip;"/>
+      <label class="filter-label" for="nav-filter">Filter entries</label>
+      <input id="nav-filter" type="search" class="filter-box" autocomplete="off" placeholder="Type to filter&hellip;"/>
       <ul class="nav-list">
         <li><a href="#">A tappable nav-list link</a></li>
         <li><a href="#">Another entry <span class="badge badge-t1">Tier 1</span></a></li>
@@ -358,6 +434,8 @@
     <section>
       <h2>Mermaid diagram (click to zoom)</h2>
       <pre class="mermaid">flowchart TD
+  accTitle: Decision flow sample
+  accDescr: Start leads to a decision; yes does the thing, no skips it, and both reach done.
   A[Start] --> B{Decision}
   B -->|yes| C[Do the thing]
   B -->|no| D[Skip it]

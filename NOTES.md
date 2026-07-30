@@ -277,9 +277,29 @@ a bare `TypeError` pointing nowhere near the missing element.
 
 ## Connections-map layout
 
-`body.conn-map` has exactly two sections in order: (1) Graph, (2) Links. For topic maps the
-Links column is antecedents/descendants of the focus; for year-slice maps it is the drawn
-items newest-first. Above 900px Links floats left and sticky, graph right; below it stacks.
+`body.conn-map` has exactly two sections in order: **(1) Links, (2) Graph**. For topic maps
+the Links column is antecedents/descendants of the focus; for year-slice maps it is the drawn
+items newest-first. Above 900px Links sits left and sticky, graph right; below it stacks.
+
+**Markup order is the layout order — the stylesheet no longer reorders.** Until v1.8.0 the
+markup was (1) Graph, (2) Links and the CSS reversed it with `order: 1` / `order: 2`, so the
+visual leading column was Links while tab and screen-reader order started in the graph on
+the right. Measured at 900 and 1280px: Links rendered at x=45 / x=64, Graph at x=305 / x=386,
+against a DOM order that was the reverse. A sighted keyboard user tabbed away from where
+their eye had started.
+
+Deleting the two `order` declarations and swapping the sections in the markup produces a
+pixel-identical layout — verified at 899 / 900 / 1280px, Links 220–282px sticky at the
+leading edge, graph filling the rest, sticky column holding at y=120 after a 1200px scroll —
+with reading order and visual order finally agreeing.
+
+**This is a breaking change for consumers, and the break is silent.** The two files are
+version-coupled: a page emitted with the old (Graph, Links) markup that inlines a v1.8.0+
+stylesheet renders with the graph in the narrow sticky column and the link list filling the
+page. Nothing errors; it just looks wrong. Consumers must swap their section order in the
+same change that picks up the new CSS. The alternative — supporting both orders behind
+`:has(> .links)` — was considered and rejected as two layout paths in a file that every
+consumer inlines verbatim.
 
 **The article sets layout only, never width.** It previously carried
 `width: min(96vw, 1600px); max-width: 96vw; left: 50%; transform: translateX(-50%)`,
@@ -295,6 +315,188 @@ width and h1 left edge identical across both fixtures at eight viewports.
 
 `overflow: visible` on `body.conn-map pre.mermaid` because the base `pre` rule sets
 `overflow-x: auto`, which would otherwise clip a diagram's drop shadow.
+
+## Direction and growth
+
+**Sidenotes float to the inline end, with the physical value first as the fallback:**
+`float: right; float: inline-end; clear: right; clear: inline-end`. Under `dir="rtl"` the
+old physical-only rule kept the note on the page's right with a 24px `margin-left`, while
+the `pre` and `aside` accent bars — already logical — correctly flipped. Measured after the
+change: `float` computes `inline-end` in both directions, the note renders page-right in
+LTR and page-left in RTL, and the 24px gap moves from `margin-left` to `margin-right`. The
+duplicate physical declaration is deliberate: a browser that cannot parse `inline-end`
+drops that line and keeps `right`, which is the LTR behaviour it had before. `margin` became
+`margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0` for the same reason.
+
+**`th` / `td` are `text-align: start`, not `left`.** With `left` every cell stayed
+left-aligned in RTL while the prose around it flipped. Verified by range-measuring the
+header text inside its cell: LTR text starts 10px from the cell's left edge, RTL 10px from
+its right.
+
+**`h1`/`h2`/`h3` carry `overflow-wrap: break-word`.** They were the only text in the sheet
+without a break rule (`a`, `code`, `cite`, `.sidenote` all had one), so a long title word
+ran straight off the page under text-only zoom: at a 320px viewport with the root at 32px,
+`h1` measured `scrollWidth 301` inside `clientWidth 262`, and the connections-map title
+pushed the document to 367px. After the change the conn-map fixture reflows clean at 200%
+text zoom (320px document on a 320px viewport) and still overflows only 23px at 400%.
+
+**`--gutter` folds the safe-area insets at every width, not just under 600px:**
+`max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px))`. A landscape
+phone is 700–950px wide — above the mobile breakpoint — with lateral insets around 44–50px,
+larger than the 32px gutter that used to apply there, so text ran under the notch. The
+`0px` fallbacks inside `env()` are load-bearing: without them, a browser that does not
+support the variable makes the whole custom property invalid at computed-value time, which
+takes `width: min(100% - 2 * var(--gutter), …)` down with it. Unverified on a real device —
+Chromium does not emulate the insets.
+
+**The `.scorecard` grid still overflows under text-only zoom; `minmax(0, …)` was tried and
+reverted.** At a 320–601px viewport with the root font size doubled, `max-content` tracks
+plus the `.verdict` chip exceed the container and the document scrolls sideways (460px on a
+320px viewport). Rewriting the tracks as `minmax(0, max-content)` lets the *track* shrink to
+zero without letting the chip shrink with it: measured `174px 0px` at 320px, with the chip
+spilling out of a zero-width column — a different failure, not a smaller one. `auto` tracks
+and `overflow-wrap: break-word` on the children move the number by ~40px and fix 601px
+only; `break-word` does not reduce a box's min-content contribution (`anywhere` does).
+A media query cannot see this at all — `em` in a media query resolves against the browser's
+initial font size, not the document root, so the query never fires when a reader zooms text
+only. The fix is a container query, which needs a wrapper element the consumers emit. See
+`backlog.md`.
+
+## Interaction states
+
+**The press feedback on `.nav-list li a` was inert for two reasons, both measured.** It
+read `:active { transform: scale(0.96); transition: scale 0.12s ease-out }`. The
+transition named the independent `scale` property while the rule set `transform`, so
+nothing animated — sampled every 25ms through a real mousedown, `transform` was
+`matrix(0.96, 0, 0, 0.96, 0, 0)` on the first frame and identical on all six. And the
+declaration sat inside `:active`, so it vanished with the state: `transform: none` 30ms
+after mouseup. Press and release both snapped.
+
+It is now `scale: 0.96` in `:active` with the transition on the base rule alongside the
+existing `text-decoration-color`. Measured 0.987 → 0.976 → 0.968 → 0.962 → 0.96 pressing
+and 0.964 → 0.976 → 0.987 → 0.995 → 0.999 releasing. The lesson generalises: a transition
+belongs on the resting rule, and `transform` and `scale` are different properties.
+
+**No `border-radius` in the `:focus-visible` rule.** It carried `border-radius: 3px`,
+which made `.filter-box` corners tighten 4px → 3px at the moment the ring appeared, and
+applied unevenly — `.nav-list li a` (specificity 0,1,2) outranks `a:focus-visible`
+(0,1,1), so nav links kept 2px while plain links took 3px in the same keyboard state.
+Chromium already rounds an outline to the element's own radius plus offset, so removing it
+is what makes the ring follow each surface. Verified by Tab: `a`, `summary` and
+`.filter-box` all still render `solid 2px` at `2px` offset; inline links now get
+square-cornered rings, which is the shape of an inline box.
+
+**`.nav-list` radius is `calc(var(--radius-sm) + 0.3rem)`**, not `var(--radius)`. Outer
+radius = inner radius + padding: the child link is `--radius-sm` (2px) inside 0.3rem
+(4.8px) of padding, so 6.8px is concentric where a flat 4px left the hovered row's corners
+pinched against the container's. The `calc` tracks the padding — change one and the other
+follows.
+
+**`pre.mermaid:hover` gets a 1px `--rule-light` ring.** Before it, `cursor: zoom-in` was
+the *only* signal a diagram was clickable — measured `tabindex` null, `role` null, no
+hover rule, no focus style. A cursor does not exist on touch and is never announced, so on
+a phone the diagram was an unmarked click target. The ring is instant, not transitioned:
+hover is high-frequency and does not want motion.
+
+**The overlay's way out is a `✕` glyph on `.mermaid-overlay::after`**, top-trailing corner,
+`--label` on the backdrop. Click-anywhere and Escape both dismissed it before and still do;
+neither was advertised, and `cursor: zoom-out` is invisible on touch. A glyph rather than a
+word because this stylesheet is inlined verbatim by consumers who cannot localise a string
+in it, and `content: "✕" / ""` behind `@supports` for the same reason the outbound arrow
+uses that pattern: measured through CDP `Accessibility.getFullAXTree`, zero nodes name the
+glyph, so a screen reader is not told about a control it cannot reach. It is a cue on an
+already-clickable surface, not a new target — the overlay dismisses on any click.
+
+## Keyboard and assistive technology
+
+**Zoom is a real `<button>` that `mermaid.js` injects, not a focusable `pre`.** Before it,
+the only way to zoom was clicking the SVG: measured `tabindex` null on both `pre` and `svg`
+with zero focusable descendants, so Tab produced 12 stops in `sample.html` and none was the
+diagram (WCAG 2.1.1). Two cheaper fixes were rejected —
+
+- `tabindex="0"` + `role="button"` on `pre.mermaid` makes the button's content
+  presentational, which would hide the SVG's own `graphics-document` node and its name from
+  assistive tech. The control would work and the diagram would stop existing.
+- `tabindex="0"` with no role leaves a focusable generic. `aria-label` is not allowed to
+  name `role=generic`, so it announces nothing and nothing hints that Enter zooms.
+
+The injected button is a native control: keyboard and pointer for free, an accessible name
+of its own, and the SVG untouched. It doubles as the touch affordance that `cursor: zoom-in`
+could never be. Measured 138×42, in the tab order, focus ring from the shared
+`:focus-visible` rule, `display: none` in print.
+
+**The observer that creates it has to be idempotent.** Mermaid rewrites the `pre`'s children
+after the first render, so a one-shot `if (pre.dataset.zoomable) return` guard let the second
+pass delete the button and then blocked recreating it — measured: `dataset.zoomable` set,
+zero buttons in the DOM. It now re-adds the button whenever one is missing and marks the
+*SVG* rather than the `pre` for the click listener, so appending the button (itself a
+`childList` mutation) is a no-op on the next tick instead of a loop.
+
+**The overlay is a modal and now says so.** It measured `role` null, `aria-modal` null, no
+name, no `tabindex`, `overscroll-behavior: auto`, with focus never entering and never
+returning. It now carries `role="dialog"`, `aria-modal="true"`, `aria-label="Zoomed diagram"`,
+`tabindex="-1"`, takes focus on open, sets `inert` on every other `body` child, and restores
+focus to the button that opened it. Verified: Enter on the button gives focus inside the
+overlay with both siblings `inert`, and Escape returns focus to `.mermaid-zoom` and clears
+`inert`. `overscroll-behavior: contain` keeps the page underneath from scrolling.
+
+**`accTitle` / `accDescr` in both fixture diagrams.** The SVG had a `graphics-document` role
+with no accessible name at all — an unnamed graphic carrying the page's structure. These are
+Mermaid directives inside the fence, so no stylesheet change can supply them; the fixtures
+model them because whoever writes the fence has to.
+
+**The sidenote margin-toggle is inert by design, and its two `display: none` rules must
+stay.** `input.margin-toggle` is never focusable and the ⊕ label is hidden, so the Tufte
+collapse pattern does nothing here — measured at 1280 and 390px, `.sidenote` is
+`display: block` at every width, so sidenotes are always visible and there is nothing to
+toggle. The rules are not dead weight though: consumer generators emit that checkbox and
+label markup, and dropping the rules would show raw checkboxes on every published page. What
+*was* dead is gone — `label.margin-toggle:focus-visible` could never match a `display: none`
+label, and it no longer sits in the focus rule. If the pattern is ever revived it needs a
+focusable control, not a hidden checkbox.
+
+## Print
+
+**The print block overrides the palette tokens, not the elements.** It used to set
+`background`/`color` on `body` alone, which left every accent at its dark-theme value on a
+white page. Measured on white: `.newthought` **1.05:1**, `summary` 1.82, `.verified` 1.96,
+`strong` 2.09, `h3`/`em`/`blockquote`/`footer` 2.11, `h1` 2.42, `.byline`/`cite` 2.60,
+`h2` 2.79. The dark fills survived too, so with background graphics on, near-black print
+text sat on `--code-bg` zebra rows at **1.67:1**, and with them off (Chrome's default) the
+light text that those fills had backed was stranded on white — inline `code` 1.85:1, `pre`
+1.05:1.
+
+Reassigning the tokens fixes every element at once and fixes both print paths, because the
+accents become dark and the fills become near-white: whichever way the background-graphics
+checkbox is set, the pair is legible. Accent lightness is chosen against the **`0.97` grey**
+`--code-bg`, not white, because that is the harder of the two backgrounds — measured 4.56–4.64:1
+on the grey and 4.97–5.06:1 on white, with `--on-surface` at `oklch(0.2 0 0)` giving 18.1:1.
+
+Two rules could not be handled by tokens alone:
+
+- **`aside` drops its tint.** `color-mix(in oklch, var(--rule-light) 30%, transparent)` over
+  white composites to `#d9dae1`, and `--label` on that measured 3.58:1 — the one pair the
+  token pass left failing. `background: none` in print puts it on white at 4.99:1; the
+  orange accent bar still marks the callout. Measured from rendered pixels, not computed
+  values: a computed reading reports the un-composited mix and is wrong by ~3.5:1 here.
+- **`.verdict` / `.badge` print as outlined labels** — `background: none` plus
+  `box-shadow: inset 0 0 0 1px currentColor` and the semantic colour moved to `color`.
+  Their fill carried the meaning (pass / partial / failed), and `color: var(--surface)`
+  would have become white-on-accent — fine with backgrounds on, invisible with them off.
+  Outlining makes the chip identical either way, and each variant keeps its own hue at
+  ≥4.97:1.
+
+`--rule-light` sits at `oklch(0.620 …)` in print: 3:1 against white for WCAG 1.4.11 without
+becoming a heavy line on paper.
+
+`--surface-alt` goes white as well. It is only the overlay backdrop, which cannot be on
+screen and on paper at once, but leaving it dark would put a near-black rectangle in the
+print stylesheet waiting for someone to reuse the token.
+
+The overlay is `transition: opacity 0.2s ease-out`. With the default `ease` the backdrop
+measured 0.026 → 0.497 → 0.80 → 0.94 → 0.999 at 40ms intervals — near-invisible for the
+first frame, then a rush; the click felt late. Every other transition in the sheet was
+already `ease-out`.
 
 ## Misc
 
@@ -312,3 +514,40 @@ unreachable either way, so both are noise.
 `--muted` to 4.55:1 against `--code-bg` and 5.50:1 against `--surface`; `--red` to 5.00:1
 against `--surface`. `--data-2` and `--data-3` are shifted off the `--pink` and `--green`
 hues so one colour means one thing.
+
+**`--data-1` is `oklch(0.790 0.077 255)`, moved off the link hue.** It was
+`oklch(0.790 0.100 216.800)` against `--link` at 216.782 — a 0.02° collision, ΔE_ok 0.038, so
+the `ext` classDef fill and the pie's first slice *were* the link colour. 255 puts it 38.2°
+from `--link` and 45.9° from `--purple`, and ≥85° from every other member of the ramp, which
+is the comparison that matters since those appear together in one diagram. Chroma is 0.077 =
+71% of the maximum in-gamut chroma at that lightness and hue, matching the ratio the old
+value held at its own hue; `--surface` text on the new fill measures 7.39:1. Verified by
+rendering a pie and a `classDef` flowchart: slice fills come out
+`#99bdec / #de8dc3 / #74caa6 / #bbc175`, four visibly distinct categories.
+
+`--data-2` (9.4° off `--pink`) and `--data-3` (9.6° off `--green`) are still under the ~10°
+threshold where a hue shift becomes visible — ΔE_ok 0.020 and 0.017, about one JND. They are
+separated in name more than in appearance. Left alone deliberately: nothing in a diagram puts
+a category fill beside body copy, so the collision costs less than `--data-1`'s did, and
+moving them means recomputing two more hex projections.
+
+**The `.scorecard` overflow under text-only zoom is fixed with a container query, not a media
+query.** `section:has(> .scorecard)` becomes an inline-size container and
+`@container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr) } }` stacks
+it. `em` inside a container query resolves against the *container's* font size, so the query
+is really "is the text large relative to the space" — which is exactly the failure condition,
+and something a media query cannot see (`em` there resolves against the browser's initial font
+size; a `max-width: 19em` media rule measured no change at a doubled root).
+
+The `:has()` scoping matters: `container-type: inline-size` on every `section` also applied
+inline-size containment to the conn-map columns, which changed the sticky sidebar from 276px
+to 220px at 200% zoom because the content could no longer expand the flex basis. Scoped to
+sections that actually hold a scorecard, the conn-map measures identically to before at all
+eight widths.
+
+The `@container` rule sits after the `max-width: 600px` block on purpose — container queries
+add no specificity, so source order is what makes it win over the two-column rule there.
+
+Fixed through 200% text zoom at every width from 320 to 2560px. At **400%** text-only zoom
+the page still scrolls sideways (`.sc-note`, and the table at ≥601px); that is past what
+WCAG 1.4.4 asks for and is not chased.
