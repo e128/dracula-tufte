@@ -23,7 +23,7 @@ Three problems, one shape. All measured on a six-column table, Chromium.
 **a. A wide table scrolls the document sideways between 601px and ~1000px.** Its
 min-content width exceeds the body — 731px against a 537px body at 601px, 746 against 691
 at 768 — and the `overflow-x: auto` escape hatch only exists below 600px. WCAG 1.4.10.
-Identical with `width: 100%` and `width: auto`, so this predates the v1.8.1 width change
+Identical with `width: 100%` and `width: auto`, so this predates the v1.9.0 width change
 and is not caused by it. 601px is a real viewport: small tablets and landscape phones.
 
 **b. The sticky header is inert below 600px.** `display: block` makes the table its own
@@ -32,7 +32,7 @@ looks like it works because the rule is present.
 
 **c. Neither scroll container is reachable by keyboard.** A scrollable `pre` and a
 scrollable table with no focusable owner strand their overflowed content (WCAG 2.1.1). The
-`pre` half of this shipped in v1.8.1 — `tabindex="0"` plus `role="region"` and a label, now
+`pre` half of this shipped in v1.9.0 — `tabindex="0"` plus `role="region"` and a label, now
 a documented consumer obligation. The table half is still open because the table's own
 `tabindex` is the wrong place for it if a wrapper is coming.
 

@@ -581,7 +581,7 @@ un-composited mix and is wrong.** Every number below was sampled from rendered p
 through a 1×1 canvas, the same method the print `aside` finding needed.
 
 The four surfaces text can land on are `--surface`, `--code-bg` (zebra rows, `pre`, inline
-`code`, `.filter-box`), the row-hover fill, and — until v1.8.1 — the `aside` tint. A new
+`code`, `.filter-box`), the row-hover fill, and — until v1.9.0 — the `aside` tint. A new
 token has to clear its ratio against **all** of them, not the easiest one.
 
 **The row-hover fill now darkens instead of lightening, and it is a flat token.** It was
@@ -697,7 +697,7 @@ One rule could not be handled by tokens alone:
 
 The `aside` tint used to need a second exception here: it composited to `#d9dae1` on white
 and `--label` on that measured 3.58:1, the one pair the token pass left failing. The tint is
-gone from the base rule as of v1.8.1 for the same reason it failed on screen, so
+gone from the base rule as of v1.9.0 for the same reason it failed on screen, so
 `aside { background: none }` no longer has anything to override. See "The contrast budget
 covers four backgrounds".
 
