@@ -31,18 +31,3 @@ like it works because the rule is present.
 **Why it is deferred:** this is an HTML change in every consumer's renderer, not a
 stylesheet change — it cannot ship from this repo alone. Either coordinate the wrapper
 across consumers, or accept that mobile tables scroll without a pinned header.
-
-## 2. Mermaid `background` does not match the container it renders in
-
-**Where:** `mermaid.js` / `mermaid-palette.json`, `background: '#282a36'` (`--surface`)
-
-Diagrams render inside a `pre`, which is `--code-bg` (`#343746`), not `--surface`.
-This is the same mismatch already fixed on `edgeLabelBackground`.
-
-**Change:** point `background` at `--code-bg` (`#343746`) in both `mermaid.js` and
-`mermaid-palette.json`, then run `nu maintain.nu check`.
-
-**Why it is a decision:** mermaid's theme-base derives other colours from
-`background`, and the knock-on effects were not traced. Needs a visual check across
-several diagram types (flowchart, pie, ER, class) before committing, since ER and pie
-in particular compute row and slice colours from it.
