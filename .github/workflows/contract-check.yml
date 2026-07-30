@@ -12,12 +12,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify the seven contract files exist
+      - name: Verify the eight contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js tokens.css sample.html sample-conn-map.html build-sample.nu README.md; do
+          for f in tufte-dracula.css mermaid.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
-          echo "All 7 contract files present."
+          echo "All 8 contract files present."
+
+      - name: Stylesheet wrapper is exactly the first and last line
+        run: |
+          # Consumers that supply their own <style> wrapper slice the body out with
+          # `sed '1d;$d'`. That is only safe while the wrapper stays exactly one
+          # line at each end, so it is a contract, not a coincidence.
+          head -1 tufte-dracula.css | grep -qx '  <style>' \
+            || { echo "tufte-dracula.css line 1 must be exactly '  <style>'"; exit 1; }
+          tail -1 tufte-dracula.css | grep -qx '  </style>' \
+            || { echo "tufte-dracula.css last line must be exactly '  </style>'"; exit 1; }
+          echo "Wrapper intact — sed '1d;\$d' yields the bare body."
+
+      - name: Mermaid themeVariables must match mermaid-palette.json
+        run: |
+          # mermaid.js is inlined verbatim (no build step), so it carries the hex
+          # itself. This gate is what keeps that copy honest against the palette.
+          # jq runs before the loop, not in a process substitution: a malformed or
+          # emptied palette must abort the step, not yield zero rows and pass green.
+          rows=$(jq -er '.init | to_entries[] | select(.key != "_comment") | "\(.key) \(.value.hex)"' mermaid-palette.json) \
+            || { echo "cannot read .init out of mermaid-palette.json"; exit 1; }
+          n=$(printf '%s\n' "$rows" | grep -c .)
+          [ "$n" -ge 16 ] || { echo "mermaid-palette.json .init has only $n keys — refusing to pass vacuously"; exit 1; }
+          fail=0
+          while read -r key hex; do
+            grep -qE "$key:[[:space:]]*'$hex'" mermaid.js \
+              || { echo "DRIFT: mermaid.js $key is not '$hex' (mermaid-palette.json)"; fail=1; }
+          done <<< "$rows"
+          grep -q "theme: 'base'" mermaid.js || { echo "mermaid.js must use theme:'base', not 'dark'"; fail=1; }
+          exit $fail
+          # No separate "must not be oklch()" gate needed — the per-key hex match
+          # above already fails on any non-hex value.
+
+      - name: mermaid-palette.json hex must match the CSS oklch
+        run: python3 .github/palette-check.py
 
       - name: Sanity check (no hand-rolled style blocks)
         run: |
@@ -38,10 +72,16 @@ jobs:
         with:
           version: "*"
 
-      - name: Fixtures must be regenerated (fails if stale vs CSS/JS)
+      - name: Generated files must be regenerated (fails if stale vs CSS/JS)
         run: |
+          # tokens.css is included here on purpose: it is a verbatim slice of the
+          # tufte-dracula.css :root block, so this gate is what keeps the palette
+          # reference from becoming a second, hand-edited source of truth.
           nu build-sample.nu
-          git diff --exit-code -- sample.html sample-conn-map.html || {
-            echo "sample.html / sample-conn-map.html are stale — run 'nu build-sample.nu' and commit the result."
+          # `git diff HEAD`, not `git diff`: build-sample.nu git-adds what it writes,
+          # so an index-vs-worktree diff is always empty and this gate would pass
+          # vacuously. HEAD-vs-worktree is what "stale in the commit" actually means.
+          git diff HEAD --exit-code -- sample.html sample-conn-map.html tokens.css || {
+            echo "tokens.css / sample.html / sample-conn-map.html are stale — run 'nu build-sample.nu' and commit the result."
             exit 1
           }

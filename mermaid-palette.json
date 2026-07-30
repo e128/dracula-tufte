@@ -1,0 +1,29 @@
+{
+  "_comment": "Tufte-Dracula palette in hex, for Mermaid only. Mermaid's color engine (khroma) throws 'Unsupported color format' on an oklch() string and aborts initialization, so no diagram in the file renders; classDef fill/stroke values choke the flowchart grammar on the literal parens in oklch(...). Every value here is therefore hex: the sRGB rendering of the matching tufte-dracula.css :root oklch() variable, computed through the Oklab -> linear sRGB matrix with gamut clipping (the conversion reproduces the 'was #xxxxxx' hex documented beside each oklch value in tufte-dracula.css). Edit tufte-dracula.css first, then recompute the affected hex here. mermaid.js carries these same values inline because it is inlined verbatim by consumers with no build step; contract-check.yml fails if the two disagree.",
+  "init": {
+    "_comment": "mermaid.initialize({theme:'base', themeVariables:{darkMode:true, ...}}) in mermaid.js. darkMode has to sit inside themeVariables — mermaidAPI hands only config.themeVariables to base.getThemeVariables(), so a root-level darkMode is never seen by the theme.",
+    "background":          { "hex": "#282a36", "from": "--surface" },
+    "mainBkg":             { "hex": "#343746", "from": "--code-bg" },
+    "primaryColor":        { "hex": "#343746", "from": "--code-bg" },
+    "primaryTextColor":    { "hex": "#f8f8f2", "from": "--on-surface" },
+    "primaryBorderColor":  { "hex": "#a98ed6", "from": "--purple" },
+    "lineColor":           { "hex": "#979fc4", "from": "--muted" },
+    "textColor":           { "hex": "#f8f8f2", "from": "--on-surface" },
+    "secondaryColor":      { "hex": "#1e1f29", "from": "--surface-alt" },
+    "clusterBkg":          { "hex": "#343746", "from": "--code-bg" },
+    "clusterBorder":       { "hex": "#707388", "from": "--rule-light" },
+    "nodeBorder":          { "hex": "#a98ed6", "from": "--purple" },
+    "edgeLabelBackground": { "hex": "#343746", "from": "--code-bg" },
+    "pie1":                { "hex": "#67cbe4", "from": "--data-1" },
+    "pie2":                { "hex": "#de8dc3", "from": "--data-2" },
+    "pie3":                { "hex": "#74caa6", "from": "--data-3" },
+    "pie4":                { "hex": "#bbc175", "from": "--data-4" }
+  },
+  "classdef": {
+    "_comment": "Node-category classDef roles for generators that emit their own 'classDef name fill:...,stroke:...' lines inside a <pre class=\"mermaid\"> block. Not used by mermaid.js itself. Every fill draws from the --data-1..4 ramp, never from the prose accents (--pink, --green, --orange): those already carry a meaning in body copy (h1, inline code, aside bar), and the data ramp exists precisely so a diagram category cannot borrow it. stroke is --purple and color is --surface for every role.",
+    "repo":  { "fill": "#de8dc3", "stroke": "#a98ed6", "color": "#282a36", "from": "--data-2" },
+    "ext":   { "fill": "#67cbe4", "stroke": "#a98ed6", "color": "#282a36", "from": "--data-1" },
+    "store": { "fill": "#74caa6", "stroke": "#a98ed6", "color": "#282a36", "from": "--data-3" },
+    "queue": { "fill": "#bbc175", "stroke": "#a98ed6", "color": "#282a36", "from": "--data-4" }
+  }
+}
