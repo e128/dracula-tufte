@@ -97,20 +97,30 @@ def "main bump" [version: string] {
 
 # Tag a release only after CI has gone green on the exact commit being tagged.
 #
-# `git push origin main v1.x.0` pushes both at once, so the tag makes its claim
-# before anything has checked it — and if the branch has a required status
-# check, that push either bypasses the rule or races it. This splits the two:
-# commit first, wait for the verdict, tag only on success.
+# This verb does NOT push. `main` requires the `contract` status check, and a
+# required check can only be satisfied by a pull request — the check runs after
+# a push, so a direct push to main can never have satisfied it and is recorded
+# as `Bypassed rule violations`. The work lands through a PR; this runs once it
+# has, confirms the check really is green on what merged, and tags that.
 #
 # ponytail: polls the check-runs API rather than adding a release workflow.
 # The gate belongs where a human or an agent tags, not in another YAML file.
 def "main release" [version: string] {
   let tag = $"v($version)"
   let sha = (^git rev-parse HEAD | str trim)
-  let branch = (^git rev-parse --abbrev-ref HEAD | str trim)
 
   if (^git status --porcelain | str trim) != "" {
     print "Working tree is dirty — commit or stash before releasing."
+    exit 1
+  }
+  # The commit must already be what origin/main points at. That is what proves
+  # it arrived through the PR gate rather than around it, and it stops a tag
+  # ever naming a commit no one else can fetch.
+  ^git fetch --quiet origin main
+  let remote = (^git rev-parse origin/main | str trim)
+  if $sha != $remote {
+    print $"HEAD ($sha | str substring 0..7) is not origin/main ($remote | str substring 0..7)."
+    print "  Land the change through a pull request first, then pull and re-run."
     exit 1
   }
   # The tag has to name what the stylesheet says it is, or consumers pin a
@@ -126,9 +136,6 @@ def "main release" [version: string] {
     print $"($tag) already exists locally. Delete it or pick the next version."
     exit 1
   }
-
-  print $"Pushing ($branch) — commit only, no tag."
-  ^git push origin $branch
 
   print $"Waiting for checks on ($sha)…"
   mut checks = []

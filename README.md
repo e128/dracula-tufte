@@ -53,11 +53,12 @@ Each button takes its accessible name from that diagram's `accTitle:` — `Zoom 
 1. Edit the stylesheet or Mermaid script. Colors change in the `tufte-dracula.css` `:root` block and nowhere else; if the color is one Mermaid needs, recompute its hex in `mermaid-palette.json` and `mermaid.js` (`nu maintain.nu check` tells ye which).
 2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
 3. Bump the version line in `tufte-dracula.css` (the template version).
-4. Commit with a conventional message (`feat: ...` / `fix: ...`).
-5. Release with `nu maintain.nu release 1.10.0`. It pushes the commit **alone**, waits for the contract check on that exact SHA, and writes an annotated tag only if every check concludes `success`. A red check, or no check at all, aborts before tagging.
-6. Each consumer repo runs `git submodule update --remote external/dracula-tufte` and commits the new pointer.
+4. Commit to a branch — never straight to `main` — with a conventional message (`feat: ...` / `fix: ...`).
+5. Open a PR and let the `contract` check pass on it: `gh pr create --fill && gh pr checks --watch`, then `gh pr merge --squash`. The merge be what the required check actually gates.
+6. From an updated `main`, run `nu maintain.nu release 1.10.0`. It verifies `HEAD` be `origin/main`, waits for every check on that exact SHA, and writes an annotated tag only if all conclude `success`. A red check, a missing check, or a `HEAD` that never landed through the PR all abort before tagging.
+7. Each consumer repo runs `git submodule update --remote external/dracula-tufte` and commits the new pointer.
 
-**Never `git push origin main v1.x.0`.** One command pushes commit and tag together, so the tag claims the contract held before anything checked it — and on a protected branch that push races the required check or bypasses it outright. Consumers pin to tags; a tag on an unverified commit hands them a payload nothing gated. If a push ever reports `Bypassed rule violations`, that be protection overridden, not satisfied — say so and revert rather than tagging on top of it.
+**A required status check can only be satisfied by a pull request.** The check runs *after* a push, so `git push origin main` can never have satisfied it — GitHub takes the push and records `Bypassed rule violations`. Splitting the commit and tag into two pushes does not help; only the PR does. Consumers pin to tags, so a tag on a commit nothing gated hands every one of them an unverified payload. If a push ever reports a bypass, say so and revert rather than tagging on top of it.
 
 ## Contract Enforcement
 

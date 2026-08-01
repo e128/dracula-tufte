@@ -76,41 +76,48 @@ Consumers pin to a tag through a git submodule. A tag on a commit CI never check
 hands every consumer a payload nothing verified — and because the fixtures and
 `tokens.css` are generated, a stale or broken one looks completely normal.
 
-**Use `nu maintain.nu release <version>`.** It is the whole gate: it refuses a dirty
-tree, refuses a version the stylesheet is not stamped with, pushes the commit *alone*,
-polls the check runs for that exact SHA, and tags only when every one concludes
-`success`. It writes an **annotated** tag, so `git tag -v` has an object to look at.
+**A required status check can only be satisfied by a pull request.** `main` requires
+the `contract` check (`strict: true`, `enforce_admins: false`, no review requirement).
+The check runs *after* a push, so a direct `git push origin main` can never have
+satisfied it — GitHub accepts the push and records `Bypassed rule violations`. Pushing
+the commit and the tag as separate commands does not fix this; only landing through a
+PR does. **Never commit straight to `main`.**
+
+The flow, start to finish:
 
 ```
-nu maintain.nu bump 1.11.0
+git switch -c fix/whatever                       # never work on main
+nu maintain.nu bump 1.11.0                       # stamps the CSS + README
 git add -A && git commit -m 'fix: v1.11.0 — <summary>'
-nu maintain.nu release 1.11.0
+git push -u origin fix/whatever
+gh pr create --fill && gh pr checks --watch      # `contract` must pass here
+gh pr merge --squash                             # the merge is what the check gates
+git switch main && git pull
+nu maintain.nu release 1.11.0                    # verifies, then tags
 ```
 
-If you tag by hand, the same three steps are mandatory and in this order:
-
-```
-git push origin main                                  # commit ALONE
-gh api repos/{owner}/{repo}/commits/$(git rev-parse HEAD)/check-runs \
-  --jq '.check_runs[] | .name + ": " + (.conclusion // "pending")'
-git tag -a v1.11.0 -m 'v1.11.0 — <summary>' && git push origin v1.11.0
-```
+`nu maintain.nu release <version>` does **not** push a branch. It refuses a dirty tree,
+refuses a version the stylesheet is not stamped with, refuses a tag that already exists,
+refuses a `HEAD` that is not already `origin/main` — that last one is what proves the
+commit arrived through the gate rather than around it — then polls the check runs for
+that exact SHA and tags only when every one concludes `success`. An empty check list
+counts as failure: a commit CI never saw is the thing this exists to refuse. The tag is
+**annotated**, so `git tag -v` has an object to read.
 
 **Rules that have no exception:**
 
-- **Never `git push origin main v1.x.0`.** One command pushes the commit and the tag
-  together, so the tag makes its claim before anything has checked it, and on a branch
-  with a required status check that push either races the rule or bypasses it.
-- **Never tag a commit with no check run.** Absent is not passing. `maintain.nu release`
-  treats an empty check list as a failure and so should you.
+- **Never `git push origin main v1.x.0`.** One command pushes commit and tag together,
+  so the tag claims the contract held before anything checked it.
+- **Never tag a commit that is not `origin/main`,** and never one with no check run.
+  Absent is not passing.
 - **Never `--no-verify`, never `--force` a tag that has been pushed.** A moved tag
   silently changes what every pinned consumer resolves to.
-- **If a push reports `Bypassed rule violations`, stop and say so.** That line means
-  protection was overridden, not satisfied. Report it in the same message, do not bury
-  it, and offer to revert rather than carrying on to the tag.
+- **If a push reports `Bypassed rule violations`, stop and say so in that same
+  message.** It means protection was overridden, not satisfied. Do not bury it and do
+  not carry on to the tag — offer to revert.
 - **Annotated tags only** (`git tag -a`). A lightweight tag is a second name for a
   commit with no tagger, no date, and nothing to verify — `git tag -v` errors on it
-  outright. `v1.9.0` and `v1.10.0` are lightweight for this reason; do not add more.
+  outright. `v1.9.0` and `v1.10.0` are lightweight; do not add more.
 
 Releasing is outward-facing and hard to reverse. Confirm before tagging or pushing
 unless the ask was explicitly to release.
