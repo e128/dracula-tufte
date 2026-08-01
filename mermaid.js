@@ -26,12 +26,18 @@
     if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Zoomed diagram');
     overlay.tabIndex = -1;
+    overlay.inert = true;
+    const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const named = (svg, label) => {
+      const title = svg.querySelector('title')?.textContent?.trim();
+      return title ? label + ': ' + title : label;
+    };
     const siblings = () => [...document.body.children].filter(el => el !== overlay);
     let opener = null;
     const dismiss = () => {
       overlay.classList.remove('active');
+      overlay.inert = true;
       siblings().forEach(el => { el.inert = false; });
       if (opener) { opener.focus(); opener = null; }
     };
@@ -40,8 +46,10 @@
       zoomed.removeAttribute('width');
       zoomed.removeAttribute('height');
       zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.setAttribute('aria-label', named(svg, zoomLabel));
       overlay.replaceChildren(zoomed);
       overlay.classList.add('active');
+      overlay.inert = false;
       siblings().forEach(el => { el.inert = true; });
       opener = trigger;
       overlay.focus();
@@ -59,7 +67,8 @@
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'mermaid-zoom';
-          button.textContent = 'Zoom diagram';
+          button.textContent = zoomLabel;
+          button.setAttribute('aria-label', named(svg, zoomLabel));
           button.addEventListener('click', () => zoom(svg, button));
           pre.append(button);
         }

@@ -73,3 +73,63 @@ also fixes (a). Add `tabindex="0"` and it fixes (c).
 The cheap alternative is to accept (b), fix (a) by extending the existing `overflow-x: auto`
 rule above 600px, and fix (c) with `tabindex="0"` on the table itself. That is CSS plus one
 attribute, no wrapper, no nested scroll region — and it gives up the pinned header for good.
+
+**How much this actually affects, measured 2026-08-01** against the 370-file
+`product-intelligence` lode, the largest consumer. Tables are the dominant component by a
+wide margin: **2,093 of them, a mean of 5.7 per document**, against zero uses of
+`sidenote`, `marginnote`, `newthought`, `scorecard`, `edge-list` or `col-2`. Column-count
+histogram, by table: 2 cols 530, 3 cols 909, 4 cols 425, 5 cols 143, 6 cols 53, 7 cols 23,
+8 cols 5, and one each at 9, 10 and 13.
+
+So **227 tables carry five or more columns, spread across 118 documents — 32% of the
+corpus.** Eleven of those are also longer than 20 rows, where the inert sticky header
+starts to matter on its own rather than as a nicety; the worst is a 10-column, 23-row
+table. That is the scope of (a) and (c). It is not a fixture-only problem.
+
+**Deferred 2026-08-01, deliberately.** The trade is understood and the cost is real: a
+nested scroll region on every wide table, with a `70vh` cap nobody has tested against real
+content on a phone. Nothing regresses by waiting, and the 118 documents keep behaviour they
+already have. Revisit when someone actually reads the lode below 1000px, which is the
+condition that makes (a) bite.
+
+---
+
+## 2. Nine class families have no user in the largest consumer
+
+**Where:** `tufte-dracula.css` — `.scorecard`, `.edge-list`, `.col-2`, `.badge`,
+`.newthought`, `.sidenote`, `.marginnote`, `.verdict*`, and the whole `body.conn-map`
+layout with `.nav-list` / `.filter-box` / `.filter-label` / `.filter-empty`.
+
+Measured 2026-08-01 across the 370-file `product-intelligence` lode, by class attribute:
+
+| Class family | Documents using it |
+|---|---|
+| `scorecard`, `edge-list`, `col-2`, `badge`, `newthought`, `sidenote`, `marginnote` | **0** |
+| `nav-list`, `filter-box`, `filter-label`, `filter-empty`, `body.conn-map` | **0** |
+| `verdict`, `verdict-pass` and siblings | **1** |
+| `verified` / `unverified` / `correction` | heavy, keep |
+
+Every lode file inlines the stylesheet whole, so this is per-document weight in 370 files,
+not one shared asset.
+
+**Read the zero honestly, because it measures two different things.** `lode-skeleton.sh`
+emits none of these classes, so a generator that never offers a component guarantees no
+document uses it — that is a consumer gap, not a dead pattern. `sidenote` and `marginnote`
+are the clearest case: they are the Tufte signature, the reason the layout reserves a right
+margin at all, and a lode file has plenty of asides that want to be one. The same argument
+does **not** rescue `conn-map`: that is a whole second layout mode with its own fixture, and
+nothing has ever rendered in it.
+
+**The concrete change, if this is ever taken:** split the list rather than deleting it
+whole. Retire what has no plausible consumer, and *wire* what does — teach
+`lode-skeleton.sh --docs` about `sidenote` so the pattern gets reachable before it gets
+judged. Deleting `sidenote` because the generator never offered it would be measuring the
+generator and blaming the stylesheet.
+
+**Why it is a judgment call.** The bytes cost nothing to maintain, and `maintain.nu check`
+does not care. Against that, every unused rule is surface a future agent has to read past in
+a 262-line file, and `sample.html` demos components no document contains, so the fixture
+oversells what the theme is actually used for. Removing `conn-map` also destroys the only
+worked example of the two-section sticky layout, which is expensive to reconstruct.
+
+**Deferred 2026-08-01:** audit recorded, nothing removed.

@@ -56,6 +56,16 @@ old-style and proportional, so tables lose alignment. Measured table per-digit s
 unlike the mermaid CDN, which renders no diagram at all offline. `font-display: swap` so
 text is never invisible while loading.
 
+**The stack is a token, `--body-font`, because two rules need it and one of them is not a
+descendant of `body` in the way it looks.** `.mermaid-zoom` sets `font: inherit`, which
+resolves against `pre.mermaid` — so the injected button computed `monospace` at 14.9px, the
+only control in the sheet rendered in the code face while `.filter-box` sat in the body
+serif. That undoes half of what removing `pre.mermaid`'s fill and accent bar was for: the
+diagram stopped reading as source code and the button under it did not. `font-family:
+var(--body-font)` after the `font: inherit` shorthand fixes the family without disturbing
+the inherited weight and style. A token rather than a second copy of a five-item stack:
+change the face once and both follow, which a duplicated literal would not.
+
 Georgia stays first in the fallback stack: most widely installed sturdy screen serif
 (Windows since Win98, all macOS, iOS), low stroke contrast, large x-height. Noto Serif
 covers Android/ChromeOS, DejaVu Serif covers Linux. Charter and Palatino are absent on
@@ -212,6 +222,32 @@ having markers again.
 
 **No `font-family` on `table`** — tables inherit the body serif, which is correct because
 Source Serif 4's digits are tabular and lining by construction.
+
+**`table.tree` is a table, deliberately not a `treegrid`.** The ask was hierarchy plus
+columnar density — an Epic/Feature/requirement tree where each level shares the same
+columns. `role="treegrid"` is the obvious-looking answer and the wrong one: the role is a
+keyboard contract (roving `tabindex`, arrow keys, `aria-level` / `aria-expanded` /
+`aria-posinset` / `aria-setsize`), so shipping the role without the script promises
+interaction that does not exist and *removes* the native row/column semantics a plain
+`<table>` already announces. A static document wants the table it already had, with a depth
+cue. So depth is an author attribute, `data-depth`, and everything else is presentation.
+
+Three consequences worth recording, because each was a choice:
+
+- **Zebra striping is switched off inside `.tree`.** `tbody tr:nth-child(even)` tints by
+  parity, and parity is not depth, so on a tree the stripe cuts across the structure it is
+  supposed to help read. The root rows carry `--code-bg` instead, which puts the tint where
+  the grouping actually is.
+- **The `↳` needs the same alt-text treatment as the outbound arrow.** It is a `::before`
+  on the first cell, so it lands in the accessibility name exactly the way `\A0↗` did — a
+  row would announce as "↳ REQ-01". Same fix, same `@supports (content: "x" / "y")` guard:
+  `content: "\21B3\A0" / ""`. Any future decorative `::before` owes this.
+- **Indent is one `--tree-step` custom property on `.tree`, and only levels 0–3 exist.**
+  `attr()` cannot feed a length in a `calc()` with useful support, so the alternative to
+  four explicit rules is a custom property per row in the markup, which pushes styling into
+  the generator. Four rules is smaller and a level-4 row degrades to flat rather than to
+  wrong. Depth also de-emphasises with `--label` at levels 2 and 3 rather than shrinking
+  type: nested ratios compound, and the table is already at `0.95em`.
 
 **`width: auto; max-width: 100%`, not `width: 100%`.** A three-column table stretched to the
 full page: measured 1152px rendered against 315px of content at 1280px, so the zebra stripes
@@ -383,6 +419,25 @@ itself, so there is nothing left to escape to, and the SVG renders at natural si
 extra container width no longer changes the diagram at all. Verified body width, article
 width and h1 left edge identical across both fixtures at eight viewports.
 
+**The full-width row is `article > *`, not an allow-list of three selectors.** It was
+`> h1, > .byline, > .subtitle`, so *any* other direct child of the article silently joined
+the two-column flex row instead of spanning it. Measured at 1280px with a bare `<p>`, a
+third `<section>` and a `<footer>` injected: the paragraph landed at `x=64 w=471` beside the
+Links column, and the three sections split the row `282 / 168 / 112px`. This is the same
+silent-visual-break class as the v1.8.0 section-order change — nothing errors, it just looks
+wrong — and a generator that grows a footer or a notes section triggers it without touching
+the stylesheet.
+
+`> *` at (0,1,2) loses to `> section:nth-of-type(1)` at (0,2,3), so the two column rules
+still win and the shipped layout is pixel-identical: Links `x=64 w=282`, graph `x=386 w=830`
+before and after. Verified with the same three extras appended — each now spans the full
+1152px on its own row.
+
+It also retires `.subtitle`, which had a rule here and no user anywhere in the repo: not in
+either fixture, not in `README.md`'s list of markup obligations, nowhere in the stylesheet.
+A class a consumer had to guess at is worse than no class, and the wildcard covers whatever
+they actually emit.
+
 `overflow: visible` on `body.conn-map pre.mermaid` because the base `pre` rule sets
 `overflow-x: auto`, which would otherwise clip a diagram's drop shadow.
 
@@ -447,6 +502,16 @@ existing `text-decoration-color`. Measured 0.987 → 0.976 → 0.968 → 0.962 �
 and 0.964 → 0.976 → 0.987 → 0.995 → 0.999 releasing. The lesson generalises: a transition
 belongs on the resting rule, and `transform` and `scale` are different properties.
 
+**`[tabindex="0"]:focus-visible` is in the focus rule, because the one stop this sheet does
+not own is the one consumers are told to add.** `README.md` requires `tabindex="0"` on
+anything that scrolls sideways — the `pre` today, a table wrapper if `backlog.md` §1 is ever
+taken — and neither has a selector of its own. Measured before: the focused `pre` fell back
+to Chromium's default ring, `1px auto rgb(0,95,204)` at `0px` offset, against `2px solid
+--link` at `2px` offset on every other stop. Not a contrast failure — the default ring
+paints a white line first, measured 14.24:1 against `--surface` — so this is consistency
+alone. After: the `pre` ring pixels read `rgb(143,201,217)` at 7.81:1, the same ring as
+everything else, and the attribute selector covers the wrapper before it exists.
+
 **No `border-radius` in the `:focus-visible` rule.** It carried `border-radius: 3px`,
 which made `.filter-box` corners tighten 4px → 3px at the moment the ring appeared, and
 applied unevenly — `.nav-list li a` (specificity 0,1,2) outranks `a:focus-visible`
@@ -509,6 +574,38 @@ returning. It now carries `role="dialog"`, `aria-modal="true"`, `aria-label="Zoo
 focus to the button that opened it. Verified: Enter on the button gives focus inside the
 overlay with both siblings `inert`, and Escape returns focus to `.mermaid-zoom` and clears
 `inert`. `overscroll-behavior: contain` keeps the page underneath from scrolling.
+
+**The overlay is `inert` while closed, and that is what keeps it out of the page.** Giving
+it `role="dialog"` fixed the open state and broke the closed one: the overlay is only
+`opacity: 0; pointer-events: none`, never hidden, so it stayed in the accessibility tree
+between zooms. Measured with the overlay closed — `display: flex`, `visibility: visible`,
+`hidden: false`, and an AX node of `{role: "dialog", name: "Zoomed diagram", ignored:
+false}` sitting **first in the tree**. Every generated page opened with a permanently-open,
+empty modal, and `aria-modal="true"` is a page-wide instruction to disregard everything
+outside it.
+
+`overlay.inert = true` at init, `false` in `zoom()`, `true` again in `dismiss()`. One
+property does both jobs — it drops the node from the accessibility tree and blocks hit
+testing — and it does not interfere with the opacity transition. Verified: zero `dialog`
+nodes while closed, the first unignored roles now `main` / `article`; on open the dialog is
+present, named and focused with both siblings `inert`; Escape restores `inert: true` and
+returns focus. `aria-hidden` was not used — it hides from assistive tech while leaving the
+element focusable, which is the defect it would be papering over.
+
+**The zoom button is named from the diagram, not from a constant.** `textContent` was a
+hard-coded `'Zoom diagram'`, so a page with two diagrams exposed two buttons with the same
+accessible name and no way to tell them apart — verified in the AX tree by adding a pie
+chart to `sample.html`. The distinguishing text already existed and was being thrown away:
+Mermaid writes each fence's `accTitle:` into the SVG's root `<title>`, which is exactly the
+consumer obligation `README.md` already demands. `aria-label` is now `label + ': ' +
+title`, giving `'Zoom diagram: Decision flow sample'` and `'Zoom diagram: Budget split'`,
+with the visible text left short. The overlay takes the same name on open, so the dialog
+announces which diagram it holds.
+
+`window.mermaidZoomLabel` overrides the label word, following the `window.mermaidSecurityLevel`
+convention already in this file. Both strings were hard-coded English in a file consumers
+inline verbatim — the same constraint that stopped the overlay's close cue from being a word
+rather than a glyph. A glyph could not carry this one, so the override is the way out.
 
 **`accTitle` / `accDescr` in both fixture diagrams.** The SVG had a `graphics-document` role
 with no accessible name at all — an unnamed graphic carrying the page's structure. These are
@@ -655,9 +752,22 @@ meaning. `box-shadow` cannot do this job: forced-colors suppresses shadows, whic
 print block's `inset 0 0 0 1px currentColor` could not simply be reused — and why `.badge`,
 which uses exactly that ring on screen, still needs the border here.
 
-Zebra striping still disappears in forced colors — `--code-bg` resolves to `Canvas`. Left
-alone: the header rule and row rhythm survive, and reinstating stripes would mean per-row
-borders in a mode where the user's own table rendering is the point.
+**Tables carry a real border in forced colors, because every boundary they had was
+suppressed.** The earlier note here claimed "the header rule and row rhythm survive"; they
+do not. Measured under `forced-colors: active`: `table` `box-shadow: none`, `th`
+`box-shadow: none` — the inset rule under the header is a shadow too — `td` `border: 0px
+none`, and `th`'s background resolving to `rgb(0,0,0)`, identical to the zebra rows it was
+meant to sit above. A pixel scan down the table's right edge returned a single value. The
+table had no visible structure at all: header indistinguishable from data, no outer rule,
+no stripes. `table, th, td { border: 1px solid currentColor }` joins `code, .verdict,
+.badge` in the same block; verified, the edge now returns five distinct values including
+the forced foreground.
+
+Zebra striping itself still disappears — `--code-bg` resolves to `Canvas`, and that is left
+alone, since the user's own table rendering is the point of the mode. What was restored is
+the grid, not the tint. This is the third component in this sheet whose only boundary was a
+`box-shadow`; forced colors suppresses shadows, which is the general rule behind both this
+fix and the `.badge` border above.
 
 **`em` carries no colour.** It was `--label`, 6.75:1 against `--surface` where the copy
 around it is 13.36:1 — emphasis rendering at half the contrast of the text it emphasises.
@@ -714,6 +824,20 @@ first frame, then a rush; the click felt late. Every other transition in the she
 already `ease-out`.
 
 ## Misc
+
+**`hr` is a `border-block-start`, not a `box-shadow`, because the shadow painted nothing
+at all.** It read `border: none; box-shadow: 0 1px 0 var(--rule-light)`. `border: none`
+collapses the element to `height: 0px` (measured), and a `box-shadow` on a zero-area box
+has nothing to offset — pixel-scanned a 40px band across the `hr` in `sample.html` at
+1280px and every pixel was bare `--surface`. The separator was invisible on screen at every
+width, in print, and in forced colors, for as long as the rule has existed. A real border
+paints (measured 1px at 3.05:1 against `--surface`, which is what `--rule-light` is tuned
+for), survives forced colors where a shadow is suppressed, and needs no `height`.
+
+The same defect does **not** affect `table`, whose `box-shadow: 0 1px 0 var(--rule),
+0 -1px 0 var(--rule)` sits on a box with real height — verified, both rules paint at
+`rgb(151,159,196)`. Shadow-drawn rules are fine; shadow-drawn rules on a zero-height box
+are not. Any future hairline should ask which it is.
 
 `pre.mermaid { text-align: center }` applies to **both** layouts. It once lived on
 `body.conn-map` only, so an inline diagram narrower than its column hugged the left edge in

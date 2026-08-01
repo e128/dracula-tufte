@@ -6,7 +6,7 @@
   <title>Tufte-Dracula — connections-map layout</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.9.0 */
+    /* Dracula-Tufte (muted) v1.10.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -36,6 +36,7 @@
       --data-2:      oklch(0.742 0.120 340.000);
       --data-3:      oklch(0.775 0.100 165.000);
       --data-4:      oklch(0.790 0.100 112.500);
+      --body-font:   'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
       --page-width:  min(90vw, 160rem);
       --gutter:      max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
       --radius:      4px;
@@ -44,7 +45,7 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
+      font-family: var(--body-font);
       font-weight: 450;
       width: min(100% - 2 * var(--gutter), var(--page-width)); margin-inline: auto;
       padding-block: 3rem;
@@ -68,10 +69,11 @@
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
-    .mermaid-zoom:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
+      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
     }
     cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
@@ -107,6 +109,15 @@
     }
     tbody tr:nth-child(even) td { background: var(--code-bg); }
     tbody tr:hover td { background: var(--surface-alt); }
+    table.tree { --tree-step: 1.6rem; }
+    table.tree [data-depth="1"] td:first-child { padding-inline-start: calc(var(--tree-step) + .6rem); }
+    table.tree [data-depth="2"] td:first-child { padding-inline-start: calc(2 * var(--tree-step) + .6rem); }
+    table.tree [data-depth="3"] td:first-child { padding-inline-start: calc(3 * var(--tree-step) + .6rem); }
+    table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0"; color: var(--muted); }
+    table.tree tbody tr:nth-child(even) td { background: none; }
+    table.tree [data-depth="0"] td { background: var(--code-bg); font-weight: 600; }
+    table.tree [data-depth="2"] td, table.tree [data-depth="3"] td { color: var(--label); }
+    table.tree tbody tr:hover td { background: var(--surface-alt); }
     details { margin: .5rem 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
     summary { cursor: pointer; font-weight: 450; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
     summary:hover { color: var(--on-surface); }
@@ -120,7 +131,7 @@
       margin: 1.5rem 0; color: var(--label); font-style: italic;
     }
     blockquote p:last-child { margin-bottom: 0; }
-    hr { border: none; box-shadow: 0 1px 0 var(--rule-light); margin: 2.5rem 0; }
+    hr { border: none; border-block-start: 1px solid var(--rule-light); margin: 2.5rem 0; }
     img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px oklch(1 0 0 / 0.1); border-radius: var(--radius-sm); }
     dl { margin: 1rem 0; }
     dt { font-weight: 600; margin-top: .5rem; }
@@ -194,7 +205,7 @@
     pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
     .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
-      font: inherit; font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
+      font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
       border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation; }
     .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     body.conn-map pre.mermaid { overflow: visible; }
@@ -203,9 +214,7 @@
       body.conn-map article {
         display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 2.5rem;
       }
-      body.conn-map article > h1,
-      body.conn-map article > .byline,
-      body.conn-map article > .subtitle { flex: 1 1 100%; }
+      body.conn-map article > * { flex: 1 1 100%; }
       body.conn-map article > section:nth-of-type(1) {
         flex: 0 0 clamp(220px, 22vw, 300px);
         position: sticky; top: 1rem;
@@ -234,6 +243,7 @@
     @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
     @media (forced-colors: active) {
       code, .verdict, .badge { border: 1px solid currentColor; }
+      table, th, td { border: 1px solid currentColor; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
@@ -295,12 +305,18 @@
     if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Zoomed diagram');
     overlay.tabIndex = -1;
+    overlay.inert = true;
+    const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const named = (svg, label) => {
+      const title = svg.querySelector('title')?.textContent?.trim();
+      return title ? label + ': ' + title : label;
+    };
     const siblings = () => [...document.body.children].filter(el => el !== overlay);
     let opener = null;
     const dismiss = () => {
       overlay.classList.remove('active');
+      overlay.inert = true;
       siblings().forEach(el => { el.inert = false; });
       if (opener) { opener.focus(); opener = null; }
     };
@@ -309,8 +325,10 @@
       zoomed.removeAttribute('width');
       zoomed.removeAttribute('height');
       zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.setAttribute('aria-label', named(svg, zoomLabel));
       overlay.replaceChildren(zoomed);
       overlay.classList.add('active');
+      overlay.inert = false;
       siblings().forEach(el => { el.inert = true; });
       opener = trigger;
       overlay.focus();
@@ -328,7 +346,8 @@
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'mermaid-zoom';
-          button.textContent = 'Zoom diagram';
+          button.textContent = zoomLabel;
+          button.setAttribute('aria-label', named(svg, zoomLabel));
           button.addEventListener('click', () => zoom(svg, button));
           pre.append(button);
         }
