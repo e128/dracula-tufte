@@ -15,7 +15,7 @@ Rendered in-browser via GitHub Pages (main branch, served straight — no build 
 
 | File                  | What It Be |
 |-----------------------|------------|
-| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.10.0, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
+| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.12.0, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
 | `mermaid.js`          | **The Mermaid init script.** The complete `<script type="module">…</script>` block — the `mermaid@11` CDN import, `theme: 'base'` + `darkMode` + hex `themeVariables` init, and the zoom overlay handler (injects a `<button class="mermaid-zoom">` per diagram; the overlay is a focus-managed `role="dialog"`). Despite the `.js` name it holds the wrapping `<script>` tags. Consumers inline this only when the rendered scroll contains a ` ```mermaid ` fence. Bump the CDN pin here. |
 | `mermaid-palette.json` | **Mermaid's hex palette.** The Tufte-Dracula palette as hex, per `themeVariables` key plus `classDef` node roles. Mermaid cannot consume `oklch()` (khroma throws `Unsupported color format` and *no* diagram renders) or `var()`, so this be the one place hex lives. Each entry names the `:root` variable it projects in its `from` field, and CI recomputes every hex from that variable's `oklch()` — hex here that disagrees with the stylesheet fails the build. `mermaid.js` carries the same values inline because consumers inline it with no build step; CI fails if the two disagree. Generators that emit their own `classDef` lines read the `classdef` block, whose fills draw only from the `--data-1..4` ramp (the prose accents `--pink`/`--green`/`--orange` already mean something in body copy). |
 | `tokens.css`          | **Palette reference. Generated.** The `:root { … }` block of `tufte-dracula.css`, sliced out verbatim by `build-sample.nu`. Not read by the renderer. Do not hand-edit — change `tufte-dracula.css` and regenerate. |
@@ -26,7 +26,7 @@ Rendered in-browser via GitHub Pages (main branch, served straight — no build 
 
 ## Consumers
 
-Consumers pin to a tag (currently **`v1.10.0`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
+Consumers pin to a tag (currently **`v1.12.0`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
 
 **Inline verbatim, or slice the body.** `tufte-dracula.css` ships wrapped in its own `<style>` tags for consumers that inline it whole. A consumer whose generator supplies the wrapper itself takes the bare body with `sed '1d;$d'` — the wrapper be exactly one line at each end, and CI holds it there, so the slice can't rot. Same for `mermaid.js` and its `<script>` tags. Consumers needing the overlay CSS conditionally should note it ships in the stylesheet unconditionally (a dozen inert lines when no diagram be present); `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` be the parts to omit, and the script throws a named error if the div be missing.
 
@@ -52,10 +52,10 @@ Each button takes its accessible name from that diagram's `accTitle:` — `Zoom 
 
 1. Edit the stylesheet or Mermaid script. Colors change in the `tufte-dracula.css` `:root` block and nowhere else; if the color is one Mermaid needs, recompute its hex in `mermaid-palette.json` and `mermaid.js` (`nu maintain.nu check` tells ye which).
 2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
-3. Bump the version line in `tufte-dracula.css` (the template version).
+3. Bump the version with `nu maintain.nu bump <version>`, which stamps `tufte-dracula.css`, this README, and regenerates. Write the version as `vX.Y.Z` wherever it appears in prose — `bump` rewrites the `v`-prefixed form, so a bare `X.Y.Z` in a doc example goes stale without anyone noticing.
 4. Commit to a branch — never straight to `main` — with a conventional message (`feat: ...` / `fix: ...`).
 5. Open a PR and let the `contract` check pass on it: `gh pr create --fill && gh pr checks --watch`, then `gh pr merge --squash`. The merge be what the required check actually gates.
-6. From an updated `main`, run `nu maintain.nu release 1.10.0`. It verifies `HEAD` be `origin/main`, waits for every check on that exact SHA, and writes an annotated tag only if all conclude `success`. A red check, a missing check, or a `HEAD` that never landed through the PR all abort before tagging.
+6. From an updated `main`, run `nu maintain.nu release <version>`. It verifies `HEAD` be `origin/main`, refuses a version the stylesheet be not stamped with, waits for every check on that exact SHA, and writes an annotated tag only if all conclude `success`. A red check, a missing check, or a `HEAD` that never landed through the PR all abort before tagging.
 7. Each consumer repo runs `git submodule update --remote external/dracula-tufte` and commits the new pointer.
 
 **A required status check can only be satisfied by a pull request.** The check runs *after* a push, so `git push origin main` can never have satisfied it — GitHub takes the push and records `Bypassed rule violations`. Splitting the commit and tag into two pushes does not help; only the PR does. Consumers pin to tags, so a tag on a commit nothing gated hands every one of them an unverified payload. If a push ever reports a bypass, say so and revert rather than tagging on top of it.
