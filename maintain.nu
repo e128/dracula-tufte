@@ -1,16 +1,18 @@
 #!/usr/bin/env nu
 # maintain.nu — regular upkeep: local contract check (mirrors CI without a
-# push round-trip), template-version bump across all 5 sites, mermaid CDN pin
-# bump. Run: `nu maintain.nu check|bump <version>|mermaid <version>`
+# push round-trip), template-version bump across all 5 sites, CI-gated release
+# tagging, mermaid CDN pin bump.
+# Run: `nu maintain.nu check|bump <version>|release <version>|mermaid <version>`
 #
 # ponytail: wraps existing build-sample.nu + string replace, no new build
-# system. bump/mermaid stop short of commit/tag/push — those touch shared
-# history and stay manual.
+# system. bump/mermaid stop short of commit — that stays manual. `release` does
+# push and tag, because the ordering between them is the whole point: a tag
+# pushed beside its commit claims the contract held before anything checked it.
 
 const HERE = path self | path dirname
 
 def main [] {
-  print "usage: nu maintain.nu <check|bump <version>|mermaid <version>>"
+  print "usage: nu maintain.nu <check|bump <version>|release <version>|mermaid <version>>"
 }
 
 # Mirrors .github/workflows/contract-check.yml locally: 8 files exist, the hex
@@ -90,7 +92,88 @@ def "main bump" [version: string] {
   nu ($HERE | path join "build-sample.nu")
   print $"Bumped. Review the diff, then:"
   print $"  git add -A && git commit -m 'feat: v($version) — <summary>'"
-  print $"  git tag v($version) && git push origin main v($version)"
+  print $"  nu maintain.nu release ($version)"
+}
+
+# Tag a release only after CI has gone green on the exact commit being tagged.
+#
+# `git push origin main v1.x.0` pushes both at once, so the tag makes its claim
+# before anything has checked it — and if the branch has a required status
+# check, that push either bypasses the rule or races it. This splits the two:
+# commit first, wait for the verdict, tag only on success.
+#
+# ponytail: polls the check-runs API rather than adding a release workflow.
+# The gate belongs where a human or an agent tags, not in another YAML file.
+def "main release" [version: string] {
+  let tag = $"v($version)"
+  let sha = (^git rev-parse HEAD | str trim)
+  let branch = (^git rev-parse --abbrev-ref HEAD | str trim)
+
+  if (^git status --porcelain | str trim) != "" {
+    print "Working tree is dirty — commit or stash before releasing."
+    exit 1
+  }
+  # The tag has to name what the stylesheet says it is, or consumers pin a
+  # version that disagrees with the payload they inline.
+  let stamped = (open --raw ($HERE | path join "tufte-dracula.css")
+    | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
+  if $stamped != $version {
+    print $"tufte-dracula.css is stamped v($stamped), not v($version)."
+    print $"  Run `nu maintain.nu bump ($version)` and commit first."
+    exit 1
+  }
+  if (^git tag --list $tag | str trim) != "" {
+    print $"($tag) already exists locally. Delete it or pick the next version."
+    exit 1
+  }
+
+  print $"Pushing ($branch) — commit only, no tag."
+  ^git push origin $branch
+
+  print $"Waiting for checks on ($sha)…"
+  mut checks = []
+  mut waited = 0
+  loop {
+    let raw = (^gh api $"repos/{owner}/{repo}/commits/($sha)/check-runs"
+      --jq '.check_runs[] | [.name, .status, (.conclusion // "pending")] | @tsv' | complete)
+    if $raw.exit_code != 0 {
+      print $"gh api failed: ($raw.stderr | str trim)"
+      exit 1
+    }
+    $checks = ($raw.stdout | str trim | lines | where {|l| $l != "" }
+      | each {|l|
+          let f = ($l | split row "\t")
+          {name: $f.0, status: $f.1, conclusion: $f.2}
+        })
+
+    # No check at all is a failure, not a pass. A commit that CI never saw is
+    # exactly the thing this verb exists to refuse to tag.
+    if ($checks | is-not-empty) and ($checks | all {|c| $c.status == "completed" }) { break }
+    if $waited >= 600 {
+      if ($checks | is-empty) {
+        print $"No check run ever appeared for ($sha) after 600s. Not tagging."
+      } else {
+        print $"Checks still running after 600s. Not tagging."
+      }
+      exit 1
+    }
+    sleep 10sec
+    $waited = $waited + 10
+  }
+
+  for c in $checks { print $"  ($c.name): ($c.conclusion)" }
+  let failed = ($checks | where conclusion != "success")
+  if ($failed | is-not-empty) {
+    print $"NOT TAGGING — ($failed | length) check\(s\) did not pass on ($sha)."
+    exit 1
+  }
+
+  # Annotated, never lightweight: a lightweight tag is just a second name for a
+  # commit, with no tagger, no date and nothing `git tag -v` can even look at.
+  let subject = (^git log -1 --pretty=%s | str trim)
+  ^git tag -a $tag -m $"($tag) — ($subject)"
+  ^git push origin $tag
+  print $"Tagged ($tag) on ($sha), verified green."
 }
 
 # Bump the mermaid CDN pin to an exact version, regenerate fixtures so the pin

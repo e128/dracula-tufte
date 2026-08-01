@@ -70,6 +70,51 @@ Never delete a load-bearing explanation outright — move it to NOTES.md.
 - `tufte-dracula.css` carries its own `<style>` wrapper and `mermaid.js` its own
   `<script>` wrapper. Do not add a second one.
 
+## A tag is a claim the contract held. Verify it, never assume it
+
+Consumers pin to a tag through a git submodule. A tag on a commit CI never checked
+hands every consumer a payload nothing verified — and because the fixtures and
+`tokens.css` are generated, a stale or broken one looks completely normal.
+
+**Use `nu maintain.nu release <version>`.** It is the whole gate: it refuses a dirty
+tree, refuses a version the stylesheet is not stamped with, pushes the commit *alone*,
+polls the check runs for that exact SHA, and tags only when every one concludes
+`success`. It writes an **annotated** tag, so `git tag -v` has an object to look at.
+
+```
+nu maintain.nu bump 1.11.0
+git add -A && git commit -m 'fix: v1.11.0 — <summary>'
+nu maintain.nu release 1.11.0
+```
+
+If you tag by hand, the same three steps are mandatory and in this order:
+
+```
+git push origin main                                  # commit ALONE
+gh api repos/{owner}/{repo}/commits/$(git rev-parse HEAD)/check-runs \
+  --jq '.check_runs[] | .name + ": " + (.conclusion // "pending")'
+git tag -a v1.11.0 -m 'v1.11.0 — <summary>' && git push origin v1.11.0
+```
+
+**Rules that have no exception:**
+
+- **Never `git push origin main v1.x.0`.** One command pushes the commit and the tag
+  together, so the tag makes its claim before anything has checked it, and on a branch
+  with a required status check that push either races the rule or bypasses it.
+- **Never tag a commit with no check run.** Absent is not passing. `maintain.nu release`
+  treats an empty check list as a failure and so should you.
+- **Never `--no-verify`, never `--force` a tag that has been pushed.** A moved tag
+  silently changes what every pinned consumer resolves to.
+- **If a push reports `Bypassed rule violations`, stop and say so.** That line means
+  protection was overridden, not satisfied. Report it in the same message, do not bury
+  it, and offer to revert rather than carrying on to the tag.
+- **Annotated tags only** (`git tag -a`). A lightweight tag is a second name for a
+  commit with no tagger, no date, and nothing to verify — `git tag -v` errors on it
+  outright. `v1.9.0` and `v1.10.0` are lightweight for this reason; do not add more.
+
+Releasing is outward-facing and hard to reverse. Confirm before tagging or pushing
+unless the ask was explicitly to release.
+
 ## Constraints that shape every decision
 
 - **No build step.** Consumers inline two files verbatim. Anything requiring compilation,

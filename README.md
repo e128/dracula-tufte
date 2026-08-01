@@ -54,8 +54,10 @@ Each button takes its accessible name from that diagram's `accTitle:` — `Zoom 
 2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
 3. Bump the version line in `tufte-dracula.css` (the template version).
 4. Commit with a conventional message (`feat: ...` / `fix: ...`).
-5. Tag with the next semver: `git tag v1.10.0 && git push origin v1.10.0`.
+5. Release with `nu maintain.nu release 1.10.0`. It pushes the commit **alone**, waits for the contract check on that exact SHA, and writes an annotated tag only if every check concludes `success`. A red check, or no check at all, aborts before tagging.
 6. Each consumer repo runs `git submodule update --remote external/dracula-tufte` and commits the new pointer.
+
+**Never `git push origin main v1.x.0`.** One command pushes commit and tag together, so the tag claims the contract held before anything checked it — and on a protected branch that push races the required check or bypasses it outright. Consumers pin to tags; a tag on an unverified commit hands them a payload nothing gated. If a push ever reports `Bypassed rule violations`, that be protection overridden, not satisfied — say so and revert rather than tagging on top of it.
 
 ## Contract Enforcement
 
