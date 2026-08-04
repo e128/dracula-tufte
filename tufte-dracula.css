@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.13.0 */
+    /* Dracula-Tufte (muted) v1.14.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -30,6 +30,7 @@
       --data-3:      oklch(0.775 0.100 165.000);
       --data-4:      oklch(0.790 0.100 112.500);
       --body-font:   'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
+      --mono-font:   ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
       --page-width:  min(90vw, 160rem);
       --gutter:      max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
       --radius:      4px;
@@ -68,15 +69,16 @@
       a[href^="http"]::after { content: "\A0↗" / ""; }
       table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
     }
-    cite { font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace; font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
+    cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
     code {
-      font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
+      font-family: var(--mono-font);
       font-size: 0.9em; color: var(--green);
       background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
       overflow-wrap: break-word;
     }
     pre {
+      font-family: var(--mono-font);
       background: var(--code-bg); color: var(--on-surface);
       padding: 1rem; overflow-x: auto;
       border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
@@ -200,8 +202,10 @@
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
     .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
       font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
-      border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation; }
+      border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation;
+      transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
+    .mermaid-zoom:active { scale: 0.96; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
       body.conn-map article {
@@ -218,14 +222,16 @@
       }
     }
     ::selection { background: var(--purple); color: var(--surface); }
+    @media (max-width: 1000px) {
+      .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
+      table { display: block; overflow-x: auto; width: fit-content; }
+    }
     @media (max-width: 600px) {
       :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
       body { padding-block: 1.5rem; }
-      .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
       pre { padding: 0.6rem; }
       aside, blockquote { padding: 0.4rem 0.85rem; }
       details, details.nav-group { padding: 0.3rem 0.6rem; }
-      table { display: block; overflow-x: auto; }
       .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
       .col-2 > ol, .col-2 > ul { columns: 1; }
       .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
