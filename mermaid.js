@@ -3,6 +3,7 @@
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
       securityLevel: window.mermaidSecurityLevel || 'strict',
+      fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
       themeVariables: {
         darkMode: true,
         fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
