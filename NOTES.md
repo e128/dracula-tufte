@@ -66,6 +66,22 @@ var(--body-font)` after the `font: inherit` shorthand fixes the family without d
 the inherited weight and style. A token rather than a second copy of a five-item stack:
 change the face once and both follow, which a duplicated literal would not.
 
+**The code face is a token too, `--mono-font`, and `pre` has to ask for it.** `pre` never set
+a `font-family`, so it inherited the UA's generic `monospace` — measured, a bare `<pre>`
+computed `monospace` while the inline `code` beside it computed
+`ui-monospace, "JetBrains Mono", "Fira Code", monospace`. The fixtures never showed it because
+their `pre` wraps a `<code>`, which supplies the family by inheritance; a consumer emitting a
+code block without the inner `<code>` got a different face for the block than for the inline
+spans on the same page. `pre` now carries `font-family: var(--mono-font)` and the literal is
+gone from `cite` and `code`, which is the same argument `--body-font` was created for: three
+copies of one five-item stack in a file that is hand-edited.
+
+`mermaid.js` still writes the stack out twice as a literal. That is not drift to fix — those
+are JavaScript strings in a config object and cannot read a CSS custom property, and both
+copies are load-bearing for different reasons (see the Mermaid section). Verified the `pre`
+change does not disturb them: the sequence diagram's `Note over` rect still measures 404px
+around 384px of text, and `.mermaid-zoom` still computes the body serif, not the code face.
+
 Georgia stays first in the fallback stack: most widely installed sturdy screen serif
 (Windows since Win98, all macOS, iOS), low stroke contrast, large x-height. Noto Serif
 covers Android/ChromeOS, DejaVu Serif covers Linux. Charter and Palatino are absent on
@@ -197,6 +213,19 @@ rest of the container empty. If it is ever revisited:
 - Smaller type makes the measure *worse*, not better: container width is `vw`/`%`-driven,
   so shrinking type just fits more characters per line.
 
+**Sidenotes stack below 1000px, not below 600px.** The float is `width: 28%`, so between the
+old 600px breakpoint and roughly 1280px the note was narrower than any measure worth reading:
+measured 150px at 601px, 194px at 768px, 227px at 900px — **19 to 25 characters per line** at
+0.9em, against 37 at 1280px. The body copy beside it kept the full container, so the page put
+a four-line ribbon of shredded text next to unbroken prose. 600px was a device preset; the
+breakpoint now sits where the content stops fitting. Above 1000px the note is 252px and up.
+
+The collapse declarations moved into their own `@media (max-width: 1000px)` block rather than
+changing the 600px block's query: everything else in that block — gutter, `pre` padding,
+`aside` / `blockquote` padding, `.edge-list`, `.col-2`, `.scorecard`, the 44px touch minimums
+— is genuinely phone-sized and was measured at 600px. Two breakpoints with distinct reasons
+beat one breakpoint that is wrong for half its contents.
+
 ## Lists
 
 **Prose `ul` keeps its markers.** `ul { list-style: none; padding-inline-start: 0 }` was a
@@ -265,7 +294,30 @@ That comparison turned up a **pre-existing** overflow that has nothing to do wit
 between 601px and roughly 1000px a wide table's min-content width exceeds the body and the
 *document* scrolls sideways — 731px against a 537px body at 601px, 746 against 691 at 768 —
 because the `overflow-x: auto` escape hatch only exists below 600px. Identical with
-`width: 100%` and with `width: auto`, so it predates both. See `backlog.md`.
+`width: 100%` and with `width: auto`, so it predates both.
+
+**Fixed in v1.14.0 by moving the escape hatch to `@media (max-width: 1000px)`, and it needed
+`width: fit-content` to come with it.** The trigger is wider than a six-column table: at 200%
+text-only zoom and a 601px viewport the *fixture's own three-column* `table.tree` measured
+588px against a 473px body and the document scrolled 51px sideways. `NOTES.md` had recorded
+sideways table scroll as a 400%-zoom problem; it starts at 200%.
+
+`display: block` alone is not the fix, because a block-level table takes `width: auto` and
+fills its container — which reinstates the exact defect `width: auto` was introduced to remove
+one paragraph above. Measured with only `display: block; overflow-x: auto` in the new band: the
+narrow tree table rendered 537px at 601px and 899px at 999px, the full body width, stripes
+running past the data again. `width: fit-content` resolves to the content width for a table
+narrower than its container and to the container width for one wider, so both cases land
+correctly — measured tree table 426 / 434 / 445px against bodies of 537 / 691 / 899px, and an
+injected eight-column table scrolling inside itself at 601px (`scrollWidth` 617 against
+`clientWidth` 537) with the document itself at 601px.
+
+The cost is the sticky header, which `display: block` makes inert, so it is now inert up to
+1000px rather than up to 600px — verified still pinning above it (`th` top holds at 0 after a
+60px page scroll at 1280px). That trade is deliberate: a pinned header matters on a long table
+being read at desktop width, and a page that scrolls sideways is a WCAG 1.4.10 failure at
+every width it happens. Keyboard reach for the scroll container (WCAG 2.1.1) is still open —
+see `backlog.md`.
 
 Tables briefly carried the monospace stack because Georgia could not do this: its figures
 are old-style *and* proportional (9 distinct advances, `1` at 430/1000 against `0` at
@@ -486,6 +538,16 @@ either fixture, not in `README.md`'s list of markup obligations, nowhere in the 
 A class a consumer had to guess at is worse than no class, and the wildcard covers whatever
 they actually emit.
 
+**The focus node's label is deliberately long, and that is coverage, not filler.** The
+connections map is the one fixture rendering with `useMaxWidth: false` plus
+`width: auto !important; max-width: 100% !important`, so it is the only place where a node box
+sized wrong lands in a *constrained* column rather than on an open page — the failure mode the
+v1.13.0 label-box fix was about. With five short labels nothing here ever tested it. The focus
+label now wraps to four lines and the box grows to hold them: measured at 1280px, rect 260px
+around 200px of text, all five nodes `fits: true`, the SVG 416px inside an 830px graph column,
+and no document scroll at any of the nine widths at either root size. Shortening it retires the
+check, the same way shortening `sample.html`'s sequence note or quadrant labels would.
+
 `overflow: visible` on `body.conn-map pre.mermaid` because the base `pre` rule sets
 `overflow-x: auto`, which would otherwise clip a diagram's drop shadow. The conn-map-only
 copy of that rule is gone as of v1.13.0: `pre.mermaid` now carries `overflow: visible`
@@ -552,6 +614,16 @@ It is now `scale: 0.96` in `:active` with the transition on the base rule alongs
 existing `text-decoration-color`. Measured 0.987 → 0.976 → 0.968 → 0.962 → 0.96 pressing
 and 0.964 → 0.976 → 0.987 → 0.995 → 0.999 releasing. The lesson generalises: a transition
 belongs on the resting rule, and `transform` and `scale` are different properties.
+
+**`.mermaid-zoom` was the one control outside the sheet's own feedback language.** It is the
+only real `<button>` here, and it had neither of the two things every other interactive surface
+has: its `:hover` colour and fill changed with no transition while `a` and `summary` ease at
+0.15s, and it had no press state while `.nav-list li a` presses to `scale: 0.96`. It now
+carries `transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s
+ease-out` on the resting rule and `scale: 0.96` in `:active` — the shape the nav-link fix
+above established, for the same two reasons: the transition lives on the resting rule so
+release animates too, and it names `scale`, the property actually being set. Measured through
+a real mousedown: 0.987 → 0.973 → 0.963 → 0.96.
 
 **`[tabindex="0"]:focus-visible` is in the focus rule, because the one stop this sheet does
 not own is the one consumers are told to add.** `README.md` requires `tabindex="0"` on
@@ -896,6 +968,17 @@ the default layout while the same diagram sat centred in a connections map.
 
 `.filter-box` is `font-size: 1em`, not the old `max(1em, 16pt)` — 16pt is 21.3px, not 16px;
 the iOS-zoom floor is 12pt.
+
+**The filter's other two obligations are modelled now.** `README.md` has always asked a
+consumer who wires the filter for a `role="status"` region carrying the result count and a
+`.filter-empty` line for no matches, and neither existed in either fixture — `.filter-empty`
+was a styled class with no instance anywhere in the repo, so nothing verified it rendered and
+a consumer had no reference copy for the one empty state in the system. `sample.html` now
+carries `<p role="status">3 entries</p>` after the input and
+`<p class="filter-empty">No entries match “tier 4”. Clear the filter to see all 3.</p>` after
+the list, which is the empty-state shape that names the query and offers the way out rather
+than shrugging. Verified in the AX tree: one `status` node. Both states show at once, the way
+the four `.verdict-*` chips do — a fixture demonstrates states, it does not simulate them.
 
 Print drops link chrome — no underline, no outbound marker: on paper the destination is
 unreachable either way, so both are noise.

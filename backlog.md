@@ -13,28 +13,38 @@ the narrative goes in the commit.
 
 ---
 
-## 1. Wide tables need one decision that covers three failures
+## 1. Wide tables: the page-scroll half is fixed, the keyboard half is not
 
-**Where:** `tufte-dracula.css`, `table`, `th { position: sticky; top: 0 }`, and the
-`@media (max-width: 600px)` rule `table { display: block; overflow-x: auto }`
+**Where:** `tufte-dracula.css`, `th { position: sticky; top: 0 }`, and the
+`@media (max-width: 1000px)` rule `table { display: block; overflow-x: auto; width: fit-content }`
 
 Three problems, one shape. All measured on a six-column table, Chromium.
 
-**a. A wide table scrolls the document sideways between 601px and ~1000px.** Its
-min-content width exceeds the body — 731px against a 537px body at 601px, 746 against 691
-at 768 — and the `overflow-x: auto` escape hatch only exists below 600px. WCAG 1.4.10.
-Identical with `width: 100%` and `width: auto`, so this predates the v1.9.0 width change
-and is not caused by it. 601px is a real viewport: small tablets and landscape phones.
+**a. ~~A wide table scrolls the document sideways between 601px and ~1000px.~~ Fixed in
+v1.14.0** by moving the `overflow-x: auto` escape hatch to `max-width: 1000px` and giving it
+`width: fit-content` so a narrow table still shrinks to its content. The trigger turned out to
+be broader than a six-column table: the fixture's own three-column `table.tree` did it at 200%
+text zoom and 601px, 588px against a 473px body, 51px of document scroll. Measurements in
+[NOTES.md](NOTES.md) under "Tables".
 
-**b. The sticky header is inert below 600px.** `display: block` makes the table its own
-scroll container, so `top: 0` resolves against a box that never scrolls vertically. It
-looks like it works because the rule is present.
+**b. The sticky header is inert wherever the escape hatch applies — now up to 1000px, was
+600px.** `display: block` makes the table its own scroll container, so `top: 0` resolves
+against a box that never scrolls vertically. It looks like it works because the rule is
+present. Widening the band widened this, deliberately: a page that scrolls sideways fails
+1.4.10 at every width it happens, and a pinned header earns its keep on a long table read at
+desktop width, which is above 1000px. Verified still pinning there (`th` top holds at 0 after a
+60px scroll at 1280px).
 
 **c. Neither scroll container is reachable by keyboard.** A scrollable `pre` and a
 scrollable table with no focusable owner strand their overflowed content (WCAG 2.1.1). The
 `pre` half of this shipped in v1.9.0 — `tabindex="0"` plus `role="region"` and a label, now
-a documented consumer obligation. The table half is still open because the table's own
-`tabindex` is the wrong place for it if a wrapper is coming.
+a documented consumer obligation. The table half is still open, and (a)'s fix widened the band
+where it bites. Two things keep it open: the table's own `tabindex` is the wrong place for it
+if a wrapper is coming, and it is not free — `tabindex="0"` on `table` adds a tab stop at
+*every* width, including the ones where nothing scrolls, which is 2,093 extra stops across the
+largest consumer. **`role="region"` must not go on the `<table>` itself**: it would override
+`role="table"` and take the row and column semantics with it, the same defect as putting
+`role="button"` on `pre.mermaid`. It belongs on a wrapper or nowhere.
 
 **The wrapper this entry used to propose does not fix (b).** Measured: a
 `div` with `overflow-x: auto` around the table computes `overflow-y: auto` as well — one
@@ -70,9 +80,11 @@ also fixes (a). Add `tabindex="0"` and it fixes (c).
   has not wrapped yet — wide tables would overflow the page with no scroller. Either keep
   both paths for a release, or coordinate the bump.
 
-The cheap alternative is to accept (b), fix (a) by extending the existing `overflow-x: auto`
-rule above 600px, and fix (c) with `tabindex="0"` on the table itself. That is CSS plus one
-attribute, no wrapper, no nested scroll region — and it gives up the pinned header for good.
+**Half of the cheap alternative has now been taken.** Extending the `overflow-x: auto` rule
+above 600px was the cheap fix for (a), and v1.14.0 took it — at 1000px rather than at every
+width, so the pinned header survives where it matters instead of being given up for good. What
+remains of the cheap path is (c) by `tabindex="0"` on the table itself, and the tab-stop cost
+above is the reason it has not been taken with it.
 
 **How much this actually affects, measured 2026-08-01** against the 370-file
 `product-intelligence` lode, the largest consumer. Tables are the dominant component by a
@@ -91,6 +103,12 @@ nested scroll region on every wide table, with a `70vh` cap nobody has tested ag
 content on a phone. Nothing regresses by waiting, and the 118 documents keep behaviour they
 already have. Revisit when someone actually reads the lode below 1000px, which is the
 condition that makes (a) bite.
+
+**Updated 2026-08-04.** (a) is closed in v1.14.0 without the wrapper — the condition above
+turned out to be reachable without anyone changing how they read, since 200% text zoom hits it
+at 601px on a three-column table. The wrapper is still the only thing that fixes (b) and (c)
+together, and it is still consumer markup this repo cannot ship alone, so what is left of this
+entry stays deferred on the same terms.
 
 ---
 
