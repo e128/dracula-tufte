@@ -394,9 +394,19 @@ took the same note to 327px. The measurement font is the render font or the arit
 wrong, so do not delete one and keep the other.
 
 `sequence.noteFontFamily` / `noteFontSize` are **not** the fix and are not worth adding:
-they are accepted by `initialize` and read back correctly from `getConfig()`, but in
-11.16.0 they change nothing. Swept `noteFontSize: 26` and `noteFontFamily: 'Courier New'`
-against the baseline — the note rect measured exactly 235px in all three.
+they are accepted by `initialize` and read back correctly from `getConfig()`, but through
+11.16.1 they change nothing. Swept `noteFontSize: 26` and `noteFontFamily: 'Courier New'`
+against the baseline — the note rect measured exactly 235px in all three, and re-swept on
+11.16.1 it was unmoved at the current 404px.
+
+**The CDN pin is 11.16.1, and the bump from 11.16.0 was pixel-identical.** Verified by
+rendering both versions of both fixtures at 390/768/1280/1920/2560 and diffing every
+diagram's SVG box, every text-node width, and every node-label overflow: zero differences,
+zero console errors, three zoom buttons in both. 11.16.1 is a patch release — a
+prototype-pollution hardening (GHSA-c4c3-pg64-4m4v), a `compileCSS` sibling-combinator fix,
+architecture-diagram ordering — and it deprecates `mermaidAPI.setConfig()`, which this
+template never called. Nothing in it touches the label-measurement arithmetic above, so the
+paired `fontFamily` settings and the sequence-note coverage still hold as written.
 
 **`pre.mermaid` has no fill and no accent bar.** It inherited both from `pre`, so a diagram
 was framed as source code — on a connections map that slab was the dominant graphic on the
