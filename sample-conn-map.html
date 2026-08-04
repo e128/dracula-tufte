@@ -382,8 +382,8 @@
       <pre class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
 flowchart BT
   accTitle: Connections map for the focus topic
-  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y.
-  focus[Focus Topic]
+  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.
+  focus[Focus Topic with a deliberately long label that must fit its own box]
   a1[Antecedent A] --> focus
   a2[Antecedent B] --> focus
   focus --> d1[Descendant X]

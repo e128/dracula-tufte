@@ -538,6 +538,16 @@ either fixture, not in `README.md`'s list of markup obligations, nowhere in the 
 A class a consumer had to guess at is worse than no class, and the wildcard covers whatever
 they actually emit.
 
+**The focus node's label is deliberately long, and that is coverage, not filler.** The
+connections map is the one fixture rendering with `useMaxWidth: false` plus
+`width: auto !important; max-width: 100% !important`, so it is the only place where a node box
+sized wrong lands in a *constrained* column rather than on an open page — the failure mode the
+v1.13.0 label-box fix was about. With five short labels nothing here ever tested it. The focus
+label now wraps to four lines and the box grows to hold them: measured at 1280px, rect 260px
+around 200px of text, all five nodes `fits: true`, the SVG 416px inside an 830px graph column,
+and no document scroll at any of the nine widths at either root size. Shortening it retires the
+check, the same way shortening `sample.html`'s sequence note or quadrant labels would.
+
 `overflow: visible` on `body.conn-map pre.mermaid` because the base `pre` rule sets
 `overflow-x: auto`, which would otherwise clip a diagram's drop shadow. The conn-map-only
 copy of that rule is gone as of v1.13.0: `pre.mermaid` now carries `overflow: visible`
