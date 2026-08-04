@@ -6,7 +6,7 @@
   <title>Tufte-Dracula — component sample</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.12.0 */
+    /* Dracula-Tufte (muted) v1.13.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -202,13 +202,13 @@
       .mermaid-overlay::after { content: "✕" / ""; }
     }
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
-    pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; }
+    pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
+    pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
     .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
       font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
       border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation; }
     .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
-    body.conn-map pre.mermaid { overflow: visible; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
       body.conn-map article {
@@ -282,6 +282,7 @@
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
       securityLevel: window.mermaidSecurityLevel || 'strict',
+      fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
       themeVariables: {
         darkMode: true,
         fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
@@ -469,6 +470,26 @@
   B -->|no| D[Skip it]
   C --> E[Done]
   D --> E</pre>
+      <pre class="mermaid">sequenceDiagram
+  accTitle: Sequence diagram sample
+  accDescr: The caller sends a request, the service stores it, and a note records that a label box must fit its own monospace text.
+  participant C as Caller
+  participant S as Service (long name)
+  C->>S: Request with a fairly long label
+  S->>S: Store it
+  Note over S: This note is wider than the actor box.<br/>Its rect must contain the rendered text.
+  S->>C: Result</pre>
+      <pre class="mermaid">quadrantChart
+  accTitle: Quadrant chart sample
+  accDescr: Four labelled points near the chart edges, where long labels would otherwise be clipped by the fixed chart viewBox.
+  x-axis Narrow --> Wide
+  y-axis Shallow --> Deep
+  quadrant-1 Best of both
+  quadrant-2 Deep but narrow
+  quadrant-3 Neither yet
+  quadrant-4 Wide but shallow
+  A label long enough to reach past the edge: [0.9, 0.9]
+  Another deliberately overlong point label: [0.1, 0.1]</pre>
     </section>
 
     <hr/>

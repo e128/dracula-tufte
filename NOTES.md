@@ -329,6 +329,23 @@ drift against the oklch source, and a font stack has no hex to drift. `fontSize`
 length string, so `1rem` tracks the reader's root size; mermaid's default is a hard-coded
 16px that ignores it.
 
+**`fontFamily` is also set at the top level of the config, and both copies are load-bearing.**
+They feed different halves of the same job: `themeVariables.fontFamily` reaches the CSS
+mermaid injects, so it decides what the labels are *painted* in; the root `config.fontFamily`
+is what `calculateTextDimensions` measures with, so it decides how wide a label box is
+*computed* to be. With only the themeVariable set, every box was sized for mermaid's default
+`"trebuchet ms", verdana, arial` and then painted in monospace — measured 1.31× wider than
+the box it was given. On a sequence diagram `Note over D`, the note rect came out 235px
+around 307px of text, and because `noteTextColor` is dark, the overspill landed dark-on-dark
+outside the yellow rect and read as text cut off mid-word. Setting the root `fontFamily`
+took the same note to 327px. The measurement font is the render font or the arithmetic is
+wrong, so do not delete one and keep the other.
+
+`sequence.noteFontFamily` / `noteFontSize` are **not** the fix and are not worth adding:
+they are accepted by `initialize` and read back correctly from `getConfig()`, but in
+11.16.0 they change nothing. Swept `noteFontSize: 26` and `noteFontFamily: 'Courier New'`
+against the baseline — the note rect measured exactly 235px in all three.
+
 **`pre.mermaid` has no fill and no accent bar.** It inherited both from `pre`, so a diagram
 was framed as source code — on a connections map that slab was the dominant graphic on the
 page, mostly empty around a graph that renders at natural size by design. `background: none;
@@ -365,6 +382,37 @@ the largest text on the page, set by nothing but how few nodes the graph had.
 `width: auto` pins labels to the size mermaid asked for; `max-width: 100%` still shrinks a
 graph too wide to fit, and `text-align: center` keeps a small one centred. `fontSize:
 '1rem'` alone does not fix it — still 47.1px at 1920px.
+
+**`pre.mermaid svg { overflow: visible }` exists because some diagram types write a viewBox
+that does not contain their own content.** The outermost `<svg>` gets `overflow: hidden`
+from the UA stylesheet, so anything outside the viewBox is clipped rather than merely
+untidy. `quadrantChart` is the case that forced this: it emits a fixed `0 0 500 500` from
+`chartWidth`/`chartHeight` and centres point labels on the point, so a long label overruns
+the canvas — measured 70.2 user units past the left edge and 99.8 past the right, with both
+overlong point labels sliced off. `overflow: visible` lets them paint. `pre.mermaid` needs
+it too, or the `pre`'s inherited `overflow-x: auto` clips at the same place, and
+`.mermaid-overlay svg` needs it or the zoom shows the same truncation it was opened to
+escape. Verified no horizontal page scroll appears at 320/390/768/1280/1920/2560 on either
+fixture: `documentElement.scrollWidth` equals `clientWidth` at every width. At 390 an
+extreme label still runs past the *viewport* edge — that is the reader's own scroll
+boundary, not the diagram's, and the zoom overlay is the escape hatch.
+
+**`sample.html` carries a sequence diagram and a quadrant chart as well as the flowchart,
+and the extra two are regression coverage, not decoration.** Both bugs above shipped and
+survived because a flowchart is the one diagram type that shows neither: its labels are
+`foreignObject` HTML, measured by the browser rather than by `calculateTextDimensions`, and
+its viewBox is computed from the laid-out graph rather than from a fixed chart size. The
+sequence fence carries a `Note over` deliberately wider than its actor box; the quadrant
+fence carries two point labels long enough to overrun the canvas. Shortening either one
+retires the check it exists to be.
+
+**A JS `refit()` that grew the viewBox to the measured `getBBox()` was tried first and
+reverted.** It ran from the existing `MutationObserver`, and it fires when mermaid inserts
+the SVG — before the flowchart's `foreignObject` HTML labels have laid out, so the bbox it
+reads is enormous. The flowchart's viewBox went from `0 0 368 …` to `0 0 25727 27839` at
+1280px, with the inline `max-width` dragged to 25727.2px, scaling with the viewport because
+the unstyled labels did. Getting it right needs a settled-layout signal the observer does
+not have; one CSS declaration needs no timing at all.
 
 **Click-to-zoom** strips mermaid's own sizing from the clone so the overlay's CSS governs
 every diagram identically. `calculateSvgSizeAttrs` writes `width="100%"` plus an *inline*
@@ -439,7 +487,10 @@ A class a consumer had to guess at is worse than no class, and the wildcard cove
 they actually emit.
 
 `overflow: visible` on `body.conn-map pre.mermaid` because the base `pre` rule sets
-`overflow-x: auto`, which would otherwise clip a diagram's drop shadow.
+`overflow-x: auto`, which would otherwise clip a diagram's drop shadow. The conn-map-only
+copy of that rule is gone as of v1.13.0: `pre.mermaid` now carries `overflow: visible`
+unconditionally for the label-clipping fix in the Mermaid section, which covers this for the
+same reason and in both layouts.
 
 ## Direction and growth
 

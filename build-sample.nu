@@ -207,6 +207,8 @@ def body [] {
     "    <section>"
     "      <h2>Mermaid diagram (click to zoom)</h2>"
     "      <pre class=\"mermaid\">flowchart TD\n  accTitle: Decision flow sample\n  accDescr: Start leads to a decision; yes does the thing, no skips it, and both reach done.\n  A[Start] --> B{Decision}\n  B -->|yes| C[Do the thing]\n  B -->|no| D[Skip it]\n  C --> E[Done]\n  D --> E</pre>"
+    "      <pre class=\"mermaid\">sequenceDiagram\n  accTitle: Sequence diagram sample\n  accDescr: The caller sends a request, the service stores it, and a note records that a label box must fit its own monospace text.\n  participant C as Caller\n  participant S as Service (long name)\n  C->>S: Request with a fairly long label\n  S->>S: Store it\n  Note over S: This note is wider than the actor box.<br/>Its rect must contain the rendered text.\n  S->>C: Result</pre>"
+    "      <pre class=\"mermaid\">quadrantChart\n  accTitle: Quadrant chart sample\n  accDescr: Four labelled points near the chart edges, where long labels would otherwise be clipped by the fixed chart viewBox.\n  x-axis Narrow --> Wide\n  y-axis Shallow --> Deep\n  quadrant-1 Best of both\n  quadrant-2 Deep but narrow\n  quadrant-3 Neither yet\n  quadrant-4 Wide but shallow\n  A label long enough to reach past the edge: [0.9, 0.9]\n  Another deliberately overlong point label: [0.1, 0.1]</pre>"
     "    </section>"
     ""
     "    <hr/>"

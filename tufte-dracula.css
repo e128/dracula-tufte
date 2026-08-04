@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.12.0 */
+    /* Dracula-Tufte (muted) v1.13.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -195,13 +195,13 @@
       .mermaid-overlay::after { content: "✕" / ""; }
     }
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
-    pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; }
+    pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
+    pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
     .mermaid-zoom { display: block; margin: 0.75rem auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
       font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
       border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation; }
     .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
-    body.conn-map pre.mermaid { overflow: visible; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
       body.conn-map article {
