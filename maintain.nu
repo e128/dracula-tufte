@@ -21,7 +21,7 @@ def main [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md] {
+  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md] {
     if not ($HERE | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -48,7 +48,7 @@ def "main check" [] {
     let styles = (^grep -c "<style" $path | into int)
     let scripts = (^grep -c "<script" $path | into int)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
-    if $scripts != 1 { print $"($f): expected 1 <script>, found ($scripts)"; $ok = false }
+    if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
   }
 
   # Regeneration must be a no-op. Compare bytes across the regen rather than ask

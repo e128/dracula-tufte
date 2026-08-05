@@ -13,6 +13,7 @@ const HERE = path self | path dirname
 def main [] {
   let css = (open --raw ($HERE | path join "tufte-dracula.css") | str trim --right)
   let mermaid = (open --raw ($HERE | path join "mermaid.js") | str trim --right)
+  let filter = (open --raw ($HERE | path join "filter.js") | str trim --right)
 
   tokens $css
 
@@ -31,6 +32,7 @@ def main [] {
       "  <meta name=\"generated-by\" content=\"data/html/build-sample.nu\"/>"
       $css
       $mermaid
+      $filter
       "</head>"
       $p.1
       $p.3

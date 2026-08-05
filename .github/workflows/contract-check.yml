@@ -12,12 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify the eight contract files exist
+      - name: Verify the nine contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md; do
+          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
-          echo "All 8 contract files present."
+          echo "All 9 contract files present."
 
       - name: Stylesheet wrapper is exactly the first and last line
         run: |
@@ -55,15 +55,16 @@ jobs:
 
       - name: Sanity check (no hand-rolled style blocks)
         run: |
-          # tufte-dracula.css/mermaid.js are contracts that already carry their own
-          # <style>/<script> wrapper, and build-sample.nu inlines them verbatim into
-          # each fixture -- so exactly one <style> and one <script> block is expected.
-          # More than one means a hand-rolled block was added alongside the canonical one.
+          # tufte-dracula.css/mermaid.js/filter.js are contracts that already carry
+          # their own <style>/<script> wrapper, and build-sample.nu inlines them
+          # verbatim into each fixture -- so exactly one <style> and two <script>
+          # blocks are expected. More means a hand-rolled block was added alongside
+          # the canonical ones.
           for f in sample.html sample-conn-map.html; do
             n=$(grep -c "<style" "$f")
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <style> block (canonical CSS), found $n"; exit 1; }
             n=$(grep -c "<script" "$f")
-            [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <script> block (canonical mermaid.js), found $n"; exit 1; }
+            [ "$n" -eq 2 ] || { echo "$f: expected exactly 2 <script> blocks (canonical mermaid.js + filter.js), found $n"; exit 1; }
           done
           echo "No hand-rolled style/script blocks."
 

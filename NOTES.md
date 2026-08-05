@@ -956,6 +956,42 @@ measured 0.026 → 0.497 → 0.80 → 0.94 → 0.999 at 40ms intervals — near-
 first frame, then a rush; the click felt late. Every other transition in the sheet was
 already `ease-out`.
 
+## Filter
+
+`filter.js` is the third inlined payload, added in v1.16.0. The stylesheet has shipped
+`.filter-box` / `.filter-label` / `.filter-hidden` / `.filter-empty` since the first
+release, and consumers have always had to write their own handler for the box. The script
+makes the box work out of the box (pun intended) for the one pattern the fixture documents:
+an `input.filter-box` followed by a table.
+
+Three decisions are load-bearing, each measured or checked rather than assumed:
+
+- **The input wires the table it precedes, found by walking forward.** The input sits
+  immediately before the table in the markup a consumer emits, so `input.nextElementSibling`
+  is the table in the normal case; walking forward to the first following `TABLE` covers a
+  `role="status"` line (or anything else) between them. No `closest()` and no id-matching:
+  the script never needs to know a consumer's ids, and the input-to-table pairing is the
+  only relationship the markup states.
+- **The empty line is created, not required.** `README.md` always listed `.filter-empty` as
+  a consumer obligation, and the fixture models it — but a consumer that emits a table with
+  a filter box and no empty line would silently never show the no-matches state. The script
+  creates a hidden `.filter-empty` after the table when none exists, so the behaviour is
+  complete with the two elements the stylesheet styles. A consumer that emits its own keeps
+  it. The script-created element starts `hidden` — the stylesheet's `.filter-empty` has no
+  `display` declaration, so `hidden` (UA `display: none`) is the only thing that keeps a
+  freshly created empty line off the page until the filter actually empties the table.
+- **No CDN, no build step, no comments.** Unlike `mermaid.js`, nothing here needs a network
+  import — the whole handler is `querySelectorAll` + `classList.toggle`. Inlined verbatim
+  into every page a consumer renders, so it carries no comments the way `mermaid.js` and
+  `tufte-dracula.css` don't. The fixture's own nav-list filter stays a state demo
+  (a fixture demonstrates states, it does not simulate them): it has no following table, so
+  the script returns early and the `role="status"` / `.filter-empty` pair it models stays
+  inert and visible.
+
+The filter is one input, one table, one listener. It does not filter a nav-list, a `details`
+group, or multiple tables from one box — the stylesheet styles a box, not a taxonomy, and a
+consumer that wants a different shape writes a handler over the same classes.
+
 ## Misc
 
 **`hr` is a `border-block-start`, not a `box-shadow`, because the shadow painted nothing
