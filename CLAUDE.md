@@ -100,16 +100,27 @@ nu maintain.nu release 1.11.0                    # verifies, then tags
 refuses a version the stylesheet is not stamped with, refuses a tag that already exists,
 refuses a `HEAD` that is not already `origin/main` — that last one is what proves the
 commit arrived through the gate rather than around it — then polls the check runs for
-that exact SHA and tags only when every one concludes `success`. An empty check list
-counts as failure: a commit CI never saw is the thing this exists to refuse. The tag is
-**annotated**, so `git tag -v` has an object to read.
+that exact SHA and tags only when every check named in `REQUIRED_CHECKS` concludes
+`success`. A missing required check counts as failure: a commit CI never saw is the
+thing this exists to refuse. The tag is **annotated**, so `git tag -v` has an object
+to read.
+
+**Only the required checks gate; the rest are advisory.** GitHub attaches a check run
+for every workflow that fires on a commit, including ones it generates itself —
+`pages-build-deployment` alone contributes `build`, `deploy` and
+`report-build-status`. None of them say anything about the payload. Gating on *every*
+check meant a Pages deploy that stalled on GitHub's side held the tag for its full
+timeout and then refused it outright, because a non-success conclusion stays attached
+to that SHA. `REQUIRED_CHECKS` at the top of `release` is the list; keep it in step
+with the required checks configured on `main`, and add to it rather than widening the
+gate back to everything.
 
 **Rules that have no exception:**
 
 - **Never `git push origin main v1.x.0`.** One command pushes commit and tag together,
   so the tag claims the contract held before anything checked it.
-- **Never tag a commit that is not `origin/main`,** and never one with no check run.
-  Absent is not passing.
+- **Never tag a commit that is not `origin/main`,** and never one where a required
+  check is absent. Absent is not passing.
 - **Never `--no-verify`, never `--force` a tag that has been pushed.** A moved tag
   silently changes what every pinned consumer resolves to.
 - **If a push reports `Bypassed rule violations`, stop and say so in that same

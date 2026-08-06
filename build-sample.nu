@@ -41,7 +41,7 @@ def main [] {
     ] | str join "\n")
     let out = ($HERE | path join $p.0)
     $html | save -f $out
-    ^git add $out
+    ^git -C $HERE add $out
     print $"  → ($out)"
   }
   null
@@ -69,7 +69,7 @@ def tokens [css: string] {
     "}"
     ""
   ] | str join "\n") | save -f $out
-  ^git add $out
+  ^git -C $HERE add $out
   print $"  → ($out)"
 }
 

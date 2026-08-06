@@ -60,10 +60,12 @@ jobs:
           # verbatim into each fixture -- so exactly one <style> and two <script>
           # blocks are expected. More means a hand-rolled block was added alongside
           # the canonical ones.
+          # grep -o, not grep -c: -c counts matching *lines*, so a second block
+          # opened on a line that already holds one reads as 1 and passes.
           for f in sample.html sample-conn-map.html; do
-            n=$(grep -c "<style" "$f")
+            n=$(grep -o "<style" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <style> block (canonical CSS), found $n"; exit 1; }
-            n=$(grep -c "<script" "$f")
+            n=$(grep -o "<script" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 2 ] || { echo "$f: expected exactly 2 <script> blocks (canonical mermaid.js + filter.js), found $n"; exit 1; }
           done
           echo "No hand-rolled style/script blocks."
@@ -72,6 +74,9 @@ jobs:
         uses: hustcer/setup-nu@v3
         with:
           version: "*"
+
+      - name: Release gate still refuses what it should
+        run: nu maintain.nu selftest
 
       - name: Generated files must be regenerated (fails if stale vs CSS/JS)
         run: |

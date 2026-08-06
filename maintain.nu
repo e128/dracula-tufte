@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 # maintain.nu — regular upkeep: local contract check (mirrors CI without a
-# push round-trip), template-version bump across all 5 sites, CI-gated release
-# tagging, mermaid CDN pin bump.
-# Run: `nu maintain.nu check|bump <version>|release <version>|mermaid <version>`
+# push round-trip), release-gate selftest, template-version bump across all 5
+# sites, CI-gated release tagging, mermaid CDN pin bump.
+# Run: `nu maintain.nu check|selftest|bump <version>|release <version>|mermaid <version>`
 #
 # ponytail: wraps existing build-sample.nu + string replace, no new build
 # system. bump/mermaid stop short of commit — that stays manual. `release` does
@@ -12,12 +12,18 @@
 const HERE = path self | path dirname
 
 def main [] {
-  print "usage: nu maintain.nu <check|bump <version>|release <version>|mermaid <version>>"
+  print "usage: nu maintain.nu <check|selftest|bump <version>|release <version>|mermaid <version>>"
 }
 
-# Mirrors .github/workflows/contract-check.yml locally: 8 files exist, the hex
-# projections still match the oklch source, exactly one <style>/<script> block
-# per fixture, generated files match current CSS/JS.
+# Mirrors .github/workflows/contract-check.yml locally, step for step: nine files
+# exist, the wrapper is one line at each end, mermaid.js agrees with
+# mermaid-palette.json key by key, the hex projections still match the oklch
+# source, exactly one <style> and two <script> per fixture, generated files match
+# the current CSS/JS.
+#
+# "Step for step" is the whole point of the verb: a local pass that CI would fail
+# is worse than no local check, because it is trusted. Add a step here whenever
+# contract-check.yml gains one.
 def "main check" [] {
   mut ok = true
 
@@ -43,10 +49,32 @@ def "main check" [] {
     $ok = false
   }
 
+  # mermaid.js is inlined verbatim, so it carries its own hex and can drift from
+  # the palette that documents it. palette-check.py only asks whether a hex is *a*
+  # palette colour; it cannot see that a key points at the wrong one. That pairing
+  # gate lived only in CI, which meant a themeVariable set to some other palette
+  # colour passed here and failed on the push.
+  let init = (open ($HERE | path join "mermaid-palette.json") | get init
+    | transpose key entry | where key != "_comment")
+  if ($init | length) < 16 {
+    print $"mermaid-palette.json .init has only ($init | length) keys — refusing to pass vacuously"
+    $ok = false
+  }
+  let js = (open --raw ($HERE | path join "mermaid.js"))
+  for e in $init {
+    if not ($js =~ $"($e.key):\\s*'($e.entry.hex)'") {
+      print $"DRIFT: mermaid.js ($e.key) is not '($e.entry.hex)' \(mermaid-palette.json)"
+      $ok = false
+    }
+  }
+  if not ($js =~ "theme: 'base'") { print "mermaid.js must use theme:'base', not 'dark'"; $ok = false }
+
+  # Count occurrences, not matching lines. `grep -c` reports lines, so a second
+  # block opened on a line that already has one reads as 1 and passes.
   for f in [sample.html sample-conn-map.html] {
-    let path = ($HERE | path join $f)
-    let styles = (^grep -c "<style" $path | into int)
-    let scripts = (^grep -c "<script" $path | into int)
+    let body = (open --raw ($HERE | path join $f))
+    let styles = (($body | split row "<style" | length) - 1)
+    let scripts = (($body | split row "<script" | length) - 1)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
     if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
   }
@@ -105,19 +133,57 @@ def "main bump" [version: string] {
 #
 # ponytail: polls the check-runs API rather than adding a release workflow.
 # The gate belongs where a human or an agent tags, not in another YAML file.
+#
+# Only REQUIRED_CHECKS decide. GitHub attaches a check run to a commit for every
+# workflow that fires, including ones it generates itself — pages-build-deployment
+# contributes build/deploy/report-build-status. Those say nothing about the payload,
+# and gating on "every check green" meant a stalled Pages deploy could block, or
+# permanently refuse, a tag whose contract CI had already verified in 14 seconds.
+# Keep this list in step with the required checks on `main`.
+const REQUIRED_CHECKS = [contract]
+
+# Split out of the poll loop so `main selftest` can drive it with the check shapes
+# GitHub actually produces, including the two that got this wrong. Waiting on the
+# live API to exercise a gate is how the Pages bug survived in the first place.
+#
+# Per name, not by row count: a re-run, or two workflows sharing a job name, can
+# put more than one run under one name, and counting rows against REQUIRED_CHECKS
+# would then never match and would time out on a green commit.
+def check-ready [checks: list] {
+  $REQUIRED_CHECKS | all {|n|
+    let runs = ($checks | where name == $n)
+    ($runs | is-not-empty) and ($runs | all {|c| $c.status == "completed" })
+  }
+}
+
+def check-failures [checks: list] {
+  $checks | where {|c| $c.name in $REQUIRED_CHECKS and $c.conclusion != "success" }
+}
+
+def check-missing [checks: list] {
+  $REQUIRED_CHECKS | where {|n| not ($checks | any {|c| $c.name == $n }) }
+}
+
 def "main release" [version: string] {
   let tag = $"v($version)"
-  let sha = (^git rev-parse HEAD | str trim)
+  # Every git call is pinned to $HERE and gh to the slug read from its origin.
+  # Bare `git` and gh's {owner}/{repo} both resolve against the cwd, so running
+  # this script by absolute path from inside another repo would read that repo's
+  # HEAD and push a tag there, while validating this one's version stamp.
+  let sha = (^git -C $HERE rev-parse HEAD | str trim)
+  let slug = (^git -C $HERE remote get-url origin | str trim
+    | parse --regex '[:/](?<owner>[^/:]+)/(?<repo>[^/]+?)(:?\.git)?$'
+    | get 0 | $"($in.owner)/($in.repo)")
 
-  if (^git status --porcelain | str trim) != "" {
+  if (^git -C $HERE status --porcelain | str trim) != "" {
     print "Working tree is dirty — commit or stash before releasing."
     exit 1
   }
   # The commit must already be what origin/main points at. That is what proves
   # it arrived through the PR gate rather than around it, and it stops a tag
   # ever naming a commit no one else can fetch.
-  ^git fetch --quiet origin main
-  let remote = (^git rev-parse origin/main | str trim)
+  ^git -C $HERE fetch --quiet origin main
+  let remote = (^git -C $HERE rev-parse origin/main | str trim)
   if $sha != $remote {
     print $"HEAD ($sha | str substring 0..7) is not origin/main ($remote | str substring 0..7)."
     print "  Land the change through a pull request first, then pull and re-run."
@@ -132,16 +198,16 @@ def "main release" [version: string] {
     print $"  Run `nu maintain.nu bump ($version)` and commit first."
     exit 1
   }
-  if (^git tag --list $tag | str trim) != "" {
+  if (^git -C $HERE tag --list $tag | str trim) != "" {
     print $"($tag) already exists locally. Delete it or pick the next version."
     exit 1
   }
 
-  print $"Waiting for checks on ($sha)…"
+  print $"Waiting for ($REQUIRED_CHECKS | str join ', ') on ($sha) in ($slug)…"
   mut checks = []
   mut waited = 0
   loop {
-    let raw = (^gh api $"repos/{owner}/{repo}/commits/($sha)/check-runs"
+    let raw = (^gh api $"repos/($slug)/commits/($sha)/check-runs"
       --jq '.check_runs[] | [.name, .status, (.conclusion // "pending")] | @tsv' | complete)
     if $raw.exit_code != 0 {
       print $"gh api failed: ($raw.stderr | str trim)"
@@ -153,14 +219,16 @@ def "main release" [version: string] {
           {name: $f.0, status: $f.1, conclusion: $f.2}
         })
 
-    # No check at all is a failure, not a pass. A commit that CI never saw is
-    # exactly the thing this verb exists to refuse to tag.
-    if ($checks | is-not-empty) and ($checks | all {|c| $c.status == "completed" }) { break }
+    # Absent is not passing. A required check that never appeared means a commit CI
+    # never saw, which is exactly the thing this verb exists to refuse to tag — so
+    # wait for every name in REQUIRED_CHECKS to be present *and* completed.
+    if (check-ready $checks) { break }
     if $waited >= 600 {
-      if ($checks | is-empty) {
-        print $"No check run ever appeared for ($sha) after 600s. Not tagging."
+      let missing = (check-missing $checks)
+      if ($missing | is-not-empty) {
+        print $"No ($missing | str join ', ') check run ever appeared for ($sha) after 600s. Not tagging."
       } else {
-        print $"Checks still running after 600s. Not tagging."
+        print $"($REQUIRED_CHECKS | str join ', ') still running after 600s. Not tagging."
       }
       exit 1
     }
@@ -168,19 +236,63 @@ def "main release" [version: string] {
     $waited = $waited + 10
   }
 
-  for c in $checks { print $"  ($c.name): ($c.conclusion)" }
-  let failed = ($checks | where conclusion != "success")
+  for c in $checks {
+    let note = if $c.name in $REQUIRED_CHECKS { "" } else { " (advisory)" }
+    print $"  ($c.name): ($c.conclusion)($note)"
+  }
+  let failed = (check-failures $checks)
   if ($failed | is-not-empty) {
-    print $"NOT TAGGING — ($failed | length) check\(s\) did not pass on ($sha)."
+    print $"NOT TAGGING — ($failed | length) required check\(s\) did not pass on ($sha)."
     exit 1
   }
 
   # Annotated, never lightweight: a lightweight tag is just a second name for a
   # commit, with no tagger, no date and nothing `git tag -v` can even look at.
-  let subject = (^git log -1 --pretty=%s | str trim)
-  ^git tag -a $tag -m $"($tag) — ($subject)"
-  ^git push origin $tag
+  let subject = (^git -C $HERE log -1 --pretty=%s | str trim)
+  ^git -C $HERE tag -a $tag -m $"($tag) — ($subject)"
+  # A failed push used to still print "Tagged … verified green", leaving a tag that
+  # exists only on this machine while the message says consumers can pin it.
+  let pushed = (^git -C $HERE push origin $tag | complete)
+  if $pushed.exit_code != 0 {
+    print $"($tag) was created locally but the push failed:"
+    print ($pushed.stderr | str trim)
+    print $"  Nothing is released yet. Fix the remote, then: git push origin ($tag)"
+    exit 1
+  }
   print $"Tagged ($tag) on ($sha), verified green."
+}
+
+# Drive the release gate with the check shapes GitHub really produces. No network,
+# no repo state — it exists because the gate cannot otherwise be exercised without
+# waiting on a live commit, and the two cases marked below are bugs that shipped.
+def "main selftest" [] {
+  let cases = [
+    # [label, checks, ready, missing, failures]
+    ["required green, advisory still running" [[name status conclusion]; [contract completed success] [build completed success] [deploy in_progress pending]] true [] 0]
+    ["required green, advisory failed"        [[name status conclusion]; [contract completed success] [deploy completed failure]] true [] 0]
+    ["required failed"                        [[name status conclusion]; [contract completed failure] [deploy completed success]] true [] 1]
+    ["no checks at all"                       [] false [contract] 0]
+    ["required absent, others present"        [[name status conclusion]; [deploy completed success]] false [contract] 0]
+    ["required still running"                 [[name status conclusion]; [contract in_progress pending]] false [] 1]
+    ["required re-run, both green"            [[name status conclusion]; [contract completed success] [contract completed success]] true [] 0]
+    ["required re-run, one still going"       [[name status conclusion]; [contract completed success] [contract in_progress pending]] false [] 1]
+    ["required re-run, one failed"            [[name status conclusion]; [contract completed success] [contract completed failure]] true [] 1]
+  ]
+  mut ok = true
+  for c in $cases {
+    let checks = ($c.1 | default [])
+    let got = {ready: (check-ready $checks), missing: (check-missing $checks), failures: (check-failures $checks | length)}
+    let want = {ready: $c.2, missing: $c.3, failures: $c.4}
+    if $got != $want {
+      print $"FAIL ($c.0): got ($got | to nuon), want ($want | to nuon)"
+      $ok = false
+    }
+  }
+  if $ok {
+    print $"Release gate OK \(($cases | length) cases)."
+  } else {
+    exit 1
+  }
 }
 
 # Bump the mermaid CDN pin to an exact version, regenerate fixtures so the pin
