@@ -20,6 +20,9 @@
         clusterBorder:       '#707388',
         nodeBorder:          '#a98ed6',
         edgeLabelBackground: '#343746',
+        noteBkgColor:        '#343746',
+        noteTextColor:       '#f8f8f2',
+        noteBorderColor:     '#707388',
         pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
@@ -30,8 +33,9 @@
     overlay.tabIndex = -1;
     overlay.inert = true;
     const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
     const named = (svg, label) => {
-      const title = svg.querySelector('title')?.textContent?.trim();
+      const title = titleOf(svg);
       return title ? label + ': ' + title : label;
     };
     const siblings = () => [...document.body.children].filter(el => el !== overlay);
@@ -64,6 +68,10 @@
           svg.dataset.zoomable = 'true';
           svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
         }
+        if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
+        pre.tabIndex = 0;
+        pre.setAttribute('role', 'region');
+        pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
         if (!pre.querySelector('.mermaid-zoom')) {
           const button = document.createElement('button');
           button.type = 'button';
