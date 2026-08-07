@@ -79,16 +79,23 @@ The CSS assigns each accent a job in prose. The scheme keeps those jobs.
 
 | Token | Hex | Prose role | Editor role |
 | --- | --- | --- | --- |
+| `--on-surface` | `#f8f8f2` | body copy | identifiers, locals, punctuation |
 | `--pink` | `#e48bb7` | `h1`, `th` | keywords, operators, caret, active tab underline |
-| `--purple` | `#a98ed6` | `h2`, `pre` accent bar | types, classes, progress bar |
+| `--purple` | `#a98ed6` | `h2`, `pre` accent bar | progress bar, predefined symbols; types at L+0.07 (`#bfa4ed`) |
 | `--green` | `#7fc99a` | inline `code` | strings, XML attribute values |
-| `--orange` | `#e0a878` | `strong` | numbers, constants, TODO, search match |
+| `--orange` | `#e0a878` | `strong` | parameters, numbers, constants, TODO, search match |
 | `--link` | `#8fc9d9` | `a` | functions and methods, focus ring, links |
-| `--label` | `#b7bfe4` | `h3`, sidenotes | parameters, fields, punctuation |
+| `--label` | `#b7bfe4` | `h3`, sidenotes | instance and static fields |
 | `--muted` | `#979fc4` | `cite` | comments (italic), inlay hints |
 | `--rule-light` | `#707388` | hairlines | line numbers, unused symbols |
 | `--red` | `#f68281` | — | errors, deleted lines |
 | `--data-1..4` | `#99bdec` `#de8dc3` `#74caa6` `#bbc175` | diagram categories | VCS status, diff, log refs |
+
+The jobs are kept, but the *weighting* is not. Prose can afford a quiet tier because colour is
+sparse there; an editor colours nearly every glyph, so the same tier reads as wash. Punctuation
+sits at `--on-surface` rather than `--label`, and types take `--purple` at L+0.07 rather than
+plain — see [Editor themes](../../NOTES.md#editor-themes) for the measurements and the three
+slot maps that were rendered and rejected.
 
 The `--data-*` ramp stays on categorical things (diff, VCS, file colours) for the
 same reason it exists in the CSS: prose accents already mean something, and a

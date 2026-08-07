@@ -33,6 +33,7 @@ reduction lands in every page a consumer generates.
 | [Links](#links) | Underline floor, the outbound arrow's alt text |
 | [Colour and the contrast budget](#colour-and-the-contrast-budget) | Four surfaces, every ratio, the data ramp, forced colors |
 | [Form follows role](#form-follows-role) | Filled vs outlined chips, bars vs boxes, hue budget |
+| [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
 | [Mermaid](#mermaid) | Init config, label measurement, diagram sizing, zoom |
 | [Connections-map layout](#connections-map-layout) | `body.conn-map`, markup order, no breakouts |
 | [Interaction states](#interaction-states) | Press, hover, focus rings |
@@ -616,6 +617,39 @@ accent *plus a different form* (weight, bar, ring, fill), the way `.verdict` and
 separated, or it takes `--data-1..4` if it lives in a diagram. Adding a hue is the last
 resort, and a hue reused for a third prose role needs a line here saying why the two cannot
 appear together.
+
+## Editor themes
+
+The palette is shared with `themes/`, but the *slot map* — which token paints which syntax
+class — is a separate decision, and prose logic does not transfer to an editor. In prose,
+colour is sparse: a `--pink` h1 and an orange `strong` sit in a field of white body serif, and
+low chroma reads as restraint. In an editor, colour is the whole information channel and
+almost every glyph carries one, so the same chroma reads as wash.
+
+**`--label` is the doc's caption tier, not a code tier.** It paints `figcaption`, sidenotes,
+`dd`, `footer` — content deliberately behind the body. The first Rider scheme handed it 18
+slots, including braces, brackets, parentheses, comma, semicolon, dot, parameters and both
+field kinds. That collapsed most of a C# buffer into one blue-grey band at C 0.053. Upstream
+Dracula paints punctuation at `fg`; so does this scheme now (`--on-surface`, 7.86 → 13.36
+against `--surface`). Parameters moved to `--orange`. `--label` still carries instance and
+static fields, which are legitimately secondary.
+
+**Types cannot sit on plain `--purple`.** At L 0.698 / 5.10 on `--surface` it is the dimmest
+accent in the palette, and in C# type names are the highest-frequency token there is. They use
+`{{purple.bright}}` (#bfa4ed, 6.40) — the existing `.bright` lift in `create-themes.nu`, not a
+new placeholder and not a palette change.
+
+**Three alternatives were rendered and rejected**, all variants of adopting Dracula's full slot
+map: functions to `--green`, strings to `--data-4`, numbers to `--purple`. They separate more
+channels, but `--data-4` (#bbc175) reads olive rather than yellow at this chroma, and moving
+strings off green breaks the one cross-medium tie the theme has — the stylesheet paints inline
+`code` green, so a string in the editor and a `<code>` span in the doc are the same colour.
+
+**Do not fix this by raising chroma in `:root`.** Every ratio in [Colour and the contrast
+budget](#colour-and-the-contrast-budget) was measured against those values, and the tokens are
+inlined into every published document. A theme that reads dim is a slot-map problem first.
+Verify by rendering the *generated* `.icls`, not the template — the placeholders hide which
+hex actually lands.
 
 ## Mermaid
 
