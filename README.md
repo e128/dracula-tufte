@@ -15,7 +15,7 @@ Rendered in-browser via GitHub Pages (main branch, served straight — no build 
 
 | File                  | What It Be |
 |-----------------------|------------|
-| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.19.0, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
+| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.19.1, oklch palette). Consumers inline this verbatim into every generated HTML file. Includes the wrapping `<style>` tags and 2-space leading indent — the exact byte sequence the renderer emits. |
 | `mermaid.js`          | **The Mermaid init script.** The complete `<script type="module">…</script>` block — the `mermaid@11` CDN import, `theme: 'base'` + `darkMode` + hex `themeVariables` init, and the zoom overlay handler (injects a `<button class="mermaid-zoom">` per diagram; the overlay is a focus-managed `role="dialog"`). Despite the `.js` name it holds the wrapping `<script>` tags. Consumers inline this only when the rendered scroll contains a ` ```mermaid ` fence. Bump the CDN pin here. |
 | `filter.js`          | **The filter-box script.** The complete `<script type="module">…</script>` block — wires each `input.filter-box` to the table it precedes, toggling `.filter-hidden` on non-matching `tbody tr` rows and revealing a `.filter-empty` line when nothing matches. No CDN, no build step, no comments (inlined verbatim). Consumers inline this only when a rendered scroll contains a filter box. |
 | `mermaid-palette.json` | **Mermaid's hex palette.** The Tufte-Dracula palette as hex, per `themeVariables` key plus `classDef` node roles. Mermaid cannot consume `oklch()` (khroma throws `Unsupported color format` and *no* diagram renders) or `var()`, so this be the one place hex lives. Each entry names the `:root` variable it projects in its `from` field, and CI recomputes every hex from that variable's `oklch()` — hex here that disagrees with the stylesheet fails the build. `mermaid.js` carries the same values inline because consumers inline it with no build step; CI fails if the two disagree. Generators that emit their own `classDef` lines read the `classdef` block, whose fills draw only from the `--data-1..4` ramp (the prose accents `--pink`/`--green`/`--orange` already mean something in body copy). |
@@ -27,7 +27,7 @@ Rendered in-browser via GitHub Pages (main branch, served straight — no build 
 
 ## Consumers
 
-Consumers pin to a tag (currently **`v1.19.0`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
+Consumers pin to a tag (currently **`v1.19.1`**) via a git submodule at `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
 
 **Inline verbatim, or slice the body.** `tufte-dracula.css` ships wrapped in its own `<style>` tags for consumers that inline it whole. A consumer whose generator supplies the wrapper itself takes the bare body with `sed '1d;$d'` — the wrapper be exactly one line at each end, and CI holds it there, so the slice can't rot. Same for `mermaid.js` and `filter.js` and their `<script>` tags. Consumers needing the overlay CSS conditionally should note it ships in the stylesheet unconditionally (a dozen inert lines when no diagram be present); `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` be the parts to omit, and the script throws a named error if the div be missing.
 
@@ -57,6 +57,25 @@ The stylesheet and script cannot fix markup they don't emit. A consumer's genera
 
 Each button takes its accessible name from that diagram's `accTitle:` — `Zoom diagram: Decision flow sample` — so a page with several diagrams gives several distinguishable buttons. That be one more reason the `accTitle:` obligation above be not optional: without it, every button on the page announces the same. To localise the label word, set `window.mermaidZoomLabel` in a classic script tag before `mermaid.js`, the same way `window.mermaidSecurityLevel` be set.
 
+## Editor Themes
+
+Beyond the nine, `themes/` projects the same `:root` palette into three editors. These be **not** part of the consumer contract — no submodule reads them — but they be generated and gated the same way, from a `.in` template beside each output:
+
+| Theme | Files | Install |
+|-------|-------|---------|
+| **Rider** | `dracula-tufte.theme.json` (IDE chrome) + `dracula-tufte.icls` (editor scheme) | Settings → Plugins → gear → Install Plugin from Disk… → `themes/rider/dist/dracula-tufte-rider-<version>.zip` |
+| **Zed** | `dracula-tufte.json` | Drop into `~/.config/zed/themes/` |
+| **Ghostty** | `dracula-tufte` | Drop into `~/.config/ghostty/themes/`, then `theme = dracula-tufte` |
+
+```sh
+nu create-themes.nu           # write every theme, then package the Rider plugin
+nu create-themes.nu --check   # fail if any output drifts from its template
+```
+
+Rider loads a UI theme only from a plugin, which be why there be an artifact to build at all. It ships as a zip wrapping a jar (`Dracula-Tufte/lib/*.jar`), because a **bare jar be refused by Install Plugin from Disk…** even though it loads fine when copied into `<config>/plugins/` by hand — the trap that shipped through v1.18.0. Delete any old `dracula-tufte-rider-*.jar` from yer plugins directory before installing the zip; two copies of one plugin ID be its own problem. `nu maintain.nu release` attaches the plugin and a themes zip to the GitHub release, so neither needs a clone.
+
+**Prose weighting does not transfer to an editor.** The accents keep their jobs — pink be headings and keywords, purple be `h2` and types, green be inline `code` and strings, cyan be links and functions — but the *quiet* tiers do not carry over. In prose, colour be sparse and `--label` reads as restraint on a sidenote; an editor colours nearly every glyph, so the same token across punctuation, parameters and fields collapses a buffer into one blue-grey band. Punctuation therefore sits at `--on-surface`, parameters at `--orange`, and types at `--purple` lifted `L + 0.07`. See [Editor themes](NOTES.md#editor-themes) for the ratios and the three fuller slot maps that were rendered and rejected, and [`themes/rider/README.md`](themes/rider/README.md) for the whole mapping. **Do not answer "the theme looks washed out" by raising chroma in `:root`** — every ratio in the contrast budget be measured against those values, and they be inlined into every published page.
+
 ## Releases
 
 1. Edit the stylesheet or Mermaid script. Colors change in the `tufte-dracula.css` `:root` block and nowhere else; if the color is one Mermaid needs, recompute its hex in `mermaid-palette.json` and `mermaid.js` (`nu maintain.nu check` tells ye which).
@@ -71,7 +90,7 @@ Each button takes its accessible name from that diagram's `accTitle:` — `Zoom 
 
 ## Contract Enforcement
 
-The CI workflow `.github/workflows/contract-check.yml` verifies all nine files exist on every push and PR, that the `<style>` wrapper be exactly the first and last line (so `sed '1d;$d'` stays a safe slice), that `mermaid.js` still uses `theme: 'base'`, that every `themeVariables` hex in `mermaid.js` matches `mermaid-palette.json`, that the release gate still refuses a missing or red required check (`nu maintain.nu selftest`), and that `tokens.css` and both fixtures are freshly regenerated. Consumers run their own contract gates that scan for any hand-rolled `<style>` blocks bypassing the submodule — those gates fail CI.
+The CI workflow `.github/workflows/contract-check.yml` verifies all nine files exist on every push and PR, that the `<style>` wrapper be exactly the first and last line (so `sed '1d;$d'` stays a safe slice), that `mermaid.js` still uses `theme: 'base'`, that every `themeVariables` hex in `mermaid.js` matches `mermaid-palette.json`, that the release gate still refuses a missing or red required check (`nu maintain.nu selftest`), and that `tokens.css`, both fixtures, every file under `themes/` and the Rider plugin zip are freshly regenerated (`nu create-themes.nu --check` — the zip freezes every entry timestamp to `1980-01-01` so a rebuild of unchanged inputs be byte-identical and a diff means a real change). Consumers run their own contract gates that scan for any hand-rolled `<style>` blocks bypassing the submodule — those gates fail CI.
 
 **One palette, several projections.** The `:root` block of `tufte-dracula.css` is the only source of color truth. Everything else is derived and machine-checked: `tokens.css` and the fixtures are sliced or inlined verbatim, and `.github/palette-check.py` converts each `oklch()` through Oklab to sRGB and asserts the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, and the `/* was #xxxxxx */` provenance comments all still agree. Run the whole set locally with `nu maintain.nu check` — it mirrors the CI workflow step for step, including the `themeVariables` pairing gate that used to run only in CI, so a local pass and a CI pass now mean the same thing.
 

@@ -155,17 +155,17 @@
     </option>
     <option name="DEFAULT_CLASS_NAME">
       <value>
-        <option name="FOREGROUND" value="{{purple}}" />
+        <option name="FOREGROUND" value="{{purple.bright}}" />
       </value>
     </option>
     <option name="DEFAULT_CLASS_REFERENCE">
       <value>
-        <option name="FOREGROUND" value="{{purple}}" />
+        <option name="FOREGROUND" value="{{purple.bright}}" />
       </value>
     </option>
     <option name="DEFAULT_INTERFACE_NAME">
       <value>
-        <option name="FOREGROUND" value="{{purple}}" />
+        <option name="FOREGROUND" value="{{purple.bright}}" />
         <option name="FONT_TYPE" value="2" />
       </value>
     </option>
@@ -187,12 +187,12 @@
     </option>
     <option name="DEFAULT_PARAMETER">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{orange}}" />
       </value>
     </option>
     <option name="DEFAULT_REASSIGNED_PARAMETER">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{orange}}" />
         <option name="EFFECT_COLOR" value="{{rule-light}}" />
         <option name="EFFECT_TYPE" value="1" />
       </value>
@@ -242,32 +242,32 @@
     </option>
     <option name="DEFAULT_BRACES">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{on-surface}}" />
       </value>
     </option>
     <option name="DEFAULT_BRACKETS">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{on-surface}}" />
       </value>
     </option>
     <option name="DEFAULT_PARENTHS">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{on-surface}}" />
       </value>
     </option>
     <option name="DEFAULT_COMMA">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{on-surface}}" />
       </value>
     </option>
     <option name="DEFAULT_SEMICOLON">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{on-surface}}" />
       </value>
     </option>
     <option name="DEFAULT_DOT">
       <value>
-        <option name="FOREGROUND" value="{{label}}" />
+        <option name="FOREGROUND" value="{{on-surface}}" />
       </value>
     </option>
     <option name="DEFAULT_TAG">
