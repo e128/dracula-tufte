@@ -11,11 +11,11 @@ Rider console and the terminal agree.
 
 ## These files are generated
 
-`create-themes.nu` writes all four, plus the installable jar, from the `.in`
+`create-themes.nu` writes all four, plus the installable plugin, from the `.in`
 template beside each one. Edit the template, never the output.
 
 ```sh
-nu create-themes.nu           # write the themes, then package the jar
+nu create-themes.nu           # write the themes, then package the plugin
 nu create-themes.nu --check   # fail if any output drifts from its template
 nu create-themes.nu --no-jar  # themes only
 ```
@@ -29,15 +29,37 @@ nu create-themes.nu
 ```
 
 Settings → Plugins → gear → Install Plugin from Disk… → pick
-`themes/rider/dist/dracula-tufte-rider-<version>.jar` → restart. Rider loads a
-UI theme only from a plugin, which is why there is a jar at all; `zip` is the
-whole build.
+`themes/rider/dist/dracula-tufte-rider-<version>.zip` → restart. Rider loads a
+UI theme only from a plugin, which is why there is an artefact to build at all;
+`zip` is the whole build.
 
-The jar is tracked, and `nu maintain.nu release` attaches it to the GitHub
+### Why a zip and not a bare jar
+
+The plugin is a zip wrapping a jar:
+
+```
+dracula-tufte-rider-<version>.zip
+  Dracula-Tufte/lib/dracula-tufte-rider-<version>.jar
+```
+
+Through v1.18.0 it was a bare jar, and that shape has a trap in it. A bare jar
+copied by hand into `<config>/plugins/` loads perfectly — Rider 2026.2 reports
+`Loaded custom plugins: … Dracula-Tufte (muted) …` and the theme appears. But
+**Install Plugin from Disk… refuses it**, which is how everyone actually
+installs. Bare-jar plugins are the legacy form; `Name/lib/*.jar` is what every
+other plugin in that directory is, and what every marketplace theme ships.
+
+If you have an old `dracula-tufte-rider-*.jar` in your plugins directory, delete
+it before installing the zip. Two copies of the same plugin ID is its own
+problem.
+
+The plugin is tracked, and `nu maintain.nu release` attaches it to the GitHub
 release for the tag, so it can also be downloaded without cloning. Tracking a
 zip only works because the build is reproducible: every staged entry is stamped
-`1980-01-01`, `-X` drops per-machine uid/gid and xattrs, and entries are named
-in a fixed order instead of swept up by `-r`. Rebuilding unchanged inputs is
+`1980-01-01` — twice, since the inner jar is itself created new — `-X` drops
+per-machine uid/gid and xattrs, and entries are named in a fixed order instead of
+swept up by `-r`. `META-INF/MANIFEST.MF` deliberately carries no JVM, OS or
+platform-build stamps for the same reason. Rebuilding unchanged inputs is
 byte-identical, so a diff means a real change and `--check` can compare it.
 
 The scheme enters the jar renamed to `dracula-tufte.xml`. A theme's

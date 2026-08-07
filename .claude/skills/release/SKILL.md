@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a tagged, verified release of the Dracula-Tufte template — bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the jar plus themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
+description: Cut a tagged, verified release of the Dracula-Tufte template — bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip plus the themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
 ---
 
 # Release the template
@@ -31,7 +31,7 @@ genuine mix that could read either way.
 
 ```bash
 git switch -c release/vX.Y.Z-<slug>          # never work on main
-nu maintain.nu bump X.Y.Z                    # stamps CSS + README, rebuilds fixtures + themes + jar
+nu maintain.nu bump X.Y.Z                    # stamps CSS + README, rebuilds fixtures + themes + plugin
 nu maintain.nu check                          # must print "Contract OK"
 git add -A && git commit -F -                 # message from the diff, see below
 git push -u origin release/vX.Y.Z-<slug>
@@ -42,9 +42,9 @@ git switch main && git pull --ff-only
 nu maintain.nu release X.Y.Z                  # verifies green on the merged SHA, then tags + publishes
 ```
 
-`bump` deletes the old jar and writes a new one — the filename carries the
+`bump` deletes the old plugin zip and writes a new one — the filename carries the
 version and `META-INF/plugin.xml` reads it off the stylesheet header. Expect
-`themes/rider/dist/dracula-tufte-rider-<old>.jar` to disappear from `git status`
+`themes/rider/dist/dracula-tufte-rider-<old>.zip` to disappear from `git status`
 as a delete. That is correct.
 
 ## Verify before reporting done
@@ -57,11 +57,19 @@ release cut at all.
 gh release view vX.Y.Z --json tagName,assets --jq '.tagName, (.assets[] | "\(.name)  \(.size)B")'
 git cat-file -t vX.Y.Z                        # must be `tag`, not `commit`
 git ls-tree -r --name-only vX.Y.Z | rg '^themes'   # the tag must contain what it claims
-shasum -a 256 themes/rider/dist/dracula-tufte-rider-X.Y.Z.jar
+shasum -a 256 themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip
+unzip -l themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip   # Dracula-Tufte/lib/*.jar
 ```
 
-Both assets must be present: the Rider jar and `dracula-tufte-themes-X.Y.Z.zip`.
-Report the jar's sha256 so a second machine can compare after downloading.
+Both assets must be present: `dracula-tufte-rider-X.Y.Z.zip` and
+`dracula-tufte-themes-X.Y.Z.zip`. Report the plugin zip's sha256 so a second
+machine can compare after downloading.
+
+The plugin zip must contain `Dracula-Tufte/lib/dracula-tufte-rider-X.Y.Z.jar` and
+nothing flatter. A bare jar loads when copied into `plugins/` by hand and is
+**refused by Install Plugin from Disk…**, which is how it actually gets
+installed — so a flat artefact passes every check here and fails the only user
+who matters.
 
 ## Commit message
 

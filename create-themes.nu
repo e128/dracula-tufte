@@ -56,25 +56,29 @@ def main [
     }
   }
 
-  let jar = (jar-path $version)
+  let plugin = (plugin-path $version)
   if not $no_jar {
     if $check {
       # Build a throwaway and compare bytes. Only meaningful because package
       # freezes every entry timestamp — see there.
-      let probe = ($jar | path dirname | path join ".probe.jar")
-      package $probe
-      if (not ($jar | path exists)) or (open --raw $jar) != (open --raw $probe) {
-        $drift = ($drift | append ($jar | path relative-to $HERE))
+      let probe = ($plugin | path dirname | path join ".probe.zip")
+      package $probe $version
+      if (not ($plugin | path exists)) or (open --raw $plugin) != (open --raw $probe) {
+        $drift = ($drift | append ($plugin | path relative-to $HERE))
       }
       rm --force $probe
-      # A jar for a version we no longer build is installable and unmaintained.
+      # A plugin for a version we no longer build is installable and unmaintained.
       # `bump` deletes them; this is what notices when something else did not.
-      for old in (glob ($jar | path dirname | path join "*.jar")) {
-        if $old != $jar { $drift = ($drift | append $"($old | path relative-to $HERE) — built for a version no longer stamped") }
+      # Globs .jar too: the bare-jar artefact this replaced must not linger, since
+      # it is the shape Install Plugin from Disk refuses.
+      for old in (glob ($plugin | path dirname | path join "*.{jar,zip}")) {
+        if $old != $plugin and ($old | path basename | str starts-with "dracula-tufte-rider-") {
+          $drift = ($drift | append $"($old | path relative-to $HERE) — built for a version no longer stamped")
+        }
       }
     } else {
-      package $jar
-      print $"  → ($jar | path relative-to $HERE)"
+      package $plugin $version
+      print $"  → ($plugin | path relative-to $HERE)"
       print "Install: Rider → Settings → Plugins → gear → Install Plugin from Disk…"
     }
   }
@@ -89,8 +93,8 @@ def main [
   }
 }
 
-def jar-path [version: string]: nothing -> path {
-  $HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).jar"
+def plugin-path [version: string]: nothing -> path {
+  $HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip"
 }
 
 # Line 2 of the stylesheet is machine-read in three places already (build-sample.nu,
@@ -161,52 +165,106 @@ def byte-hex []: int -> string {
       | fill --alignment right --character "0" --width 2
 }
 
-# Rider loads a UI theme only from a plugin, so the installable artefact is a jar
-# — which is a zip, which is the entire build.
+# Rider loads a UI theme only from a plugin, so the installable artefact is built
+# here — and it is a zip wrapping a jar, not a bare jar. That distinction is the
+# whole reason this function is shaped the way it is.
 #
-# The jar is tracked, so it has to be byte-reproducible from the same inputs, or
-# every run shows up as a diff and no staleness gate can say anything. Three
+# A bare jar dropped straight into `<config>/plugins/` loads fine. Verified: Rider
+# 2026.2 logs `Loaded custom plugins: … Dracula-Tufte (muted) …` and the theme
+# appears. What a bare jar does NOT survive is Settings → Plugins → gear → Install
+# Plugin from Disk…, which refused it on a second machine while the same file
+# copied by hand into the same plugins directory worked. Bare-jar plugins are the
+# legacy form; every other plugin in that directory is `Name/lib/*.jar`, and so is
+# every marketplace theme (checked against Catppuccin Theme 3.6.1). So:
+#
+#   dracula-tufte-rider-<version>.zip
+#     Dracula-Tufte/
+#     Dracula-Tufte/lib/
+#     Dracula-Tufte/lib/dracula-tufte-rider-<version>.jar
+#         META-INF/
+#         META-INF/MANIFEST.MF
+#         META-INF/plugin.xml
+#         dracula-tufte.theme.json
+#         dracula-tufte.xml
+#
+# Directory entries are written in their own right, ahead of what is inside them.
+# Naming only the files gives a zip with no directory entries — legal, and
+# java.util.zip reads it back without complaint, but not the shape of anything
+# known to load, and the one jar that had demonstrably loaded here carried them.
+#
+# MANIFEST.MF holds no build stamps on purpose. A real Gradle-built manifest
+# records the JVM, the OS and the platform build, all of which move between
+# machines and would break reproducibility below for nothing: the IDE reads the
+# plugin descriptor, not the manifest.
+#
+# The artefact is tracked, so it has to be byte-reproducible from the same inputs,
+# or every run shows up as a diff and no staleness gate can say anything. Three
 # things make it so, and all three are load-bearing:
 #
 #   - `touch -t 198001010000` on every staged entry. A zip records each file's
 #     mtime in its header, so an unfrozen build of identical content is a
-#     different file. 1980-01-01 is the earliest a zip can store.
+#     different file. 1980-01-01 is the earliest a zip can store. It has to be
+#     applied twice — once before the inner jar is built, and again to the jar
+#     itself, which is created new and therefore carries a live mtime.
 #   - `-X` drops the uid/gid and extended attributes, which differ per machine.
 #   - Entries are named in a fixed order rather than swept up with `-r`. Recursion
 #     walks in readdir order, which is not a promise; naming them also stops a new
 #     META-INF/*.in template riding along into a shipped jar, which the first
 #     build did.
 #
-# `META-INF/` is named as an entry in its own right, ahead of the file inside it.
-# Naming only the files writes a jar with no directory entry at all, which is a
-# legal zip and which java.util.zip reads back fine — but it is not the shape of
-# any jar known to load here. The one jar that has demonstrably loaded in Rider
-# carried the directory entry; the frozen build dropped it and was never installed
-# anywhere to find out. Matching the artefact that works costs one argument.
-#
 # Staged rather than zipped in place because the scheme has to enter the jar as
 # dracula-tufte.xml: a theme's `editorScheme` resolves through SchemeManager,
 # which registers only *.xml out of a plugin, so a bundled .icls loads as nothing
 # and Rider logs "refers to unknown color scheme" while still showing the UI
 # theme. It stays .icls on disk — that is what Import Scheme… expects.
-def package [out: path] {
+def package [out: path, version: string] {
   let dir = ($HERE | path join "themes" "rider")
-  let stage = ($dir | path join "dist" "stage")
+  let dist = ($dir | path join "dist")
+  let stage = ($dist | path join "stage")
+  let jar_name = $"dracula-tufte-rider-($version).jar"
 
+  # Inner jar first, out of its own staging tree.
+  let jstage = ($stage | path join "jar")
   rm --recursive --force $stage
-  mkdir ($stage | path join "META-INF")
-  cp ($dir | path join "META-INF" "plugin.xml") ($stage | path join "META-INF" "plugin.xml")
-  cp ($dir | path join "dracula-tufte.theme.json") ($stage | path join "dracula-tufte.theme.json")
-  cp ($dir | path join "dracula-tufte.icls") ($stage | path join "dracula-tufte.xml")
+  mkdir ($jstage | path join "META-INF")
+  cp ($dir | path join "META-INF" "plugin.xml") ($jstage | path join "META-INF" "plugin.xml")
+  cp ($dir | path join "dracula-tufte.theme.json") ($jstage | path join "dracula-tufte.theme.json")
+  cp ($dir | path join "dracula-tufte.icls") ($jstage | path join "dracula-tufte.xml")
+  [ "Manifest-Version: 1.0"
+    "Implementation-Title: Dracula-Tufte (muted)"
+    $"Implementation-Version: ($version)"
+    ""
+  ] | str join "\n" | save --force --raw ($jstage | path join "META-INF" "MANIFEST.MF")
+
   # Files before directories: writing a file bumps its parent's mtime.
-  ^touch -t 198001010000 ($stage | path join "META-INF" "plugin.xml")
-  ^touch -t 198001010000 ($stage | path join "dracula-tufte.theme.json")
-  ^touch -t 198001010000 ($stage | path join "dracula-tufte.xml")
-  ^touch -t 198001010000 ($stage | path join "META-INF")
+  for f in ["META-INF/MANIFEST.MF" "META-INF/plugin.xml" "dracula-tufte.theme.json" "dracula-tufte.xml" "META-INF"] {
+    ^touch -t 198001010000 ($jstage | path join $f)
+  }
+
+  let jar = ($stage | path join "lib" $jar_name)
+  mkdir ($stage | path join "lib")
+  cd $jstage
+  let jz = (^zip -q -X $jar "META-INF/" META-INF/MANIFEST.MF META-INF/plugin.xml dracula-tufte.theme.json dracula-tufte.xml | complete)
+  cd $HERE
+  if $jz.exit_code != 0 {
+    rm --recursive --force $stage
+    error make {msg: $"zip failed building ($jar_name): ($jz.stderr)"}
+  }
+
+  # The outer zip wants Dracula-Tufte/lib/<jar>, so the plugin directory has to be
+  # a real path on disk for `zip` to name. `lib` is renamed under it rather than
+  # built there in the first place so the jar staging tree can be thrown away.
+  let plugin_dir = ($stage | path join "Dracula-Tufte")
+  rm --recursive --force $jstage
+  mkdir $plugin_dir
+  mv ($stage | path join "lib") $plugin_dir
+  ^touch -t 198001010000 ($plugin_dir | path join "lib" $jar_name)
+  ^touch -t 198001010000 ($plugin_dir | path join "lib")
+  ^touch -t 198001010000 $plugin_dir
   rm --force $out
 
   cd $stage
-  let z = (^zip -q -X $out "META-INF/" META-INF/plugin.xml dracula-tufte.theme.json dracula-tufte.xml | complete)
+  let z = (^zip -q -X $out "Dracula-Tufte/" "Dracula-Tufte/lib/" $"Dracula-Tufte/lib/($jar_name)" | complete)
   cd $HERE
   rm --recursive --force $stage
   if $z.exit_code != 0 {

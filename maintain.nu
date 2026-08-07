@@ -127,13 +127,18 @@ def "main bump" [version: string] {
   }
 
   nu ($HERE | path join "build-sample.nu")
-  # The jar's filename carries the version and META-INF/plugin.xml reads it off
-  # the stylesheet header, which is what just changed — so this writes a new jar
-  # and leaves the old one behind. Deleting it is the point: a stale
-  # dracula-tufte-rider-<old>.jar in the tree is an installable artefact nothing
-  # regenerates and nothing checks.
-  let old_jars = (glob ($HERE | path join "themes" "rider" "dist" "*.jar"))
-  if ($old_jars | is-not-empty) { rm --force ...$old_jars }
+  # The plugin zip's filename carries the version and META-INF/plugin.xml reads it
+  # off the stylesheet header, which is what just changed — so this writes a new
+  # artefact and leaves the old one behind. Deleting it is the point: a stale
+  # dracula-tufte-rider-<old>.zip in the tree is installable, and nothing
+  # regenerates or checks it.
+  #
+  # Globs .jar as well, to sweep up the bare-jar artefact this repo shipped
+  # through v1.18.0. That shape loads when copied into plugins/ by hand but
+  # Install Plugin from Disk refuses it, so leaving one behind hands someone the
+  # exact file that already failed.
+  let old = (glob ($HERE | path join "themes" "rider" "dist" "dracula-tufte-rider-*.{jar,zip}"))
+  if ($old | is-not-empty) { rm --force ...$old }
   nu ($HERE | path join "create-themes.nu")
   print $"Bumped. Review the diff, then:"
   print $"  git add -A && git commit -m 'feat: v($version) — <summary>'"
@@ -287,14 +292,13 @@ def "main release" [version: string] {
     exit 1
   }
   print $"Tagged ($tag) on ($sha), verified green."
-  publish-jar $tag $slug $version
+  publish-plugin $tag $slug $version
 }
 
 # The Rider theme is the one artefact a consumer cannot take from the source
-# tree. Rider loads a UI theme only from a plugin jar, and a jar is a zip whose
-# entry timestamps move on every build, so it is gitignored rather than tracked.
-# Building it at tag time and attaching it to the release is what makes a tag
-# something a person can install.
+# tree. Rider loads a UI theme only from a plugin, so `create-themes.nu` packages
+# one, and attaching it to the release is what makes a tag something a person can
+# install rather than something they have to build.
 #
 # The other editor themes go up as one themes zip alongside it. They are plain
 # files in the tree, so GitHub's own source zip already carries them — but only
@@ -306,24 +310,24 @@ def "main release" [version: string] {
 # Runs after the tag is pushed, on purpose: the tag is the gated claim, and a
 # failed upload must not be able to un-say it. If this half fails the tag stands
 # and the retry is one command.
-def publish-jar [tag: string, slug: string, version: string] {
+def publish-plugin [tag: string, slug: string, version: string] {
   nu ($HERE | path join "create-themes.nu")
-  let jar = ($HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).jar")
-  if not ($jar | path exists) {
-    print $"create-themes.nu produced no ($jar | path basename). ($tag) is tagged with no jar attached."
+  let plugin = ($HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip")
+  if not ($plugin | path exists) {
+    print $"create-themes.nu produced no ($plugin | path basename). ($tag) is tagged with no plugin attached."
     exit 1
   }
   let themes = (theme-bundle $version)
 
-  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $jar $themes | complete)
+  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $plugin $themes | complete)
   if $rel.exit_code != 0 {
     print $"($tag) is tagged and pushed, but publishing the release failed:"
     print ($rel.stderr | str trim)
     print $"  The tag stands. Retry with:"
-    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($jar) ($themes)"
+    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($plugin) ($themes)"
     exit 1
   }
-  print $"Released ($tag) with ($jar | path basename) and ($themes | path basename) attached."
+  print $"Released ($tag) with ($plugin | path basename) and ($themes | path basename) attached."
 }
 
 # Zip the editor themes for the release. The exclusions are the whole content
