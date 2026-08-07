@@ -1,0 +1,99 @@
+---
+name: release
+description: Cut a tagged, verified release of the Dracula-Tufte template — bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the jar plus themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
+---
+
+# Release the template
+
+`maintain.nu` does the work. This skill is the order to call it in, and the two
+places where the order is the whole point.
+
+Read [CLAUDE.md](../../../CLAUDE.md) "A tag is a claim the contract held" before
+deviating. Everything below is that section made runnable.
+
+## Pick the version
+
+Read the current one, then decide the next:
+
+```
+sed -n '2p' tufte-dracula.css        # /* Dracula-Tufte (muted) vX.Y.Z */
+git log --oneline "v$(...)"..HEAD    # what has landed untagged
+```
+
+- `feat:` commits since the last tag, or any new consumer-visible file → **minor**
+- `fix:` / `chore:` only → **patch**
+- Breaking the `<style>` wrapper contract or the `:root` token names → **major**
+
+Say which you picked and why in one line. Ask only if the untagged commits are a
+genuine mix that could read either way.
+
+## Run it
+
+```bash
+git switch -c release/vX.Y.Z-<slug>          # never work on main
+nu maintain.nu bump X.Y.Z                    # stamps CSS + README, rebuilds fixtures + themes + jar
+nu maintain.nu check                          # must print "Contract OK"
+git add -A && git commit -F -                 # message from the diff, see below
+git push -u origin release/vX.Y.Z-<slug>
+gh pr create --fill
+gh pr checks --watch                          # `contract` must pass HERE, not after
+gh pr merge --squash
+git switch main && git pull --ff-only
+nu maintain.nu release X.Y.Z                  # verifies green on the merged SHA, then tags + publishes
+```
+
+`bump` deletes the old jar and writes a new one — the filename carries the
+version and `META-INF/plugin.xml` reads it off the stylesheet header. Expect
+`themes/rider/dist/dracula-tufte-rider-<old>.jar` to disappear from `git status`
+as a delete. That is correct.
+
+## Verify before reporting done
+
+A release that shipped with no assets looks identical to one that worked, which
+is exactly how v1.17.0 got tagged onto a commit that predated `themes/` with no
+release cut at all.
+
+```bash
+gh release view vX.Y.Z --json tagName,assets --jq '.tagName, (.assets[] | "\(.name)  \(.size)B")'
+git cat-file -t vX.Y.Z                        # must be `tag`, not `commit`
+git ls-tree -r --name-only vX.Y.Z | rg '^themes'   # the tag must contain what it claims
+shasum -a 256 themes/rider/dist/dracula-tufte-rider-X.Y.Z.jar
+```
+
+Both assets must be present: the Rider jar and `dracula-tufte-themes-X.Y.Z.zip`.
+Report the jar's sha256 so a second machine can compare after downloading.
+
+## Commit message
+
+Write it from the diff, normal prose, not caveman. What changed and why it
+changed — the repo's history is the design record for anything not in NOTES.md.
+Subject line: `feat: vX.Y.Z — <summary>` (or `fix:` / `chore:`).
+
+**No email address anywhere in the message.** Not the maintainer's, not a
+co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
+
+## Rules with no exception
+
+- **Never `git push origin main`,** and never `git push origin main vX.Y.Z`. One
+  command pushing commit and tag together means the tag claims the contract held
+  before anything checked it.
+- **If a push prints `Bypassed rule violations`, stop and say so in that same
+  message.** Protection was overridden, not satisfied. Do not carry on to the
+  tag. Offer to revert.
+- **Never `--no-verify`. Never force-move a pushed tag.** Consumers pin through a
+  submodule; a moved tag silently changes what they resolve to.
+- **Annotated tags only.** `maintain.nu release` does this; do not hand-tag.
+- Do not hand-edit `sample.html`, `sample-conn-map.html` or `tokens.css`. Ever.
+  They are generated, and `check` fails if regeneration is not a no-op.
+
+## Tooling-only changes
+
+A change that touches no consumer payload — this skill file, a CI workflow, a
+`maintain.nu` refactor — still lands through a PR, but takes **no version bump**
+and **no tag**. Commit it as `chore:` and stop. An untagged commit on `main` is
+fine; a tag that consumers pin to for nothing is not.
+
+## When a release already shipped wrong
+
+Do not move the tag. Cut the next version with the fix. Say plainly what the bad
+tag is missing so anyone pinned to it knows to move.
