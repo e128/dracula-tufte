@@ -296,6 +296,13 @@ def "main release" [version: string] {
 # Building it at tag time and attaching it to the release is what makes a tag
 # something a person can install.
 #
+# The other editor themes go up as one themes zip alongside it. They are plain
+# files in the tree, so GitHub's own source zip already carries them — but only
+# for someone willing to download the whole template and find themes/. An asset
+# named for the job is what a person on a second machine actually wants, and
+# v1.17.0 shipped with neither: the tag landed on a commit before themes/ existed
+# and no release was ever cut, so there was nothing to download at all.
+#
 # Runs after the tag is pushed, on purpose: the tag is the gated claim, and a
 # failed upload must not be able to un-say it. If this half fails the tag stands
 # and the retry is one command.
@@ -306,16 +313,38 @@ def publish-jar [tag: string, slug: string, version: string] {
     print $"create-themes.nu produced no ($jar | path basename). ($tag) is tagged with no jar attached."
     exit 1
   }
+  let themes = (theme-bundle $version)
 
-  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $jar | complete)
+  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $jar $themes | complete)
   if $rel.exit_code != 0 {
     print $"($tag) is tagged and pushed, but publishing the release failed:"
     print ($rel.stderr | str trim)
     print $"  The tag stands. Retry with:"
-    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($jar)"
+    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($jar) ($themes)"
     exit 1
   }
-  print $"Released ($tag) with ($jar | path basename) attached."
+  print $"Released ($tag) with ($jar | path basename) and ($themes | path basename) attached."
+}
+
+# Zip the editor themes for the release. The exclusions are the whole content
+# decision:
+#   - dist/* — the jar is its own asset, and a jar nested inside a zip is a thing
+#     people install by mistake.
+#   - *.in — the generation templates. They carry `{{token}}` placeholders, so a
+#     consumer who installs one gets a theme with literal braces for colours.
+#   - .DS_Store — gitignored, so git never sees it, but zip walks the real disk.
+# Written to dist/, which .gitignore covers for *.zip, so this leaves no
+# untracked artefact behind to go stale.
+def theme-bundle [version: string]: nothing -> path {
+  let out = ($HERE | path join "themes" "rider" "dist" $"dracula-tufte-themes-($version).zip")
+  rm --force $out
+  cd $HERE
+  let z = (^zip -q -r -X $out themes -x 'themes/rider/dist/*' '*.in' '*.DS_Store' | complete)
+  if $z.exit_code != 0 or (not ($out | path exists)) {
+    print $"zip failed building ($out | path basename): ($z.stderr | str trim)"
+    exit 1
+  }
+  $out
 }
 
 # Drive the release gate with the check shapes GitHub really produces. No network,
