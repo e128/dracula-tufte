@@ -83,7 +83,9 @@ satisfied it — GitHub accepts the push and records `Bypassed rule violations`.
 the commit and the tag as separate commands does not fix this; only landing through a
 PR does. **Never commit straight to `main`.**
 
-The flow, start to finish:
+The flow, start to finish — also packaged as the `release` skill
+([`.claude/skills/release/SKILL.md`](.claude/skills/release/SKILL.md)), which is what
+"make a release" invokes:
 
 ```
 git switch -c fix/whatever                       # never work on main
