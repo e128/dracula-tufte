@@ -177,6 +177,13 @@ def byte-hex []: int -> string {
 #     META-INF/*.in template riding along into a shipped jar, which the first
 #     build did.
 #
+# `META-INF/` is named as an entry in its own right, ahead of the file inside it.
+# Naming only the files writes a jar with no directory entry at all, which is a
+# legal zip and which java.util.zip reads back fine — but it is not the shape of
+# any jar known to load here. The one jar that has demonstrably loaded in Rider
+# carried the directory entry; the frozen build dropped it and was never installed
+# anywhere to find out. Matching the artefact that works costs one argument.
+#
 # Staged rather than zipped in place because the scheme has to enter the jar as
 # dracula-tufte.xml: a theme's `editorScheme` resolves through SchemeManager,
 # which registers only *.xml out of a plugin, so a bundled .icls loads as nothing
@@ -199,7 +206,7 @@ def package [out: path] {
   rm --force $out
 
   cd $stage
-  let z = (^zip -q -X $out META-INF/plugin.xml dracula-tufte.theme.json dracula-tufte.xml | complete)
+  let z = (^zip -q -X $out "META-INF/" META-INF/plugin.xml dracula-tufte.theme.json dracula-tufte.xml | complete)
   cd $HERE
   rm --recursive --force $stage
   if $z.exit_code != 0 {
