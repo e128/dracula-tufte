@@ -8,5 +8,7 @@ node_modules/
 
 __pycache__/
 themes/rider/dist/stage/
-themes/rider/dist/.probe.jar
-themes/rider/dist/*.zip
+themes/rider/dist/.probe.zip
+# The plugin zip (dracula-tufte-rider-*.zip) is tracked. The themes bundle is
+# built at release time and is not.
+themes/rider/dist/dracula-tufte-themes-*.zip
