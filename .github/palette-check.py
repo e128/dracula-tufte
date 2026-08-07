@@ -58,14 +58,32 @@ if not root:
     sys.exit("Could not find the :root block in tufte-dracula.css.")
 css = root.group(1)
 
-palette = {
-    name: oklch_to_hex(float(L), float(C), float(h))
+triples = {
+    name: (float(L), float(C), float(h))
     for name, L, C, h in re.findall(
         r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", css
     )
 }
+palette = {name: oklch_to_hex(*lch) for name, lch in triples.items()}
 if len(palette) < 17:
     sys.exit(f"Only parsed {len(palette)} oklch tokens from :root — expected 17.")
+
+# --dump is the generator side of the same parse: create-themes.nu needs the palette
+# as data, and re-deriving oklch -> sRGB in Nushell (no trig builtins) would mean a
+# second implementation of the matrix above, free to drift from the one CI checks.
+# `bright` is the L + 0.07 rule the Ghostty ANSI slots already document; it lives
+# here because it needs oklch, not because it is palette policy. The ceiling is
+# 0.99, not 1.0: --on-surface sits at L 0.977, so an unclamped bump lands on
+# #fffff9, a white with nothing above it. 0.99 keeps ANSI 15 at #fcfcf6.
+if "--dump" in sys.argv:
+    json.dump(
+        {
+            name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, triples[name][0] + 0.07), *triples[name][1:])}
+            for name, hexval in palette.items()
+        },
+        sys.stdout,
+    )
+    sys.exit(0)
 
 pal = json.loads((ROOT / "mermaid-palette.json").read_text())
 fail = 0

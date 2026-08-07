@@ -91,3 +91,12 @@ jobs:
             echo "tokens.css / sample.html / sample-conn-map.html are stale — run 'nu build-sample.nu' and commit the result."
             exit 1
           }
+
+      - name: Themes must be regenerated (fails if stale vs the CSS palette)
+        # themes/ projects the same :root palette into Ghostty, Rider and Zed.
+        # `nu maintain.nu release` attaches the Rider jar to the tag, so drift
+        # here ships to whoever installs it. The jar is tracked and checked too:
+        # create-themes.nu freezes every zip entry timestamp, so a rebuild of
+        # unchanged inputs is byte-identical and a diff means a real change.
+        # Needs `zip`, which is preinstalled on ubuntu-latest.
+        run: nu create-themes.nu --check

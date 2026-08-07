@@ -97,6 +97,15 @@ def "main check" [] {
     print "Generated files fresh."
   }
 
+  # themes/ is generated too, from the same :root palette. A stale theme is worse
+  # than a stale fixture: `release` attaches the Rider jar to the tag, so drift
+  # here ships to whoever installs it. The jar is tracked and covered by this
+  # gate — create-themes.nu freezes the zip's entry timestamps precisely so its
+  # bytes can be compared rather than assumed.
+  let themes = (^nu ($HERE | path join "create-themes.nu") --check | complete)
+  print ($themes.stdout | str trim)
+  if $themes.exit_code != 0 { $ok = false }
+
   if $ok {
     print "Contract OK."
   } else {
@@ -118,6 +127,14 @@ def "main bump" [version: string] {
   }
 
   nu ($HERE | path join "build-sample.nu")
+  # The jar's filename carries the version and META-INF/plugin.xml reads it off
+  # the stylesheet header, which is what just changed — so this writes a new jar
+  # and leaves the old one behind. Deleting it is the point: a stale
+  # dracula-tufte-rider-<old>.jar in the tree is an installable artefact nothing
+  # regenerates and nothing checks.
+  let old_jars = (glob ($HERE | path join "themes" "rider" "dist" "*.jar"))
+  if ($old_jars | is-not-empty) { rm --force ...$old_jars }
+  nu ($HERE | path join "create-themes.nu")
   print $"Bumped. Review the diff, then:"
   print $"  git add -A && git commit -m 'feat: v($version) — <summary>'"
   print $"  nu maintain.nu release ($version)"
@@ -202,6 +219,16 @@ def "main release" [version: string] {
     print $"($tag) already exists locally. Delete it or pick the next version."
     exit 1
   }
+  # Checked before the poll, not after the tag: this verb builds the Rider jar
+  # from the theme files on disk and attaches it to the release. Stale files
+  # here would ship a jar that disagrees with the tag, and regenerating after
+  # the clean-tree check would dirty the tree behind our own gate.
+  let themes = (^nu ($HERE | path join "create-themes.nu") --check | complete)
+  if $themes.exit_code != 0 {
+    print ($themes.stdout | str trim)
+    print "  Run `nu create-themes.nu` and commit the result first."
+    exit 1
+  }
 
   print $"Waiting for ($REQUIRED_CHECKS | str join ', ') on ($sha) in ($slug)…"
   mut checks = []
@@ -260,6 +287,35 @@ def "main release" [version: string] {
     exit 1
   }
   print $"Tagged ($tag) on ($sha), verified green."
+  publish-jar $tag $slug $version
+}
+
+# The Rider theme is the one artefact a consumer cannot take from the source
+# tree. Rider loads a UI theme only from a plugin jar, and a jar is a zip whose
+# entry timestamps move on every build, so it is gitignored rather than tracked.
+# Building it at tag time and attaching it to the release is what makes a tag
+# something a person can install.
+#
+# Runs after the tag is pushed, on purpose: the tag is the gated claim, and a
+# failed upload must not be able to un-say it. If this half fails the tag stands
+# and the retry is one command.
+def publish-jar [tag: string, slug: string, version: string] {
+  nu ($HERE | path join "create-themes.nu")
+  let jar = ($HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).jar")
+  if not ($jar | path exists) {
+    print $"create-themes.nu produced no ($jar | path basename). ($tag) is tagged with no jar attached."
+    exit 1
+  }
+
+  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $jar | complete)
+  if $rel.exit_code != 0 {
+    print $"($tag) is tagged and pushed, but publishing the release failed:"
+    print ($rel.stderr | str trim)
+    print $"  The tag stands. Retry with:"
+    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($jar)"
+    exit 1
+  }
+  print $"Released ($tag) with ($jar | path basename) attached."
 }
 
 # Drive the release gate with the check shapes GitHub really produces. No network,

@@ -1,0 +1,34 @@
+# Dracula-Tufte (muted) — Ghostty theme
+#
+# Every value is the sRGB rendering of a tufte-dracula.css :root oklch() token,
+# computed with .github/palette-check.py's oklch_to_hex. Bright ANSI slots that
+# have no token of their own are the same hue and chroma at L + 0.07.
+#
+# Install: copy this file to ~/.config/ghostty/themes/dracula-tufte
+#          then add `theme = dracula-tufte` to ~/.config/ghostty/config
+
+background = #{{surface}}
+foreground = #{{on-surface}}
+
+cursor-color = #{{pink}}
+cursor-text = #{{surface}}
+
+selection-background = #{{code-bg.bright}}
+selection-foreground = #{{on-surface}}
+
+palette = 0=#{{surface-alt}}
+palette = 1=#{{red}}
+palette = 2=#{{green}}
+palette = 3=#{{data-4}}
+palette = 4=#{{data-1}}
+palette = 5=#{{purple}}
+palette = 6=#{{link}}
+palette = 7=#{{label}}
+palette = 8=#{{rule-light}}
+palette = 9=#{{red.bright}}
+palette = 10=#{{green.bright}}
+palette = 11=#{{orange}}
+palette = 12=#{{data-1.bright}}
+palette = 13=#{{pink}}
+palette = 14=#{{link.bright}}
+palette = 15=#{{on-surface.bright}}
