@@ -1,0 +1,19 @@
+<idea-plugin>
+  <id>com.e128.dracula-tufte</id>
+  <name>Dracula-Tufte (muted)</name>
+  <version>{{version}}</version>
+  <vendor>e128</vendor>
+
+  <description><![CDATA[
+    Dark UI theme and editor colour scheme derived from the Dracula-Tufte (muted)
+    HTML template. Every colour is the sRGB rendering of a
+    <code>tufte-dracula.css</code> <code>:root</code> <code>oklch()</code> token.
+  ]]></description>
+
+  <depends>com.intellij.modules.platform</depends>
+  <idea-version since-build="223" />
+
+  <extensions defaultExtensionNs="com.intellij">
+    <themeProvider id="com.e128.dracula-tufte" path="/dracula-tufte.theme.json" />
+  </extensions>
+</idea-plugin>

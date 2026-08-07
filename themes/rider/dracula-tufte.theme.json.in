@@ -1,0 +1,482 @@
+{
+  "name": "Dracula-Tufte (muted)",
+  "dark": true,
+  "author": "the maintainer",
+  "editorScheme": "/dracula-tufte.xml",
+
+  "colors": {
+    "surface": "#{{surface}}",
+    "surfaceAlt": "#{{surface-alt}}",
+    "codeBg": "#{{code-bg}}",
+    "onSurface": "#{{on-surface}}",
+    "label": "#{{label}}",
+    "muted": "#{{muted}}",
+    "ruleLight": "#{{rule-light}}",
+    "rule": "#{{mix:surface:rule-light:30}}",
+    "hover": "#{{mix:surface:rule-light:20}}",
+    "pressed": "#{{mix:surface:rule-light:40}}",
+    "selection": "#{{code-bg.bright}}",
+    "selectionSoft": "#{{mix:surface:link:22}}",
+    "link": "#{{link}}",
+    "orange": "#{{orange}}",
+    "red": "#{{red}}",
+    "purple": "#{{purple}}",
+    "pink": "#{{pink}}",
+    "green": "#{{green}}",
+    "data1": "#{{data-1}}",
+    "data2": "#{{data-2}}",
+    "data3": "#{{data-3}}",
+    "data4": "#{{data-4}}"
+  },
+
+  "ui": {
+    "*": {
+      "background": "surface",
+      "foreground": "onSurface",
+      "infoForeground": "muted",
+      "disabledForeground": "ruleLight",
+      "disabledText": "ruleLight",
+      "disabledBackground": "surfaceAlt",
+      "inactiveForeground": "muted",
+      "inactiveBackground": "surface",
+      "selectionBackground": "selection",
+      "selectionForeground": "onSurface",
+      "selectionInactiveBackground": "codeBg",
+      "selectionInactiveForeground": "onSurface",
+      "selectionBackgroundInactive": "codeBg",
+      "selectionForegroundInactive": "onSurface",
+      "hoverBackground": "hover",
+      "pressedBackground": "pressed",
+      "borderColor": "rule",
+      "separatorColor": "rule",
+      "lineSeparatorColor": "rule",
+      "acceleratorForeground": "muted",
+      "acceleratorSelectionForeground": "onSurface",
+      "focusColor": "link",
+      "focusedBorderColor": "link",
+      "focusedColor": "link",
+      "caretForeground": "pink",
+      "errorForeground": "red"
+    },
+
+    "Borders": {
+      "color": "rule",
+      "ContrastBorderColor": "rule"
+    },
+
+    "Button": {
+      "startBackground": "codeBg",
+      "endBackground": "codeBg",
+      "startBorderColor": "ruleLight",
+      "endBorderColor": "ruleLight",
+      "foreground": "onSurface",
+      "disabledBorderColor": "rule",
+      "focusedBorderColor": "link",
+      "default": {
+        "startBackground": "#{{mix:surface:purple:20}}",
+        "endBackground": "#{{mix:surface:purple:20}}",
+        "startBorderColor": "purple",
+        "endBorderColor": "purple",
+        "foreground": "onSurface",
+        "focusColor": "link",
+        "focusedBorderColor": "link"
+      }
+    },
+
+    "Component": {
+      "borderColor": "ruleLight",
+      "focusedBorderColor": "link",
+      "disabledBorderColor": "rule",
+      "focusColor": "link",
+      "errorFocusColor": "red",
+      "inactiveErrorFocusColor": "#{{mix:surface:red:28}}",
+      "warningFocusColor": "orange",
+      "inactiveWarningFocusColor": "#{{mix:surface:orange:28}}",
+      "infoForeground": "muted"
+    },
+
+    "CheckBox": {
+      "background": "surface",
+      "foreground": "onSurface"
+    },
+
+    "ComboBox": {
+      "background": "codeBg",
+      "nonEditableBackground": "codeBg",
+      "ArrowButton": {
+        "background": "codeBg",
+        "nonEditableBackground": "codeBg",
+        "iconColor": "label",
+        "disabledIconColor": "ruleLight"
+      },
+      "selectionBackground": "selection",
+      "selectionForeground": "onSurface"
+    },
+
+    "TextField": { "background": "codeBg", "foreground": "onSurface", "caretForeground": "pink" },
+    "PasswordField": { "background": "codeBg", "foreground": "onSurface" },
+    "TextArea": { "background": "codeBg", "foreground": "onSurface" },
+    "FormattedTextField": { "background": "codeBg", "foreground": "onSurface" },
+    "SearchField": { "background": "codeBg" },
+    "SearchMatch": { "startBackground": "#{{mix:surface:orange:35}}", "endBackground": "#{{mix:surface:orange:35}}" },
+
+    "Editor": {
+      "background": "surface",
+      "foreground": "onSurface",
+      "shortcutForeground": "link",
+      "SearchField": { "background": "codeBg" },
+      "Toolbar": { "borderColor": "rule" }
+    },
+
+    "EditorTabs": {
+      "background": "surfaceAlt",
+      "inactiveUnderlineColor": "ruleLight",
+      "underlineColor": "pink",
+      "underlineHeight": 2,
+      "underlinedTabBackground": "surface",
+      "underlinedTabForeground": "onSurface",
+      "hoverBackground": "hover",
+      "borderColor": "rule"
+    },
+
+    "DefaultTabs": {
+      "background": "surfaceAlt",
+      "underlineColor": "pink",
+      "inactiveUnderlineColor": "ruleLight",
+      "underlinedTabBackground": "surface",
+      "underlinedTabForeground": "onSurface",
+      "hoverBackground": "hover",
+      "borderColor": "rule"
+    },
+
+    "TabbedPane": {
+      "background": "surfaceAlt",
+      "focusColor": "pink",
+      "underlineColor": "pink",
+      "contentAreaColor": "rule",
+      "hoverColor": "hover",
+      "disabledUnderlineColor": "ruleLight"
+    },
+
+    "ToolWindow": {
+      "Background": "surfaceAlt",
+      "Button": {
+        "hoverBackground": "hover",
+        "selectedBackground": "codeBg",
+        "selectedForeground": "onSurface"
+      },
+      "Header": {
+        "background": "surfaceAlt",
+        "inactiveBackground": "surfaceAlt",
+        "borderColor": "rule"
+      },
+      "HeaderTab": {
+        "underlineColor": "pink",
+        "inactiveUnderlineColor": "ruleLight",
+        "underlinedTabBackground": "surfaceAlt",
+        "underlinedTabForeground": "onSurface",
+        "hoverBackground": "hover"
+      }
+    },
+
+    "Tree": {
+      "background": "surfaceAlt",
+      "foreground": "onSurface",
+      "rowHeight": 22,
+      "hash": "rule",
+      "selectionBackground": "selection",
+      "selectionForeground": "onSurface",
+      "selectionInactiveBackground": "codeBg",
+      "modifiedItemForeground": "data1"
+    },
+
+    "Table": {
+      "background": "surfaceAlt",
+      "foreground": "onSurface",
+      "gridColor": "rule",
+      "stripeColor": "surface",
+      "lightSelectionBackground": "codeBg",
+      "selectionBackground": "selection",
+      "selectionForeground": "onSurface",
+      "focusCellBackground": "selection",
+      "sortIconColor": "label"
+    },
+    "TableHeader": {
+      "background": "surfaceAlt",
+      "foreground": "pink",
+      "bottomSeparatorColor": "ruleLight",
+      "cellBorder": "rule",
+      "separatorColor": "rule"
+    },
+
+    "List": {
+      "background": "surfaceAlt",
+      "foreground": "onSurface",
+      "selectionBackground": "selection",
+      "selectionForeground": "onSurface",
+      "selectionInactiveBackground": "codeBg",
+      "hoverBackground": "hover"
+    },
+
+    "Menu": { "background": "codeBg", "foreground": "onSurface", "borderColor": "rule", "separatorColor": "rule" },
+    "MenuBar": { "background": "surfaceAlt", "foreground": "onSurface", "borderColor": "rule" },
+    "MenuItem": {
+      "background": "codeBg",
+      "foreground": "onSurface",
+      "selectionBackground": "selection",
+      "selectionForeground": "onSurface",
+      "acceleratorForeground": "muted",
+      "disabledForeground": "ruleLight"
+    },
+    "PopupMenu": { "background": "codeBg", "borderColor": "rule" },
+    "Popup": {
+      "background": "codeBg",
+      "borderColor": "rule",
+      "Header": { "activeBackground": "codeBg", "inactiveBackground": "surfaceAlt" },
+      "Advertiser": { "background": "codeBg", "foreground": "muted", "borderColor": "rule" },
+      "Toolbar": { "background": "codeBg", "borderColor": "rule" },
+      "separatorColor": "rule",
+      "separatorForeground": "muted"
+    },
+
+    "CompletionPopup": {
+      "background": "codeBg",
+      "foreground": "onSurface",
+      "selectionBackground": "selection",
+      "selectionInactiveBackground": "surface",
+      "matchForeground": "orange",
+      "matchSelectionForeground": "orange",
+      "nonFocusedMask": 0
+    },
+
+    "ToolTip": { "background": "codeBg", "foreground": "onSurface", "borderColor": "ruleLight" },
+    "ValidationTooltip": {
+      "errorBackground": "#{{mix:surface:red:20}}",
+      "errorBorderColor": "red",
+      "warningBackground": "#{{mix:surface:orange:20}}",
+      "warningBorderColor": "orange"
+    },
+
+    "Notification": {
+      "background": "codeBg",
+      "foreground": "onSurface",
+      "borderColor": "ruleLight",
+      "errorBackground": "#{{mix:surface:red:20}}",
+      "errorBorderColor": "red",
+      "errorForeground": "onSurface",
+      "MoreButton": { "background": "codeBg", "innerBorderColor": "rule" },
+      "ToolWindow": {
+        "informativeBackground": "#{{mix:surface:data-1:20}}",
+        "informativeBorderColor": "data1",
+        "informativeForeground": "onSurface",
+        "warningBackground": "#{{mix:surface:orange:20}}",
+        "warningBorderColor": "orange",
+        "warningForeground": "onSurface",
+        "errorBackground": "#{{mix:surface:red:20}}",
+        "errorBorderColor": "red",
+        "errorForeground": "onSurface"
+      }
+    },
+
+    "Banner": {
+      "errorBackground": "#{{mix:surface:red:20}}",
+      "errorBorderColor": "red",
+      "warningBackground": "#{{mix:surface:orange:20}}",
+      "warningBorderColor": "orange",
+      "infoBackground": "#{{mix:surface:data-1:20}}",
+      "infoBorderColor": "data1",
+      "successBackground": "#{{mix:surface:data-3:20}}",
+      "successBorderColor": "data3"
+    },
+
+    "Link": {
+      "activeForeground": "link",
+      "hoverForeground": "link",
+      "visitedForeground": "purple",
+      "pressedForeground": "pink",
+      "secondaryForeground": "muted"
+    },
+
+    "ProgressBar": {
+      "background": "codeBg",
+      "trackColor": "codeBg",
+      "progressColor": "purple",
+      "indeterminateStartColor": "purple",
+      "indeterminateEndColor": "pink",
+      "failedColor": "red",
+      "failedEndColor": "red",
+      "passedColor": "green",
+      "passedEndColor": "green"
+    },
+
+    "ScrollBar": {
+      "background": "surface",
+      "thumbColor": "#{{mix:surface:rule-light:50}}",
+      "hoverThumbColor": "ruleLight",
+      "trackColor": "surface",
+      "Transparent": {
+        "thumbColor": "#{{mix:surface:rule-light:50}}",
+        "hoverThumbColor": "ruleLight",
+        "trackColor": "surface"
+      },
+      "Mac": {
+        "thumbColor": "#{{mix:surface:rule-light:50}}",
+        "hoverThumbColor": "ruleLight",
+        "Transparent": { "thumbColor": "#{{mix:surface:rule-light:50}}", "hoverThumbColor": "ruleLight" }
+      }
+    },
+
+    "Separator": { "separatorColor": "rule", "foreground": "muted" },
+    "SplitPane": { "highlight": "rule" },
+    "SplitPaneDivider": { "draggingColor": "ruleLight" },
+
+    "StatusBar": { "background": "surfaceAlt", "borderColor": "rule", "hoverBackground": "hover" },
+
+    "MainToolbar": {
+      "background": "surfaceAlt",
+      "Dropdown": { "hoverBackground": "hover", "pressedBackground": "pressed" },
+      "Icon": { "hoverBackground": "hover", "pressedBackground": "pressed" }
+    },
+
+    "ActionButton": {
+      "hoverBackground": "hover",
+      "hoverBorderColor": "hover",
+      "pressedBackground": "pressed",
+      "pressedBorderColor": "pressed"
+    },
+
+    "SegmentedButton": {
+      "selectedButtonColor": "codeBg",
+      "selectedStartBorderColor": "ruleLight",
+      "selectedEndBorderColor": "ruleLight",
+      "focusedSelectedButtonColor": "selection"
+    },
+
+    "Slider": { "background": "surface", "trackColor": "codeBg", "thumbColor": "purple", "tickColor": "ruleLight" },
+    "Spinner": { "background": "codeBg" },
+
+    "TitlePane": { "background": "surfaceAlt", "inactiveBackground": "surfaceAlt", "infoForeground": "muted" },
+
+    "WelcomeScreen": {
+      "background": "surface",
+      "borderColor": "rule",
+      "separatorColor": "rule",
+      "SidePanel": { "background": "surfaceAlt" },
+      "Projects": {
+        "background": "surface",
+        "selectionBackground": "selection",
+        "selectionInactiveBackground": "codeBg",
+        "actions": { "background": "surface", "selectionBackground": "selection" }
+      }
+    },
+
+    "FileColor": {
+      "Blue": "#{{mix:surface:data-1:10}}",
+      "Green": "#{{mix:surface:data-3:10}}",
+      "Orange": "#{{mix:surface:orange:10}}",
+      "Yellow": "#{{mix:surface:data-4:10}}",
+      "Rose": "#{{mix:surface:red:10}}",
+      "Violet": "#{{mix:surface:purple:10}}",
+      "Gray": "#{{mix:surface:rule-light:12}}"
+    },
+
+    "VersionControl": {
+      "FileHistory": {
+        "Commit": {
+          "selectedBranchBackground": "codeBg",
+          "currentBranchBackground": "codeBg"
+        }
+      },
+      "GitLog": {
+        "headIconColor": "orange",
+        "localBranchIconColor": "data3",
+        "remoteBranchIconColor": "data1",
+        "tagIconColor": "label",
+        "otherIconColor": "muted"
+      },
+      "Log": {
+        "Commit": {
+          "currentBranchBackground": "codeBg",
+          "hoveredBackground": "hover",
+          "unmatchedForeground": "ruleLight"
+        }
+      },
+      "RefLabel": { "foreground": "surface" }
+    },
+
+    "DragAndDrop": {
+      "areaBackground": "codeBg",
+      "areaForeground": "onSurface",
+      "borderColor": "purple",
+      "rowBackground": "#{{mix:surface:link:22}}"
+    },
+
+    "Debugger": {
+      "Variables": {
+        "changedValueForeground": "orange",
+        "collectingDataForeground": "muted",
+        "errorMessageForeground": "red",
+        "evaluatingExpressionForeground": "muted",
+        "exceptionForeground": "red",
+        "modifyingValueForeground": "pink",
+        "typeForeground": "purple",
+        "valueForeground": "green"
+      }
+    },
+
+    "Plugins": {
+      "background": "surface",
+      "borderColor": "rule",
+      "hoverBackground": "hover",
+      "lightSelectionBackground": "codeBg",
+      "SearchField": { "background": "codeBg" },
+      "SectionHeader": { "background": "surfaceAlt", "foreground": "label" },
+      "Tab": { "hoverBackground": "hover", "selectedBackground": "codeBg", "selectedForeground": "onSurface" },
+      "Button": {
+        "installBackground": "surface",
+        "installBorderColor": "green",
+        "installForeground": "green",
+        "installFillBackground": "green",
+        "installFillForeground": "surface",
+        "updateBackground": "purple",
+        "updateBorderColor": "purple",
+        "updateForeground": "surface"
+      }
+    }
+  },
+
+  "icons": {
+    "ColorPalette": {
+      "Actions.Red": "#{{red}}",
+      "Actions.Yellow": "#{{orange}}",
+      "Actions.Green": "#{{green}}",
+      "Actions.Blue": "#{{link}}",
+      "Actions.Grey": "#{{label}}",
+      "Actions.GreyInline": "#{{muted}}",
+      "Actions.GreyInline.Dark": "#{{muted}}",
+      "Objects.Grey": "#{{muted}}",
+      "Objects.RedStatus": "#{{red}}",
+      "Objects.Red": "#{{red}}",
+      "Objects.Pink": "#{{pink}}",
+      "Objects.Yellow": "#{{data-4}}",
+      "Objects.YellowDark": "#{{orange}}",
+      "Objects.Green": "#{{green}}",
+      "Objects.GreenAndroid": "#{{data-3}}",
+      "Objects.Blue": "#{{data-1}}",
+      "Objects.Purple": "#{{purple}}",
+      "Objects.BlackText": "#{{surface}}",
+      "Checkbox.Background.Default.Dark": "#{{code-bg}}",
+      "Checkbox.Background.Selected.Dark": "#{{purple}}",
+      "Checkbox.Border.Default.Dark": "#{{rule-light}}",
+      "Checkbox.Border.Selected.Dark": "#{{purple}}",
+      "Checkbox.Foreground.Selected.Dark": "#{{surface}}",
+      "Checkbox.Focus.Thin.Default.Dark": "#{{link}}",
+      "Checkbox.Focus.Thin.Selected.Dark": "#{{link}}",
+      "Checkbox.Focus.Wide.Dark": "#{{link}}",
+      "Checkbox.Background.Disabled.Dark": "#{{surface-alt}}",
+      "Checkbox.Border.Disabled.Dark": "#{{mix:surface:rule-light:30}}",
+      "Checkbox.Foreground.Disabled.Dark": "#{{rule-light}}",
+      "Tree.iconColor": "#{{label}}"
+    }
+  }
+}
