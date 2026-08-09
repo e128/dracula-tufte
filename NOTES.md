@@ -1175,9 +1175,9 @@ The sheet was written for hand-authored markup and for `html-render.nu`. A consu
 point a markdown converter at it, and v1.20.0 is the first release that was measured against
 that path. The probe was a fixture holding every CommonMark and GFM construct in the shape
 `cmark-gfm`, `pandoc` and `markdown-it` actually emit, rendered at 390 / 768 / 1280 / 1920 with
-computed values read per element. Eleven constructs came back unstyled or wrong.
+computed values read per element. Twelve constructs came back unstyled or wrong.
 
-**Six were visibly broken.**
+**Seven were visibly broken.**
 
 | construct | measured before | now |
 | --- | --- | --- |
@@ -1187,6 +1187,7 @@ computed values read per element. Eleven constructs came back unstyled or wrong.
 | `> [!NOTE]` | `.markdown-alert` unclaimed: border 0, padding 0, `--on-surface` | shares the `aside` rule, hue on the title line |
 | `- [ ] item` | `list-style: disc` beside a 13px UA checkbox, no gap | marker dropped, control at 1em with `accent-color` |
 | `|:---:|` alignment | `align="center"` computed `start` at all four widths | `[align]` attribute selectors restore all three |
+| `$$…$$` as MathML | a wide `math[display="block"]` overflowed the *page*: document scroll 1170 at a 390 viewport, 1359 at 1280 | own scroll axis, `pre`'s margin rhythm |
 
 **`h5` and `h6` were smaller and heavier than body copy.** The `*` reset ate the UA margins and
 the UA font-size ramp survived, so a sixth-level heading rendered at 10.8px bold — the exact
@@ -1279,10 +1280,34 @@ already scrolls the note into view, so nothing is broken without a marker. **The
 this produced: `--highlight` is a body-copy surface only** — see [the contrast
 budget](#colour-and-the-contrast-budget).
 
-**Two things are still not covered, deliberately.** Math (`$x$`) renders as literal delimiters:
-MathML needs no styling and KaTeX needs a CDN stylesheet, which is a consumer decision, not a
-template one. Chroma's single-letter classes (`.k`, `.s`, `.nf`) overlap nothing in the three
-maps above and were left out rather than guessed at; Hugo users can add them.
+**Math is styled where it arrives as real HTML, and nowhere else.** The first pass claimed MathML
+needed no styling. Rendering said otherwise: an unstyled `<math display="block">` overflows the
+*page*, not itself. A 30-term equation measured `scrollWidth` 1151 inside a 351px column, and the
+document scroll width went to 1170 against a 390 viewport and 1359 against 1280 — the same
+failure a wide table has, and it takes the same two rules. `overflow-x: auto` gives the equation
+its own scroll axis, which Chromium honours on `display: block math` (measured, not assumed), and
+`margin-block: var(--space-3)` puts it on `pre`'s rhythm rather than the UA's `1em`.
+`.math.display` — the span `pandoc` emits without `--mathml`, and the box KaTeX renders into —
+takes `display: block` and the same pair. Everything else was left to the UA on measurement: a
+`1.05em` bump was built and dropped, because the math font's x-height already matches Source
+Serif 4 to within a pixel at every step of the body clamp, and the bump would have re-scaled math
+inside `h3` and `td` as well. Colour, italic variables and the centring of display math are all
+UA behaviour and all correct.
+
+**TeX is not rendered, and that is where the CDN line sits.** `$E = mc^2$` reaches the page as
+literal delimiters unless the consumer loads KaTeX or MathJax — a second hard-offline dependency
+of Mermaid's kind, pinned and CDN-bound, for a construct that may never appear. The sheet stays
+out of it and styles the containers instead, so a consumer who does add KaTeX gets the block
+layout for free.
+
+**Chroma stays out, and the reason is namespace, not effort.** Hugo's highlighter names its slots
+`.k`, `.s`, `.c`, `.n`, `.o`, `.m`, `.p` — one letter, unnamespaced, in a stylesheet consumers
+inline into pages this repo never sees, where `.m` is a margin utility in more than one
+framework. `pandoc`'s `.kw` / `.st` are two letters and already scoped under `:is(pre, code)`; a
+one-letter set is a different order of risk. It is also mostly moot: Hugo defaults to
+`noClasses = true` and writes `style="color:#ff79c6"` inline on every span, which beats any rule
+here, so a Chroma map would only ever reach consumers who had turned that off. If one appears,
+add it scoped to the `.chroma` wrapper rather than bare.
 
 ## Fixtures are coverage
 
@@ -1317,6 +1342,11 @@ retires the check it exists to be.**
   [`themes/rider/README.md`](themes/rider/README.md), and the only place `--purple-bright`
   renders. All five GFM alert types are present for the same reason: four of the five hues
   appear nowhere else on a bar.
+- **The MathML block is the only element on the page with its own scroll axis besides `pre` and a
+  wide table.** It is short enough to fit at 2560 and still exists to prove
+  `math[display="block"]` is claimed at all; the overflow rule it checks was added because an
+  unclaimed one pushed the whole document sideways. Deleting it retires the only test that a
+  converter's math does not reintroduce a horizontal page scrollbar.
 - **The `<em>` label says what `em` actually does.** It read `<em>emphasis (label)</em>` long
   after the `em` colour rule was deleted, so the reference a consumer reads named a colour the
   sheet no longer paints. Now `<em>emphasis (inherits its surroundings)</em>`.

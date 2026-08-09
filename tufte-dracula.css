@@ -126,6 +126,8 @@
       .va, .at, .token.attr-name, .token.property, .token.variable) { color: var(--label); }
     :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .token.deleted, .token.important) { color: var(--red); }
     :is(pre, code) :is(.hljs-punctuation, .token.punctuation) { color: inherit; }
+    math[display="block"] { overflow-x: auto; margin-block: var(--space-3); }
+    .math.display { display: block; overflow-x: auto; margin-block: var(--space-3); }
     section { margin-bottom: var(--space-10); }
     table {
       box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
@@ -344,7 +346,8 @@
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
       p { orphans: 2; widows: 2; }
       thead { display: table-header-group; }
-      tr, blockquote, aside, details, .scorecard, .verdict, img, .markdown-alert, pre { break-inside: avoid; }
+      tr, blockquote, aside, details, .scorecard, .verdict, img, .markdown-alert, pre,
+      math[display="block"] { break-inside: avoid; }
       .verdict { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       .verdict-pass { color: var(--green); }
       .verdict-partial { color: var(--orange); }
