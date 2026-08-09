@@ -20,7 +20,7 @@ step:
 
 | File                  | What it is |
 |-----------------------|------------|
-| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.20.0, oklch palette). Consumers inline this file verbatim into every generated HTML file. It includes the wrapping `<style>` tags and the 2-space leading indent. That is the exact byte sequence the renderer emits. |
+| `tufte-dracula.css`   | **The stylesheet payload.** The complete `<style>…</style>` block (template v1.21.0, oklch palette). Consumers inline this file verbatim into every generated HTML file. It includes the wrapping `<style>` tags and the 2-space leading indent. That is the exact byte sequence the renderer emits. |
 | `mermaid.js`          | **The Mermaid init script.** The complete `<script type="module">…</script>` block. It holds the `mermaid@11` CDN import, the init call with `theme: 'base'`, `darkMode` and hex `themeVariables`, and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram, and the overlay is a focus-managed `role="dialog"`. The name ends in `.js`, but the file holds the wrapping `<script>` tags. Consumers inline this file only when the rendered document contains a ` ```mermaid ` fence. Bump the CDN pin here. |
 | `filter.js`          | **The filter-box script.** The complete `<script type="module">…</script>` block. It wires each `input.filter-box` to the table that the input precedes. It toggles `.filter-hidden` on non-matching `tbody tr` rows, and it reveals a `.filter-empty` line when nothing matches. No CDN, no build step, and no comments, because consumers inline it verbatim. Consumers inline this file only when the rendered document contains a filter box. |
 | `mermaid-palette.json` | **Mermaid's hex palette.** The Tufte-Dracula palette as hex, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot consume `oklch()` or `var()`: khroma throws `Unsupported color format` and *no* diagram renders. This file is therefore the one place that holds hex. Each entry names the `:root` variable it projects in its `from` field, and CI recomputes every hex from that variable's `oklch()`. A hex here that disagrees with the stylesheet fails the build. `mermaid.js` carries the same values inline, because consumers inline it with no build step, and CI fails when the two disagree. A generator that emits its own `classDef` lines reads the `classdef` block. Those fills draw only from the `--data-1` to `--data-4` ramp, because the prose accents `--pink`, `--green` and `--orange` already carry meaning in body copy. |
@@ -32,7 +32,7 @@ step:
 
 ## Consumers
 
-Consumers pin to a tag, currently **`v1.20.0`**, through a git submodule at
+Consumers pin to a tag, currently **`v1.21.0`**, through a git submodule at
 `external/dracula-tufte/`. To refresh a consumer: bump the submodule pointer, run
 `git submodule update --remote external/dracula-tufte`, then commit the new pointer.
 
@@ -78,14 +78,35 @@ owes seven things, and `sample.html` and `sample-conn-map.html` model each one:
   repo ships neither, so do not add the role.
 - **`tabindex="0"` on anything that scrolls sideways**, with a `role="region"` and a label, so
   the tab stop announces itself. `pre` uses `overflow-x: auto`. A table below 1000px is its own
-  scroll container. Since v1.20.0 a `<math display="block">` is one too. Without the attributes a
+  scroll container. Since v1.21.0 a `<math display="block">` is one too. Without the attributes a
   keyboard user cannot reach the overflowed content (WCAG 2.1.1). The fixture uses
   `<pre tabindex="0" role="region" aria-label="Code block">`. The label is a consumer string, so
   translate it. A converter that emits math owes the same three attributes on any equation wide
   enough to clip, and no stylesheet can add them.
 
-**Two opt-in classes, plus one group that needs no class. `sample.html` models all of them.**
-Nothing here is required, and the stylesheet does nothing until the markup asks.
+**Four opt-in patterns, plus one group that needs no class. `sample.html` models all but the
+table wrapper.** Nothing here is required, and the stylesheet does nothing until the markup asks.
+
+- **`.table-scroll` around a wide table** gives it a scroll container that keeps its header
+  pinned. A table below 1000px already scrolls sideways on its own, but `display: block` makes
+  the sticky header inert there, and neither scroll container is reachable by keyboard. The
+  wrapper fixes both, and it needs the same three attributes any sideways scroller does:
+
+  ```html
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Results by quarter">
+    <table>…</table>
+  </div>
+  ```
+
+  It scrolls both axes and caps its height at `70vh`, which is what keeps the header pinned. Put
+  `role="region"` on the wrapper and **never on the `<table>`**, because that role overrides
+  `role="table"` and takes the row and column semantics with it. The unwrapped path still works,
+  so nothing breaks if you never adopt this.
+- **`.sidenote` and `.marginnote`** put a note in the right margin instead of in the flow, which
+  is the pattern the whole layout reserves that margin for. A `.sidenote` takes a numbered marker
+  from `.sidenote-number`; a `.marginnote` takes none. Below 1000px both stack into the flow,
+  because at 28% of a narrow page the note measures 19 to 25 characters per line. Use these for
+  an aside that comments on one sentence, and use `<aside>` for one that comments on a section.
 
 - **`.num` on a `th` and on every `td` in the same column** right-aligns that column, so the
   figures line up under one another. Source Serif 4 is tabular and lining by construction, so
@@ -103,7 +124,7 @@ Nothing here is required, and the stylesheet does nothing until the markup asks.
   `text-indent: 1.5em`. That is book setting rather than web setting. The default stays spaced
   paragraphs with no indent.
 
-**The sheet covers a markdown converter's output as of v1.20.0, and that output needs no classes
+**The sheet covers a markdown converter's output as of v1.21.0, and that output needs no classes
 of its own.** Point `cmark-gfm`, `pandoc` or `markdown-it` at the sheet, and every construct
 lands in a theme register: `h4` to `h6`, fenced blocks, lists, tables, definition lists,
 footnotes, task lists, GFM alerts, `del`, `samp`, `abbr`, `sub`, `sup`, and `img.emoji`, which
@@ -117,14 +138,16 @@ loses the figure ring and sizes to the line. Five of those are worth knowing abo
   the inline `text-align` that `pandoc` emits. `.num` still exists for hand-authored markup and
   still right-aligns, and a converter needs neither.
 - **The sheet styles syntax highlighting. It does not generate it.** It paints `highlight.js`
-  (`.hljs-*`), `pandoc` and skylighting (`.kw`, `.st`, `.co`, …) and Prism (`.token.*`) classes
-  with the same slot map the editor themes use. Run the highlighter yourself, and the sheet
-  colors whatever the highlighter emits. Types take a `--purple-bright` token, which is
-  `--purple` recomputed at `L + 0.07`, because plain purple on `--code-bg` measures 4.23 and
-  misses 1.4.3. Print pins the token back, because the lift runs the wrong way on paper. The
-  sheet deliberately does not cover Chroma's single-letter classes: `.k`, `.s` and `.m` are
-  unnamespaced in a sheet that you inline into your own pages. Hugo also writes its colors inline
-  by default (`noClasses = true`), where no rule here can reach them.
+  (`.hljs-*`), `pandoc` and skylighting (`.kw`, `.st`, `.co`, …), Prism (`.token.*`) and, as of
+  v1.21.0, Pygments (`.k`, `.s`, `.nf`, `.kt`, …) with the same slot map the editor themes use.
+  That last one covers Sphinx, MkDocs, Quarto and `nbconvert`, and it covers Hugo's Chroma too,
+  which copies the Pygments class names. Run the highlighter yourself, and the sheet colors
+  whatever the highlighter emits. Types take a `--purple-bright` token, which is `--purple`
+  recomputed at `L + 0.07`, because plain purple on `--code-bg` measures 4.23 and misses 1.4.3.
+  Print pins the token back, because the lift runs the wrong way on paper. Every Pygments rule is
+  scoped under `:is(pre, code)`, because the names are one and two letters. One collision is
+  known and accepted: `.ch` is `Char` to pandoc and `Comment.Hashbang` to Pygments, so a shebang
+  renders in the string tier.
 - **Footnotes** land in `section.footnotes` behind a hairline at the caption tier. The Tufte
   `.sidenote` apparatus is separate and still needs hand-authored markup.
 - **The sheet styles math where it arrives as HTML, and renders none of it.** A converter that
@@ -135,6 +158,36 @@ loses the figure ring and sizes to the line. Five of those are worth knowing abo
   `<span class="math display">` that holds it. You then need KaTeX or MathJax, which means a
   pinned CDN and a hard-offline failure of Mermaid's kind, so it stays a consumer decision. The
   container styling is already here, so KaTeX drops in and inherits the block layout.
+
+**Raw HTML is covered as of v1.21.0, and so are three shapes the GitHub path does not emit.**
+Every converter passes raw HTML through untouched, and until v1.21.0 `img` was the only element
+in the sheet with a width cap. Four changes, none of which need a class:
+
+- **`svg`, `video`, `canvas`, `iframe`, `object` and `embed` take `max-width: 100%`.** A
+  graphviz or plantuml SVG, a pre-rendered diagram, or an embed pasted into markdown pushed the
+  whole document sideways at a phone width. A mermaid diagram is unaffected, because its own
+  rules outrank this one where it needs to escape.
+- **`body` takes `overflow-wrap: break-word`.** A hash, a long path or a base64 fragment outside
+  a code span had no break opportunity and ran off the page.
+- **A `tfoot` header cell no longer pins to the top.** `position: sticky` now scopes to
+  `thead th`, so a totals row scrolls with its table. The `th` typography is unchanged, so a
+  footer cell still reads as a header cell.
+- **Python-Markdown footnotes get the caption tier.** The rule matches `div.footnote` as well as
+  the `section.footnotes` that `cmark-gfm` and `pandoc` emit, and it drops the leading `<hr>`
+  that Python-Markdown puts above the block, which would otherwise double the hairline.
+
+**Form controls inherit the page font.** `button`, `input`, `select` and `textarea` do not
+inherit it natively, so before v1.21.0 every control except the filter box rendered at 13.33px
+Arial inside an 18.4px serif page, which is also below the 16px threshold where iOS Safari zooms
+on focus. They now take `font: inherit` with a `1rem` floor. Their **appearance** is still the
+UA's: no border, no fill, no focus ring of the theme's own. This is a document theme, and
+`color-scheme: dark` already tells the UA to draw its widgets dark. If you need a styled button,
+style it in your own sheet.
+
+**A permalink anchor reveals on hover.** Sphinx, MkDocs and markdown-it-anchor emit
+`a.headerlink` or `a.anchor` inside the heading. Those sit at `opacity: 0` until you hover the
+heading, and they return at `opacity: 1` on keyboard focus, so the link is still reachable by
+Tab. A converter that emits neither class name is unaffected.
 
 **The sheet declares the dark UA furniture instead of inheriting it.** `:root` carries
 `color-scheme: dark`, and the print block flips it to `light`. Scrollbars, form controls and the

@@ -43,6 +43,7 @@ That reduction lands in every page a consumer generates.
 | [Filter](#filter) | `filter.js` scope and its three load-bearing decisions |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `figure`, `figcaption`, and the UA defaults they had |
 | [Markdown coverage](#markdown-coverage) | Every construct a converter emits, and the eleven that were unstyled |
+| [Raw HTML and other generators](#raw-html-and-other-generators) | Intrinsic-width media, unbreakable tokens, `tfoot`, permalinks |
 | [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details exist to catch a regression |
 | [Odds and ends](#odds-and-ends) | `hr`, `--ring` |
 
@@ -380,8 +381,9 @@ inside itself at 601px (`scrollWidth` 617 against `clientWidth` 537) with the do
 The cost is the sticky header, which `display: block` makes inert up to 1000px rather than 600px.
 It still pins above that, verified: `th` top holds at 0 after a 60px scroll at 1280px. That is
 deliberate. A pinned header matters on a long table at desktop width, and a page that scrolls
-sideways is a WCAG 1.4.10 failure at every width where it happens. Keyboard reach for that scroll
-container (WCAG 2.1.1) is still open. See `backlog.md`.
+sideways is a WCAG 1.4.10 failure at every width where it happens. The inert header and the
+keyboard reach (WCAG 2.1.1) both have an opt-in answer as of v1.21.0, `.table-scroll`, which is
+consumer markup. See [The backlog this closed](#the-backlog-this-closed).
 
 **A sticky `th`** needs an opaque background, or the rows that scroll under it show through. The
 rule is an inset shadow and not `border-bottom`, because under `border-collapse: collapse` the
@@ -1316,14 +1318,209 @@ dependency of Mermaid's kind, pinned and CDN-bound, for a construct that may nev
 sheet stays out of it and styles the containers instead, so a consumer who does add KaTeX gets
 the block layout for free.
 
-**Chroma stays out, and the reason is namespace, not effort.** Hugo's highlighter names its slots
-`.k`, `.s`, `.c`, `.n`, `.o`, `.m` and `.p`: one letter, unnamespaced, in a stylesheet consumers
-inline into pages this repo never sees, where `.m` is a margin utility in more than one
-framework. `pandoc`'s `.kw` and `.st` are two letters and are already scoped under `:is(pre,
-code)`, and a one-letter set is a different order of risk. It is also mostly moot, because Hugo
-defaults to `noClasses = true` and writes `style="color:#ff79c6"` inline on every span, which
-beats any rule here. A Chroma map would therefore only ever reach consumers who had turned that
-off. If one appears, add it scoped to the `.chroma` wrapper rather than bare.
+**Chroma was declined here on a namespace argument, and v1.21.0 overturned it.** The argument was
+that Hugo's highlighter names its slots `.k`, `.s`, `.c`, `.n`, `.o`, `.m` and `.p` — one letter,
+unnamespaced, in a stylesheet consumers inline into pages this repo never sees, where `.m` is a
+margin utility in more than one framework. That reasoning held for Chroma, which is mostly moot
+anyway, because Hugo defaults to `noClasses = true` and writes `style="color:#ff79c6"` inline on
+every span, which beats any rule here. **It silently excluded Pygments too, and Pygments is not
+moot:** it emits classes by default and it is the highlighter behind Sphinx, MkDocs, Quarto and
+`nbconvert`. See [Raw HTML and other generators](#raw-html-and-other-generators) for what
+replaced it. Chroma copies the Pygments class names, so Chroma is now covered by the same
+selectors, for the consumers who turn `noClasses` off.
+
+## Raw HTML and other generators
+
+[Markdown coverage](#markdown-coverage) measured the CommonMark and GFM construct set. It did not
+measure raw HTML, which every one of those converters passes through untouched, and it did not
+measure the generators outside the GitHub path. A probe at 390px and 1280px, with computed values
+read per element, found four defects that v1.21.0 fixes. The rest of that probe is in
+`backlog.md`, because each remaining item is a trade rather than a bug.
+
+**Intrinsic-width media pushed the document sideways. `img` was the only element claimed.**
+Measured `document.scrollWidth - clientWidth` at 390px, all of them zero at 1280px:
+
+| construct | before | after |
+| --- | --- | --- |
+| `<svg width="12in">` (graphviz, plantuml) | **782** | 0 |
+| `<svg width="900">` (a pre-rendered diagram) | **530** | 0 |
+| `<video>`, `<canvas>`, `<object>`, `<embed>` at 800px | **430** | 0 |
+| `<iframe width="560">` (an embed pasted into markdown) | **190** | 0 |
+| `<img width="800">`, the control | 0 | 0 |
+
+That is the same failure the MathML block had, and it fails 1.4.10 the same way at every width
+where it happens. The fix is one rule: `:is(svg, video, canvas, iframe, object, embed) {
+max-width: 100% }`.
+
+**The rule carries no `height: auto`, and that is deliberate.** `img` needs it because a raster
+has an intrinsic aspect ratio to preserve. An SVG with a viewBox preserves its own ratio and
+letterboxes, and the sideways scroll is what the rule exists to stop. Adding the declaration would
+put a second sizing input on `pre.mermaid svg`, where three previous attempts were correct on
+paper and wrong on screen. See [Diagram sizing](#diagram-sizing).
+
+**`svg` is in that selector only because a fixture diff proved it inert against mermaid.** Both
+fixtures were measured at 320 / 390 / 600 / 601 / 768 / 900 / 1280 / 1920 / 2560px, before and
+after, on `document.scrollWidth`, every `pre.mermaid svg` box, every distinct label `font-size`,
+and each `pre`'s width, `scrollWidth` and computed `overflow-x`. **All four probes are identical
+at all 18 fixture-width pairs.** The SVG boxes stay `[368, 754, 500]` on `sample.html`, including
+the 601px step down to `[368, 505, 500]` and the 768px step to `[368, 659, 500]`, and `[416]` on
+`sample-conn-map.html`. The labels stay 12px and 16px. The only difference the diff reported was
+mermaid's per-render element ids. `pre.mermaid svg` already carries `max-width` through its own
+rules, and below 600px it carries `max-width: none !important`, so the new rule is outranked
+exactly where a diagram needs to escape. Print and forced-colors were swept too: no scroll on
+either fixture at 390px or 1280px, zero console errors.
+
+**An unbreakable token in prose pushed the document sideways as well.** `overflow-wrap:
+break-word` was on `a`, `code`, `cite` and `h1`–`h6`, and on nothing else, so a hash, a long path
+or a base64 fragment outside a code span had no break opportunity. Measured with a 96-character
+token at 390px:
+
+| container | before | after |
+| --- | --- | --- |
+| `li`, `dd` | **467** | 0 |
+| `p` | **443** | 0 |
+| `blockquote` | **431** | 0 |
+| `summary` | **425** | 0 |
+| `td`, `th` | 0 | 0 |
+| `pre` | 0 | 0 |
+
+`td`, `th` and `pre` measured 0 before the fix because each already has its own scroll axis: the
+`max-width: 1000px` escape hatch for a table, and `overflow-x: auto` for `pre`.
+
+**The declaration went on `body`, not on a list of nine selectors.** One declaration inherits to
+every prose container, including the ones a list would forget and the ones a later release adds.
+It costs nothing in layout, because `break-word` does not reduce a box's min-content contribution
+— that is `anywhere`, and [Direction, zoom and growth](#direction-zoom-and-growth) records the
+measurement where that distinction mattered. The fixture diff above confirms it: no box in either
+fixture moved.
+
+**`position: sticky` on `th` was unscoped, so a `tfoot` row pinned to the top.** Measured on a
+60-row table at 1280px after a 400px scroll: a `tfoot th` computed `position: sticky` with `top:
+0`, in italic `--pink`, which is a totals row stuck to the header's place. The sticky group moved
+to `thead th`, and the `th` typography stays on `th`, so a footer cell still reads as a header
+cell. Verified after the same 400px scroll: `thead th` holds at top 0, and `tfoot th` computes
+`static` at top 2046.
+
+**The footnote tier matched one converter's class name out of two.** The rule matched
+`.footnotes`, which is what `cmark-gfm` and `pandoc` emit. Python-Markdown emits `div.footnote`,
+singular, with a leading `<hr>`, so its footnote block measured 18.4px body copy with no hairline,
+and the `hr` took the full `--space-10` 40px margin where the tier rule should be. The selector is
+now `:is(.footnotes, .footnote)`, and `:is(.footnotes, .footnote) > hr:first-child { display:
+none }` drops the duplicate rule. Verified: both shapes now compute 16.56px, `--label`, a 1px
+block-start border and a 40px top margin, which is the same tier from both converters.
+
+**Permalink anchors reveal on hover, and the `:focus-visible` half is not optional.** Sphinx,
+MkDocs and markdown-it-anchor emit `a.headerlink` or `a.anchor` inside the heading, and each one
+measured a 20.6px underlined `--link` glyph, visible in every heading at all times. The rule sets
+`opacity: 0` at 0.8em with no underline, and it lifts to `opacity: 1` on `:hover` of the heading
+and on `:focus-visible` of the link itself. **Without the focus half the link stays in the tab
+order while it is invisible**, which is a keyboard stop nobody can see. Verified on both class
+names: 0 at rest, 1 on heading hover, and 1 after keyboard focus. The transition is `opacity 0.15s
+ease-out`, which is the sheet's existing link timing, so it also honors the reduced-motion block.
+
+### The backlog this closed
+
+v1.21.0 also took the six entries that the probe left open, and `backlog.md` is empty as a
+result. Four were taken and two were declined. The measurements each entry carried are here.
+
+**A wide table gets an opt-in scroll wrapper, and the `table` escape hatch stays.**
+[Tables](#tables) records that `display: block` below 1000px makes the sticky header inert, and
+that a keyboard user cannot reach that scroll container at all (WCAG 2.1.1). A wrapper that
+scrolls one axis does not fix either, because one axis on `auto` forces the other off `visible`,
+so the wrapper becomes the scrollport and the header still leaves: probed at 390px on a 43-row
+table, `th` top went to **-600 after a 600px page scroll, identical to no wrapper**. A wrapper
+that scrolls *both* axes and caps its height does fix it. `.table-scroll { overflow: auto;
+max-height: 70vh }` with `.table-scroll > table { display: table }`, measured at 1280px on a
+40-row eight-column table: the page does not scroll, the wrapper scrolls in both axes, and `th`
+holds at **0 relative to the wrapper** after 400px of inner scroll. `.table-scroll > table` at
+(0,1,1) outranks the `max-width: 1000px` rule's bare `table` at (0,0,1), so a wrapped table stays
+a real table at every width.
+
+**The wrapper ships inert, and `overflow-x` stays on `table`.** The class matches nothing until a
+consumer wraps, and moving the escape hatch off `table` in the same release would break every
+consumer that had not wrapped yet — a wide table would overflow the page with no scroller at all.
+Both paths therefore run at once. `tabindex="0"`, `role="region"` and a label are consumer
+markup, like the other obligations in `README.md`. **`role="region"` must not go on the `<table>`
+itself:** it overrides `role="table"` and takes the row and column semantics with it, the same
+defect as `role="button"` on `pre.mermaid`. The `70vh` cap is still a guess against a fixture
+rather than against real content, which is why the wrapper is opt-in rather than automatic.
+
+**Form controls take `font: inherit` and a 1rem floor, and nothing else.** `.filter-box` was the
+only control in the sheet that set a family, so every other one fell to the UA: measured **13.33px
+Arial** inside an 18.4px serif page, which is also below the 16px threshold where iOS Safari
+zooms the viewport on focus. `:is(button, input, select, textarea) { font: inherit; font-size:
+max(1em, 1rem) }` fixes both. Measured after: `button`, `input`, `select`, `textarea` and
+`.filter-box` all compute Source Serif 4 at 18.4px, and `.mermaid-zoom` keeps its 0.9em at
+16.56px because its own rule outranks the group. The task-list checkbox is unmoved at 18.39px
+square, for the same reason.
+
+**Appearance is deliberately not styled.** A focus ring, a hover state, a disabled state and a
+pressed state are a button design, and this is a document theme with exactly one control of its
+own. The rule fixes the typography defect and leaves the widget to the UA, which
+`color-scheme: dark` already tells to render dark.
+
+**Pygments joins the syntax slot map, scoped under `:is(pre, code)`.** Measured before: `.k`,
+`.s`, `.c1` and `.nf` all inherited `--on-surface`, so a Sphinx or MkDocs page rendered flat white
+code inside a styled `pre`. The names now sit in the same seven grouped selectors as
+`highlight.js`, pandoc and Prism, so no new color and no new rule appeared — only more selectors.
+Verified in `sample.html`: `.c1` muted, `.k` and `.o` pink, `.nf` link, `.kt` and `.nc`
+purple-bright, `.mi` orange, `.s2` green, `.na` label, `.p` inherited.
+
+**The one-letter risk is real and it is bounded by the scoping.** `:is(pre, code) .m` is far
+narrower than a bare `.m`, which is a margin utility in more than one framework. The remaining
+collision is inside the sheet, not outside it: `.ch` is pandoc's `Char` in the string group and
+Pygments' `Comment.Hashbang`, so a Pygments hashbang renders green rather than muted. One line of
+a shebang in the wrong tier is cheaper than a second selector set, and it is recorded here rather
+than fixed.
+
+**Two entries were declined, and the reasons are worth keeping.**
+
+- **The non-GFM callout conventions stay unclaimed.** `.admonition` with `.admonition-title`
+  (Python-Markdown, MkDocs, Sphinx, docutils), `.callout-*` (Quarto) and `.admonitionblock`
+  (Asciidoctor) all measured bare: no bar, no title hue, body at `--on-surface` 18.4px.
+  Asciidoctor is worse than bare, because it renders its callout as a `<table>` and therefore
+  inherits the sheet's table frame, the sticky italic `--pink` `th` and the row hover. Against
+  that: three more conventions is a fourth, fifth and sixth name for a role the sheet already
+  paints twice, every selector is per-document weight in every consumer file, and nothing in the
+  measured lode emits any of the three. Revisit when a consumer actually runs Sphinx or MkDocs.
+- **Jupyter ANSI output stays monochrome.** `nbconvert` writes terminal color as `.ansi-red-fg`
+  and siblings, plus `-bg` and `-intense-` variants. Sixteen ANSI names onto seven accents is a
+  set of choices rather than a translation, the intense variants have nowhere sensible to land,
+  and nothing in the measured lode is a notebook export. The `.dataframe` table pandas emits
+  inherits the sheet's table rules and already looks correct.
+
+**Two of the four smaller findings were taken, and the rule for the first one is now general: a
+solid underline means a link, and a dotted underline means an annotation.** `ins` and `u` both
+took the UA underline at body color, which is the one mark this theme uses for a link, so a
+converter that emits CriticMarkup or track-changes produced text that read as clickable.
+`:is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em }` is the same form
+`abbr[title]` already uses. Measured at 1280px: a link is `solid` at `--muted` under `--link`
+text, `ins` and `u` are `dotted` at `--on-surface` under body text, so the two differ on style
+*and* color. No new hue was spent, and `del` and `s` keep their `--muted` line-through.
+
+**`menu` is a list and now indents like one.** It takes `list-item` children, but the `ul, ol`
+indent rule never matched it, so the `*` reset left its markers hanging outside the box. `menu`
+joins all three list rules. Measured: `padding-inline-start` 24px, identical to `ul`, with the
+first item's box at the same x.
+
+**The other two stay recorded.** `address` keeps its UA italic, which is arguably right for a
+postal block. `.tabbed-set` from `pymdownx.tabbed` shows every panel at once, and fixing it means
+claiming a radio-driven widget rather than writing one rule — that is the size of the declined
+callout work, not the size of these two.
+
+**The nine zero-user class families stay, and `sidenote` is the reason the audit was read
+twice.** Measured across the 370-file `product-intelligence` lode: `scorecard`, `edge-list`,
+`col-2`, `badge`, `newthought`, `sidenote` and `marginnote` have **zero** documents,
+`nav-list` / `filter-box` / `filter-label` / `filter-empty` and `body.conn-map` have **zero**, and
+the `verdict` family has **one**. That zero measures two different things, and only one of them is
+about the stylesheet. `lode-skeleton.sh` emits none of these classes, so a generator that never
+offers a component guarantees that no document uses it. **`sidenote` and `marginnote` are the
+Tufte signature and the reason the layout reserves a right margin at all**, so the zero there is a
+generator gap. The fix belongs in the generator, which lives outside this repo, and `README.md`
+now names the pattern in the opt-in list so it is reachable before anyone judges it. Nothing was
+deleted. `conn-map` is the weakest case, because it is a whole second layout mode that nothing has
+ever rendered in, but it is also the only worked example of the two-section sticky layout, and
+reconstructing it costs more than the bytes do.
 
 ## Fixtures are coverage
 
@@ -1358,6 +1555,11 @@ retires the check it exists to be.**
   [`themes/rider/README.md`](themes/rider/README.md), and the only place `--purple-bright`
   renders. All five GFM alert types are present for the same reason: four of the five hues appear
   nowhere else on a bar.
+- **The Pygments block beside it carries the one- and two-letter names.** It is the only check on
+  the half of the slot map that a bare `.k` or `.m` could break, and the only place `.p` proves it
+  still inherits rather than picking up a color. It is a second code block on the same page on
+  purpose: the `.hljs-*` set and the Pygments set can drift apart without either one failing
+  alone.
 - **The MathML block is the only element on the page with its own scroll axis besides `pre` and a
   wide table.** It is short enough to fit at 2560 and it still exists to prove that
   `math[display="block"]` is claimed at all. The overflow rule it checks was added because an

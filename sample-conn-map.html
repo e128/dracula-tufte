@@ -6,7 +6,7 @@
   <title>Tufte-Dracula — connections-map layout</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.20.0 */
+    /* Dracula-Tufte (muted) v1.21.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -62,6 +62,7 @@
       padding-block: var(--space-12);
       line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
       background: var(--surface); color: var(--on-surface);
+      overflow-wrap: break-word;
     }
     h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
@@ -85,6 +86,10 @@
       margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto; }
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8em;
+      text-decoration: none; margin-inline-start: 0.35em; transition: opacity 0.15s ease-out; }
+    :is(h1, h2, h3, h4, h5, h6):hover :is(a.headerlink, a.anchor),
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
@@ -95,6 +100,7 @@
     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
     del, s { color: var(--muted); }
+    :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
     samp { font-family: var(--mono-font); font-size: 0.9em; }
     sub, sup { line-height: 0; font-size: 0.75em; }
     abbr[title] { text-decoration: underline dotted var(--muted); text-underline-offset: 0.2em; cursor: help; }
@@ -118,21 +124,26 @@
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
-      .kw, .cf, .op, .bu, .token.keyword, .token.operator, .token.tag) { color: var(--pink); }
+      .kw, .cf, .op, .bu, .k, .kc, .kd, .kn, .kp, .kr, .o, .ow,
+      .token.keyword, .token.operator, .token.tag) { color: var(--pink); }
     :is(pre, code) :is(.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-addition, .hljs-char,
-      .st, .ss, .ch, .vs, .token.string, .token.regex, .token.char, .token.inserted) { color: var(--green); }
+      .st, .ss, .ch, .vs, .s, .s1, .s2, .sa, .sb, .sc, .sd, .se, .sh, .si, .sr, .sx, .dl,
+      .token.string, .token.regex, .token.char, .token.inserted) { color: var(--green); }
     :is(pre, code) :is(.hljs-number, .hljs-params, .hljs-meta, .dv, .bn, .fl, .cn, .pp,
+      .m, .mb, .mf, .mh, .mi, .mo, .il,
       .token.number, .token.boolean, .token.constant, .token.parameter) { color: var(--orange); }
     :is(pre, code) :is(.hljs-comment, .hljs-quote, .hljs-doctag, .co, .an, .do,
+      .c, .c1, .cm, .cp, .cpf, .cs,
       .token.comment, .token.prolog, .token.doctype) { color: var(--muted); font-style: italic; }
-    :is(pre, code) :is(.hljs-title, .hljs-name, .hljs-function, .hljs-section, .fu,
+    :is(pre, code) :is(.hljs-title, .hljs-name, .hljs-function, .hljs-section, .fu, .nf, .fm,
       .token.function, .token.selector) { color: var(--link); }
-    :is(pre, code) :is(.hljs-type, .hljs-class, .hljs-attribute, .dt, .token.class-name,
-      .token.builtin, .token.namespace) { color: var(--purple-bright); }
+    :is(pre, code) :is(.hljs-type, .hljs-class, .hljs-attribute, .dt, .kt, .nc, .nn, .nb,
+      .token.class-name, .token.builtin, .token.namespace) { color: var(--purple-bright); }
     :is(pre, code) :is(.hljs-attr, .hljs-variable, .hljs-property, .hljs-template-variable,
-      .va, .at, .token.attr-name, .token.property, .token.variable) { color: var(--label); }
-    :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .token.deleted, .token.important) { color: var(--red); }
-    :is(pre, code) :is(.hljs-punctuation, .token.punctuation) { color: inherit; }
+      .va, .at, .na, .nv, .vc, .vg, .vi, .nd,
+      .token.attr-name, .token.property, .token.variable) { color: var(--label); }
+    :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .err, .gd, .token.deleted, .token.important) { color: var(--red); }
+    :is(pre, code) :is(.hljs-punctuation, .p, .token.punctuation) { color: inherit; }
     math[display="block"] { overflow-x: auto; margin-block: var(--space-3); }
     .math.display { display: block; overflow-x: auto; margin-block: var(--space-3); }
     section { margin-bottom: var(--space-10); }
@@ -145,8 +156,10 @@
       font-weight: 450; font-style: italic; text-align: start;
       padding: .4rem .6rem; color: var(--pink);
       box-shadow: inset 0 -1px 0 var(--rule-light);
-      position: sticky; top: 0; background: var(--surface); z-index: 1;
     }
+    thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; }
+    .table-scroll > table { display: table; margin-block: 0; }
     td {
       border: none; padding: .35rem .6rem; text-align: start;
       vertical-align: top; font-variant-numeric: tabular-nums;
@@ -190,6 +203,7 @@
     blockquote p:last-child { margin-bottom: 0; }
     hr { border: none; border-block-start: 1px solid var(--rule-light); margin: var(--space-10) 0; }
     img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--ring); border-radius: var(--radius-sm); }
+    :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }
     img.emoji { box-shadow: none; width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
     figure { margin: var(--space-6) 0; }
     figcaption, caption { font-size: 0.9em; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
@@ -199,19 +213,21 @@
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
-    ul, ol { padding-inline-start: 1.5rem; }
-    :is(ul, ol):not(.nav-list) { margin-block: var(--space-3); }
-    li > :is(ul, ol) { margin-block: 0; }
+    ul, ol, menu { padding-inline-start: 1.5rem; }
+    :is(ul, ol, menu):not(.nav-list) { margin-block: var(--space-3); }
+    li > :is(ul, ol, menu) { margin-block: 0; }
     li { padding: 0.15rem 0; line-height: 1.5; }
     li::marker { color: var(--muted); }
     li:has(input[type="checkbox"]:first-child) { list-style: none; }
     li input[type="checkbox"] { accent-color: var(--purple); font-size: 1em; width: 1em; height: 1em;
       margin-inline-end: 0.45em; vertical-align: -0.08em; }
+    :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
     nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
     footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
-    .footnotes { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
+    :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
       padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }
-    .footnotes p { margin-block: 0.2rem; }
+    :is(.footnotes, .footnote) p { margin-block: 0.2rem; }
+    :is(.footnotes, .footnote) > hr:first-child { display: none; }
     .footnote-backref { text-decoration: none; }
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
