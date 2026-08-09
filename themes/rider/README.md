@@ -77,6 +77,13 @@ is installed, since the theme carries the scheme with it.
 
 The CSS assigns each accent a job in prose. The scheme keeps those jobs.
 
+**As of v1.20.0 the editor column is shared, not merely parallel.** `tufte-dracula.css` paints
+`highlight.js`, pandoc and Prism classes inside `pre` and `code` from this same table, so a
+fenced code block in a document and the same code in the editor colour every token alike.
+Change a row here and the stylesheet's highlight rules change with it. Types are the one slot
+that differs by nothing but name: the sheet calls the L+0.07 lift `--purple-bright` and
+recomputes it from `--purple` rather than restating the hex.
+
 | Token | Hex | Prose role | Editor role |
 | --- | --- | --- | --- |
 | `--on-surface` | `#f8f8f2` | body copy | identifiers, locals, punctuation |
