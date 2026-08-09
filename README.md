@@ -8,6 +8,13 @@ This repository is the canonical home for nine artifacts that were scattered acr
 repos before. Consumers pull this repository in through a pinned git submodule at
 `external/dracula-tufte/`. One place, one truth, no drift.
 
+The typographic conventions take their inspiration from
+[tufte-css](https://edwardtufte.github.io/tufte-css/)
+([source](https://github.com/edwardtufte/tufte-css)), which adapts the book and handout style of
+Edward Tufte to the web. The palette comes from [Dracula](https://draculatheme.com/). This
+repository is not a fork of either one. It rewrites the ideas as a single inline stylesheet with
+no build step.
+
 ## Live Previews
 
 GitHub Pages renders these in the browser, from the main branch, served directly with no build
