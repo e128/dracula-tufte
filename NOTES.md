@@ -42,6 +42,7 @@ reduction lands in every page a consumer generates.
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its three load-bearing decisions |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `figure`, `figcaption`, and the UA defaults they had |
+| [Markdown coverage](#markdown-coverage) | Every construct a converter emits, and the eleven that were unstyled |
 | [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details exist to catch a regression |
 | [Odds and ends](#odds-and-ends) | `hr`, `--ring` |
 
@@ -258,16 +259,18 @@ the byline for the first section, and in `body.conn-map` the sections are flex i
 margins do not collapse at all, so a rule tuned for the collapsing case misaligns the two
 columns.
 
-**`.indented` is the book setting, opt-in, three rules.** `margin-block: 0` on paragraphs plus
+**`.indented` is the book setting, opt-in, two rules.** `margin-block: 0` on paragraphs plus
 `text-indent: 1.5em` on every `p + p`. The first paragraph is never indented because nothing
 precedes it to break from, which is why the indent hangs off the sibling combinator rather
 than off `p`. 1.5em resolves to 24.3px at 390px and 30px at 1920px, tracking the body clamp.
 
-The third rule is `.indented :is(ul, ol) { margin-block: 0.75rem }`. A bare `ul` here has
-padding but no margin — it relied on the paragraph above supplying the gap, and with
-`margin-block: 0` there is no gap left. `dl` carries its own 1rem and `blockquote` / `aside` /
-`pre` their own 1.5rem, so the rule names only the two elements that were relying on a
-neighbour.
+**It was three rules until v1.20.0**, the third being `.indented :is(ul, ol) { margin-block:
+0.75rem }`. A bare `ul` had padding but no margin anywhere in the sheet — it relied on the
+paragraph above supplying the gap, and inside `.indented` there was no gap left to rely on.
+[Markdown coverage](#markdown-coverage) found the same hole outside `.indented`, where a
+converter's list butted against the paragraph before it, so the margin is global now and the
+opt-in rule was retired as a duplicate. `dl` carries its own 1rem and `blockquote` / `aside`
+their own 1.5rem; `pre` gained 0.75rem in the same release, for the same reason.
 
 A class rather than the default: the two conventions cannot be mixed on one page without
 reading as an accident, and the default is what every existing consumer's output assumes.
@@ -1134,7 +1137,17 @@ styles:
 
 0.35 is the compromise: the wash reads at 2.05:1 against the page, nearly double the 1.15:1 the
 row-hover fill is accepted at, while body copy on it still clears 4.5:1 with headroom. 0.45
-reads as a chip rather than a highlight and costs three points of text contrast. Print inverts
+reads as a chip rather than a highlight and costs three points of text contrast.
+
+**`mark` sets `color: var(--on-surface)` rather than inheriting, and that is a contrast fix, not
+a preference.** The wash is the sheet's fifth surface and the narrowest: pixel-sampled on
+`#68554d`, `--on-surface` is 6.51 and **every other tier fails** — `--label` 3.83, `--link` 3.81,
+`--green` 3.54, `--muted` 2.67. `mark` inherited its colour, so a highlight inside an `aside`,
+`figcaption`, `dd`, `footer`, `.sidenote` or `section.footnotes` — all `--label` — rendered at
+3.83 and nothing had measured it, because the fixture only ever put a `mark` in body copy.
+Pinning the colour costs nothing where the wash was already correct and fixes six containers
+where it was not. **Do not paint the wash under anything but body copy**, which is why the
+`li:target` highlight in [Markdown coverage](#markdown-coverage) was measured and dropped. Print inverts
 the treatment to `background: none; box-shadow: inset 0 0 0 1px currentColor`, the same
 outline-what-was-filled move as `.verdict`, so the mark survives a backgrounds-off print.
 
@@ -1155,6 +1168,121 @@ frame starts at the header rule. Verified on screen and in the Letter PDF.
 `figcaption` stays start-aligned under a centred diagram, which is why the shared rule sets
 `text-align: start` explicitly: `pre.mermaid` is centred, and a caption inheriting that would
 float in the middle of a full-width column.
+
+## Markdown coverage
+
+The sheet was written for hand-authored markup and for `html-render.nu`. A consumer can also
+point a markdown converter at it, and v1.20.0 is the first release that was measured against
+that path. The probe was a fixture holding every CommonMark and GFM construct in the shape
+`cmark-gfm`, `pandoc` and `markdown-it` actually emit, rendered at 390 / 768 / 1280 / 1920 with
+computed values read per element. Eleven constructs came back unstyled or wrong.
+
+**Six were visibly broken.**
+
+| construct | measured before | now |
+| --- | --- | --- |
+| `#### ` to `###### ` | h4 16.2px/700, h5 13.4px/700, h6 10.8px/700, **all margins 0** | body size, weight 600, `--label` then `--muted`, h6 italic |
+| fenced code block | `pre` margin 0, so two fences merged into one slab | `margin-block: var(--space-3)` |
+| any list | `ul` / `ol` margin 0 outside `.indented` | `margin-block: var(--space-3)`, nested lists pinned back to 0 |
+| `> [!NOTE]` | `.markdown-alert` unclaimed: border 0, padding 0, `--on-surface` | shares the `aside` rule, hue on the title line |
+| `- [ ] item` | `list-style: disc` beside a 13px UA checkbox, no gap | marker dropped, control at 1em with `accent-color` |
+| `|:---:|` alignment | `align="center"` computed `start` at all four widths | `[align]` attribute selectors restore all three |
+
+**`h5` and `h6` were smaller and heavier than body copy.** The `*` reset ate the UA margins and
+the UA font-size ramp survived, so a sixth-level heading rendered at 10.8px bold — the exact
+inverse of the rule the [Type scale](#type-scale) sets, which forbids anything at text size from
+going *lighter* than body copy. Both now sit at `1em`; the tier is carried by weight and by
+colour dropping from `--label` to `--muted`, and h6 adds italic. Depth past h4 is rare enough
+that a fourth size step buys less than a fourth colour step.
+
+**A presentational attribute loses to author CSS, which is why pipe-table alignment vanished.**
+`cmark-gfm` emits `<td align="right">`; presentational hints sit below author declarations in
+the cascade, so `td { text-align: start }` silently won every time. `.num` had been the only way
+to right-align a column, and it needs hand-written markup that no converter produces. The three
+`[align]` rules are the fix. Inline `style="text-align:…"`, which is what `pandoc` emits
+instead, already won on its own.
+
+**GFM alerts take the `aside` rule rather than a second callout form.** [Form follows
+role](#form-follows-role) says a new role takes an existing accent plus a different form; an
+alert *is* an aside, so it takes the same form — one 3px bar, no fill — and the two selectors
+share one declaration block. The five types differ only in hue, and the hue lands on the bar and
+on `.markdown-alert-title`, never on the body text, which stays `--label`. That keeps one
+coloured line per callout instead of a coloured paragraph. `warning` keeps plain `aside` orange,
+so an alert-free document and an alert-heavy one read the same. The octicon GitHub emits inside
+the title is `fill: currentColor`, so it takes the hue for free; it is only sized to `1em`.
+
+**Highlighted code reuses the Rider slot map instead of inventing one.** Keywords `--pink`,
+strings `--green`, numbers and parameters `--orange`, comments `--muted` italic, functions
+`--link`, types `--purple-bright`, fields and attributes `--label`, errors and deletions
+`--red`, punctuation inherited. That is the table in
+[`themes/rider/README.md`](themes/rider/README.md), unchanged, so a C# buffer in the editor and
+a fenced C# block in a document colour the same token the same way. Three emitters are covered
+by one grouped selector per role: `highlight.js` (`.hljs-*`), `pandoc`/skylighting (`.kw`,
+`.st`, `.co`, …) and Prism (`.token.*`). The pandoc classes are one and two letters, so every
+rule is scoped under `:is(pre, code)` — an unscoped `.dt` or `.op` would repaint a consumer's
+own markup.
+
+**Types needed the same lift the editor scheme needed, and for the same reason.** Plain
+`--purple` is 4.23 on `--code-bg`, the one ratio [the contrast
+budget](#colour-and-the-contrast-budget) records as failing and left alone because "nothing puts
+purple *text* on the grey". A syntax slot map does exactly that. `--purple-bright` is
+`oklch(from var(--purple) calc(l + 0.07) c h)` — the same +0.07 L that `create-themes.nu` and
+`.github/palette-check.py` already call `bright`, so the token needs no new hex and no new
+`/* was */` note; `palette-check.py` matches only literal `oklch(L C h)` triples, so the count
+it asserts stays at 17. Pixel-sampled: **5.47 on `--code-bg`**, 6.61 on `--surface`.
+
+**In print the lift inverts, so print pins the token back.** Print is dark-on-light, where +0.07
+L *reduces* contrast: print `--purple-bright` measured 3.49 on the print `--code-bg` against
+plain print `--purple`'s 4.64. The print block redeclares `--purple-bright` as the same value as
+`--purple`. Every other highlight hue was sampled on both surfaces and clears 4.5 — screen
+`--pink` 4.87, `--orange` 5.64, `--green` 6.02, `--link` 6.47, `--muted` 4.53, `--label` 6.51,
+`--red` 4.73 on `--code-bg`; print, all of them 4.57 to 4.64 on the grey.
+
+**Monospace was inheriting italic from three ancestors.** `blockquote`, `th` and `summary` all
+slant, and nothing reset it, so a `code` span inside a quote, a header cell or a disclosure
+label rendered italic mono — measured `font-style: italic` in all three. One rule resets
+`code`, `pre`, `kbd` and `samp` inside them, and inside `h2` and `h6` for the same reason.
+
+**`color-scheme: dark` is on `:root` now, and it is not cosmetic.** Without it a UA form control
+renders light-mode inside a dark page: the GFM task-list checkbox came out a pale grey box, the
+same class of bug as the mermaid sequence note. Print sets `color-scheme: light`.
+
+**The task-list checkbox stays a native control and stays grey when checked.** GFM emits it with
+`disabled`, and Chromium ignores `accent-color` on a disabled control, so the `--purple` accent
+only lands if a generator emits the enabled form. Repainting it means `appearance: none` plus a
+tick drawn from a data-URI SVG, which would put a literal `#282a36` in the stylesheet with
+nothing gating its drift against `--surface`, and pseudo-elements on inputs are unreliable in
+Safari. A read-only checkbox that reads as read-only is the cheaper answer. `list-style` is
+dropped with `li:has(input[type="checkbox"]:first-child)` rather than GFM's
+`.contains-task-list`, so the rule holds for `markdown-it` output too, which does not always
+carry that class.
+
+**Five smaller claims.** `del` and `s` drop to `--muted`, since a UA line-through at full body
+colour reads as emphasis. `samp` takes `--mono-font`; it had fallen through to generic
+`monospace`. `sub` and `sup` take `line-height: 0`, so a footnote reference does not open the
+line it sits on. `abbr[title]` gets a `--muted` dotted rule and `cursor: help`. `img.emoji` loses
+the `--ring` outline and is sized to `1.1em` — the ring is for figures, and an inline emoji was
+getting a 1px box.
+
+**Footnotes were the largest gap in spirit.** The sheet carries the whole Tufte sidenote
+apparatus for hand-authored markup, and had nothing for `section.footnotes`, which is what a
+converter actually produces. It now sits behind a `--rule-light` hairline at the caption tier
+(0.9em, `--label`), its paragraphs tightened, and the backref underline dropped.
+
+**A `li:target` highlight was built, measured, and removed.** Washing the jumped-to footnote in
+`--highlight` reads well and fails 1.4.3: the footnote block is `--label`, and pixel-sampled on
+the composited wash (`#68564d`) `--label` measures **3.83**, the backref `--link` **3.81**, and
+inline `code` green **3.54**. Only `--on-surface` clears, at 6.51. Recolouring the targeted note
+to body copy would fix the prose and not the link inside it; a bar shifts the text sideways on
+jump; an outline is the focus-ring form, which can be on screen at the same time. The browser
+already scrolls the note into view, so nothing is broken without a marker. **The general rule
+this produced: `--highlight` is a body-copy surface only** — see [the contrast
+budget](#colour-and-the-contrast-budget).
+
+**Two things are still not covered, deliberately.** Math (`$x$`) renders as literal delimiters:
+MathML needs no styling and KaTeX needs a CDN stylesheet, which is a consumer decision, not a
+template one. Chroma's single-letter classes (`.k`, `.s`, `.nf`) overlap nothing in the three
+maps above and were left out rather than guessed at; Hugo users can add them.
 
 ## Fixtures are coverage
 
@@ -1182,6 +1310,13 @@ retires the check it exists to be.**
   for the one empty state in the system. The fixture's nav-list filter has no following table,
   so `filter.js` returns early and the pair stays inert and visible, the way the four
   `.verdict-*` chips do. Verified in the AX tree: one `status` node.
+- **The highlighted code block carries real emitter classes.** `.hljs-keyword`,
+  `.hljs-type`, `.hljs-params` and the rest, in the nesting `highlight.js` produces, not
+  hand-written spans on invented names. It is the only check that the slot map in
+  [Markdown coverage](#markdown-coverage) still matches
+  [`themes/rider/README.md`](themes/rider/README.md), and the only place `--purple-bright`
+  renders. All five GFM alert types are present for the same reason: four of the five hues
+  appear nowhere else on a bar.
 - **The `<em>` label says what `em` actually does.** It read `<em>emphasis (label)</em>` long
   after the `em` colour rule was deleted, so the reference a consumer reads named a colour the
   sheet no longer paints. Now `<em>emphasis (inherits its surroundings)</em>`.
