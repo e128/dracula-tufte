@@ -84,8 +84,29 @@ owes seven things, and `sample.html` and `sample-conn-map.html` model each one:
   translate it. A converter that emits math owes the same three attributes on any equation wide
   enough to clip, and no stylesheet can add them.
 
-**Two opt-in classes, plus one group that needs no class. `sample.html` models all of them.**
-Nothing here is required, and the stylesheet does nothing until the markup asks.
+**Four opt-in patterns, plus one group that needs no class. `sample.html` models all but the
+table wrapper.** Nothing here is required, and the stylesheet does nothing until the markup asks.
+
+- **`.table-scroll` around a wide table** gives it a scroll container that keeps its header
+  pinned. A table below 1000px already scrolls sideways on its own, but `display: block` makes
+  the sticky header inert there, and neither scroll container is reachable by keyboard. The
+  wrapper fixes both, and it needs the same three attributes any sideways scroller does:
+
+  ```html
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Results by quarter">
+    <table>…</table>
+  </div>
+  ```
+
+  It scrolls both axes and caps its height at `70vh`, which is what keeps the header pinned. Put
+  `role="region"` on the wrapper and **never on the `<table>`**, because that role overrides
+  `role="table"` and takes the row and column semantics with it. The unwrapped path still works,
+  so nothing breaks if you never adopt this.
+- **`.sidenote` and `.marginnote`** put a note in the right margin instead of in the flow, which
+  is the pattern the whole layout reserves that margin for. A `.sidenote` takes a numbered marker
+  from `.sidenote-number`; a `.marginnote` takes none. Below 1000px both stack into the flow,
+  because at 28% of a narrow page the note measures 19 to 25 characters per line. Use these for
+  an aside that comments on one sentence, and use `<aside>` for one that comments on a section.
 
 - **`.num` on a `th` and on every `td` in the same column** right-aligns that column, so the
   figures line up under one another. Source Serif 4 is tabular and lining by construction, so
@@ -117,14 +138,16 @@ loses the figure ring and sizes to the line. Five of those are worth knowing abo
   the inline `text-align` that `pandoc` emits. `.num` still exists for hand-authored markup and
   still right-aligns, and a converter needs neither.
 - **The sheet styles syntax highlighting. It does not generate it.** It paints `highlight.js`
-  (`.hljs-*`), `pandoc` and skylighting (`.kw`, `.st`, `.co`, …) and Prism (`.token.*`) classes
-  with the same slot map the editor themes use. Run the highlighter yourself, and the sheet
-  colors whatever the highlighter emits. Types take a `--purple-bright` token, which is
-  `--purple` recomputed at `L + 0.07`, because plain purple on `--code-bg` measures 4.23 and
-  misses 1.4.3. Print pins the token back, because the lift runs the wrong way on paper. The
-  sheet deliberately does not cover Chroma's single-letter classes: `.k`, `.s` and `.m` are
-  unnamespaced in a sheet that you inline into your own pages. Hugo also writes its colors inline
-  by default (`noClasses = true`), where no rule here can reach them.
+  (`.hljs-*`), `pandoc` and skylighting (`.kw`, `.st`, `.co`, …), Prism (`.token.*`) and, as of
+  v1.21.0, Pygments (`.k`, `.s`, `.nf`, `.kt`, …) with the same slot map the editor themes use.
+  That last one covers Sphinx, MkDocs, Quarto and `nbconvert`, and it covers Hugo's Chroma too,
+  which copies the Pygments class names. Run the highlighter yourself, and the sheet colors
+  whatever the highlighter emits. Types take a `--purple-bright` token, which is `--purple`
+  recomputed at `L + 0.07`, because plain purple on `--code-bg` measures 4.23 and misses 1.4.3.
+  Print pins the token back, because the lift runs the wrong way on paper. Every Pygments rule is
+  scoped under `:is(pre, code)`, because the names are one and two letters. One collision is
+  known and accepted: `.ch` is `Char` to pandoc and `Comment.Hashbang` to Pygments, so a shebang
+  renders in the string tier.
 - **Footnotes** land in `section.footnotes` behind a hairline at the caption tier. The Tufte
   `.sidenote` apparatus is separate and still needs hand-authored markup.
 - **The sheet styles math where it arrives as HTML, and renders none of it.** A converter that
@@ -152,6 +175,14 @@ in the sheet with a width cap. Four changes, none of which need a class:
 - **Python-Markdown footnotes get the caption tier.** The rule matches `div.footnote` as well as
   the `section.footnotes` that `cmark-gfm` and `pandoc` emit, and it drops the leading `<hr>`
   that Python-Markdown puts above the block, which would otherwise double the hairline.
+
+**Form controls inherit the page font.** `button`, `input`, `select` and `textarea` do not
+inherit it natively, so before v1.21.0 every control except the filter box rendered at 13.33px
+Arial inside an 18.4px serif page, which is also below the 16px threshold where iOS Safari zooms
+on focus. They now take `font: inherit` with a `1rem` floor. Their **appearance** is still the
+UA's: no border, no fill, no focus ring of the theme's own. This is a document theme, and
+`color-scheme: dark` already tells the UA to draw its widgets dark. If you need a styled button,
+style it in your own sheet.
 
 **A permalink anchor reveals on hover.** Sphinx, MkDocs and markdown-it-anchor emit
 `a.headerlink` or `a.anchor` inside the heading. Those sit at `opacity: 0` until you hover the

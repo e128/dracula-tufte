@@ -123,21 +123,26 @@
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
-      .kw, .cf, .op, .bu, .token.keyword, .token.operator, .token.tag) { color: var(--pink); }
+      .kw, .cf, .op, .bu, .k, .kc, .kd, .kn, .kp, .kr, .o, .ow,
+      .token.keyword, .token.operator, .token.tag) { color: var(--pink); }
     :is(pre, code) :is(.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-addition, .hljs-char,
-      .st, .ss, .ch, .vs, .token.string, .token.regex, .token.char, .token.inserted) { color: var(--green); }
+      .st, .ss, .ch, .vs, .s, .s1, .s2, .sa, .sb, .sc, .sd, .se, .sh, .si, .sr, .sx, .dl,
+      .token.string, .token.regex, .token.char, .token.inserted) { color: var(--green); }
     :is(pre, code) :is(.hljs-number, .hljs-params, .hljs-meta, .dv, .bn, .fl, .cn, .pp,
+      .m, .mb, .mf, .mh, .mi, .mo, .il,
       .token.number, .token.boolean, .token.constant, .token.parameter) { color: var(--orange); }
     :is(pre, code) :is(.hljs-comment, .hljs-quote, .hljs-doctag, .co, .an, .do,
+      .c, .c1, .cm, .cp, .cpf, .cs,
       .token.comment, .token.prolog, .token.doctype) { color: var(--muted); font-style: italic; }
-    :is(pre, code) :is(.hljs-title, .hljs-name, .hljs-function, .hljs-section, .fu,
+    :is(pre, code) :is(.hljs-title, .hljs-name, .hljs-function, .hljs-section, .fu, .nf, .fm,
       .token.function, .token.selector) { color: var(--link); }
-    :is(pre, code) :is(.hljs-type, .hljs-class, .hljs-attribute, .dt, .token.class-name,
-      .token.builtin, .token.namespace) { color: var(--purple-bright); }
+    :is(pre, code) :is(.hljs-type, .hljs-class, .hljs-attribute, .dt, .kt, .nc, .nn, .nb,
+      .token.class-name, .token.builtin, .token.namespace) { color: var(--purple-bright); }
     :is(pre, code) :is(.hljs-attr, .hljs-variable, .hljs-property, .hljs-template-variable,
-      .va, .at, .token.attr-name, .token.property, .token.variable) { color: var(--label); }
-    :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .token.deleted, .token.important) { color: var(--red); }
-    :is(pre, code) :is(.hljs-punctuation, .token.punctuation) { color: inherit; }
+      .va, .at, .na, .nv, .vc, .vg, .vi, .nd,
+      .token.attr-name, .token.property, .token.variable) { color: var(--label); }
+    :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .err, .gd, .token.deleted, .token.important) { color: var(--red); }
+    :is(pre, code) :is(.hljs-punctuation, .p, .token.punctuation) { color: inherit; }
     math[display="block"] { overflow-x: auto; margin-block: var(--space-3); }
     .math.display { display: block; overflow-x: auto; margin-block: var(--space-3); }
     section { margin-bottom: var(--space-10); }
@@ -152,6 +157,8 @@
       box-shadow: inset 0 -1px 0 var(--rule-light);
     }
     thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; }
+    .table-scroll > table { display: table; margin-block: 0; }
     td {
       border: none; padding: .35rem .6rem; text-align: start;
       vertical-align: top; font-variant-numeric: tabular-nums;
@@ -213,6 +220,7 @@
     li:has(input[type="checkbox"]:first-child) { list-style: none; }
     li input[type="checkbox"] { accent-color: var(--purple); font-size: 1em; width: 1em; height: 1em;
       margin-inline-end: 0.45em; vertical-align: -0.08em; }
+    :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
     nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
     footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
     :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
