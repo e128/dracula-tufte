@@ -15,7 +15,7 @@ the narrative goes in the commit.
 
 ## 1. Wide tables: the page-scroll half is fixed, the keyboard half is not
 
-**Where:** `tufte-dracula.css`, `th { position: sticky; top: 0 }`, and the
+**Where:** `tufte-dracula.css`, `thead th { position: sticky; top: 0 }`, and the
 `@media (max-width: 1000px)` rule `table { display: block; overflow-x: auto; width: fit-content }`
 
 Three problems, one shape. All measured on a six-column table, Chromium.
@@ -153,76 +153,7 @@ worked example of the two-section sticky layout, which is expensive to reconstru
 **Deferred 2026-08-01:** audit recorded, nothing removed.
 
 ---
-
-## 3. Intrinsic-width media pushes the page sideways
-
-**Where:** `tufte-dracula.css`, the `img` rule. It is the only element with
-`max-width: 100%`.
-
-The v1.20.0 audit measured the CommonMark and GFM construct set. It did not measure raw HTML,
-which every one of those converters passes through untouched. Nothing else that carries an
-intrinsic width is claimed, so each one overflows the document at a phone width. Measured on
-the sheet at 390px and 1280px, `document.scrollWidth - clientWidth`:
-
-| construct | @390 | @1280 |
-| --- | --- | --- |
-| `<svg width="12in">` (graphviz, plantuml) | **782** | 0 |
-| `<svg width="900">` (a pre-rendered diagram) | **530** | 0 |
-| `<video>`, `<canvas>`, `<object>`, `<embed>` at 800px | **430** | 0 |
-| `<iframe width="560">` (an embed pasted into markdown) | **190** | 0 |
-| `<img width="800">`, the control | 0 | 0 |
-
-This is the same failure the MathML block had before v1.20.0, and it fails 1.4.10 the same
-way at every width where it happens.
-
-**The concrete change:** `:is(svg, video, canvas, iframe, object, embed) { max-width: 100% }`,
-with `height: auto` where the element carries a height attribute.
-
-**Why it is a call rather than a one-line fix.** `svg` is the collision. `pre.mermaid svg`
-and `body.conn-map pre.mermaid svg` already set width and max-width with `!important`, and
-below 600px the sheet deliberately lets a diagram render at natural size inside its own scroll
-container. A bare `svg` rule loses to those declarations, which is the wanted outcome, but
-[Mermaid](NOTES.md#diagram-sizing) records three sizing attempts that were correct on paper
-and wrong on screen. Nothing ships here until both fixtures render at 390 / 768 / 1280 / 1920
-with the rule in place. The cheaper split is to claim `video`, `canvas`, `iframe`, `object`
-and `embed` now, and to take `svg` as its own change with its own measurement.
-
----
-
-## 4. An unbreakable token in prose pushes the page sideways
-
-**Where:** `tufte-dracula.css`. `overflow-wrap: break-word` is on `a`, `code`, `cite` and
-`h1`–`h6`, and on nothing else.
-
-A hash, a long path, a base64 fragment or a bare URL outside a code span has no break
-opportunity, so the line runs past the column. Measured with a 96-character token at 390px,
-`document.scrollWidth - clientWidth`:
-
-| container | overflow |
-| --- | --- |
-| `li`, `dd` | **467** |
-| `p` | **443** |
-| `blockquote` | **431** |
-| `summary` | **425** |
-| `td`, `th` | 0 |
-| `pre` | 0 |
-
-`td` and `th` measure 0 because the `max-width: 1000px` escape hatch already gives a table its
-own scroll axis, and `pre` has one of its own. The prose containers have neither.
-
-**The concrete change:** add `p, li, dd, dt, blockquote, summary, figcaption, td, th` to the
-`overflow-wrap: break-word` set, or set it once on `body` and let it inherit.
-
-**Why it is a judgment call.** `overflow-wrap` on `body` is one declaration instead of nine,
-and it also catches every container the list forgets. Against that, it breaks a word in the
-middle wherever a line runs out, which is a typographic choice this sheet has not made
-anywhere else, and [Width and measure](NOTES.md#width-and-measure) is the section that would
-have to own it. `hyphens: auto` is already on `.sidenote` and `.col-2`, so the sheet does
-break words in two places and could reasonably do it in prose.
-
----
-
-## 5. Only the GFM alert shape is claimed. Every other generator's callout is bare
+## 3. Only the GFM alert shape is claimed. Every other generator's callout is bare
 
 **Where:** `tufte-dracula.css`, the `aside, .markdown-alert` rule and the five
 `.markdown-alert-*` variants.
@@ -256,7 +187,7 @@ MkDocs are the two most common ones outside the GitHub path.
 
 ---
 
-## 6. Form controls fall to the UA font at 13.33px
+## 4. Form controls fall to the UA font at 13.33px
 
 **Where:** `tufte-dracula.css`, the `.filter-box` rule. It is the only control in the sheet
 that sets `font-family: inherit`.
@@ -278,7 +209,7 @@ the font inheritance only, and to leave the appearance to the UA.
 
 ---
 
-## 7. Pygments is uncovered, and the Chroma decision hid that
+## 5. Pygments is uncovered, and the Chroma decision hid that
 
 **Where:** `tufte-dracula.css`, the seven `:is(pre, code) :is(…)` syntax rules.
 
@@ -308,35 +239,28 @@ missing any emitter that omits the wrapper.
 
 ---
 
-## 8. Four smaller gaps, all measured
+## 6. Jupyter notebook output is monochrome
 
-**Where:** `tufte-dracula.css`, one rule each.
+**Where:** `tufte-dracula.css`. Nothing claims `.output_area` or the ANSI color classes.
 
-- **Python-Markdown footnotes miss the caption tier.** The `.footnotes` rule matches the
-  `section.footnotes` that cmark-gfm and pandoc emit. Python-Markdown emits `div.footnote`,
-  singular, with a leading `<hr>`. Measured: 18.4px body copy with no hairline, and the `hr`
-  taking the full `--space-10` 40px margin where the tier rule should be. Adding
-  `.footnote` to the selector is one word, and suppressing the leading `hr` is one more rule.
-- **`tfoot th` pins to the top of the scroll container.** `th { position: sticky; top: 0 }` is
-  unscoped, so a totals row measured `position: sticky`, `top: 0`, italic `--pink`. Scope the
-  rule to `thead th`. That is a correctness fix with no trade, and it only waits here because
-  nothing in the repo emits a `tfoot` today.
-- **Permalink anchors are always visible at heading size.** Sphinx, MkDocs and
-  markdown-it-anchor emit `a.headerlink` or `a.anchor` inside the heading. Measured a 20.6px
-  underlined `--link` glyph in every heading. GitHub reveals its own on hover. A
-  `opacity: 0` until `:hover` and `:focus-visible` is the usual treatment, and the
-  `:focus-visible` half is not optional.
-- **Jupyter output is monochrome.** `.output_area` is bare and the ANSI classes
-  (`.ansi-red-fg` and siblings) are unclaimed, so terminal output inside a notebook export
-  loses every color. The `.dataframe` table inherits the sheet's table rules and looks
-  correct. This is the largest of the four in scope and the least likely to appear.
+`nbconvert` wraps each result in `div.output_area` and writes terminal color as classes
+(`.ansi-red-fg`, `.ansi-green-fg` and siblings, plus the `-bg` and `-intense-` variants). All of
+them measured unclaimed, so a traceback, a `pytest` summary or any colored log inside a notebook
+export renders in one foreground. The `.dataframe` table that pandas emits inherits the sheet's
+table rules and looks correct, so this is the ANSI half only.
 
-**Why these are a judgment call.** Each is small enough to fix in one line, and none of them
-has a consumer in the measured lode. They are grouped so the call is taken once rather than
-four times. `tfoot` is the one that is a plain bug: take it with whatever ships next.
+**The concrete change:** map the eight ANSI foregrounds onto the palette, scoped under
+`:is(pre, code)` the way the syntax slot map is, and leave the backgrounds alone.
 
-**Recorded 2026-08-09.** Entries 3 to 8 come from one probe run against the sheet, at 390px
-and 1280px, with computed values read per element. The lower-severity findings from that run
-are not recorded here: `menu` loses its marker padding to the `*` reset, `ins` and `u` are
-UA-underlined and so read as links, `address` stays UA italic, and `.tabbed-set` shows every
-panel at once.
+**Why it is a judgment call.** ANSI has sixteen names and this palette has seven accents, so the
+map is a set of choices rather than a translation, and the intense variants have nowhere sensible
+to land. It is also the least likely construct in the probe to appear: nothing in the measured
+lode is a notebook export. Against that, a traceback that loses its red loses the one thing the
+color was carrying.
+
+**Recorded 2026-08-09.** Entries 3 to 6 come from one probe run against the sheet, at 390px and
+1280px, with computed values read per element. v1.21.0 closed the four defects from that run that
+were bugs rather than trades. See [Raw HTML and other
+generators](NOTES.md#raw-html-and-other-generators). The lower-severity findings are not recorded
+here: `menu` loses its marker padding to the `*` reset, `ins` and `u` are UA-underlined and so
+read as links, `address` stays UA italic, and `.tabbed-set` shows every panel at once.

@@ -43,6 +43,7 @@ That reduction lands in every page a consumer generates.
 | [Filter](#filter) | `filter.js` scope and its three load-bearing decisions |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `figure`, `figcaption`, and the UA defaults they had |
 | [Markdown coverage](#markdown-coverage) | Every construct a converter emits, and the eleven that were unstyled |
+| [Raw HTML and other generators](#raw-html-and-other-generators) | Intrinsic-width media, unbreakable tokens, `tfoot`, permalinks |
 | [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details exist to catch a regression |
 | [Odds and ends](#odds-and-ends) | `hr`, `--ring` |
 
@@ -1324,6 +1325,95 @@ code)`, and a one-letter set is a different order of risk. It is also mostly moo
 defaults to `noClasses = true` and writes `style="color:#ff79c6"` inline on every span, which
 beats any rule here. A Chroma map would therefore only ever reach consumers who had turned that
 off. If one appears, add it scoped to the `.chroma` wrapper rather than bare.
+
+## Raw HTML and other generators
+
+[Markdown coverage](#markdown-coverage) measured the CommonMark and GFM construct set. It did not
+measure raw HTML, which every one of those converters passes through untouched, and it did not
+measure the generators outside the GitHub path. A probe at 390px and 1280px, with computed values
+read per element, found four defects that v1.21.0 fixes. The rest of that probe is in
+`backlog.md`, because each remaining item is a trade rather than a bug.
+
+**Intrinsic-width media pushed the document sideways. `img` was the only element claimed.**
+Measured `document.scrollWidth - clientWidth` at 390px, all of them zero at 1280px:
+
+| construct | before | after |
+| --- | --- | --- |
+| `<svg width="12in">` (graphviz, plantuml) | **782** | 0 |
+| `<svg width="900">` (a pre-rendered diagram) | **530** | 0 |
+| `<video>`, `<canvas>`, `<object>`, `<embed>` at 800px | **430** | 0 |
+| `<iframe width="560">` (an embed pasted into markdown) | **190** | 0 |
+| `<img width="800">`, the control | 0 | 0 |
+
+That is the same failure the MathML block had, and it fails 1.4.10 the same way at every width
+where it happens. The fix is one rule: `:is(svg, video, canvas, iframe, object, embed) {
+max-width: 100% }`.
+
+**The rule carries no `height: auto`, and that is deliberate.** `img` needs it because a raster
+has an intrinsic aspect ratio to preserve. An SVG with a viewBox preserves its own ratio and
+letterboxes, and the sideways scroll is what the rule exists to stop. Adding the declaration would
+put a second sizing input on `pre.mermaid svg`, where three previous attempts were correct on
+paper and wrong on screen. See [Diagram sizing](#diagram-sizing).
+
+**`svg` is in that selector only because a fixture diff proved it inert against mermaid.** Both
+fixtures were measured at 320 / 390 / 600 / 601 / 768 / 900 / 1280 / 1920 / 2560px, before and
+after, on `document.scrollWidth`, every `pre.mermaid svg` box, every distinct label `font-size`,
+and each `pre`'s width, `scrollWidth` and computed `overflow-x`. **All four probes are identical
+at all 18 fixture-width pairs.** The SVG boxes stay `[368, 754, 500]` on `sample.html`, including
+the 601px step down to `[368, 505, 500]` and the 768px step to `[368, 659, 500]`, and `[416]` on
+`sample-conn-map.html`. The labels stay 12px and 16px. The only difference the diff reported was
+mermaid's per-render element ids. `pre.mermaid svg` already carries `max-width` through its own
+rules, and below 600px it carries `max-width: none !important`, so the new rule is outranked
+exactly where a diagram needs to escape. Print and forced-colors were swept too: no scroll on
+either fixture at 390px or 1280px, zero console errors.
+
+**An unbreakable token in prose pushed the document sideways as well.** `overflow-wrap:
+break-word` was on `a`, `code`, `cite` and `h1`–`h6`, and on nothing else, so a hash, a long path
+or a base64 fragment outside a code span had no break opportunity. Measured with a 96-character
+token at 390px:
+
+| container | before | after |
+| --- | --- | --- |
+| `li`, `dd` | **467** | 0 |
+| `p` | **443** | 0 |
+| `blockquote` | **431** | 0 |
+| `summary` | **425** | 0 |
+| `td`, `th` | 0 | 0 |
+| `pre` | 0 | 0 |
+
+`td`, `th` and `pre` measured 0 before the fix because each already has its own scroll axis: the
+`max-width: 1000px` escape hatch for a table, and `overflow-x: auto` for `pre`.
+
+**The declaration went on `body`, not on a list of nine selectors.** One declaration inherits to
+every prose container, including the ones a list would forget and the ones a later release adds.
+It costs nothing in layout, because `break-word` does not reduce a box's min-content contribution
+— that is `anywhere`, and [Direction, zoom and growth](#direction-zoom-and-growth) records the
+measurement where that distinction mattered. The fixture diff above confirms it: no box in either
+fixture moved.
+
+**`position: sticky` on `th` was unscoped, so a `tfoot` row pinned to the top.** Measured on a
+60-row table at 1280px after a 400px scroll: a `tfoot th` computed `position: sticky` with `top:
+0`, in italic `--pink`, which is a totals row stuck to the header's place. The sticky group moved
+to `thead th`, and the `th` typography stays on `th`, so a footer cell still reads as a header
+cell. Verified after the same 400px scroll: `thead th` holds at top 0, and `tfoot th` computes
+`static` at top 2046.
+
+**The footnote tier matched one converter's class name out of two.** The rule matched
+`.footnotes`, which is what `cmark-gfm` and `pandoc` emit. Python-Markdown emits `div.footnote`,
+singular, with a leading `<hr>`, so its footnote block measured 18.4px body copy with no hairline,
+and the `hr` took the full `--space-10` 40px margin where the tier rule should be. The selector is
+now `:is(.footnotes, .footnote)`, and `:is(.footnotes, .footnote) > hr:first-child { display:
+none }` drops the duplicate rule. Verified: both shapes now compute 16.56px, `--label`, a 1px
+block-start border and a 40px top margin, which is the same tier from both converters.
+
+**Permalink anchors reveal on hover, and the `:focus-visible` half is not optional.** Sphinx,
+MkDocs and markdown-it-anchor emit `a.headerlink` or `a.anchor` inside the heading, and each one
+measured a 20.6px underlined `--link` glyph, visible in every heading at all times. The rule sets
+`opacity: 0` at 0.8em with no underline, and it lifts to `opacity: 1` on `:hover` of the heading
+and on `:focus-visible` of the link itself. **Without the focus half the link stays in the tab
+order while it is invisible**, which is a keyboard stop nobody can see. Verified on both class
+names: 0 at rest, 1 on heading hover, and 1 after keyboard focus. The transition is `opacity 0.15s
+ease-out`, which is the sheet's existing link timing, so it also honors the reduced-motion block.
 
 ## Fixtures are coverage
 
