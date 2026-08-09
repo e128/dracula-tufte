@@ -1489,6 +1489,25 @@ than fixed.
   and nothing in the measured lode is a notebook export. The `.dataframe` table pandas emits
   inherits the sheet's table rules and already looks correct.
 
+**Two of the four smaller findings were taken, and the rule for the first one is now general: a
+solid underline means a link, and a dotted underline means an annotation.** `ins` and `u` both
+took the UA underline at body color, which is the one mark this theme uses for a link, so a
+converter that emits CriticMarkup or track-changes produced text that read as clickable.
+`:is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em }` is the same form
+`abbr[title]` already uses. Measured at 1280px: a link is `solid` at `--muted` under `--link`
+text, `ins` and `u` are `dotted` at `--on-surface` under body text, so the two differ on style
+*and* color. No new hue was spent, and `del` and `s` keep their `--muted` line-through.
+
+**`menu` is a list and now indents like one.** It takes `list-item` children, but the `ul, ol`
+indent rule never matched it, so the `*` reset left its markers hanging outside the box. `menu`
+joins all three list rules. Measured: `padding-inline-start` 24px, identical to `ul`, with the
+first item's box at the same x.
+
+**The other two stay recorded.** `address` keeps its UA italic, which is arguably right for a
+postal block. `.tabbed-set` from `pymdownx.tabbed` shows every panel at once, and fixing it means
+claiming a radio-driven widget rather than writing one rule — that is the size of the declined
+callout work, not the size of these two.
+
 **The nine zero-user class families stay, and `sidenote` is the reason the audit was read
 twice.** Measured across the 370-file `product-intelligence` lode: `scorecard`, `edge-list`,
 `col-2`, `badge`, `newthought`, `sidenote` and `marginnote` have **zero** documents,

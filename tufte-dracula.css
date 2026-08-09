@@ -93,6 +93,7 @@
     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
     del, s { color: var(--muted); }
+    :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
     samp { font-family: var(--mono-font); font-size: 0.9em; }
     sub, sup { line-height: 0; font-size: 0.75em; }
     abbr[title] { text-decoration: underline dotted var(--muted); text-underline-offset: 0.2em; cursor: help; }
@@ -205,9 +206,9 @@
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
-    ul, ol { padding-inline-start: 1.5rem; }
-    :is(ul, ol):not(.nav-list) { margin-block: var(--space-3); }
-    li > :is(ul, ol) { margin-block: 0; }
+    ul, ol, menu { padding-inline-start: 1.5rem; }
+    :is(ul, ol, menu):not(.nav-list) { margin-block: var(--space-3); }
+    li > :is(ul, ol, menu) { margin-block: 0; }
     li { padding: 0.15rem 0; line-height: 1.5; }
     li::marker { color: var(--muted); }
     li:has(input[type="checkbox"]:first-child) { list-style: none; }

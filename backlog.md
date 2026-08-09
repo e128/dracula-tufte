@@ -31,7 +31,10 @@ Both declines carry a condition to revisit, not a verdict. Take the callout conv
 when a consumer runs Sphinx, MkDocs or Quarto. Take the ANSI map when a notebook export
 appears in a lode.
 
-The same probe found four smaller defects. They are recorded here and they are not
-entries. `menu` loses its marker padding to the `*` reset. `ins` and `u` keep the UA
-underline, so they read as links. `address` stays UA italic. `.tabbed-set` shows every
-panel at once.
+The same probe found four smaller defects. v1.21.0 took two of them. `menu` now indents
+like the other list types. `ins` and `u` now take a dotted underline, so they no longer
+read as links.
+
+Two stay recorded, and they are not entries. `address` keeps its UA italic, which is
+arguably correct for a postal block. `.tabbed-set` shows every panel at once, and a fix
+means the sheet claims a radio-driven widget.
