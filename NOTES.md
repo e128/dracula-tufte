@@ -1,4 +1,4 @@
-# NOTES.md — why the stylesheet looks like this
+# NOTES.md: why the stylesheet looks like this
 
 Every generated HTML file carries `tufte-dracula.css`, `mermaid.js` and `filter.js` verbatim,
 so those files carry no comments (see `CLAUDE.md`). This file holds the reasoning that used to
@@ -15,9 +15,9 @@ Two comments remain in the CSS. A machine reads both, and neither is prose:
 
 The prose-comment removal was verified as behavior-neutral. Computed styles for every element in
 both fixtures at 390 / 900 / 1280 / 1920px are byte-identical to the commented version: 0
-differences across 160 elements and 4 viewports. The CSS went 35192 → 13399 bytes, `mermaid.js`
-4731 → 2079, `sample.html` 45173 → 20728 (54%), and `sample-conn-map.html` 41030 → 16585 (60%).
-That reduction lands in every page a consumer generates.
+differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 bytes, `mermaid.js`
+4731 to 2079, `sample.html` 45173 to 20728 (54%), and `sample-conn-map.html` 41030 to 16585
+(60%). That reduction lands in every page a consumer generates.
 
 ## Contents
 
@@ -52,59 +52,55 @@ That reduction lands in every page a consumer generates.
 ## Fonts
 
 **The body face is Source Serif 4**, a variable serif pinned to an exact jsDelivr version the
-way `mermaid.js` is. It ships two faces, roman and italic, about 50KB each, served `immutable`.
+way `mermaid.js` is. It ships roman and italic, about 50KB each, served `immutable`.
 
-The reason for a webfont at all: every system serif ships 400 and 700 and nothing between, so
-nothing could ask for the 450 that light-on-dark body copy wants. Georgia at `font-weight: 400`
-and at `450` render *identically*. The measurement says the 450 does not exist. The variable
-axis runs 200 to 900, so 450 is real, and the `600` on `.newthought`, `strong` and `dt` is a
-real 600 instead of a snap to bold.
+**Why a webfont at all: every system serif ships 400 and 700 and nothing between.** Nothing
+could ask for the 450 that light-on-dark body copy wants. Georgia at `font-weight: 400` and at
+`450` render *identically*. The variable axis runs 200 to 900, so 450 is real, and the `600` on
+`.newthought`, `strong` and `dt` is a real 600 instead of a snap to bold.
 
-The reason for this face over the alternatives: its figures are **tabular and lining by
-construction**, all ten digits at 529/1000, so a table aligns in the body serif and needs no
-OpenType feature support. Its x-height is 475/1000 against Georgia's 481, a 1.2% difference, so
-no em-relative value needed a re-derivation.
+**Why this face over the alternatives: its figures are tabular and lining by construction.** All
+ten digits at 529/1000, so a table aligns in the body serif and needs no OpenType feature
+support. Its x-height is 475/1000 against Georgia's 481, a 1.2% difference, so no em-relative
+value needed a re-derivation.
 
 | candidate | wght axis | x-height | figures |
 | --- | --- | --- | --- |
 | **Source Serif 4** | 200–900 | 475 | tabular + lining |
 | Literata | 200–900 | 507 | proportional, lining (needs `tnum`) |
 | Newsreader | 200–800 | 426 | tabular + lining |
-| Lora | 400–700 | 500 | proportional + **old-style** — Georgia's exact defect |
+| Lora | 400–700 | 500 | proportional + **old-style**, Georgia's exact defect |
 | Petrona | 100–900 | 443 | proportional, lining |
 
 None of the five ship `smcp`, so the browser still synthesizes the `.newthought` small caps. The
 webfont bought the weight axis, not true small caps.
 
 **The fallback path is a real downgrade, not an equivalence.** Offline the stack falls to
-Georgia: no 450, which collapses to 400, and old-style proportional figures, so tables lose
-alignment. The measured table per-digit spread is 0.00% online and 4.21% on the fallback. That
-is accepted, because the text still renders and reads. The mermaid CDN is the opposite case,
-because it renders no diagram at all offline. `font-display: swap` keeps the text visible while
-the font loads.
+Georgia: no 450 (collapses to 400) and old-style proportional figures, so tables lose alignment.
+The measured table per-digit spread is 0.00% online and 4.21% on the fallback. That is accepted,
+because the text still renders and reads. The mermaid CDN is the opposite case: it renders no
+diagram at all offline. `font-display: swap` keeps the text visible while the font loads.
 
-Georgia stays first in the fallback stack. It is the most widely installed sturdy screen serif
-(Windows since Win98, all macOS, iOS), it has low stroke contrast, and it has a large x-height.
-Noto Serif covers Android and ChromeOS, and DejaVu Serif covers Linux. Charter and Palatino are
-absent on purpose, because both exist only where Georgia already does, which puts them out of
-reach.
+Georgia stays first in the stack. It is the most widely installed sturdy screen serif (Windows
+since Win98, all macOS, iOS), it has low stroke contrast, and it has a large x-height. Noto Serif
+covers Android and ChromeOS; DejaVu Serif covers Linux. Charter and Palatino are absent on
+purpose, because both exist only where Georgia already does, which puts them out of reach.
 
-**Both stacks are tokens, because three rules needed the literal, and one of those rules is not
-a `body` descendant in the way it looks.**
+**Both stacks are tokens, because three rules needed the literal and one of those rules is not a
+`body` descendant in the way it looks.**
 
 - `.mermaid-zoom` sets `font: inherit`, which resolves against `pre.mermaid`, so the injected
   button computed `monospace` at 14.9px. It was the only control in the sheet in the code face
   while `.filter-box` sat in the body serif, and it undid half of the point of removing
   `pre.mermaid`'s fill and accent bar. `font-family: var(--body-font)` after the shorthand fixes
   the family and leaves the inherited weight and style alone.
-- `pre` never set a `font-family` at all, so it inherited the UA's generic `monospace` while the
-  inline `code` beside it computed the full stack. The fixtures hid this, because their `pre`
-  wraps a `<code>` that supplies the family by inheritance. A consumer that emits a code block
-  without the inner `<code>` got a different face for the block than for the inline spans on the
-  page.
+- `pre` never set a `font-family`, so it inherited the UA's generic `monospace` while the inline
+  `code` beside it computed the full stack. The fixtures hid this, because their `pre` wraps a
+  `<code>` that supplies the family by inheritance. A consumer that emits a code block without
+  the inner `<code>` got a different face for the block than for the inline spans on the page.
 
 `mermaid.js` still writes the stack out twice as a literal, and that is not drift to fix. Both
-copies are JavaScript strings in a config object, neither can read a custom property, and each
+copies are JavaScript strings in a config object; neither can read a custom property, and each
 one is load-bearing for a different reason (see [Mermaid](#mermaid)). The `pre` change was
 verified not to disturb them: the sequence `Note over` rect still measures 404px around 384px of
 text, and `.mermaid-zoom` still computes the body serif.
@@ -871,16 +867,16 @@ named the independent `scale` property while the rule set `transform`, so nothin
 sample every 25ms through a real mousedown gave `transform: matrix(0.96, 0, 0, 0.96, 0, 0)` on
 the first frame and an identical value on all six. The declaration also sat inside `:active`, so
 it vanished with the state: `transform: none` 30ms after mouseup. Press and release both snapped.
-It is now `scale: 0.96` in `:active` with the transition on the base rule: 0.987 → 0.976 → 0.968
-→ 0.962 → 0.96 on press, and 0.964 → 0.976 → 0.987 → 0.995 → 0.999 on release. **A transition
-belongs on the resting rule, and `transform` and `scale` are different properties.**
+It is now `scale: 0.96` in `:active` with the transition on the base rule: 0.987 to 0.976 to
+0.968 to 0.962 to 0.96 on press, and 0.964 to 0.976 to 0.987 to 0.995 to 0.999 on release. **A
+transition belongs on the resting rule, and `transform` and `scale` are different properties.**
 
 **`.mermaid-zoom` was the one control outside that language.** It is the only real `<button>`
 here, and it had neither thing every other interactive surface has. Its `:hover` color and fill
 changed with no transition while `a` and `summary` ease at 0.15s, and it had no press state at
 all. It now carries `transition: color 0.15s ease-out, background-color 0.15s ease-out, scale
-0.12s ease-out` on the resting rule plus `scale: 0.96` in `:active`, measured 0.987 → 0.973 →
-0.963 → 0.96.
+0.12s ease-out` on the resting rule plus `scale: 0.96` in `:active`, measured 0.987 to 0.973 to
+0.963 to 0.96.
 
 **`[tabindex="0"]:focus-visible` is in the focus rule, because the one stop this sheet does not
 own is the one consumers are told to add.** `README.md` requires `tabindex="0"` on anything that
@@ -920,8 +916,8 @@ glyph, so nothing tells a screen reader about a control it cannot reach. It is a
 already-clickable surface, not a new target.
 
 The overlay is `transition: opacity 0.2s ease-out`. With the default `ease` the backdrop measured
-0.026 → 0.497 → 0.80 → 0.94 → 0.999 at 40ms intervals: near-invisible for the first frame, then a
-rush, so the click felt late. Every other transition in the sheet was already `ease-out`.
+0.026 to 0.497 to 0.80 to 0.94 to 0.999 at 40ms intervals: near-invisible for the first frame,
+then a rush, so the click felt late. Every other transition in the sheet was already `ease-out`.
 
 ## Keyboard and assistive technology
 
@@ -1319,7 +1315,7 @@ sheet stays out of it and styles the containers instead, so a consumer who does 
 the block layout for free.
 
 **Chroma was declined here on a namespace argument, and v1.21.0 overturned it.** The argument was
-that Hugo's highlighter names its slots `.k`, `.s`, `.c`, `.n`, `.o`, `.m` and `.p` — one letter,
+that Hugo's highlighter names its slots `.k`, `.s`, `.c`, `.n`, `.o`, `.m` and `.p`: one letter,
 unnamespaced, in a stylesheet consumers inline into pages this repo never sees, where `.m` is a
 margin utility in more than one framework. That reasoning held for Chroma, which is mostly moot
 anyway, because Hugo defaults to `noClasses = true` and writes `style="color:#ff79c6"` inline on
@@ -1389,8 +1385,8 @@ token at 390px:
 
 **The declaration went on `body`, not on a list of nine selectors.** One declaration inherits to
 every prose container, including the ones a list would forget and the ones a later release adds.
-It costs nothing in layout, because `break-word` does not reduce a box's min-content contribution
-— that is `anywhere`, and [Direction, zoom and growth](#direction-zoom-and-growth) records the
+It costs nothing in layout, because `break-word` does not reduce a box's min-content contribution:
+that is `anywhere`, and [Direction, zoom and growth](#direction-zoom-and-growth) records the
 measurement where that distinction mattered. The fixture diff above confirms it: no box in either
 fixture moved.
 
@@ -1438,7 +1434,7 @@ a real table at every width.
 
 **The wrapper ships inert, and `overflow-x` stays on `table`.** The class matches nothing until a
 consumer wraps, and moving the escape hatch off `table` in the same release would break every
-consumer that had not wrapped yet — a wide table would overflow the page with no scroller at all.
+consumer that had not wrapped yet: a wide table would overflow the page with no scroller at all.
 Both paths therefore run at once. `tabindex="0"`, `role="region"` and a label are consumer
 markup, like the other obligations in `README.md`. **`role="region"` must not go on the `<table>`
 itself:** it overrides `role="table"` and takes the row and column semantics with it, the same
@@ -1462,7 +1458,7 @@ own. The rule fixes the typography defect and leaves the widget to the UA, which
 **Pygments joins the syntax slot map, scoped under `:is(pre, code)`.** Measured before: `.k`,
 `.s`, `.c1` and `.nf` all inherited `--on-surface`, so a Sphinx or MkDocs page rendered flat white
 code inside a styled `pre`. The names now sit in the same seven grouped selectors as
-`highlight.js`, pandoc and Prism, so no new color and no new rule appeared — only more selectors.
+`highlight.js`, pandoc and Prism, so no new color and no new rule appeared: only more selectors.
 Verified in `sample.html`: `.c1` muted, `.k` and `.o` pink, `.nf` link, `.kt` and `.nc`
 purple-bright, `.mi` orange, `.s2` green, `.na` label, `.p` inherited.
 
@@ -1505,7 +1501,7 @@ first item's box at the same x.
 
 **The other two stay recorded.** `address` keeps its UA italic, which is arguably right for a
 postal block. `.tabbed-set` from `pymdownx.tabbed` shows every panel at once, and fixing it means
-claiming a radio-driven widget rather than writing one rule — that is the size of the declined
+claiming a radio-driven widget rather than writing one rule: that is the size of the declined
 callout work, not the size of these two.
 
 **The nine zero-user class families stay, and `sidenote` is the reason the audit was read
