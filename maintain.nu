@@ -133,7 +133,7 @@ const STAMPS = [
   [file pattern template]; # pattern is a regex; template takes {v}
   [tufte-dracula.css '/\* Dracula-Tufte \(muted\) v[\d.]+ \*/' '/* Dracula-Tufte (muted) v{v} */']
   [README.md '\(template v[\d.]+, oklch palette\)' '(template v{v}, oklch palette)']
-  [README.md 'currently \*\*`v[\d.]+`\*\*' 'currently **`v{v}`**']
+  [README.md 'is \*\*`v[\d.]+`\*\*' 'is **`v{v}`**']
 ]
 
 def "main bump" [version: string] {

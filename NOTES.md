@@ -34,7 +34,7 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Four surfaces, every ratio, the data ramp, forced colors |
 | [Form follows role](#form-follows-role) | Filled vs outlined chips, bars vs boxes, hue budget |
 | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
-| [Mermaid](#mermaid) | Init config, label measurement, diagram sizing, zoom |
+| [Mermaid](#mermaid) | Init config, label measurement, diagram sizing, zoom, newer diagram types |
 | [Connections-map layout](#connections-map-layout) | `body.conn-map`, markup order, no breakouts |
 | [Interaction states](#interaction-states) | Press, hover, focus rings |
 | [Keyboard and assistive technology](#keyboard-and-assistive-technology) | Zoom button, modal overlay, inert |
@@ -810,6 +810,69 @@ dies on a bare `TypeError` that points nowhere near the missing element.
 a sideways scroll container and `README.md` already requires a reachable, named stop for those
 (WCAG 2.1.1). The name is the fence's own `accTitle:`, which falls back to the translatable zoom
 label. A diagram's title beats a button verb, and it is already an author obligation.
+
+### Newer diagram types
+
+The v1.13.0-era sweep covered 12 diagram types. Mermaid has since shipped `kanban`, `radar`,
+`sankey`, `packet`, `block` and `treemap`, none of which had ever been rendered against this
+palette. v1.23.0 closes that gap: `mermaid-cli@11.16.0` rendered all six with the exact
+`themeVariables` this file carries, and every hex in the output was diffed against
+`mermaid-palette.json`'s 17 values. Three came back clean once the dead paths were ruled out:
+`kanban`'s stray `#efefef` sits in an unused `.disabled` rule inherited from the shared style
+bundle, `treemap`'s stray `#efefef` default is a compile-time fallback that never reaches a rect
+(each section and leaf gets a computed `hsl()` fill instead), and `radar`'s `graticuleColor`
+default never painted anything the sweep's two-curve, three-axis fixture produced. `sankey` and
+`block` come back tinted by d3's Tableau10 categorical scheme (`#4e79a7`, `#f28e2c`, `#cbc8b9`,
+…) rather than any `themeVariable` — that is d3-scale-chromatic auto-coloring nodes with no
+config surface in front of it, the same shape of decision as the pie-slice ramp but with no
+override, and is left alone for the reason [Color and the contrast
+budget](#color-and-the-contrast-budget) already gives: nothing puts a category fill beside body
+copy, so the collision costs little.
+
+**`packet` came back genuinely broken: white-on-white in spirit, `#efefef` blocks with `black`
+text on a dark page.** `defaultPacketStyleOptions` in `src/diagrams/packet/styles.ts` hard-codes
+`startByteColor`, `endByteColor`, `labelColor`, `titleColor` and `blockStrokeColor` to `"black"`
+and `blockFillColor` to `"#efefef"`, and neither `mermaid.initialize({ packet: {…} })` nor a
+`%%{init: {"packet": {…}}}%%` fence directive moves any of them, verified two ways on
+`mermaid@11.16.1`: the CLI's `-c` config file and an inline directive both leave
+`.packetBlock{fill:#efefef}` in the emitted `<style>` unchanged. This is the same shape of defect
+`sequence.noteFontFamily` already is in [Label measurement](#label-measurement) — the config key
+exists and is silently inert — except here nothing themes it at all, ever, not even by accident,
+so the fix cannot wait for a future mermaid release the way the sequence note's four-release wait
+did. `tufte-dracula.css` now overrides mermaid's own injected rule directly:
+
+```css
+pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
+pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
+```
+
+`!important` is required and is not a shortcut taken for convenience: mermaid's injected style
+is scoped `#my-svg .packetBlock`, at (1,1,0), and a plain page-level `.packetBlock` rule at
+(0,1,0) loses that specificity fight even though it comes later in the DOM. The pattern already
+exists in this file for the same reason — the `--natural-width` rule fights mermaid's own inline
+`max-width` the same way — so this is not a new kind of override, just the second place mermaid's
+CSS has to be out-muscled rather than configured. Verified by rendering to PNG and sampling
+pixels, because the exported SVG's own embedded `<style>` text does not change even when an
+external stylesheet visually overrides it on screen: the block fill measured `#efefef` before the
+CSS and `#343746` after, at the same coordinate, and the anti-aliased edge around the label text
+shifted from black-white blends (`#ababab`, `#222223`) to purple-white blends (`#8975ae`,
+`#60537a`), confirming the text itself repainted and not just the box behind it. No hex needed
+adding to `mermaid-palette.json`: every value reused is already a `var()` token from the CSS side
+of the palette, not a new literal, so check 4 of `.github/palette-check.py` has nothing new to
+drift. `sample.html` carries a `packet-beta` fence for the same reason the sequence and quadrant
+fences exist — the bug shipped invisibly because nothing had ever rendered the diagram type
+before, and a fixture that never uses a component cannot catch a regression in it.
+
+**`xyChart`'s bars and line render in mermaid's own default pastel palette (`#fff4dd`,
+`#ffd8b1`, …), and there is no fix for it here.** `xyChart.plotColorPalette` has the identical
+defect as `packet`: setting it through `initialize()` or a fence directive changes nothing,
+verified the same two ways. Unlike `packet`, there is no CSS door in: the bars and the line are
+plain `<rect>` and `<path>` elements with a literal `fill`/`stroke` attribute and **no class
+attribute at all**, so there is no selector narrow enough to hang a `!important` override on
+without also recoloring every unclassed shape another diagram type might emit. Take this when
+mermaid ships a fix upstream, or when a consumer's real page needs an `xychart-beta` fence badly
+enough to justify a per-diagram `<style>` scoped by a hand-added `id` — not by widening a
+selector on the shared sheet.
 
 ## Connections-map layout
 
@@ -1647,6 +1710,18 @@ The same defect does **not** affect `table`, whose `box-shadow: 0 1px 0 var(--ru
 var(--rule)` sits on a box with real height. Verified: both rules paint at `rgb(151,159,196)`.
 Shadow-drawn rules are fine. Shadow-drawn rules on a zero-height box are not. Any future hairline
 should ask which it is.
+
+**`scrollbar-color` sits on `body`, not on every scrolling box, because the property inherits.**
+`.table-scroll`, `pre`'s `overflow-x`, the narrow-viewport `pre.mermaid` scroll and the document's
+own scrollbar all took the browser default light-mode thumb and track before this, the one UI
+chrome this sheet never themed. `scrollbar-color: var(--rule) var(--surface-alt)` on `body` reaches
+every one of them without a second declaration, because an unset `scrollbar-color` computes to
+`auto` and inherits like any other property that defaults to it.
+
+**`.table-scroll` gained `overscroll-behavior: contain`, matching the mermaid overlay and the
+narrow-viewport `pre.mermaid` rule that already carry it.** Without it, scrolling a wide table to
+its edge chains into the page behind it — the same scroll-chaining problem those two rules exist
+to stop, just never checked against the newer wrapper.
 
 **`--ring` is a token because the `img` hairline was the one color declared twice as a literal.**
 It is `oklch(1 0 0 / 0.1)` on screen and `oklch(0 0 0 / 0.1)` in print, the only raw color values
