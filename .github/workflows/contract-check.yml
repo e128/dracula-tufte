@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify the nine contract files exist
+      - name: Verify the ten contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md; do
+          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md CONTRACT.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
           echo "All 9 contract files present."

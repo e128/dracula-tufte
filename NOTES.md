@@ -1116,12 +1116,80 @@ Three decisions are load-bearing:
 - **No CDN, no build step, no comments.** The whole handler is `querySelectorAll` plus
   `classList.toggle`, and consumers inline it verbatim like the other two payloads.
 
-The filter is one input, one table, one listener. It does not filter a nav-list, a `details`
-group, or several tables from one box. The stylesheet styles a box, not a taxonomy, and a
-consumer who wants a different shape writes a handler over the same classes.
+### The one-table scope was reversed in v1.22.0
+
+**Through v1.21.0 this section read: "The filter is one input, one table, one listener. It does not
+filter a nav-list, a `details` group, or several tables from one box."** That decision is reversed,
+and the reversal is deliberate rather than an oversight of it.
+
+Two measurements forced it.
+
+**The fixture's own filter box was inert, and had been since v1.16.0.** `sample.html` carries
+exactly one `input.filter-box`, and what follows it is a `.nav-list` and a `details.nav-group`.
+There is no table in that section. The old script walked `nextElementSibling` for the first
+`TABLE`, found none, and returned at `if (!table) return`. So the living style fixture, which
+`README.md` calls the executable specification, shipped a filter box that never filtered anything
+for six releases. No gate caught it: the contract check counts `<script>` blocks and compares
+bytes, and neither question is "does the handler bind".
+
+**The scope rule guaranteed that no consumer could ever inherit a fix.** The old text told a
+consumer who wanted a different shape to write their own handler over the same classes, and one
+did: 41 lines that filter `.nav-list li`, toggle `details.nav-group`, and keep a status count.
+That is the decision working exactly as written, and the result is that the largest generator of
+Tufte-Dracula pages references two of the three payload files and hand-maintains the third. A
+shipped contract file with no reachable user is worse than no file.
+
+**The new scope is the sibling span, not the parent.** From the input, walk forward over siblings
+and stop at the next `input.filter-box`, or at the end. Within that span, filter `tbody tr` and
+`.nav-list > li`. This keeps the two properties the original decision was protecting: no
+`closest()` and no id-matching, so the script still never needs to know a consumer's ids, and the
+input-to-content pairing is still the only relationship the markup states. What it drops is the
+one-table limit, and with it "several tables from one box". A span that holds two tables now
+drives both. A stop at the first structural break would be arbitrary, and stopping at the next
+filter box is the rule a consumer can predict without reading the source.
+
+`details.nav-group` open state is captured once at bind time and restored when the query clears,
+because a group the script opened during a search must not read as a group the reader opened.
 
 `.filter-box` is `font-size: 1em`, not the old `max(1em, 16pt)`. 16pt is 21.3px, not 16px, and
 the iOS-zoom floor is 12pt.
+
+## Nav link separators
+
+`nav > a + a` takes a `border-inline-start` plus symmetric padding in v1.22.0. Before it, a `<nav>`
+of sibling `<a>` children rendered as an undifferentiated run of link text, because the sheet
+styled `nav` for margin, color and size but never separated its children.
+
+**Neither fixture contained a `<nav>` element at all before v1.22.0**, though `README.md` listed
+nav among the components `sample.html` shows. The rule that fixed the run-together nav therefore
+shipped unmodeled, and the nav that motivated it lived only in a consumer's output. `sample.html`
+now carries seven sibling links, which is enough to wrap at 390px.
+
+**The wrapped-line separator is a known artefact and it is accepted.** The separator is a border on
+the link, so a link that begins a wrapped line carries a separator with nothing to its left. No
+pure-CSS rule can suppress a border at a line break: the wrap position is not addressable from a
+selector, and flex wrapping moves the problem without solving it. The alternatives were a
+pseudo-element glyph, which dangles identically, or dropping separators for whitespace alone, which
+is the state the rule exists to fix. Seven links in the fixture make the artefact visible at a
+phone width rather than hiding it behind a two-link nav.
+
+## Version stamps are not version history
+
+`maintain.nu bump` replaced every occurrence of the current version string across `README.md`. Six
+of those occurrences were historical claims, not stamps: prose of the form "raw HTML is covered as
+of v1.21.0" states when a feature landed. The blanket replace walked all six forward on every
+release, so v1.22.0's working tree credited v1.22.0 with raw-HTML coverage, Pygments support, the
+form-control font fix, the math scroll axis and the markdown-coverage baseline, all of which
+shipped in v1.21.0 under commit `36b395d`.
+
+The bump now rewrites three anchored stamps and nothing else: the stylesheet header comment, the
+`(template vX.Y.Z, oklch palette)` cell, and the `currently **`vX.Y.Z`**` line. **Each pattern must
+match or the bump fails.** A stamp that moves is a loud failure rather than a silent no-op, because
+a no-op leaves the tree claiming the previous version while the release verb believes it stamped.
+
+This matters more than a docs tidy. `CONTRACT.md` carries a per-version delta table, which is the
+same shape of data, a version paired with a claim about that version, and the blanket replace
+would have rewritten every row of it on the next release.
 
 ## Unclaimed elements
 

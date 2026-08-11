@@ -13,9 +13,35 @@ The narrative goes in the commit.
 
 ---
 
-## No open entries
+## No gate asks whether an inlined script binds
 
-v1.21.0 closed the last six entries. It took four and declined two. Every measurement
+**The problem.** `sample.html` shipped an inert `input.filter-box` from v1.16.0 to v1.21.0.
+The handler walked forward for a `TABLE` that the fixture never had, and returned. Six
+releases passed. The contract check counts `<script>` blocks and compares bytes, and neither
+question is "does this handler attach to anything". The same blind spot covers `mermaid.js`:
+CI proves its hex matches the palette and never proves it initialises.
+
+**The change.** A CI-only step that loads each fixture in a DOM, runs the two inlined
+scripts, and asserts observable behaviour. A working check already exists and is what
+verified the v1.22.0 filter widening: six assertions over the real `sample.html`, covering
+in-scope filtering, out-of-scope items staying put, group reveal, the empty line, the status
+count, and open-state restore.
+
+**Why it is a judgment call.** It needs Node and jsdom. Those are CI-only and no consumer
+would inline them, so **No build step** survives in letter. It still grows the release
+promise: a tag would then assert that the scripts behave, not only that the payload is
+well-formed, and `REQUIRED_CHECKS` would gain a name that can hold a release. The declines
+in this file have all been about refusing to make the sheet claim more than it can hold, and
+this is the same shape of decision pointed at CI.
+
+**Take it when** a third payload script appears, or when a second binding defect ships.
+One defect found by hand is not yet a pattern.
+
+---
+
+## Closed in v1.21.0
+
+v1.21.0 closed six entries. It took four and declined two. Every measurement
 moved to [The backlog this closed](NOTES.md#the-backlog-this-closed) in NOTES.md.
 
 | entry | outcome |

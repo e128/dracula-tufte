@@ -6,7 +6,7 @@
   <title>Tufte-Dracula — component sample</title>
   <meta name="generated-by" content="data/html/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.21.0 */
+    /* Dracula-Tufte (muted) v1.22.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -223,6 +223,8 @@
       margin-inline-end: 0.45em; vertical-align: -0.08em; }
     :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
     nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
+    nav > a + a { border-inline-start: 1px solid var(--rule-light);
+      margin-inline-start: 0.7em; padding-inline-start: 0.7em; }
     footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
     :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
       padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }
@@ -468,18 +470,30 @@
   </script>
   <script type="module">
     document.querySelectorAll('input.filter-box').forEach(input => {
+      const scope = [];
       let el = input.nextElementSibling;
-      while (el && el.tagName !== 'TABLE') el = el.nextElementSibling;
-      const table = el;
-      if (!table) return;
-      const rows = table.querySelectorAll('tbody tr');
+      while (el) {
+        if (el.matches('input.filter-box') || el.querySelector('input.filter-box')) break;
+        scope.push(el);
+        el = el.nextElementSibling;
+      }
+      if (!scope.length) return;
+      const rows = [];
+      const groups = [];
+      scope.forEach(node => {
+        rows.push(...node.querySelectorAll('tbody tr, .nav-list > li'));
+        if (node.matches('details.nav-group')) groups.push(node);
+        groups.push(...node.querySelectorAll('details.nav-group'));
+      });
+      if (!rows.length) return;
+      const wasOpen = groups.map(group => group.open);
       const status = input.parentElement.querySelector('[role="status"]');
       let empty = input.parentElement.querySelector('.filter-empty');
       if (!empty) {
         empty = document.createElement('p');
         empty.className = 'filter-empty';
         empty.hidden = true;
-        table.after(empty);
+        scope[scope.length - 1].after(empty);
       }
       input.addEventListener('input', () => {
         const q = input.value.trim().toLowerCase();
@@ -488,6 +502,11 @@
           const hit = !q || row.textContent.toLowerCase().includes(q);
           row.classList.toggle('filter-hidden', !hit);
           if (hit) visible += 1;
+        });
+        groups.forEach((group, i) => {
+          const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
+          group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
+          group.open = q ? shown > 0 : wasOpen[i];
         });
         empty.hidden = visible !== 0;
         if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
@@ -501,6 +520,16 @@
   <article>
     <h1>Tufte-Dracula Component Sample</h1>
     <p class="byline">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>
+
+    <nav>
+      <a href="#">Requirements Register</a>
+      <a href="#">Decision Log</a>
+      <a href="#">Dependency Tracker</a>
+      <a href="#">Spike Results</a>
+      <a href="#">Findings</a>
+      <a href="#">Reuse Candidates</a>
+      <a href="#">Project Summary</a>
+    </nav>
 
     <section>
       <h2>Headings &amp; text</h2>

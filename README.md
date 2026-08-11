@@ -4,6 +4,10 @@
 stylesheet, the palette, the Mermaid init script, and the sample fixtures. Consumers pull it in
 through a pinned git submodule at `external/dracula-tufte/`. One place, one truth, no drift.
 
+**A consumer's generator reads [CONTRACT.md](CONTRACT.md), not this file.** That one is the
+imperative checklist: what to inline, what markup to emit, what changed in each release. This one
+holds the narrative and the measurements behind it.
+
 The typography adapts [tufte-css](https://edwardtufte.github.io/tufte-css/), the book style of
 Edward Tufte. The palette comes from [Dracula](https://draculatheme.com/). This repo is not a
 fork of either. It rewrites the ideas as one inline stylesheet with no build step.
@@ -15,24 +19,36 @@ GitHub Pages renders these from main, no build step:
 - [sample.html](https://e128.github.io/dracula-tufte/sample.html): component sample
 - [sample-conn-map.html](https://e128.github.io/dracula-tufte/sample-conn-map.html): connections-map layout
 
-## The Nine Files
+## The Ten Files
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.21.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.22.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
-| `filter.js` | The filter-box script. Wires each `input.filter-box` to the table it precedes. Toggles `.filter-hidden` on non-matching rows and reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
+| `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
 | `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
 | `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `build-sample.nu`. Do not edit by hand. |
 | `build-sample.nu` | The regenerator. `nu build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
 | `sample.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
 | `sample-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
+| `CONTRACT.md` | The consumer checklist. What to inline, the markup a generator owes, what changed in each release, how to spot a stale artifact, and what each pin mode costs. Imperative and short, because a consumer's agent reads it on every bump. It carries no reasoning: `NOTES.md` holds that. |
 | `README.md` | This file. |
 
 ## Consumers
 
-Consumers pin to a tag, currently **`v1.21.0`**, through a git submodule. To refresh: bump the
-pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
+The current release is **`v1.22.0`**. Consumers reach it through a git submodule. To refresh: bump
+the pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
+
+**Three pin modes are in use, and they are not equal.** A tag is the only pin that makes a
+generated artifact reproducible, because a tag is written only after CI passes on that exact
+commit. Tracking `main` is fresh and still CI-gated, but two generations from one source can
+differ. A live read of a working tree is not reproducible at all: an uncommitted edit reaches a
+generated artifact with nothing recording it, which is how a page comes to carry a stylesheet
+version that no release ever contained. [CONTRACT.md](CONTRACT.md) states the trade for each mode.
+
+**Keep the markdown source.** A generator that deletes its source after converting cannot
+regenerate, so it can never adopt an improvement from a later release. Repairing generated HTML in
+place is a much harder problem than running the generator again.
 
 **Inline the file verbatim, or slice the body out.** `tufte-dracula.css` ships inside its own
 `<style>` tags. A consumer whose generator supplies the wrapper takes the bare body with
@@ -53,8 +69,9 @@ seven things, and both fixtures model each one.
 - **A real `<label for>` on the filter input.** A placeholder is not a label: the field announces
   as unnamed, and the placeholder disappears on the first keystroke. The fixture uses
   `<label class="filter-label" for="nav-filter">` with `type="search"` and `autocomplete="off"`.
-  `filter.js` supplies the behavior. A consumer that emits its own `.filter-empty` also owes a
-  `role="status"` region for the result count.
+  `filter.js` supplies the behavior, over the `tbody tr` rows and `.nav-list > li` items that
+  follow the input. A consumer that emits its own `.filter-empty` also owes a `role="status"`
+  region for the result count.
 - **`accTitle:` and `accDescr:` inside every mermaid fence.** Without them the SVG is an unnamed
   `graphics-document`: real structure with no text alternative. These are fence directives. No
   stylesheet change can supply them.
@@ -209,7 +226,7 @@ you set `window.mermaidSecurityLevel`.
 
 ## Editor Themes
 
-Beyond the nine files, `themes/` projects the same `:root` palette into three editors. These
+Beyond the ten files, `themes/` projects the same `:root` palette into three editors. These
 files are **not** part of the consumer contract, because no submodule reads them. The repo
 generates and gates them from a `.in` template beside each output:
 
@@ -280,7 +297,7 @@ of it.
 ## Contract Enforcement
 
 The CI workflow `.github/workflows/contract-check.yml` runs on every push and pull request. It
-verifies that all nine files exist. It verifies the `<style>` wrapper is exactly the first line
+verifies that all ten files exist. It verifies the `<style>` wrapper is exactly the first line
 and the last line, which keeps `sed '1d;$d'` a safe slice. It verifies `mermaid.js` still uses
 `theme: 'base'`. It verifies every `themeVariables` hex in `mermaid.js` matches
 `mermaid-palette.json`. It verifies the release gate still refuses a missing or red required

@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.21.0 */
+    /* Dracula-Tufte (muted) v1.22.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -216,6 +216,8 @@
       margin-inline-end: 0.45em; vertical-align: -0.08em; }
     :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
     nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
+    nav > a + a { border-inline-start: 1px solid var(--rule-light);
+      margin-inline-start: 0.7em; padding-inline-start: 0.7em; }
     footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
     :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
       padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }

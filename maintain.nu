@@ -15,7 +15,7 @@ def main [] {
   print "usage: nu maintain.nu <check|selftest|bump <version>|release <version>|mermaid <version>>"
 }
 
-# Mirrors .github/workflows/contract-check.yml locally, step for step: nine files
+# Mirrors .github/workflows/contract-check.yml locally, step for step: ten files
 # exist, the wrapper is one line at each end, mermaid.js agrees with
 # mermaid-palette.json key by key, the hex projections still match the oklch
 # source, exactly one <style> and two <script> per fixture, generated files match
@@ -27,7 +27,7 @@ def main [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md] {
+  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md CONTRACT.md] {
     if not ($HERE | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -114,16 +114,42 @@ def "main check" [] {
 }
 
 # Bump the template version in the two files that are hand-written: the
-# tufte-dracula.css header comment and README's mentions. Then regenerate, which
-# carries the new version into tokens.css and both fixtures.
+# tufte-dracula.css header comment and README's two current-version stamps. Then
+# regenerate, which carries the new version into tokens.css and both fixtures.
+#
+# Each stamp is rewritten through its own anchored pattern. A blanket
+# `str replace --all v<current> v<new>` was the original implementation, and it
+# corrupted documentation history on every release: prose that says a feature
+# landed "as of v1.21.0" is a historical claim, not a stamp, and the blanket
+# replace walked all of those forward one version at a time. v1.22.0 shipped with
+# five such claims reattributed to a release that had not happened. CONTRACT.md's
+# per-version delta table is the same shape of data and would rot the same way.
+#
+# STAMPS is therefore the whole contract: a stamp is a place that names the
+# CURRENT version, and nothing else in these files may be touched. Every pattern
+# must match, or the bump fails — a silent no-op leaves the tree claiming the old
+# version while the release process believes it was stamped.
+const STAMPS = [
+  [file pattern template]; # pattern is a regex; template takes {v}
+  [tufte-dracula.css '/\* Dracula-Tufte \(muted\) v[\d.]+ \*/' '/* Dracula-Tufte (muted) v{v} */']
+  [README.md '\(template v[\d.]+, oklch palette\)' '(template v{v}, oklch palette)']
+  [README.md 'currently \*\*`v[\d.]+`\*\*' 'currently **`v{v}`**']
+]
+
 def "main bump" [version: string] {
   let current = (open --raw ($HERE | path join "tufte-dracula.css")
     | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
   print $"Bumping v($current) -> v($version)"
 
-  for f in [tufte-dracula.css README.md] {
-    let path = ($HERE | path join $f)
-    open --raw $path | str replace --all $"v($current)" $"v($version)" | save -f $path
+  for stamp in $STAMPS {
+    let path = ($HERE | path join $stamp.file)
+    let before = (open --raw $path)
+    let after = ($before | str replace --all --regex $stamp.pattern ($stamp.template | str replace "{v}" $version))
+    if $after == $before {
+      error make { msg: $"bump found no match for ($stamp.pattern) in ($stamp.file) — stamp moved or already current, and a silent no-op would ship the wrong version" }
+    }
+    $after | save -f $path
+    print $"  stamped ($stamp.file)"
   }
 
   nu ($HERE | path join "build-sample.nu")

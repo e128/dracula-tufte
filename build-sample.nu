@@ -113,6 +113,21 @@ def body [] {
     "    <h1>Tufte-Dracula Component Sample</h1>"
     "    <p class=\"byline\">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>"
     ""
+    # Enough sibling links to wrap at 390px, because the v1.22.0 `nav > a + a`
+    # separator is a border on the link, so a link that starts a wrapped line
+    # carries a separator with nothing before it. That artefact is accepted and
+    # recorded in NOTES.md; the fixture has to show it rather than hide it behind
+    # a two-link nav.
+    "    <nav>"
+    "      <a href=\"#\">Requirements Register</a>"
+    "      <a href=\"#\">Decision Log</a>"
+    "      <a href=\"#\">Dependency Tracker</a>"
+    "      <a href=\"#\">Spike Results</a>"
+    "      <a href=\"#\">Findings</a>"
+    "      <a href=\"#\">Reuse Candidates</a>"
+    "      <a href=\"#\">Project Summary</a>"
+    "    </nav>"
+    ""
     "    <section>"
     "      <h2>Headings &amp; text</h2>"
     "      <h3>Third-level heading</h3>"
