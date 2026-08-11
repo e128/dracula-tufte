@@ -1,17 +1,29 @@
   <script type="module">
     document.querySelectorAll('input.filter-box').forEach(input => {
+      const scope = [];
       let el = input.nextElementSibling;
-      while (el && el.tagName !== 'TABLE') el = el.nextElementSibling;
-      const table = el;
-      if (!table) return;
-      const rows = table.querySelectorAll('tbody tr');
+      while (el) {
+        if (el.matches('input.filter-box') || el.querySelector('input.filter-box')) break;
+        scope.push(el);
+        el = el.nextElementSibling;
+      }
+      if (!scope.length) return;
+      const rows = [];
+      const groups = [];
+      scope.forEach(node => {
+        rows.push(...node.querySelectorAll('tbody tr, .nav-list > li'));
+        if (node.matches('details.nav-group')) groups.push(node);
+        groups.push(...node.querySelectorAll('details.nav-group'));
+      });
+      if (!rows.length) return;
+      const wasOpen = groups.map(group => group.open);
       const status = input.parentElement.querySelector('[role="status"]');
       let empty = input.parentElement.querySelector('.filter-empty');
       if (!empty) {
         empty = document.createElement('p');
         empty.className = 'filter-empty';
         empty.hidden = true;
-        table.after(empty);
+        scope[scope.length - 1].after(empty);
       }
       input.addEventListener('input', () => {
         const q = input.value.trim().toLowerCase();
@@ -20,6 +32,11 @@
           const hit = !q || row.textContent.toLowerCase().includes(q);
           row.classList.toggle('filter-hidden', !hit);
           if (hit) visible += 1;
+        });
+        groups.forEach((group, i) => {
+          const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
+          group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
+          group.open = q ? shown > 0 : wasOpen[i];
         });
         empty.hidden = visible !== 0;
         if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
