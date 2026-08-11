@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.22.0 */
+    /* Dracula-Tufte (muted) v1.23.0 */
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -56,6 +56,7 @@
       line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
       background: var(--surface); color: var(--on-surface);
       overflow-wrap: break-word;
+      scrollbar-color: var(--rule) var(--surface-alt);
     }
     h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
@@ -151,7 +152,7 @@
       box-shadow: inset 0 -1px 0 var(--rule-light);
     }
     thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
-    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; }
+    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; overscroll-behavior: contain; }
     .table-scroll > table { display: table; margin-block: 0; }
     td {
       border: none; padding: .35rem .6rem; text-align: start;
@@ -294,6 +295,8 @@
       transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     .mermaid-zoom:active { scale: 0.96; }
+    pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
+    pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
       body.conn-map article {
