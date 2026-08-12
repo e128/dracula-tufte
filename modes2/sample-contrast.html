@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tufte-Dracula — component sample</title>
+  <meta name="generated-by" content="data/html/build-sample.nu"/>
+  <style>
+    /* Dracula-Tufte (muted) v1.24.0 */
+    @layer tufte-dracula {
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: italic; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
+    }
+    :root {
+      color-scheme: dark;
+      --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
+      --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
+      --on-surface:  oklch(0.977 0.008 106.545);  /* was #f8f8f2 */
+      --label:       oklch(0.810 0.054 275.492);  /* was #b7bfe4 */
+      --muted:       oklch(0.71 0.055 275);
+      --rule:        var(--muted);
+      --rule-light:  oklch(0.56 0.032 277.832);
+      --link:        oklch(0.802 0.064 216.782);  /* was #8fc9d9 */
+      --code-bg:     oklch(0.340 0.027 276.046);  /* was #343746 */
+      --orange:      oklch(0.773 0.092 61.444);   /* was #e0a878 */
+      --red:         oklch(0.735 0.142 21.457);
+      --purple:      oklch(0.698 0.107 300.909);  /* was #a98ed6 */
+      --purple-bright: oklch(from var(--purple) calc(l + 0.07) c h);
+      --pink:        oklch(0.742 0.120 349.392);  /* was #e48bb7 */
+      --green:       oklch(0.775 0.100 155.397);  /* was #7fc99a */
+      --data-1:      oklch(0.790 0.077 255.000);
+      --data-2:      oklch(0.742 0.120 340.000);
+      --data-3:      oklch(0.775 0.100 165.000);
+      --data-4:      oklch(0.790 0.100 112.500);
+      --body-font:   'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
+      --mono-font:   ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
+      --page-width:  min(90vw, 160rem);
+      --gutter:      max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+      --radius:      4px;
+      --radius-sm:   2px;
+      --accent-bar:  3px;
+      --ring:        oklch(1 0 0 / 0.1);
+      --highlight:   oklch(from var(--orange) l c h / 0.35);
+      --space-2:     0.5rem;
+      --space-3:     0.75rem;
+      --space-4:     1rem;
+      --space-6:     1.5rem;
+      --space-10:    2.5rem;
+      --space-12:    3rem;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--body-font);
+      font-weight: 450;
+      width: min(100% - 2 * var(--gutter), var(--page-width)); margin-inline: auto;
+      padding-block: var(--space-12);
+      line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+      background: var(--surface); color: var(--on-surface);
+      overflow-wrap: break-word;
+      scrollbar-color: var(--rule) var(--surface-alt);
+    }
+    h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+    h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
+    .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
+    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
+    h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: var(--space-6) 0 0.4rem; }
+    h4 { font-weight: 600; line-height: 1.35; font-size: 1em; color: var(--label); margin: var(--space-4) 0 0.3rem; }
+    h5, h6 { font-weight: 600; line-height: 1.4; font-size: 1em; color: var(--muted); margin: var(--space-3) 0 0.3rem; }
+    h6 { font-style: italic; }
+    p { margin: var(--space-2) 0; text-wrap: pretty; }
+    .indented p { margin-block: 0; }
+    .indented p + p { text-indent: 1.5em; }
+    .newthought { font-variant-caps: small-caps; font-size: 1.2em; font-weight: 600; letter-spacing: 0.03em; color: var(--on-surface); }
+    article, main { counter-reset: sidenote-counter; }
+    input.margin-toggle { display: none; }
+    label.margin-toggle:not(.sidenote-number) { display: none; }
+    .sidenote-number { counter-increment: sidenote-counter; }
+    .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.75em;
+      position: relative; top: -0.4em; line-height: 0; color: var(--link); }
+    .sidenote, .marginnote { float: right; float: inline-end; clear: right; clear: inline-end; width: 28%;
+      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto; }
+    a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
+    a:hover { text-decoration-color: var(--link); }
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8em;
+      text-decoration: none; margin-inline-start: 0.35em; transition: opacity 0.15s ease-out; }
+    :is(h1, h2, h3, h4, h5, h6):hover :is(a.headerlink, a.anchor),
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
+    a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
+    .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
+    @supports (content: "x" / "y") {
+      a[href^="http"]::after { content: "\A0↗" / ""; }
+      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
+    }
+    cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
+    strong { font-weight: 600; color: var(--orange); }
+    del, s { color: var(--muted); }
+    :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
+    samp { font-family: var(--mono-font); font-size: 0.9em; }
+    sub, sup { line-height: 0; font-size: 0.75em; }
+    abbr[title] { text-decoration: underline dotted var(--muted); text-underline-offset: 0.2em; cursor: help; }
+    mark { background: var(--highlight); color: var(--on-surface); padding: .05em .2em; border-radius: var(--radius-sm); }
+    kbd { font-family: var(--mono-font); font-size: 0.9em; color: var(--on-surface);
+      background: var(--code-bg); padding: .1em .35em; border-radius: var(--radius-sm);
+      box-shadow: inset 0 0 0 1px var(--rule); }
+    code {
+      font-family: var(--mono-font);
+      font-size: 0.9em; color: var(--green);
+      background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
+      overflow-wrap: break-word;
+    }
+    pre {
+      font-family: var(--mono-font);
+      background: var(--code-bg); color: var(--on-surface);
+      padding: 1rem; overflow-x: auto; margin-block: var(--space-3);
+      border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
+      font-size: 0.9em;
+    }
+    pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
+    :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
+    :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
+      .kw, .cf, .op, .bu, .k, .kc, .kd, .kn, .kp, .kr, .o, .ow,
+      .token.keyword, .token.operator, .token.tag) { color: var(--pink); }
+    :is(pre, code) :is(.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-addition, .hljs-char,
+      .st, .ss, .ch, .vs, .s, .s1, .s2, .sa, .sb, .sc, .sd, .se, .sh, .si, .sr, .sx, .dl,
+      .token.string, .token.regex, .token.char, .token.inserted) { color: var(--green); }
+    :is(pre, code) :is(.hljs-number, .hljs-params, .hljs-meta, .dv, .bn, .fl, .cn, .pp,
+      .m, .mb, .mf, .mh, .mi, .mo, .il,
+      .token.number, .token.boolean, .token.constant, .token.parameter) { color: var(--orange); }
+    :is(pre, code) :is(.hljs-comment, .hljs-quote, .hljs-doctag, .co, .an, .do,
+      .c, .c1, .cm, .cp, .cpf, .cs,
+      .token.comment, .token.prolog, .token.doctype) { color: var(--muted); font-style: italic; }
+    :is(pre, code) :is(.hljs-title, .hljs-name, .hljs-function, .hljs-section, .fu, .nf, .fm,
+      .token.function, .token.selector) { color: var(--link); }
+    :is(pre, code) :is(.hljs-type, .hljs-class, .hljs-attribute, .dt, .kt, .nc, .nn, .nb,
+      .token.class-name, .token.builtin, .token.namespace) { color: var(--purple-bright); }
+    :is(pre, code) :is(.hljs-attr, .hljs-variable, .hljs-property, .hljs-template-variable,
+      .va, .at, .na, .nv, .vc, .vg, .vi, .nd,
+      .token.attr-name, .token.property, .token.variable) { color: var(--label); }
+    :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .err, .gd, .token.deleted, .token.important) { color: var(--red); }
+    :is(pre, code) :is(.hljs-punctuation, .p, .token.punctuation) { color: inherit; }
+    math[display="block"] { overflow-x: auto; margin-block: var(--space-3); }
+    .math.display { display: block; overflow-x: auto; margin-block: var(--space-3); }
+    section { margin-bottom: var(--space-10); }
+    table {
+      box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
+      border-collapse: collapse; width: auto; max-width: 100%; margin: 0.5rem 0;
+      font-size: 0.95em;
+    }
+    th {
+      font-weight: 450; font-style: italic; text-align: start;
+      padding: .4rem .6rem; color: var(--pink);
+      box-shadow: inset 0 -1px 0 var(--rule-light);
+    }
+    thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; overscroll-behavior: contain; }
+    .table-scroll > table { display: table; margin-block: 0; }
+    td {
+      border: none; padding: .35rem .6rem; text-align: start;
+      vertical-align: top; font-variant-numeric: tabular-nums;
+      transition: background-color 0.12s ease-out;
+    }
+    th.num, td.num { text-align: end; }
+    :is(th, td)[align="left"] { text-align: start; }
+    :is(th, td)[align="center"] { text-align: center; }
+    :is(th, td)[align="right"] { text-align: end; }
+    tbody tr:hover td { background: var(--surface-alt); }
+    table.tree { --tree-step: 1.6rem; }
+    table.tree [data-depth="1"] td:first-child { padding-inline-start: calc(var(--tree-step) + .6rem); }
+    table.tree [data-depth="2"] td:first-child { padding-inline-start: calc(2 * var(--tree-step) + .6rem); }
+    table.tree [data-depth="3"] td:first-child { padding-inline-start: calc(3 * var(--tree-step) + .6rem); }
+    table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0"; color: var(--muted); }
+    table.tree [data-depth="0"] td { background: var(--code-bg); font-weight: 600; }
+    table.tree [data-depth="2"] td, table.tree [data-depth="3"] td { color: var(--label); }
+    table.tree tbody tr:hover td { background: var(--surface-alt); }
+    details { margin: var(--space-2) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
+    summary { cursor: pointer; font-weight: 450; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
+    summary:hover { color: var(--on-surface); }
+    details[open] summary { margin-bottom: 0.5rem; }
+    aside, .markdown-alert {
+      border-inline-start: var(--accent-bar) solid var(--orange); padding: .5rem 1rem;
+      margin: var(--space-6) 0; color: var(--label); font-size: 0.95em;
+    }
+    .markdown-alert-title { font-weight: 600; color: var(--orange); }
+    .markdown-alert-note { border-inline-start-color: var(--link); }
+    .markdown-alert-note .markdown-alert-title { color: var(--link); }
+    .markdown-alert-tip { border-inline-start-color: var(--green); }
+    .markdown-alert-tip .markdown-alert-title { color: var(--green); }
+    .markdown-alert-important { border-inline-start-color: var(--purple); }
+    .markdown-alert-important .markdown-alert-title { color: var(--purple); }
+    .markdown-alert-caution { border-inline-start-color: var(--red); }
+    .markdown-alert-caution .markdown-alert-title { color: var(--red); }
+    .markdown-alert-title svg { fill: currentColor; width: 1em; height: 1em; vertical-align: -0.12em; margin-inline-end: 0.35em; }
+    blockquote {
+      border-inline-start: var(--accent-bar) solid var(--muted); padding: .5rem 1rem;
+      margin: var(--space-6) 0; color: var(--label); font-style: italic;
+    }
+    blockquote p:last-child { margin-bottom: 0; }
+    hr { border: none; border-block-start: 1px solid var(--rule-light); margin: var(--space-10) 0; }
+    img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--ring); border-radius: var(--radius-sm); }
+    :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }
+    img.emoji { box-shadow: none; width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
+    figure { margin: var(--space-6) 0; }
+    figcaption, caption { font-size: 0.9em; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
+    figcaption { margin-top: 0.4rem; }
+    caption { font-style: italic; padding-block-end: 0.3rem; }
+    table:has(caption) { box-shadow: 0 1px 0 var(--rule); }
+    dl { margin: var(--space-4) 0; }
+    dt { font-weight: 600; margin-top: .5rem; }
+    dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
+    ul, ol, menu { padding-inline-start: 1.5rem; }
+    :where(ul, ol, menu):where(:not(.nav-list)) { margin-block: var(--space-3); }
+    li > :is(ul, ol, menu) { margin-block: 0; }
+    li { padding: 0.15rem 0; line-height: 1.5; }
+    li::marker { color: var(--muted); }
+    li:has(input[type="checkbox"]:first-child) { list-style: none; }
+    li input[type="checkbox"] { accent-color: var(--purple); font-size: 1em; width: 1em; height: 1em;
+      margin-inline-end: 0.45em; vertical-align: -0.08em; }
+    :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
+    nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
+    nav > a + a { border-inline-start: 1px solid var(--rule-light);
+      margin-inline-start: 0.7em; padding-inline-start: 0.7em; }
+    footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
+    :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
+      padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }
+    :is(.footnotes, .footnote) p { margin-block: 0.2rem; }
+    :is(.footnotes, .footnote) > hr:first-child { display: none; }
+    .footnote-backref { text-decoration: none; }
+    .verified { color: var(--green); }
+    .unverified { color: var(--orange); }
+    .correction { color: var(--red); }
+    section:has(> .scorecard) { container-type: inline-size; }
+    .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
+      gap: 0.3rem 0.9rem; align-items: baseline; margin: var(--space-3) 0 1.25rem;
+      font-size: 0.95em;
+      border-inline-start: var(--accent-bar) solid var(--rule-light); padding: .5rem 1rem; }
+    .scorecard .sc-label { color: var(--on-surface); }
+    .scorecard .sc-note { color: var(--muted); font-size: 0.92em; }
+    .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
+    .verdict { justify-self: start; font-size: 0.8em; font-weight: 600; font-style: normal;
+      padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
+      letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
+    .verdict-pass { background: var(--green); }
+    .verdict-partial { background: var(--orange); }
+    .verdict-failed { background: var(--red); }
+    .verdict-neutral { background: var(--muted); }
+    .filter-label { display: block; margin-top: var(--space-4); color: var(--label); font-size: 0.95em; }
+    .filter-label + .filter-box { margin-top: 0.3rem; }
+    .filter-box {
+      width: 100%; margin: var(--space-4) 0 var(--space-6); padding: 0.65rem 0.85rem;
+      font-family: inherit; font-size: 1em;
+      color: var(--on-surface); background: var(--code-bg);
+      border: 1px solid var(--rule); border-radius: var(--radius);
+    }
+    .filter-box::placeholder { color: var(--muted); font-style: italic; }
+    .filter-hidden { display: none !important; }
+    .filter-empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; }
+    details.nav-group { border: 1px solid var(--rule-light); border-radius: var(--radius); margin: 0.6rem 0; padding: 0.2rem 0.85rem; }
+    details.nav-group > summary { font-style: italic; color: var(--link); padding: 0.6rem 0; }
+    details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.82em; margin-inline-start: 0.4em; }
+    details.nav-group .nav-list { border: none; padding: 0; }
+    .badge { display: inline-block; font-size: 0.8em; font-weight: 600; font-style: normal;
+      padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle;
+      color: var(--label); box-shadow: inset 0 0 0 1px currentColor; }
+    .nav-list { list-style: none; padding-inline-start: 0;
+      border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
+    .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
+    .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
+      transition: text-decoration-color 0.15s ease-out, scale 0.12s ease-out; }
+    .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
+    .nav-list li a:active { scale: 0.96; }
+    .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: var(--space-6) 0; }
+    .edge-list h3 { margin-top: 0; }
+    .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
+    .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
+    .mermaid-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: oklch(from var(--surface-alt) l c h / 0.92);
+      display: flex; align-items: center; justify-content: center;
+      cursor: zoom-out; opacity: 0; transition: opacity 0.2s ease-out;
+      pointer-events: none; overscroll-behavior: contain;
+    }
+    .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
+    .mermaid-overlay::after { content: "✕"; position: absolute; top: 0.75rem; inset-inline-end: 1rem;
+      font-size: 1.75rem; line-height: 1; color: var(--label); }
+    @supports (content: "x" / "y") {
+      .mermaid-overlay::after { content: "✕" / ""; }
+    }
+    .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
+    pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
+    pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
+    pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
+    .mermaid-zoom { display: block; margin: var(--space-3) auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
+      font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
+      border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation;
+      transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
+    .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
+    .mermaid-zoom:active { scale: 0.96; }
+    pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
+    pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
+    body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
+    @media (min-width: 900px) {
+      body.conn-map article {
+        display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 2.5rem;
+      }
+      body.conn-map article > * { flex: 1 1 100%; }
+      body.conn-map article > section:nth-of-type(1) {
+        flex: 0 0 clamp(220px, 22vw, 300px);
+        position: sticky; top: 1rem;
+        border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem;
+      }
+      body.conn-map article > section:nth-of-type(2) {
+        flex: 1 1 0; min-width: 0;
+      }
+    }
+    ::selection { background: var(--purple); color: var(--surface); }
+    @media (max-width: 1000px) {
+      .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
+      table { display: block; overflow-x: auto; width: fit-content; }
+    }
+    @media (max-width: 600px) {
+      :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+      body { padding-block: var(--space-6); }
+      pre { padding: 0.6rem; }
+      aside, blockquote { padding: 0.4rem 0.85rem; }
+      details, details.nav-group { padding: 0.3rem 0.6rem; }
+      .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
+      .col-2 > ol, .col-2 > ul { columns: 1; }
+      .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
+      .scorecard .sc-note { grid-column: 1 / -1; }
+      .nav-list li a { padding: 0.7rem 0.5rem; min-height: 44px; }
+      details.nav-group > summary { padding: 0.75rem 0; min-height: 44px; }
+      pre.mermaid { overflow-x: auto; overscroll-behavior-x: contain; }
+      pre.mermaid svg, body.conn-map pre.mermaid svg { width: var(--natural-width, auto) !important; max-width: none !important; }
+    }
+    @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @media all {
+      :root {
+        --on-surface:  oklch(1 0 0);
+        --surface-alt: oklch(0.200 0.019 280.395);
+        --label:       oklch(0.865 0.054 275.492);
+        --muted:       oklch(0.835 0.055 275);
+        --rule-light:  oklch(0.700 0.032 277.832);
+        --link:        oklch(0.830 0.064 216.782);
+        --orange:      oklch(0.840 0.092 61.444);
+        --red:         oklch(0.895 0.142 21.457);
+        --purple:      oklch(0.845 0.107 300.909);
+        --pink:        oklch(0.860 0.120 349.392);
+        --green:       oklch(0.820 0.100 155.397);
+      }
+      a { text-decoration-thickness: max(2px, 0.1em); text-decoration-color: currentColor; }
+      a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
+      .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline-width: 3px; }
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: light;
+        --surface:     oklch(0.700 0.006 106.545);
+        --surface-alt: oklch(0.940 0.006 106.545);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.960 0.010 277.509);
+        --label:       oklch(0.470 0.054 275.492);
+        --muted:       oklch(0.530 0.055 275);
+        --rule-light:  oklch(0.600 0.032 277.832);
+        --link:        oklch(0.520 0.064 216.782);
+        --orange:      oklch(0.535 0.092 61.444);
+        --red:         oklch(0.545 0.142 21.457);
+        --purple:      oklch(0.535 0.107 300.909);
+        --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
+        --pink:        oklch(0.545 0.120 349.392);
+        --green:       oklch(0.515 0.100 155.397);
+        --ring:        oklch(0 0 0 / 0.1);
+      }
+      pre.mermaid, .mermaid-overlay {
+        --surface:     oklch(0.288 0.022 277.509);
+        --surface-alt: oklch(0.243 0.019 280.395);
+        --on-surface:  oklch(0.977 0.008 106.545);
+        --code-bg:     oklch(0.340 0.027 276.046);
+        --label:       oklch(0.810 0.054 275.492);
+        --muted:       oklch(0.71 0.055 275);
+        --rule:        var(--muted);
+        --rule-light:  oklch(0.56 0.032 277.832);
+        --link:        oklch(0.802 0.064 216.782);
+        --purple:      oklch(0.698 0.107 300.909);
+      }
+      pre.mermaid { background: var(--code-bg); padding: var(--space-3); border-radius: var(--radius); }
+      .mermaid-overlay { background: oklch(from var(--surface-alt) l c h / 0.96); }
+    }
+    @media (forced-colors: active) {
+      code, kbd, .verdict, .badge { border: 1px solid currentColor; }
+      table, th, td { border: 1px solid currentColor; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+    @media print {
+      :root {
+        color-scheme: light;
+        --surface:     oklch(1 0 0);
+        --surface-alt: oklch(1 0 0);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.970 0 0);
+        --rule-light:  oklch(0.620 0.032 277.832);
+        --label:       oklch(0.470 0.054 275.492);
+        --muted:       oklch(0.545 0.055 275);
+        --link:        oklch(0.535 0.064 216.782);
+        --pink:        oklch(0.560 0.120 349.392);
+        --purple:      oklch(0.550 0.107 300.909);
+        --purple-bright: oklch(0.550 0.107 300.909);
+        --green:       oklch(0.530 0.100 155.397);
+        --orange:      oklch(0.550 0.092 61.444);
+        --red:         oklch(0.560 0.142 21.457);
+        --ring:        oklch(0 0 0 / 0.1);
+      }
+      mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+      body { width: auto; max-width: none; padding: 1rem; }
+      .mermaid-zoom { display: none; }
+      a { color: inherit; text-decoration: none; }
+      a[href^="http"]::after { content: ""; }
+      h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+      p { orphans: 2; widows: 2; }
+      thead { display: table-header-group; }
+      tr, blockquote, aside, details, .scorecard, .verdict, img, .markdown-alert, pre,
+      math[display="block"] { break-inside: avoid; }
+      .verdict { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+      .verdict-pass { color: var(--green); }
+      .verdict-partial { color: var(--orange); }
+      .verdict-failed { color: var(--red); }
+      .verdict-neutral { color: var(--muted); }
+    }
+    }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true, theme: 'base',
+      securityLevel: window.mermaidSecurityLevel || 'strict',
+      fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
+      themeVariables: {
+        darkMode: true,
+        fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
+        fontSize:   '1rem',
+        background:          '#343746',
+        mainBkg:             '#343746',
+        primaryColor:        '#343746',
+        primaryTextColor:    '#f8f8f2',
+        primaryBorderColor:  '#a98ed6',
+        lineColor:           '#979fc4',
+        textColor:           '#f8f8f2',
+        secondaryColor:      '#1e1f29',
+        clusterBkg:          '#343746',
+        clusterBorder:       '#707388',
+        nodeBorder:          '#a98ed6',
+        edgeLabelBackground: '#343746',
+        noteBkgColor:        '#343746',
+        noteTextColor:       '#f8f8f2',
+        noteBorderColor:     '#707388',
+        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+      },
+    });
+    const overlay = document.getElementById('mermaid-zoom');
+    if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.tabIndex = -1;
+    overlay.inert = true;
+    const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
+    const named = (svg, label) => {
+      const title = titleOf(svg);
+      return title ? label + ': ' + title : label;
+    };
+    const siblings = () => [...document.body.children].filter(el => el !== overlay);
+    let opener = null;
+    const dismiss = () => {
+      overlay.classList.remove('active');
+      overlay.inert = true;
+      siblings().forEach(el => { el.inert = false; });
+      if (opener) { opener.focus(); opener = null; }
+    };
+    const zoom = (svg, trigger) => {
+      const zoomed = svg.cloneNode(true);
+      zoomed.removeAttribute('width');
+      zoomed.removeAttribute('height');
+      zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.setAttribute('aria-label', named(svg, zoomLabel));
+      overlay.replaceChildren(zoomed);
+      overlay.classList.add('active');
+      overlay.inert = false;
+      siblings().forEach(el => { el.inert = true; });
+      opener = trigger;
+      overlay.focus();
+    };
+    overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
+    document.querySelectorAll('pre.mermaid').forEach(pre => {
+      new MutationObserver(() => {
+        const svg = pre.querySelector('svg');
+        if (!svg) return;
+        if (!svg.dataset.zoomable) {
+          svg.dataset.zoomable = 'true';
+          svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
+        }
+        if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
+        pre.tabIndex = 0;
+        pre.setAttribute('role', 'region');
+        pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
+        if (!pre.querySelector('.mermaid-zoom')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mermaid-zoom';
+          button.textContent = zoomLabel;
+          button.setAttribute('aria-label', named(svg, zoomLabel));
+          button.addEventListener('click', () => zoom(svg, button));
+          pre.append(button);
+        }
+      }).observe(pre, { childList: true });
+    });
+    overlay.addEventListener('click', dismiss);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') dismiss(); });
+  </script>
+  <script type="module">
+    document.querySelectorAll('input.filter-box').forEach(input => {
+      const scope = [];
+      let el = input.nextElementSibling;
+      while (el) {
+        if (el.matches('input.filter-box') || el.querySelector('input.filter-box')) break;
+        scope.push(el);
+        el = el.nextElementSibling;
+      }
+      if (!scope.length) return;
+      const rows = [];
+      const groups = [];
+      scope.forEach(node => {
+        rows.push(...node.querySelectorAll('tbody tr, .nav-list > li'));
+        if (node.matches('details.nav-group')) groups.push(node);
+        groups.push(...node.querySelectorAll('details.nav-group'));
+      });
+      if (!rows.length) return;
+      const wasOpen = groups.map(group => group.open);
+      const status = input.parentElement.querySelector('[role="status"]');
+      let empty = input.parentElement.querySelector('.filter-empty');
+      if (!empty) {
+        empty = document.createElement('p');
+        empty.className = 'filter-empty';
+        empty.hidden = true;
+        scope[scope.length - 1].after(empty);
+      }
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+          const hit = !q || row.textContent.toLowerCase().includes(q);
+          row.classList.toggle('filter-hidden', !hit);
+          if (hit) visible += 1;
+        });
+        groups.forEach((group, i) => {
+          const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
+          group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
+          group.open = q ? shown > 0 : wasOpen[i];
+        });
+        empty.hidden = visible !== 0;
+        if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="mermaid-overlay" id="mermaid-zoom"></div>
+  <main>
+  <article>
+    <h1>Tufte-Dracula Component Sample</h1>
+    <p class="byline">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>
+
+    <nav>
+      <a href="#">Requirements Register</a>
+      <a href="#">Decision Log</a>
+      <a href="#">Dependency Tracker</a>
+      <a href="#">Spike Results</a>
+      <a href="#">Findings</a>
+      <a href="#">Reuse Candidates</a>
+      <a href="#">Project Summary</a>
+    </nav>
+
+    <section>
+      <h2>Headings &amp; text</h2>
+      <h3>Third-level heading</h3>
+      <h4>Fourth level &mdash; body size, label tier</h4>
+      <h5>Fifth level &mdash; body size, muted tier</h5>
+      <h6>Sixth level &mdash; muted and italic</h6>
+      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (orange)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <cite>src/theme/tokens.css:14</cite>, and inline <code>code()</code>.</p>
+      <p>Status spans: <span class="verified">verified</span>, <span class="unverified">unverified</span>, <span class="correction">correction</span>.</p>
+      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd> &mdash; a ringed chip, distinct from inline <code>code()</code>.</p>
+      <p>Markdown inline output: <del>struck through</del> drops to the muted tier, <samp>program output</samp> takes the mono face without the code chip, an <abbr title="HyperText Markup Language">HTML</abbr> abbreviation carries a dotted rule, and H<sub>2</sub>O sits beside 10<sup>3</sup> without opening the line.</p>
+      <p>A sidenote lives here.<label for="sn-1" class="margin-toggle sidenote-number"></label><input type="checkbox" id="sn-1" class="margin-toggle"/><span class="sidenote">This is a Tufte sidenote &mdash; it floats to the right margin and auto-numbers.</span> And a margin note follows.<label for="mn-1" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-1" class="margin-toggle"/><span class="marginnote">A margin note carries no number.</span></p>
+    </section>
+
+    <section>
+      <h2>Code block</h2>
+      <pre tabindex="0" role="region" aria-label="Code block"><code>def greet [name: string] {
+    print $"hello ($name)"
+}</code></pre>
+      <p>A highlighted block takes the same slot map the editor themes use: keywords pink, strings green, numbers orange, comments muted, functions link, types purple, fields label.</p>
+      <pre tabindex="0" role="region" aria-label="Highlighted code block"><code class="language-csharp hljs"><span class="hljs-comment">// highlighter classes, not hand-written spans</span>
+<span class="hljs-keyword">public</span> <span class="hljs-type">Result</span> <span class="hljs-title hljs-function">Parse</span>(<span class="hljs-type">string</span> <span class="hljs-params">source</span>) {
+    <span class="hljs-keyword">var</span> <span class="hljs-variable">count</span> = <span class="hljs-number">42</span>;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-type">Result</span>(<span class="hljs-string">"ok"</span>, <span class="hljs-variable">count</span>);
+}</code></pre>
+      <p>Pygments names the same slots one and two letters, so Sphinx, MkDocs, Quarto and a notebook export land in the same registers.</p>
+      <div class="highlight"><pre tabindex="0" role="region" aria-label="Pygments code block"><span class="c1"># pygments classes, not hand-written spans</span>
+<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="kt">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Result</span><span class="p">:</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="k">return</span> <span class="nc">Result</span><span class="p">(</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="na">total</span><span class="o">=</span><span class="n">count</span><span class="p">)</span></pre></div>
+    </section>
+
+    <section>
+      <h2>Table</h2>
+      <table>
+        <caption>Table caption: annotation register, start-aligned like every other block.</caption>
+        <thead><tr><th scope="col">Column</th><th scope="col" class="num">Value</th><th scope="col">Note</th></tr></thead>
+        <tbody>
+          <tr><td>alpha</td><td class="num">1234</td><td>no stripe, no fill</td></tr>
+          <tr><td>beta</td><td class="num">567</td><td>figures align on the class, not the cell</td></tr>
+          <tr><td>gamma</td><td class="num">9012</td><td>hover me</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Tree table</h2>
+      <p>Depth comes from <code>data-depth</code> on the row, not from nesting. No <code>role</code>, no script.</p>
+      <table class="tree">
+        <thead><tr><th scope="col">Id</th><th scope="col">Title</th><th scope="col">State</th></tr></thead>
+        <tbody>
+          <tr data-depth="0"><td>Epic 1</td><td>root row, tinted and bold</td><td>New</td></tr>
+          <tr data-depth="1"><td>F1</td><td>child row, one indent step</td><td>Active</td></tr>
+          <tr data-depth="2"><td>REQ-01</td><td>grandchild, muted</td><td>MVP</td></tr>
+          <tr data-depth="2"><td>REQ-02</td><td>sibling, untinted like every leaf</td><td>MVP</td></tr>
+          <tr data-depth="1"><td>F2</td><td>second child</td><td>New</td></tr>
+          <tr data-depth="0"><td>Epic 2</td><td>second root</td><td>New</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Blockquote, aside, details</h2>
+      <blockquote><p>Stat crux dum volvitur orbis &mdash; the Cross stands while the world turns.</p></blockquote>
+      <aside>An aside: orange accent-bar, no fill. For asides and callouts. A <mark>marked passage inside the label tier</mark> keeps body-copy text, since the wash carries nothing dimmer.</aside>
+      <details><summary>Collapsible summary</summary><p>Hidden content revealed on click.</p></details>
+    </section>
+
+    <section>
+      <h2>Lists &amp; definitions</h2>
+      <ul><li>Bullet one, muted marker</li><li>Bullet two<ul><li>nested item</li></ul></li></ul>
+      <ol><li>Ordered one</li><li>Ordered two</li></ol>
+      <dl><dt>Term</dt><dd>Definition of the term.</dd><dt>Another</dt><dd>Its definition.</dd></dl>
+      <p>A task list drops its marker and keeps the checkbox. Markdown emits the control disabled, so it stays read-only.</p>
+      <ul class="contains-task-list">
+        <li class="task-list-item"><input type="checkbox" disabled> open item</li>
+        <li class="task-list-item"><input type="checkbox" checked disabled> done item</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Markdown callouts, math &amp; footnotes</h2>
+      <p>GitHub alert blocks share the <code>aside</code> form &mdash; one accent bar, no fill &mdash; and carry the hue on the title line only.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>
+      <div class="markdown-alert markdown-alert-note"><p class="markdown-alert-title">Note</p><p>Link-blue bar. Neutral information.</p></div>
+      <div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title">Tip</p><p>Green bar. Optional advice.</p></div>
+      <div class="markdown-alert markdown-alert-important"><p class="markdown-alert-title">Important</p><p>Purple bar. Do not skip this.</p></div>
+      <div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">Warning</p><p>Orange bar, the same hue the plain aside takes.</p></div>
+      <div class="markdown-alert markdown-alert-caution"><p class="markdown-alert-title">Caution</p><p>Red bar. Risk of loss or breakage.</p></div>
+      <table>
+        <thead><tr><th align="left">Alignment</th><th align="center">from the</th><th align="right">pipe table</th></tr></thead>
+        <tbody><tr><td align="left">start</td><td align="center">center</td><td align="right">3.14159</td></tr></tbody>
+      </table>
+      <p>Math converted to MathML needs no script and no CDN: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> sets inline without opening the line box, and a display block scrolls on its own axis rather than widening the page.</p>
+      <math display="block"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>
+      <section class="footnotes" data-footnotes>
+        <ol><li id="fn-1"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href="#fnref-1" class="footnote-backref">&#8617;</a></p></li></ol>
+      </section>
+    </section>
+
+    <section class="indented">
+      <h2>Indented paragraphs (opt-in)</h2>
+      <p>A container carrying <code>class="indented"</code> sets its paragraphs the way a book does: no gap between them, and every paragraph after the first opens with a 1.5em indent. The first paragraph is never indented, because nothing precedes it to break from.</p>
+      <p>This paragraph is the second, so it indents. The break is carried by the indent rather than by white space, which is the convention the rest of the page deliberately does not use &mdash; the default remains spaced paragraphs with no indent, and this class is the only way to get the other one.</p>
+      <p>Lists keep their own margin here, as they do everywhere else, so they do not butt against the paragraph above even though the paragraphs themselves carry none.</p>
+      <ul><li>A list inside the indented container</li><li>Second item</li></ul>
+    </section>
+
+    <section>
+      <h2>Proof-test scorecard</h2>
+      <div class="scorecard">
+        <span class="sc-label">P1 Observability</span><span class="verdict verdict-pass">Pass</span><span class="sc-note">directly measured</span>
+        <span class="sc-label">P2 Mechanism</span><span class="verdict verdict-partial">Partial</span><span class="sc-note">surrogate endpoint</span>
+        <span class="sc-label">P3 Prediction</span><span class="verdict verdict-failed">Failed</span><span class="sc-note">model output, not measurement</span>
+        <span class="sc-label">P4 Coherence</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
+        <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Navigation index components</h2>
+      <label class="filter-label" for="nav-filter">Filter entries</label>
+      <input id="nav-filter" type="search" class="filter-box" autocomplete="off" placeholder="Type to filter&hellip;"/>
+      <p role="status">3 entries</p>
+      <ul class="nav-list" role="list">
+        <li><a href="#">A tappable nav-list link</a></li>
+        <li><a href="#">Another entry <span class="badge badge-t1">Tier 1</span></a></li>
+        <li><a href="#">Failed audit <span class="badge badge-t3">Tier 3</span></a></li>
+      </ul>
+      <p class="filter-empty">No entries match &ldquo;tier 4&rdquo;. Clear the filter to see all 3.</p>
+      <details class="nav-group" open><summary>Subfolder group <span class="count">3</span></summary>
+        <ul class="nav-list" role="list"><li><a href="#">grouped item <span class="badge badge-t2">Tier 2</span></a></li></ul>
+      </details>
+    </section>
+
+    <section>
+      <h2>Connections edge-list</h2>
+      <div class="edge-list">
+        <div><h3>Antecedents</h3><ul class="nav-list" role="list"><li><a href="#">prior node one</a></li><li><a href="#">prior node two</a></li></ul></div>
+        <div><h3>Descendants</h3><ul class="nav-list" role="list"><li><a href="#">later node one</a></li></ul></div>
+      </div>
+    </section>
+
+    <section class="col-2">
+      <h2>Two-column citation list</h2>
+      <ol><li>First source, flows into balanced columns on wide screens.</li><li>Second source.</li><li>Third source.</li><li>Fourth source.</li></ol>
+    </section>
+
+    <section>
+      <h2>Mermaid diagram (click to zoom)</h2>
+      <figure>
+      <pre class="mermaid">flowchart TD
+  accTitle: Decision flow sample
+  accDescr: Start leads to a decision; yes does the thing, no skips it, and both reach done.
+  A[Start] --> B{Decision}
+  B -->|yes| C[Do the thing]
+  B -->|no| D[Skip it]
+  C --> E[Done]
+  D --> E</pre>
+      <figcaption>A figure caption sits in the annotation register and stays start-aligned under a centred diagram.</figcaption>
+      </figure>
+      <pre class="mermaid">sequenceDiagram
+  accTitle: Sequence diagram sample
+  accDescr: The caller sends a request, the service stores it, and a note records that a label box must fit its own monospace text.
+  participant C as Caller
+  participant S as Service (long name)
+  C->>S: Request with a fairly long label
+  S->>S: Store it
+  Note over S: This note is wider than the actor box.<br/>Its rect must contain the rendered text.
+  S->>C: Result</pre>
+      <pre class="mermaid">quadrantChart
+  accTitle: Quadrant chart sample
+  accDescr: Four labelled points near the chart edges, where long labels would otherwise be clipped by the fixed chart viewBox.
+  x-axis Narrow --> Wide
+  y-axis Shallow --> Deep
+  quadrant-1 Best of both
+  quadrant-2 Deep but narrow
+  quadrant-3 Neither yet
+  quadrant-4 Wide but shallow
+  A label long enough to reach past the edge: [0.9, 0.9]
+  Another deliberately overlong point label: [0.1, 0.1]</pre>
+      <pre class="mermaid">packet-beta
+  accTitle: Packet diagram sample
+  accDescr: A UDP header split into four labelled byte ranges, styled through tufte-dracula.css because mermaid's own packet themeVariables are a documented no-op.
+  title UDP Header
+  0-15: "Source Port"
+  16-31: "Destination Port"
+  32-47: "Length"
+  48-63: "Checksum"</pre>
+    </section>
+
+    <hr/>
+    <footer>Footer text &mdash; muted, small. Generated by data/html/build-sample.nu.</footer>
+  </article>
+  </main>
+</body>
+</html>

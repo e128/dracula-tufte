@@ -40,7 +40,7 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Keyboard and assistive technology](#keyboard-and-assistive-technology) | Zoom button, modal overlay, inert |
 | [Direction, zoom and growth](#direction-zoom-and-growth) | RTL, text-only zoom, safe-area insets |
 | [Cascade layer](#cascade-layer) | `@layer tufte-dracula`, the `!important` inversion, the indent that stayed |
-| [Appearance modes](#appearance-modes) | `prefers-contrast: more`, `prefers-color-scheme: light`, the diagram island |
+| [Appearance modes](#appearance-modes) | `prefers-contrast: more`, `prefers-color-scheme: light`, the diagram island, the two mode gates |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its three load-bearing decisions |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `figure`, `figcaption`, and the UA defaults they had |
@@ -1234,6 +1234,49 @@ repo keeps finding. The check compares the **declaration text**, not the compute
 different triples can round to the same `#rrggbb`, and what has to hold is that the value was
 copied rather than re-derived. Verified by tampering — `--purple` moved to `oklch(0.699 …)` and the
 check reported drift and exited 1.
+
+**A toggle was asked for and refused, because there is nowhere to put it.** The fixtures carry
+exactly one `<style>` and exactly two `<script>` blocks, and both counts are gated. The one
+`<style>` is `tufte-dracula.css` verbatim. So fixture-only toggle CSS does not exist as an option:
+a toggle has to go in the shared payload that every consumer inlines, and it costs either a second
+theming convention with the light palette duplicated under it, or a fourth inlined script. Both are
+paid by every consumer forever to serve a review convenience. Take it when a consumer asks for a
+manual override as a feature, and treat it then as a public API decision — the selector, the
+persistence, the first-paint flash — not as a fixture fix.
+
+**Two gates cover the modes instead, and they cover different halves.** Neither is a screenshot
+diff, because layout is identical across the modes and only color moves, so a diff would be noise.
+
+`.github/palette-check.py` **check 6** re-derives the contrast floor for all four palettes on every
+run: the default at 4.2, `prefers-contrast: more` at 7.0, light at 4.5, print at 4.5, with rule
+tokens at 3.0 against `--surface`. Each mode block only restates what it changes, so the check
+overlays the block's overrides on the default palette, which is how the cascade resolves it too.
+Every ratio in this file and in *Print* was a hand measurement until v1.24.0, and **a measurement in
+prose is not a gate**: one edited lightness value strands text at a ratio nobody re-derives. Text
+tokens are checked against both `--surface` and `--code-bg`, because `--code-bg` is the harder
+ground and is where the default palette's 4.23 floor lives. Rule tokens are checked against
+`--surface` only: `--rule-light` is a hairline on the page background, and 1.4.11 asks 3:1 of that
+boundary, not of a border drawn inside a code fill. Verified by tampering with one token in each of
+the four modes, and each one reported the mode, the token, the ground and the ratio.
+
+`.github/render-modes.py` covers the other half: that the palette **arrives**. check 6 reads values
+and cannot see what a browser paints. **Headless Chrome cannot be told which media query to match** —
+it reads `prefers-color-scheme` from the host, so the same command paints dark on a
+dark-appearance mac and light on a bare runner, which is no basis for a gate. Confirmed locally:
+`--force-dark-mode`, `--force-prefers-color-scheme=dark` and `--enable-features=WebContentsForceDark`
+all left the result exactly as the OS had it. So the script rewrites the mode's `@media` condition
+to `@media all` in a scratch copy, which is deterministic everywhere, and asserts the mode's
+condition exists verbatim in the real fixture so a deleted or misspelled query still fails. It then
+asserts the top-left pixel is that mode's `--surface`. Both failure modes were forced and both
+reported.
+
+That pixel read needs no image library. **For the first pixel of PNG row 0 every filter type
+predicts from a left byte and an above byte that are both zero, so the filtered bytes are the raw
+bytes** — `zlib.decompress`, skip the filter byte, take three. That is why the script has no
+puppeteer, no playwright and no PIL, and why `maintain.nu check` can run the identical step locally.
+
+The renders upload as a pull-request artifact and are **advisory on purpose**. They are not in
+`REQUIRED_CHECKS`, because the assertions are the gate and the images are for a person to look at.
 
 **High contrast and light mode do not compose.** `prefers-contrast: more` is declared *before* the
 light block, so a reader who asks for both gets the light palette at its own 4.71:1 floor rather

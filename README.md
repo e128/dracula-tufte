@@ -324,8 +324,18 @@ scan for hand-rolled `<style>` blocks that bypass the submodule. Those gates fai
 **One palette, several projections.** The `:root` block of `tufte-dracula.css` is the only source
 of color truth. Everything else is derived and machine-checked. `tokens.css` and the fixtures are
 sliced or inlined verbatim. `.github/palette-check.py` converts each `oklch()` through Oklab to
-sRGB, then asserts that the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, and
-the `/* was #xxxxxx */` provenance comments all still agree. Run the whole set locally with
+sRGB, then asserts that the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, the
+dark palette re-declared on `pre.mermaid` for light mode, and the `/* was #xxxxxx */` provenance
+comments all still agree. It also re-derives the contrast floor for all four palettes — the
+default at 4.2:1, `prefers-contrast: more` at 7:1, light at 4.5:1, print at 4.5:1 — because those
+ratios were hand measurements in `NOTES.md` and prose is not a gate.
+
+**Every appearance mode is rendered, not just parsed.** `.github/render-modes.py` opens each
+fixture in each mode and asserts the page paints that mode's `--surface`. Headless Chrome cannot
+be told which media query to match — it reads `prefers-color-scheme` from the host — so the script
+rewrites the mode's `@media` condition in a scratch copy and checks the real fixture separately
+for the condition's presence. The images upload as a pull-request artifact for review, and they
+are advisory: the assertions are the gate. Run the whole set locally with
 `nu maintain.nu check`. It mirrors the CI workflow step for step, including the `themeVariables`
 pairing gate that used to run only in CI, so a local pass and a CI pass now mean the same thing.
 

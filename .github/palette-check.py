@@ -26,24 +26,41 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
-def oklch_to_hex(L, C, h):
-    """oklch() -> #rrggbb, gamut-clipped, matching how a browser renders it."""
+def oklch_to_linear(L, C, h):
+    """oklch() -> clamped linear sRGB. Clamping here is the gamut clip a browser does."""
     a = C * math.cos(math.radians(h))
     b = C * math.sin(math.radians(h))
     l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
     m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
     s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3
-    linear = (
-        4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-        -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-        -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+    return tuple(
+        min(1.0, max(0.0, v))
+        for v in (
+            4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+        )
     )
 
+
+def oklch_to_hex(L, C, h):
+    """oklch() -> #rrggbb, gamut-clipped, matching how a browser renders it."""
+
     def encode(x):
-        x = min(1.0, max(0.0, x))
         return 12.92 * x if x <= 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
 
-    return "#%02x%02x%02x" % tuple(round(encode(v) * 255) for v in linear)
+    return "#%02x%02x%02x" % tuple(round(encode(v) * 255) for v in oklch_to_linear(L, C, h))
+
+
+def contrast(one, two):
+    """WCAG 2.x contrast ratio between two oklch triples, on the clipped values."""
+
+    def relative_luminance(lch):
+        r, g, b = oklch_to_linear(*lch)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    a, b = relative_luminance(one), relative_luminance(two)
+    return (max(a, b) + 0.05) / (min(a, b) + 0.05)
 
 
 stylesheet = (ROOT / "tufte-dracula.css").read_text()
@@ -154,5 +171,71 @@ for name, stated in overrides:
         print(f"DRIFT: diagram block --{name} is {stated}, :root declares {want}")
         fail = 1
 
-print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens).")
+# 6. Every mode has to hold its own contrast floor. The stylesheet ships four
+#    palettes now — the default, `prefers-contrast: more`, `prefers-color-scheme:
+#    light` and print — and the ratios behind each one were measured by hand and
+#    written into NOTES.md. A measurement in prose is not a gate: a later edit to
+#    one lightness value strands text at a ratio nobody re-derives. This check
+#    re-derives all of them on every run.
+#
+#    A mode block only restates what it changes, so each palette is the default
+#    overlaid with that block's overrides — which is also how the cascade resolves
+#    it. Text tokens are checked against BOTH backgrounds a reader meets, since
+#    --code-bg is the harder one and is where the default palette's floor lives.
+#    Rule tokens are checked against --surface only: --rule-light is a hairline on
+#    the page background, and 1.4.11 asks 3:1 of a non-text boundary, not of a
+#    border drawn inside a code fill.
+TEXT = ["on-surface", "label", "muted", "link", "orange", "red", "purple", "pink", "green"]
+RULES = ["rule-light"]
+MODES = {
+    # name: (media condition, text floor, rule floor)
+    #
+    # 4.2 for the default, not 4.5: --purple sits at 4.23 against --code-bg. That
+    # is the documented floor under "Color and the contrast budget", kept because
+    # --purple-bright carries the one role that puts purple text on that fill.
+    # The floor is pinned here so it cannot slip further without saying so.
+    "default": (None, 4.2, 3.0),
+    "prefers-contrast: more": ("@media (prefers-contrast: more)", 7.0, 3.0),
+    "prefers-color-scheme: light": ("@media (prefers-color-scheme: light)", 4.5, 3.0),
+    "print": ("@media print", 4.5, 3.0),
+}
+for mode, (condition, text_floor, rule_floor) in MODES.items():
+    triples_for_mode = dict(triples)
+    if condition is not None:
+        block = re.search(
+            re.escape(condition) + r" \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S
+        )
+        if not block:
+            print(f"DRIFT: no `{condition}` block with a :root of its own")
+            fail = 1
+            continue
+        overrides = {
+            name: (float(L), float(C), float(h))
+            for name, L, C, h in re.findall(
+                r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", block.group(1)
+            )
+        }
+        if not overrides:
+            print(f"DRIFT: the `{condition}` block redefines no oklch token")
+            fail = 1
+            continue
+        triples_for_mode.update(overrides)
+    # --on-surface goes to `oklch(1 0 0)` in high contrast, which the triple regex
+    # reads fine, and print writes `oklch(0.200 0 0)`. Both parse. A token that
+    # stops parsing drops back to its default value rather than vanishing, so a
+    # weakened override cannot pass by becoming unreadable.
+    for role, floor in ((TEXT, text_floor), (RULES, rule_floor)):
+        for name in role:
+            fg = triples_for_mode[name]
+            grounds = ["surface"] if role is RULES else ["surface", "code-bg"]
+            for ground in grounds:
+                got = contrast(fg, triples_for_mode[ground])
+                if got + 0.005 < floor:
+                    print(
+                        f"CONTRAST: {mode} --{name} is {got:.2f}:1 on --{ground}, "
+                        f"below the {floor} floor for this mode"
+                    )
+                    fail = 1
+
+print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)

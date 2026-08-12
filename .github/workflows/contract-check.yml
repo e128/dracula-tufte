@@ -51,6 +51,9 @@ jobs:
           # above already fails on any non-hex value.
 
       - name: mermaid-palette.json hex must match the CSS oklch
+        # Also re-derives the contrast floor for all four palettes (default,
+        # prefers-contrast, prefers-color-scheme: light, print). Those ratios are
+        # measured in NOTES.md, and prose is not a gate.
         run: python3 .github/palette-check.py
 
       - name: Sanity check (no hand-rolled style blocks)
@@ -91,6 +94,27 @@ jobs:
             echo "tokens.css / sample.html / sample-conn-map.html are stale — run 'nu build-sample.nu' and commit the result."
             exit 1
           }
+
+      - name: Each appearance mode renders, and paints its own surface
+        # Light and high-contrast mode are media queries, so no fixture shows
+        # them. This renders each fixture in each mode and asserts the top-left
+        # pixel is that mode's --surface, which is the end-to-end half that
+        # palette-check.py cannot see: it reads values, not what Chrome paints.
+        # google-chrome is preinstalled on the ubuntu runner image.
+        run: python3 .github/render-modes.py mode-renders
+
+      - name: Upload the mode renders
+        # Advisory, and deliberately not in maintain.nu's REQUIRED_CHECKS: the
+        # assertions above are the gate, and these images are for a human to
+        # look at on the pull request. `always()` so a failed render still
+        # uploads whatever it managed to paint, which is the thing you want to
+        # see when it fails.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-renders
+          path: mode-renders/*.png
+          if-no-files-found: error
 
       - name: Themes must be regenerated (fails if stale vs the CSS palette)
         # themes/ projects the same :root palette into Ghostty, Rider and Zed.

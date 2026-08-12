@@ -18,8 +18,9 @@ def main [] {
 # Mirrors .github/workflows/contract-check.yml locally, step for step: ten files
 # exist, the wrapper is one line at each end, mermaid.js agrees with
 # mermaid-palette.json key by key, the hex projections still match the oklch
-# source, exactly one <style> and two <script> per fixture, generated files match
-# the current CSS/JS.
+# source, all four palettes hold their contrast floor, exactly one <style> and two
+# <script> per fixture, each appearance mode paints its own surface, generated
+# files match the current CSS/JS.
 #
 # "Step for step" is the whole point of the verb: a local pass that CI would fail
 # is worse than no local check, because it is trusted. Add a step here whenever
@@ -78,6 +79,19 @@ def "main check" [] {
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
     if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
   }
+
+  # Light and high-contrast mode are media queries, so no fixture shows them and
+  # nothing else here proves they reach the page. Writes into a temp dir rather
+  # than the repo: the PNGs are review output in CI, not tracked files, and a
+  # stray mode-renders/ would show up as untracked noise on every local check.
+  let renders = (mktemp -d)
+  let modes = (^python3 ($HERE | path join ".github/render-modes.py") $renders | complete)
+  print ($modes.stdout | str trim)
+  if $modes.exit_code != 0 {
+    print ($modes.stderr | str trim)
+    $ok = false
+  }
+  rm -rf $renders
 
   # Regeneration must be a no-op. Compare bytes across the regen rather than ask
   # git: build-sample.nu git-adds what it writes, so `git diff` is always empty
