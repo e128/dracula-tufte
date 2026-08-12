@@ -1,4 +1,4 @@
-# Dracula-Tufte (muted) — Ghostty theme
+# Dracula-Tufte (muted): Ghostty theme
 #
 # Every value is the sRGB rendering of a tufte-dracula.css :root oklch() token,
 # computed with .github/palette-check.py's oklch_to_hex. Bright ANSI slots that

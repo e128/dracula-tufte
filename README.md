@@ -35,10 +35,10 @@ each pull request instead.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.24.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.25.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
-| `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
-| `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, in two sections — `init` for dark and `initLight` for light — plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
+| `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches, and writes default copy into one it had to create. No CDN, no build step, no comments. Inline only when the page has a filter box. |
+| `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, in two sections (`init` for dark and `initLight` for light) plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
 | `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `scripts/build-sample.nu`. Do not edit by hand. |
 | `scripts/build-sample.nu` | The regenerator. `nu scripts/build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
 | `samples/dark.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
@@ -62,7 +62,7 @@ anywhere in the tree.
 
 ## Consumers
 
-The current release is **`v1.24.0`**. Consumers reach it through a git submodule. To refresh: bump
+The current release is **`v1.25.0`**. Consumers reach it through a git submodule. To refresh: bump
 the pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
 
 **Three pin modes are in use, and they are not equal.** A tag is the only pin that makes a
@@ -85,7 +85,7 @@ and `filter.js` work the same way with their `<script>` tags.
 `@layer tufte-dracula` as of v1.24.0. Unlayered author styles beat layered ones for normal
 declarations, so a plain `h1 { color: … }` in your own `<style>` overrides the template no matter
 how weak the selector looks. Load your CSS in any order. The six `!important` declarations in the
-sheet go the other way — layered `!important` beats unlayered `!important` — so if you have to win
+sheet go the other way, because layered `!important` beats unlayered `!important`, so if you have to win
 against one of those, put your rules in a layer declared ahead of `tufte-dracula`. All six exist to
 beat Mermaid's inline styles or to keep a filtered row hidden.
 
@@ -94,7 +94,7 @@ beat Mermaid's inline styles or to keep a filtered row hidden.
 light` swaps in a full light palette where every accent clears 4.5:1 on both backgrounds. **Mermaid
 diagrams follow the light palette too.** `mermaid.js` has to pass hex, because Mermaid's color engine
 throws on `oklch()`, so it carries both palettes inline and picks one at init by reading the
-`--mermaid-scheme` token off `:root` — the cascade, not `matchMedia`, which is what makes a
+`--mermaid-scheme` token off `:root`. That is the cascade, not `matchMedia`, which is what makes a
 forced-light page render a light diagram. The token is read once at load, so a reader who changes
 system appearance with the page open sees a stale diagram until they reload.
 
@@ -355,13 +355,13 @@ of color truth. Everything else is derived and machine-checked. `tokens.css` and
 sliced or inlined verbatim. `.github/palette-check.py` converts each `oklch()` through Oklab to
 sRGB, then asserts that the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, the
 dark palette re-declared on `pre.mermaid` for light mode, and the `/* was #xxxxxx */` provenance
-comments all still agree. It also re-derives the contrast floor for all four palettes — the
-default at 4.2:1, `prefers-contrast: more` at 7:1, light at 4.5:1, print at 4.5:1 — because those
+comments all still agree. It also re-derives the contrast floor for all four palettes (the
+default at 4.2:1, `prefers-contrast: more` at 7:1, light at 4.5:1, print at 4.5:1) because those
 ratios were hand measurements in `NOTES.md` and prose is not a gate.
 
 **Every appearance mode is rendered, not just parsed.** `.github/render-modes.py` opens each
 fixture in each mode and asserts the page paints that mode's `--surface`. Headless Chrome cannot
-be told which media query to match — it reads `prefers-color-scheme` from the host — so the script
+be told which media query to match, because it reads `prefers-color-scheme` from the host, so the script
 rewrites the mode's `@media` condition in a scratch copy and checks the real fixture separately
 for the condition's presence. The images upload as a pull-request artifact for review, and they
 are advisory: the assertions are the gate. Run the whole set locally with

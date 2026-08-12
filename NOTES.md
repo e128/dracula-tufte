@@ -69,11 +69,11 @@ value needed a re-derivation.
 
 | candidate | wght axis | x-height | figures |
 | --- | --- | --- | --- |
-| **Source Serif 4** | 200–900 | 475 | tabular + lining |
-| Literata | 200–900 | 507 | proportional, lining (needs `tnum`) |
-| Newsreader | 200–800 | 426 | tabular + lining |
-| Lora | 400–700 | 500 | proportional + **old-style**, Georgia's exact defect |
-| Petrona | 100–900 | 443 | proportional, lining |
+| **Source Serif 4** | 200-900 | 475 | tabular + lining |
+| Literata | 200-900 | 507 | proportional, lining (needs `tnum`) |
+| Newsreader | 200-800 | 426 | tabular + lining |
+| Lora | 400-700 | 500 | proportional + **old-style**, Georgia's exact defect |
+| Petrona | 100-900 | 443 | proportional, lining |
 
 None of the five ship `smcp`, so the browser still synthesizes the `.newthought` small caps. The
 webfont bought the weight axis, not true small caps.
@@ -547,6 +547,66 @@ hue, which matches the ratio the old value held, and `--surface` text on the new
 7.39:1. A rendered pie and a `classDef` flowchart verified it: `#99bdec / #de8dc3 / #74caa6 /
 #bbc175`, four visibly distinct categories.
 
+**The ramp got a light and a print palette in v1.25.0, and that reverses what this file used to
+accept.** Through v1.24.0 the four tokens were declared once in the base `:root` and in no mode
+block, so a light page and a printed page drew diagram fills tuned for a dark ground. Measured
+against the light `--code-bg`: `--data-1` 1.72:1, `--data-2` 2.15, `--data-3` 1.74, `--data-4`
+1.69, and against light `--surface` 1.85 to 2.35. WCAG 1.4.11 asks 3:1 of a meaningful non-text
+boundary, and a category fill is exactly that: the reader has to tell a slice from the card it sits
+on. The old reasoning, recorded under *Appearance modes*, was that slices abut each other rather
+than the background and each carries a label at 7.48 to 9.52:1, so the weak pair was derived rather
+than rendered and no fixture had a pie chart. That is true and it was still the wrong call: it
+argued the boundary does not matter instead of measuring that it passes.
+
+The light and print blocks now carry their own four values, at the same hues and the same fraction
+of maximum in-gamut chroma each dark member holds, with lightness solved down until the boundary
+clears 3.2:1:
+
+```
+--data-1  oklch(0.624 0.146 255)      #4488dd   71% of max chroma
+--data-2  oklch(0.643 0.156 340)      #c962ab   56%
+--data-3  oklch(0.613 0.079 165)      #539378   61%
+--data-4  oklch(0.619 0.078 112.5)    #868b53   57%
+```
+
+Measured flat, which is what the token is: 3.20:1 on light `--code-bg`, 3.50 on light `--surface`,
+3.30 and 3.60 in print, and 5.03 against the `#161616` label Mermaid draws on a slice in light mode.
+The hues do not move, so the separation reasoning above still holds unchanged. The floor is 3.2
+rather than 3.0 so a rounding change cannot walk it under the gate.
+
+**A pie slice does not render the token, and finding that out is what the rendered probe was for.**
+Mermaid's own stylesheet sets `.pieCircle { opacity: 0.7; stroke: black; stroke-width: 2px }`, so
+the fill a reader sees is 70 percent of the token over the card. Composited against the light
+`--code-bg` of `#f0f1f9`, the four slices measure **2.20, 2.22, 2.17 and 2.15:1**, not 3.2. The
+token work moved that pair up from roughly 1.5 to roughly 2.2 and it still does not clear 3:1. Dark
+mode composites to 3.19 to 3.87:1 and does clear it. What actually separates a slice from the card
+in both modes is Mermaid's 2px black stroke, which is a boundary the fill contrast never had to
+carry.
+
+So the gate is honest about its own scope: check 5 asserts the **token** clears the non-text floor,
+which is what governs a `classDef` fill, a legend swatch and any consumer that paints with
+`var(--data-2)` directly. It does not assert what a `pie` fence renders, because the opacity that
+weakens it belongs to Mermaid and no CSS in this sheet sets it. Raising it with a seventh
+`!important` was rejected here: it fixes the light boundary and simultaneously exposes a worse
+pre-existing pair, recorded in `backlog.md`, where a dark-mode slice label is light text on a pale
+fill at 2.86 to 3.47:1 composited. That is one change with two consequences and it needs its own
+decision, not a line smuggled into a token bump.
+
+**The floor is now a gate, in `.github/palette-check.py` check 5.** `DATA` joins `TEXT` and
+`RULES`, checked against both grounds at the non-text floor in all four modes, because the whole
+reason the old values survived is that a measurement in prose is not a gate. Reverting `--data-3`
+to its dark value fails four contrast assertions and two hex assertions at once. `initLight.pie1..4`
+in `mermaid-palette.json` and the light palette in `mermaid.js` carry the new hexes, and the pie
+keys moved inside the two palette objects rather than sitting shared below them, which is what
+lets check 1 resolve each set through its own block.
+
+**What this does not fix: the `classdef` fills.** `mermaid-palette.json` has one `classdef` section,
+projected from the dark ramp, and check 2 resolves it against the dark palette only. A generator
+that emits its own `classDef name fill:…` lines therefore still paints dark-ground fills on a light
+page. Giving `classdef` a light twin means a second section, a second membership check, and a
+decision about how a generator picks between them at emit time with no CSS to read. That is a
+larger change than the token work, so it is recorded in `backlog.md` rather than half-done here.
+
 `--data-2` sits 9.4° off `--pink` and `--data-3` sits 9.6° off `--green`, both under the roughly
 10° threshold where a hue shift becomes visible, at ΔE_ok 0.020 and 0.017, about one JND. They
 are separated in name more than in appearance, and they are left that way deliberately. Nothing
@@ -803,6 +863,29 @@ viewBox, and that is what scales. The overlay sets `width` and `height`, not `ma
 `max-width` alone leaves a small diagram at natural size, which is a zoom that does not zoom.
 Verified at 95% × 95% in both layouts.
 
+**The zoomed diagram's halo is tinted, because a pure-black shadow only looked right in one
+palette.** It was `drop-shadow(0 0 24px oklch(0 0 0 / 0.5))`, written when dark was the only
+palette. The scrim behind it is `oklch(from var(--surface-alt) l c h / 0.92)`, and light
+`--surface-alt` is `oklch(0.940 0.006 106.545)`, so from v1.25.0's light mode a zoomed diagram sat
+on a near-white plate wearing a black halo. A zero-offset 24px blur is a glow rather than an
+elevation shadow, and an untinted one picks up none of the surface it falls on. The value is now
+`oklch(from var(--surface-alt) 0.15 c h / 0.5)`: absolute lightness, chroma and hue inherited from
+the scrim. Dark resolves to `oklch(0.15 0.019 280.395 / 0.5)`, which is the near-black it always
+was with the palette's own blue in it. Light resolves to `oklch(0.15 0.006 106.545 / 0.5)`, a dark
+warm neutral that belongs to the page. `oklch(from …)` adds no new dependency: `--purple-bright`,
+`--highlight` and the scrim itself already use relative color syntax.
+
+**The close mark honors the safe-area insets, because the overlay is the sheet's only fixed
+layer.** `.mermaid-overlay::after` draws the ✕ at `top: 0.75rem` and `inset-inline-end: 1rem`, and
+`position: fixed; inset: 0` puts it in the one place a notch, a rounded corner or a status bar can
+land on top of a painted glyph. Both offsets are now `max()` against `env(safe-area-inset-*)`, the
+same form `--gutter` already uses, and the inline-end offset lists both physical insets for the same
+reason `--gutter` does: `env()` has no logical spelling. On a device that reports no insets the
+`env()` terms resolve to `0px` and `max()` returns the original values, verified as computed `12px`
+and `16px`. Not verified on hardware with a real notch. The ✕ stays a pseudo-element rather than a
+button: the whole overlay dismisses on click and `Escape` closes it, so a control there would add a
+second path to the same action and a focus stop inside a dialog whose only content is a diagram.
+
 `securityLevel` defaults to `strict`, which sanitizes `click` directives away. A consumer with a
 trusted source sets `window.mermaidSecurityLevel = 'loose'` in a preceding classic script tag.
 The overlay throws loudly when `#mermaid-zoom` is missing, because without that check the zoom
@@ -826,7 +909,7 @@ bundle, `treemap`'s stray `#efefef` default is a compile-time fallback that neve
 (each section and leaf gets a computed `hsl()` fill instead), and `radar`'s `graticuleColor`
 default never painted anything the sweep's two-curve, three-axis fixture produced. `sankey` and
 `block` come back tinted by d3's Tableau10 categorical scheme (`#4e79a7`, `#f28e2c`, `#cbc8b9`,
-…) rather than any `themeVariable` — that is d3-scale-chromatic auto-coloring nodes with no
+…) rather than any `themeVariable`. That is d3-scale-chromatic auto-coloring nodes with no
 config surface in front of it, the same shape of decision as the pie-slice ramp but with no
 override, and is left alone for the reason [Color and the contrast
 budget](#color-and-the-contrast-budget) already gives: nothing puts a category fill beside body
@@ -839,8 +922,8 @@ and `blockFillColor` to `"#efefef"`, and neither `mermaid.initialize({ packet: {
 `%%{init: {"packet": {…}}}%%` fence directive moves any of them, verified two ways on
 `mermaid@11.16.1`: the CLI's `-c` config file and an inline directive both leave
 `.packetBlock{fill:#efefef}` in the emitted `<style>` unchanged. This is the same shape of defect
-`sequence.noteFontFamily` already is in [Label measurement](#label-measurement) — the config key
-exists and is silently inert — except here nothing themes it at all, ever, not even by accident,
+`sequence.noteFontFamily` already is in [Label measurement](#label-measurement), where the config key
+exists and is silently inert, except that here nothing themes it at all, ever, not even by accident,
 so the fix cannot wait for a future mermaid release the way the sequence note's four-release wait
 did. `tufte-dracula.css` now overrides mermaid's own injected rule directly:
 
@@ -852,8 +935,8 @@ pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple
 `!important` is required and is not a shortcut taken for convenience: mermaid's injected style
 is scoped `#my-svg .packetBlock`, at (1,1,0), and a plain page-level `.packetBlock` rule at
 (0,1,0) loses that specificity fight even though it comes later in the DOM. The pattern already
-exists in this file for the same reason — the `--natural-width` rule fights mermaid's own inline
-`max-width` the same way — so this is not a new kind of override, just the second place mermaid's
+exists in this file for the same reason, because the `--natural-width` rule fights mermaid's own inline
+`max-width` the same way, so this is not a new kind of override, just the second place mermaid's
 CSS has to be out-muscled rather than configured. Verified by rendering to PNG and sampling
 pixels, because the exported SVG's own embedded `<style>` text does not change even when an
 external stylesheet visually overrides it on screen: the block fill measured `#efefef` before the
@@ -863,7 +946,7 @@ shifted from black-white blends (`#ababab`, `#222223`) to purple-white blends (`
 adding to `mermaid-palette.json`: every value reused is already a `var()` token from the CSS side
 of the palette, not a new literal, so check 4 of `.github/palette-check.py` has nothing new to
 drift. `samples/dark.html` carries a `packet-beta` fence for the same reason the sequence and quadrant
-fences exist — the bug shipped invisibly because nothing had ever rendered the diagram type
+fences exist. The bug shipped invisibly because nothing had ever rendered the diagram type
 before, and a fixture that never uses a component cannot catch a regression in it.
 
 **`xyChart`'s bars and line render in mermaid's own default pastel palette (`#fff4dd`,
@@ -874,7 +957,7 @@ plain `<rect>` and `<path>` elements with a literal `fill`/`stroke` attribute an
 attribute at all**, so there is no selector narrow enough to hang a `!important` override on
 without also recoloring every unclassed shape another diagram type might emit. Take this when
 mermaid ships a fix upstream, or when a consumer's real page needs an `xychart-beta` fence badly
-enough to justify a per-diagram `<style>` scoped by a hand-added `id` — not by widening a
+enough to justify a per-diagram `<style>` scoped by a hand-added `id`, not by widening a
 selector on the shared sheet.
 
 ## Connections-map layout
@@ -924,6 +1007,29 @@ guess at is worse than no class.
 `overflow: visible` on `pre.mermaid` is unconditional as of v1.13.0, so the conn-map-only copy of
 that rule is gone. The base `pre` rule's `overflow-x: auto` would otherwise clip a diagram's drop
 shadow, which is the same reason the label-clipping fix needs it.
+
+**The sticky column had no height ceiling until v1.25.0, so it stopped being sticky at real
+content lengths.** `position: sticky` pins nothing when the element is taller than the viewport: it
+scrolls with the page like any block. Measured at 1280×800 with 40 antecedent links, which is an
+ordinary size for a topic map: the column computed 4132px against a 713px viewport, and after a
+2000px scroll its top sat at −1880px. Nothing was clipped and every link stayed reachable, so the
+failure was silent. The column simply scrolled away, and the two fixtures never showed it because
+four links fit twice over.
+
+The column now takes `max-height: calc(100vh - 2rem); overflow-y: auto; overscroll-behavior:
+contain`. Re-measured at the same viewport with the same 40 links: `max-height` resolves to 681px,
+the box pins at `top: 16px` after a 1200px scroll once the graph column gives the article range to
+pin over, the column's own `scrollHeight` is 4132px, and the fortieth link is reachable inside it.
+Where the article is *not* taller than the column, the whole map now fits one screen and sticky has
+no work to do, which is the outcome that was wanted anyway.
+
+**`tabindex="0"` was deliberately not added, and this is the one place the sideways-scroller rule
+in `README.md` does not apply.** That rule exists for a `pre`, a wide table and a
+`math[display="block"]`, whose overflowed content holds nothing focusable, so a keyboard user has
+no way in. The Links column holds links. Focusing one scrolls it into view, so the column's content
+is reachable by Tab alone, and a tab stop on the container would add a stop that announces a region
+a reader is already inside. `overscroll-behavior: contain` matches `.table-scroll` and stops the
+scroll chaining to the page at either end.
 
 ## Interaction states
 
@@ -1160,7 +1266,7 @@ index into it. `scripts/build-sample.nu` also slices `:root` with a hard-coded `
 
 **`:where(ul, ol, menu):where(:not(.nav-list))` replaced the `:is()` form, and it fixed an inert
 rule.** `:is()` and `:not()` both take the highest specificity of their arguments, so
-`:is(ul, ol, menu):not(.nav-list)` measured `0,1,1` — the class weight came from the `.nav-list`
+`:is(ul, ol, menu):not(.nav-list)` measured `0,1,1`, because the class weight came from the `.nav-list`
 inside the negation, which is not a class the rule ever matches. The very next line,
 `li > :is(ul, ol, menu) { margin-block: 0 }`, measured `0,0,2` and therefore **never applied**: a
 nested list took the outer `var(--space-3)` margin the whole time. `:where()` scores zero on both
@@ -1187,11 +1293,20 @@ which is 4.40 on code where 1.4.11 asks for 3. `--surface-alt` *darkens* to `okl
 because it is the row-hover and tinted-root fill and its job here is to be unmistakable: 1.27:1
 against `--surface`, up from 1.18.
 
-Two rules move as well. `a` takes `text-decoration-thickness: max(2px, 0.1em)` and
+Three rules move as well. `a` takes `text-decoration-thickness: max(2px, 0.1em)` and
 `text-decoration-color: currentColor`, so the underline stops sitting at `--muted` and reads at the
-link's own ratio. The focus ring goes to `outline-width: 3px`. Nothing else changes, because the
-palette carries the meaning in this sheet and a reassignment reaches every element at once — the
-same reason the print block reassigns tokens rather than elements.
+link's own ratio. `.nav-list li a` repeats that one declaration. The focus ring goes to
+`outline-width: 3px`. Nothing else changes, because the palette carries the meaning in this sheet
+and a reassignment reaches every element at once, which is the same reason the print block reassigns tokens
+rather than elements.
+
+**The `.nav-list` repeat is there because a media query adds no specificity.** The base rule
+`.nav-list li a { text-decoration-color: transparent }` scores 0-1-2 and the block's `a` rule
+scores 0-0-1, so through v1.24.0 every nav-list link stayed underline-free in the one mode whose
+whole purpose is the strongest available cue. Forcing the condition on and reading the computed
+value: `transparent` before, `oklch(0.83 0.064 216.782)` after, the same value the prose link
+resolves to. The repeat ties the base rule at 0-1-2 and wins on source order, which is the cheapest
+fix that does not raise specificity anywhere else in the sheet.
 
 `mark` measures 6.17:1 rather than 7. `--highlight` is `--orange` at 0.35 alpha, and the alpha caps
 what the composite can reach. Lowering the alpha to buy the last 0.83 would make the highlight
@@ -1208,7 +1323,7 @@ The screen values, measured against `--surface` at `oklch(0.990 0.006 106.545)` 
 surface, `--label` 6.13 and 6.70, `--muted` 4.74 and 5.18, `--link` 4.78 and 5.23, `--purple` 4.80
 and 5.25, `--green` 4.76 and 5.21, `--red` 4.74 and 5.18, `--orange` 4.72 and 5.16, `--pink` 4.71
 and 5.15. Every accent clears 4.5:1 on **both** backgrounds, which the default dark palette does
-not — its 4.23 floor is the thing this palette improves on. `--rule-light` is 3.53 on code for
+not, since its 4.23 floor is the thing this palette improves on. `--rule-light` is 3.53 on code for
 1.4.11. `--surface-alt` at `oklch(0.940 …)` is 1.16:1 against `--surface` and *darker* than it, so
 row hover reads the way it does in dark mode. `.verdict` keeps its filled form: near-white on the
 light accents measures 5.16 to 5.21:1, so the print block's outlined variant is not needed here.
@@ -1234,23 +1349,26 @@ which is precisely the bug that was reported.
 
 The light projection, measured against the light `--code-bg` the diagram is drawn on: node and note
 text at **16.10:1**, `nodeBorder` and `primaryBorderColor` 4.80, `lineColor` 4.74, `clusterBorder`
-and `noteBorderColor` 3.53. The `pie1..4` ramp is unchanged across both schemes — `--data-1..4` are
+and `noteBorderColor` 3.53. **The `pie1..4` ramp was unchanged across both schemes through
+v1.24.0, and that is reversed as of v1.25.0.** The paragraph here used to read: "`--data-1..4` are
 pale by design, which reads as 1.69 to 2.15:1 against the light card and is weak separation from the
 ground, but each slice carries `textColor` at 7.48 to 9.52:1 and slices abut each other rather than
-the background. No fixture has a pie chart, so that pair is derived rather than rendered.
+the background. No fixture has a pie chart, so that pair is derived rather than rendered." The ramp
+now has its own light and print values and clears 3.2:1 on the light card. See *Form follows role*
+for the solved values, the gate, and what the reversal still leaves undone.
 
 **This replaced a dark-island design, and the earlier approach is worth knowing about because it
 looked fine.** The first cut accepted that mermaid could not be re-themed and leaned into it: light
 mode handed `pre.mermaid, .mermaid-overlay` the dark palette back as inherited custom properties and
 painted `pre.mermaid` a `--code-bg` card, so a diagram read as a deliberate dark plate on a light
-page. Custom-property inheritance made it cheap — the zoom button, the packet `!important` fills, the
+page. Custom-property inheritance made it cheap: the zoom button, the packet `!important` fills, the
 overlay scrim and the `::after` close mark all resolved to dark with no extra selectors.
 
 It was wrong for three reasons that only showed up on the page:
 
 1. **A dark slab beside a light sidebar reads as broken, not as a plate.** On the conn-map the graph
    *is* the content, and `pre.mermaid` is a block, so the card ran **1009px** wide around a **441px**
-   diagram at 1500px — about 570px of dead dark space, next to a light column.
+   diagram at 1500px, about 570px of dead dark space, next to a light column.
 2. **Fixing that needed a rule that could not be generalised.** `width: fit-content` on the card
    shrank it correctly, but only on the conn-map. Rendered on the component sample it clipped
    `quadrantChart`'s deliberately overflowing point labels at the card edge and left the escaped tail
@@ -1277,7 +1395,7 @@ an eye.
 
 **Deleting `--mermaid-scheme` used to fail silently, so check 6 of `palette-check.py` gates it.**
 `getPropertyValue` on a missing custom property returns an empty string, which is not `'light'`, so
-mermaid renders dark on a light page and every other check stays green — the exact defect the token
+mermaid renders dark on a light page and every other check stays green, which is the exact defect the token
 was added to fix. The check asserts `:root` declares `dark`, the light block declares `light`,
 `mermaid.js` reads that token by name, and `mermaid.js` does **not** read `matchMedia`. All four were
 tampered with and all four reported. The last one is not pedantry: `matchMedia` looks correct on a
@@ -1297,8 +1415,8 @@ exactly one `<style>` and exactly two `<script>` blocks, and both counts are gat
 a toggle has to go in the shared payload that every consumer inlines, and it costs either a second
 theming convention with the light palette duplicated under it, or a fourth inlined script. Both are
 paid by every consumer forever to serve a review convenience. Take it when a consumer asks for a
-manual override as a feature, and treat it then as a public API decision — the selector, the
-persistence, the first-paint flash — not as a fixture fix.
+manual override as a feature, and treat it then as a public API decision covering the selector, the
+persistence and the first-paint flash, not as a fixture fix.
 
 **Two generated preview pages carry the light palette to the web instead.** Pages serves this repo
 root from `main`, so `samples/light.html` and `samples/light-conn-map.html` are live on merge with no
@@ -1308,7 +1426,7 @@ and the contrast condition becomes `@media not all`.
 
 Forcing light alone would very nearly do, because the light block is declared after the contrast
 block and overrides every token it sets. It would leave the contrast block's two non-token rules
-live, though — the 2px `currentColor` underline and the 3px focus ring — so a visitor who asks for
+live, though (the 2px `currentColor` underline and the 3px focus ring) so a visitor who asks for
 more contrast would get a preview nobody else gets. A preview exists to show one thing, so the
 condition goes off.
 
@@ -1329,7 +1447,7 @@ its `@media` conditions rewritten and `dark.html`'s has not.
 Three things carry the warning instead. Each light page opens with a `markdown-alert-caution` block
 that says it is not the payload and links back to its dark twin. CONTRACT.md §1 states it where a
 consumer's agent reads, rather than only in README. And the two light pages are deliberately **not**
-among the ten contract files, while the two dark ones are — nothing outside this repo should pin a
+among the ten contract files, while the two dark ones are. Nothing outside this repo should pin a
 page whose media queries were rewritten. **Do not remove that banner to tidy the page.** It is the
 last thing standing between a consumer and a stylesheet locked to one appearance.
 
@@ -1354,7 +1472,7 @@ boundary, not of a border drawn inside a code fill. Verified by tampering with o
 the four modes, and each one reported the mode, the token, the ground and the ratio.
 
 `.github/render-modes.py` covers the other half: that the palette **arrives**. check 6 reads values
-and cannot see what a browser paints. **Headless Chrome cannot be told which media query to match** —
+and cannot see what a browser paints. **Headless Chrome cannot be told which media query to match**,
 it reads `prefers-color-scheme` from the host, so the same command paints dark on a
 dark-appearance mac and light on a bare runner, which is no basis for a gate. Confirmed locally:
 `--force-dark-mode`, `--force-prefers-color-scheme=dark` and `--enable-features=WebContentsForceDark`
@@ -1373,14 +1491,14 @@ above describes, arriving through the door it was supposed to close. The check n
 host and on a light one, which is two real data points rather than one.
 
 The pixel does **not** distinguish contrast mode from dark, because the high-contrast block leaves
-`--surface` alone by design — it raises the accents and darkens `--surface-alt`. Sampling a text
+`--surface` alone by design. It raises the accents and darkens `--surface-alt`. Sampling a text
 pixel instead means fighting antialiasing for nothing: the condition check already fails on a
 deleted query and check 6 already fails on a weakened value. What the contrast render adds is that
 the mode paints without error, plus an image to look at.
 
 That pixel read needs no image library. **For the first pixel of PNG row 0 every filter type
 predicts from a left byte and an above byte that are both zero, so the filtered bytes are the raw
-bytes** — `zlib.decompress`, skip the filter byte, take three. That is why the script has no
+bytes**: `zlib.decompress`, skip the filter byte, take three. That is why the script has no
 puppeteer, no playwright and no PIL, and why `scripts/maintain.nu check` can run the identical step locally.
 
 The renders upload as a pull-request artifact and are **advisory on purpose**. They are not in
@@ -1469,6 +1587,17 @@ Three decisions are load-bearing:
   script creates a hidden one after the table when none exists. It starts `hidden`, because the
   stylesheet's `.filter-empty` has no `display` declaration, so UA `display: none` is the only
   thing that keeps a freshly created line off the page.
+
+  **It carries copy as of v1.25.0, and until then it did not.** The created element got a class and
+  the `hidden` flag and no text, so the branch that exists to prevent a silent no-matches state was
+  itself silent. Measured on a page with a filter box, a nav-list and no author-supplied
+  `.filter-empty`, filtering to zero matches: every row hidden, `.filter-empty` unhidden,
+  `textContent.length` 0, and 16px of blank padding where the line should be. The reader is left
+  with an empty list and nothing that says why. It now reads `No entries match. Clear the filter to
+  see all entries.`, an orientation and an exit, and the same shape as the fixture's own reference
+  copy. It names no query on purpose: an interpolated string would put a bare template in a payload
+  that consumers inline verbatim and cannot translate. Author-supplied copy is untouched, because
+  the branch only runs when there is none.
 - **No CDN, no build step, no comments.** The whole handler is `querySelectorAll` plus
   `classList.toggle`, and consumers inline it verbatim like the other two payloads.
 
@@ -1621,7 +1750,7 @@ values read per element. Twelve constructs came back unstyled or wrong.
 
 | construct | measured before | now |
 | --- | --- | --- |
-| `#### ` to `###### ` | h4 16.2px/700, h5 13.4px/700, h6 10.8px/700, **all margins 0** | body size, weight 600, `--label` then `--muted`, h6 italic |
+| `#### ` to `###### ` | h4 16.2px/700, h5 13.4px/700, h6 10.8px/700, **all margins 0** | body size, h4 weight 600 then h5 and h6 weight 500, `--label` then `--muted`, h6 italic |
 | fenced code block | `pre` margin 0, so two fences merged into one slab | `margin-block: var(--space-3)` |
 | any list | `ul` and `ol` margin 0 outside `.indented` | `margin-block: var(--space-3)`, nested lists pinned back to 0 |
 | `> [!NOTE]` | `.markdown-alert` unclaimed: border 0, padding 0, `--on-surface` | shares the `aside` rule, hue on the title line |
@@ -1635,6 +1764,15 @@ inverse of the rule [Type scale](#type-scale) sets, which forbids anything at te
 going *lighter* than body copy. Both now sit at `1em`. Weight carries the tier, along with a
 color drop from `--label` to `--muted`, and h6 adds italic. Depth past h4 is rare enough that a
 fourth size step buys less than a fourth color step.
+
+**Weight did not actually carry it until v1.25.0, and the paragraph above said it did.** h4 and
+h5 both shipped `font-weight: 600` at `1em`, so the only thing between a fourth-level and a
+fifth-level heading was one color step: `--label` at L 0.810 against `--muted` at L 0.71, and
+0.470 against 0.530 in the light palette. Measured in the rendered fixture, "Fourth level" and
+"Fifth level" read as the same tier at both root sizes. `h5, h6` now take `font-weight: 500`,
+which restores the weight step the note claimed and stays above body copy's 450, so the rule that
+forbids anything at text size from going lighter than body still holds. 450 was rejected: it ties
+body copy and gives back the same problem one tier down.
 
 **A presentational attribute loses to author CSS, which is why pipe-table alignment vanished.**
 `cmark-gfm` emits `<td align="right">`. Presentational hints sit below author declarations in the
@@ -1791,7 +1929,7 @@ exactly where a diagram needs to escape. Print and forced-colors were swept too:
 either fixture at 390px or 1280px, zero console errors.
 
 **An unbreakable token in prose pushed the document sideways as well.** `overflow-wrap:
-break-word` was on `a`, `code`, `cite` and `h1`–`h6`, and on nothing else, so a hash, a long path
+break-word` was on `a`, `code`, `cite` and `h1`-`h6`, and on nothing else, so a hash, a long path
 or a base64 fragment outside a code span had no break opportunity. Measured with a 96-character
 token at 390px:
 
@@ -1961,13 +2099,25 @@ retires the check it exists to be.**
   lines and the box grows to hold them: at 1280px, a rect of 260px around 200px of text, all five
   nodes `fits: true`, the SVG 416px inside an 830px graph column, and no document scroll at any of
   nine widths at either root size.
-- **The filter's `role="status"` line and its `.filter-empty` line, both visible at once.**
+- **The filter's `role="status"` line and its `.filter-empty` line.**
   `README.md` has always asked a consumer who wires the filter for a result-count status region
   and a no-matches line, and neither existed anywhere in the repo. `.filter-empty` was a styled
   class with no instance, so nothing verified that it rendered, and a consumer had no reference
-  copy for the one empty state in the system. The fixture's nav-list filter has no following
-  table, so `filter.js` returns early and the pair stays inert and visible, the way the four
-  `.verdict-*` chips do. Verified in the AX tree: one `status` node.
+  copy for the one empty state in the system. Verified in the AX tree: one `status` node.
+
+  **Both lines were hand-written to numbers the script contradicts, and the reason they were left
+  visible expired in v1.22.0.** The bullet above used to end "the fixture's nav-list filter has no
+  following table, so `filter.js` returns early and the pair stays inert and visible, the way the
+  four `.verdict-*` chips do." Since the one-table scope was reversed the script *does* wire this
+  filter, over four `.nav-list > li` rows: three in the list and one inside the `details.nav-group`.
+  So the page shipped three claims that disagreed on load: a populated list, `3 entries`, and
+  `No entries match “tier 4”. Clear the filter to see all 3.`, and one keystroke replaced the count
+  with `4 entries`, which is a reference page correcting itself in front of the consumer reading it.
+  The status line now reads `4 entries`, the group's `.count` reads `1` rather than `3`, the empty
+  copy says `all 4`, and the empty line ships `hidden`. Verified through the real script: on load
+  `hidden` with height 0 and `4 entries`; on `zzz` the line reveals with its copy and the status
+  reads `0 entries`; on clear it hides again at `4 entries`. A `.verdict-*` chip can sit inert and
+  visible because a chip states nothing about the rest of the page. An empty state does.
 - **The highlighted code block carries real emitter classes.** `.hljs-keyword`, `.hljs-type`,
   `.hljs-params` and the rest, in the nesting `highlight.js` produces, not hand-written spans on
   invented names. It is the only check that the slot map in
@@ -1993,8 +2143,8 @@ retires the check it exists to be.**
 
 **The three Nushell scripts moved to `scripts/` in v1.24.0. The two Python helpers deliberately did
 not.** The split is by who invokes a file, not by what language it is written in. Each Python helper
-is a CI step of its own — `python3 .github/palette-check.py` and `python3 .github/render-modes.py`
-appear verbatim in `contract-check.yml` — so they live beside the workflow that runs them. The
+is a CI step of its own, and `python3 .github/palette-check.py` and `python3 .github/render-modes.py`
+appear verbatim in `contract-check.yml`, so they live beside the workflow that runs them. The
 Nushell scripts are the commands a person types, so they get a folder whose name says so.
 
 `.nu` scripts are also invoked by CI, which makes the rule a judgment rather than a law. The tiebreak
@@ -2012,7 +2162,7 @@ const ROOT = $SCRIPTS | path dirname
 ```
 
 `SCRIPTS` exists because `path self | path dirname | path dirname` is **not** a legal const chain in
-Nushell — the second step has to read a name that is already bound, and the one-liner fails to parse.
+Nushell, because the second step has to read a name that is already bound, and the one-liner fails to parse.
 Verified after the move by running `nu ../scripts/maintain.nu check` from `themes/`, which prints
 `Contract OK`.
 
@@ -2035,7 +2185,7 @@ So the reasons are the other three.
 
 **"Bash" is not an option; only awk is.** Bash has no floating-point arithmetic, and the Oklab
 matrix needs `cos`, `sin` and `x^(1/2.4)`. A bash version is an awk program in a shell wrapper, which
-takes the repo from `{nu, python, bash}` to `{nu, bash, awk}` — the same three languages, with the
+takes the repo from `{nu, python, bash}` to `{nu, bash, awk}`, the same three languages, with the
 math in the least readable of them.
 
 **Nushell would genuinely drop one language, and it is a rewrite of the primary gate.** `math sin`
@@ -2083,7 +2233,7 @@ every one of them without a second declaration, because an unset `scrollbar-colo
 
 **`.table-scroll` gained `overscroll-behavior: contain`, matching the mermaid overlay and the
 narrow-viewport `pre.mermaid` rule that already carry it.** Without it, scrolling a wide table to
-its edge chains into the page behind it — the same scroll-chaining problem those two rules exist
+its edge chains into the page behind it, which is the same scroll-chaining problem those two rules exist
 to stop, just never checked against the newer wrapper.
 
 **`--ring` is a token because the `img` hairline was the one color declared twice as a literal.**

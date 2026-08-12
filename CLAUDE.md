@@ -1,4 +1,4 @@
-# CLAUDE.md — Tufte-Dracula template
+# CLAUDE.md: Tufte-Dracula template
 
 Instructions for any agent that works in this repo. These instructions override default
 behavior.
@@ -21,6 +21,32 @@ CSS. If you still disagree, say so directly. Do not reverse a documented decisio
 
 When you make a new decision worth keeping, add it to NOTES.md. Do not add it to the
 stylesheet.
+
+## Writing rules
+
+**No em-dash and no en-dash anywhere in this repo.** Not in prose, not in a heading, not in a
+table cell, not in a code comment, not in a runtime `print` string, not in fixture copy, and not
+in a commit message or a PR body. The two characters are U+2014 EM DASH and U+2013 EN DASH, and
+the count is zero. This paragraph names them by codepoint rather than printing them, because the
+gate below scans every tracked file and would otherwise fail on the rule that states it.
+
+Use whatever the sentence actually needs instead:
+
+- A period, when the two halves are two sentences. This is right most of the time.
+- A comma or a conjunction, when the second half qualifies the first.
+- A colon, when the second half names or expands the first.
+- Parentheses, when a pair of dashes was fencing an aside.
+- A plain hyphen `-`, for compound words, numeric ranges (`200-900`, `h1`-`h6`), and aligned
+  key-to-description lines where a colon would break the column.
+
+`nu scripts/maintain.nu check` and the `contract` workflow both fail on any occurrence, and the
+`release` skill refuses to bump while one is present, so this is gated rather than trusted. The
+commit-subject convention is `feat: vX.Y.Z - <summary>` with a hyphen. Commits already in history
+keep the old em-dash form; nothing rewrites them.
+
+The rule exists because 186 em-dashes across 22 files read as one voice tic rather than as
+punctuation, and because a gate is the only thing that keeps a prose rule alive in a repo where
+most edits are made by an agent.
 
 ## NEVER write comments in files that get inlined into HTML
 
@@ -49,7 +75,7 @@ comment here is not written once. Every page a consumer renders carries a copy o
 
 **Put the reasoning in one of these places instead**, in order of preference:
 
-1. **[NOTES.md](NOTES.md)** — the durable home for the reason a declaration looks the way it
+1. **[NOTES.md](NOTES.md)**, the durable home for the reason a declaration looks the way it
    does. It holds measurements, rejected alternatives, and settled decisions. A future agent
    reads this file instead of the comments.
 2. **The commit message**, for the story of a single change.
@@ -89,7 +115,7 @@ release" invokes that skill.
 ```
 git switch -c fix/whatever                  # never work on main
 nu scripts/maintain.nu bump 1.11.0          # stamps the CSS + README
-git add -A && git commit -m 'fix: v1.11.0 — <summary>'
+git add -A && git commit -m 'fix: v1.11.0 - <summary>'
 git push -u origin fix/whatever
 gh pr create --fill && gh pr checks --watch # `contract` must pass here
 gh pr merge --squash                        # the merge is what the check gates

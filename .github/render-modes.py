@@ -11,7 +11,7 @@ dark-appearance mac and light on a bare CI runner, which is no basis for a gate.
 So each render rewrites EVERY mode condition in a scratch copy: the target one
 becomes `@media all` and the rest become `@media not all`, which never matches.
 Neutralising the others is the half that makes it host-independent, and leaving
-it out is what failed CI on the first attempt — the runner reports
+it out is what failed CI on the first attempt, because the runner reports
 prefers-color-scheme: light, so the untouched fixture painted light and the
 "dark" case measured the light palette. The conditions are checked as strings in
 the real fixture, so a deleted or misspelled query still fails.
@@ -29,7 +29,7 @@ the filtered bytes are the raw bytes. `.github/palette-check.py` check 6 gates
 the contrast inside each palette; this gates that the palette arrives at all.
 
 Check 3 does not distinguish contrast mode from dark, because the high-contrast
-block deliberately leaves `--surface` alone — it raises the accents and darkens
+block deliberately leaves `--surface` alone. It raises the accents and darkens
 `--surface-alt`. Sampling a text pixel instead would mean fighting antialiasing
 for no gain: check 1 already fails on a deleted or misspelled query, and check 6
 already fails on a weakened value. What the contrast render adds is that the mode
@@ -55,7 +55,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 FIXTURES = ["samples/dark.html", "samples/dark-conn-map.html"]
 
 # surface is the expected top-left pixel: `body { background: var(--surface) }`.
-# dark is the default palette, so no condition of its own — it is what shows when
+# dark is the default palette, so no condition of its own, and it is what shows when
 # every mode condition is switched off.
 CONTRAST = "@media (prefers-contrast: more)"
 LIGHT = "@media (prefers-color-scheme: light)"
@@ -139,7 +139,7 @@ def main():
         html = fixture.read_text()
         missing = [c for c in CONDITIONS if f"{c} {{" not in html]
         for c in missing:
-            print(f"MISSING: {name} has no `{c} {{` — that palette is unreachable")
+            print(f"MISSING: {name} has no `{c} {{`, so that palette is unreachable")
             fail = 1
         if missing:
             continue

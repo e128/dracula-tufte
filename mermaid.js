@@ -18,6 +18,7 @@
       noteBkgColor:        '#343746',
       noteTextColor:       '#f8f8f2',
       noteBorderColor:     '#707388',
+      pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
@@ -35,6 +36,7 @@
       noteBkgColor:        '#f0f1f9',
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
+      pie1: '#4488dd', pie2: '#c962ab', pie3: '#539378', pie4: '#868b53',
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
@@ -45,7 +47,6 @@
         fontFamily: mermaidFont,
         fontSize:   '1rem',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
-        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
     const overlay = document.getElementById('mermaid-zoom');

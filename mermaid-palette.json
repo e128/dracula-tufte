@@ -39,10 +39,10 @@
     "noteBkgColor":        { "hex": "#f0f1f9", "from": "--code-bg" },
     "noteTextColor":       { "hex": "#161616", "from": "--on-surface" },
     "noteBorderColor":     { "hex": "#7b7f94", "from": "--rule-light" },
-    "pie1":                { "hex": "#99bdec", "from": "--data-1" },
-    "pie2":                { "hex": "#de8dc3", "from": "--data-2" },
-    "pie3":                { "hex": "#74caa6", "from": "--data-3" },
-    "pie4":                { "hex": "#bbc175", "from": "--data-4" }
+    "pie1":                { "hex": "#4488dd", "from": "--data-1" },
+    "pie2":                { "hex": "#c962ab", "from": "--data-2" },
+    "pie3":                { "hex": "#539378", "from": "--data-3" },
+    "pie4":                { "hex": "#868b53", "from": "--data-4" }
   },
   "classdef": {
     "_comment": "Node-category classDef roles for generators that emit their own 'classDef name fill:...,stroke:...' lines inside a <pre class=\"mermaid\"> block. Not used by mermaid.js itself. Every fill draws from the --data-1..4 ramp, never from the prose accents (--pink, --green, --orange): those already carry a meaning in body copy (h1, inline code, aside bar), and the data ramp exists precisely so a diagram category cannot borrow it. stroke is --purple and color is --surface for every role.",

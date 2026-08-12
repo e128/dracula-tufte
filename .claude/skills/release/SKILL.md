@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a tagged, verified release of the Dracula-Tufte template — bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip plus the themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
+description: Cut a tagged, verified release of the Dracula-Tufte template: bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip plus the themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
 ---
 
 # Release the template
@@ -42,7 +42,11 @@ git switch main && git pull --ff-only
 nu scripts/maintain.nu release X.Y.Z # verifies green on the merged SHA, then tags + publishes
 ```
 
-`bump` deletes the old plugin zip and writes a new one — the filename carries the
+`bump` refuses outright when any tracked file carries an em-dash or an en-dash, which
+CLAUDE.md bans. It checks before it stamps anything, so nothing has to be unwound. The
+same scan runs in `nu scripts/maintain.nu check` and in the `contract` workflow.
+
+`bump` deletes the old plugin zip and writes a new one. The filename carries the
 version and `META-INF/plugin.xml` reads it off the stylesheet header. Expect
 `themes/rider/dist/dracula-tufte-rider-<old>.zip` to disappear from `git status`
 as a delete. That is correct.
@@ -68,14 +72,14 @@ machine can compare after downloading.
 The plugin zip must contain `Dracula-Tufte/lib/dracula-tufte-rider-X.Y.Z.jar` and
 nothing flatter. A bare jar loads when copied into `plugins/` by hand and is
 **refused by Install Plugin from Disk…**, which is how it actually gets
-installed — so a flat artefact passes every check here and fails the only user
+installed, so a flat artefact passes every check here and fails the only user
 who matters.
 
 ## Commit message
 
 Write it from the diff, normal prose, not caveman. What changed and why it
-changed — the repo's history is the design record for anything not in NOTES.md.
-Subject line: `feat: vX.Y.Z — <summary>` (or `fix:` / `chore:`).
+changed. The repo's history is the design record for anything not in NOTES.md.
+Subject line: `feat: vX.Y.Z - <summary>` (or `fix:` / `chore:`).
 
 **No email address anywhere in the message.** Not the maintainer's, not a
 co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
@@ -96,8 +100,8 @@ co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
 
 ## Tooling-only changes
 
-A change that touches no consumer payload — this skill file, a CI workflow, a
-`scripts/maintain.nu` refactor — still lands through a PR, but takes **no version bump**
+A change that touches no consumer payload (this skill file, a CI workflow, a
+`scripts/maintain.nu` refactor) still lands through a PR, but takes **no version bump**
 and **no tag**. Commit it as `chore:` and stop. An untagged commit on `main` is
 fine; a tag that consumers pin to for nothing is not.
 

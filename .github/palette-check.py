@@ -5,8 +5,8 @@ tufte-dracula.css :root is the single source of truth. Two projections carry the
 same colors as hex, because Mermaid's color engine (khroma) throws "Unsupported
 color format" on oklch() and renders no diagram at all:
 
-  mermaid-palette.json  — the declared hex palette, keyed by themeVariables name
-  mermaid.js            — the same values inline (consumers inline it, no build)
+  mermaid-palette.json  - the declared hex palette, keyed by themeVariables name
+  mermaid.js            - the same values inline (consumers inline it, no build)
 
 contract-check.yml already pins mermaid.js to mermaid-palette.json. This closes
 the remaining edge: mermaid-palette.json back to the CSS it claims to project.
@@ -68,7 +68,7 @@ stylesheet = (ROOT / "tufte-dracula.css").read_text()
 # Only the :root block defines the palette. Scanning the whole stylesheet would let a
 # --x: oklch(...) declared inside a component rule join the palette set and quietly
 # widen the membership checks below, so a stale hex could start passing. Non-greedy up
-# to a closing brace on its own line, and the first match is the real :root — the
+# to a closing brace on its own line, and the first match is the real :root, and the
 # @media one is a single inline line that never reaches this shape.
 root = re.search(r":root \{(.*?)\n\s*\}", stylesheet, re.S)
 if not root:
@@ -83,13 +83,13 @@ triples = {
 }
 palette = {name: oklch_to_hex(*lch) for name, lch in triples.items()}
 if len(palette) < 17:
-    sys.exit(f"Only parsed {len(palette)} oklch tokens from :root — expected 17.")
+    sys.exit(f"Only parsed {len(palette)} oklch tokens from :root, expected 17.")
 
 # --dump is the generator side of the same parse: scripts/create-themes.nu needs the palette
 # as data, and re-deriving oklch -> sRGB in Nushell would mean a second implementation
 # of the matrix above, free to drift from the one CI checks. This comment used to say
-# Nushell had no trig builtins. It does — `math sin` and `math cos` both work, checked
-# on 0.114.1 — so the reason is one implementation, not a missing primitive.
+# Nushell had no trig builtins. It does, since `math sin` and `math cos` both work, checked
+# on 0.114.1, so the reason is one implementation, not a missing primitive.
 # `bright` is the L + 0.07 rule the Ghostty ANSI slots already document; it lives
 # here because it needs oklch, not because it is palette policy. The ceiling is
 # 0.99, not 1.0: --on-surface sits at L 0.977, so an unclamped bump lands on
@@ -134,7 +134,7 @@ for section, source in (("init", palette), ("initLight", light_palette)):
         continue
     keys = [k for k in pal[section] if k != "_comment"]
     if len(keys) < 19:
-        sys.exit(f"{section} has only {len(keys)} keys — refusing to pass vacuously.")
+        sys.exit(f"{section} has only {len(keys)} keys, refusing to pass vacuously.")
     for key in keys:
         entry = pal[section][key]
         want = source.get(entry["from"].lstrip("-"))
@@ -148,7 +148,7 @@ for section, source in (("init", palette), ("initLight", light_palette)):
         print(f"DRIFT: {section} and init cover different themeVariables keys")
         fail = 1
 
-# 2. Each classdef fill is exactly the variable its `from` field names — that is
+# 2. Each classdef fill is exactly the variable its `from` field names, and that is
 #    what makes `from` load-bearing here too. stroke/color are shared across every
 #    role rather than named, so those get a membership check.
 for role, entry in pal["classdef"].items():
@@ -175,7 +175,7 @@ for name, stated in re.findall(
         fail = 1
 
 # 4. contract-check.yml maps every palette key onto mermaid.js; this is the
-#    reverse — a hex inline in mermaid.js that is no longer a palette color at all
+#    reverse: a hex inline in mermaid.js that is no longer a palette color at all
 #    (a hand-added themeVariable, a stale value under a renamed key).
 known = set(palette.values()) | set(light_palette.values())
 for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_text()))):
@@ -184,23 +184,31 @@ for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_t
         fail = 1
 
 # 5. Every mode has to hold its own contrast floor. The stylesheet ships four
-#    palettes now — the default, `prefers-contrast: more`, `prefers-color-scheme:
-#    light` and print — and the ratios behind each one were measured by hand and
+#    palettes now (the default, `prefers-contrast: more`, `prefers-color-scheme:
+#    light` and print) and the ratios behind each one were measured by hand and
 #    written into NOTES.md. A measurement in prose is not a gate: a later edit to
 #    one lightness value strands text at a ratio nobody re-derives. This check
 #    re-derives all of them on every run.
 #
 #    A mode block only restates what it changes, so each palette is the default
-#    overlaid with that block's overrides — which is also how the cascade resolves
+#    overlaid with that block's overrides, which is also how the cascade resolves
 #    it. Text tokens are checked against BOTH backgrounds a reader meets, since
 #    --code-bg is the harder one and is where the default palette's floor lives.
 #    Rule tokens are checked against --surface only: --rule-light is a hairline on
 #    the page background, and 1.4.11 asks 3:1 of a non-text boundary, not of a
 #    border drawn inside a code fill.
+#
+#    DATA is the diagram-category ramp, and it is a non-text boundary like a rule
+#    rather than text: a pie slice or a classDef fill has to be tellable from the
+#    card it sits on. It is checked against BOTH grounds because a diagram is drawn
+#    on --code-bg while a bare SVG lands on --surface. Through v1.24.0 this ramp had
+#    no light or print override and measured 1.69 to 2.15:1 there, which NOTES.md
+#    recorded and accepted. v1.25.0 gave it both, so the floor is now gated.
 TEXT = ["on-surface", "label", "muted", "link", "orange", "red", "purple", "pink", "green"]
 RULES = ["rule-light"]
+DATA = ["data-1", "data-2", "data-3", "data-4"]
 MODES = {
-    # name: (media condition, text floor, rule floor)
+    # name: (media condition, text floor, non-text boundary floor)
     #
     # 4.2 for the default, not 4.5: --purple sits at 4.23 against --code-bg. That
     # is the documented floor under "Color and the contrast budget", kept because
@@ -236,7 +244,7 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
     # reads fine, and print writes `oklch(0.200 0 0)`. Both parse. A token that
     # stops parsing drops back to its default value rather than vanishing, so a
     # weakened override cannot pass by becoming unreadable.
-    for role, floor in ((TEXT, text_floor), (RULES, rule_floor)):
+    for role, floor in ((TEXT, text_floor), (RULES, rule_floor), (DATA, rule_floor)):
         for name in role:
             fg = triples_for_mode[name]
             grounds = ["surface"] if role is RULES else ["surface", "code-bg"]
@@ -267,7 +275,7 @@ if "--mermaid-scheme" not in mermaid_js:
     print("DRIFT: mermaid.js never reads --mermaid-scheme, so a diagram cannot follow the palette")
     fail = 1
 if "matchMedia" in mermaid_js:
-    print("DRIFT: mermaid.js reads matchMedia — that reports the host, not the cascade, "
+    print("DRIFT: mermaid.js reads matchMedia, which reports the host, not the cascade, "
           "so the forced-light sample pages would render a dark diagram")
     fail = 1
 
