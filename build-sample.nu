@@ -17,10 +17,11 @@ def main [] {
 
   tokens $css
 
-  # (filename, <body> tag, title, body-content) — one page per layout mode.
+  # (filename, <body> tag, title, body-content, light-preview filename) — one page
+  # per layout mode, each with a forced-light twin for Pages.
   [
-    ["sample.html" "<body>" "Tufte-Dracula — component sample" (body)]
-    ["sample-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body)]
+    ["sample.html" "<body>" "Tufte-Dracula — component sample" (body) "preview-light.html"]
+    ["sample-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body) "preview-conn-map-light.html"]
   ] | each {|p|
     let html = ([
       "<!DOCTYPE html>"
@@ -43,8 +44,52 @@ def main [] {
     $html | save -f $out
     ^git -C $HERE add $out
     print $"  → ($out)"
+    preview $html $p.0 $p.2 $p.4
   }
   null
+}
+
+# The light palette is a media query, so no fixture shows it: a visitor on a
+# dark-appearance OS sees dark and has to change a system setting to see anything
+# else. Pages serves this repo root from main, so one extra HTML file per fixture
+# is a live light-mode preview with no workflow, no deploy step and no docs/ dir.
+#
+# The rewrite is the one render-modes.py uses: the light condition becomes
+# `@media all` so it always matches, and the high-contrast condition becomes
+# `@media not all` so it never does. Forcing light alone would be almost enough —
+# the light block is declared after the contrast block and overrides every token
+# it sets — but it would leave the contrast block's two non-token rules live, so a
+# visitor who asks for more contrast would see a preview nobody else sees.
+# Deterministic beats almost.
+#
+# These are previews, NOT the payload: the stylesheet inside them has had its
+# media conditions rewritten, so it is not the file a consumer inlines. That is
+# what the banner is for, and it is why the name is preview-, not sample-.
+def preview [html: string, fixture: string, title: string, name: string] {
+  # Each condition is checked on its own, not "did anything change". A first cut
+  # compared the whole string before and after and passed when only the contrast
+  # condition still matched — which is the case that matters least. Renaming the
+  # light condition alone would have shipped a dark page called light.
+  for c in ["@media (prefers-color-scheme: light)" "@media (prefers-contrast: more)"] {
+    if not ($html | str contains $c) {
+      error make {msg: $"preview: ($fixture) has no `($c)` — the stylesheet renamed it, so the preview would ship the default palette under a light name"}
+    }
+  }
+  let forced = ($html
+    | str replace "@media (prefers-color-scheme: light)" "@media all"
+    | str replace "@media (prefers-contrast: more)" "@media not all")
+  let banner = ([
+    "  <div class=\"markdown-alert markdown-alert-caution\">"
+    "    <p class=\"markdown-alert-title\">Preview only &mdash; not the payload</p>"
+    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. The stylesheet inside it has had its media conditions rewritten and is <strong>not</strong> the file to inline. Inline <code>tufte-dracula.css</code>, never this page. The real fixture is <a href=\"($fixture)\">($fixture)</a>.</p>"
+    "  </div>"
+  ] | str join "\n")
+  let out = ($HERE | path join $name)
+  ($forced
+    | str replace $"<title>($title)</title>" $"<title>($title) — forced light preview</title>"
+    | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out
+  ^git -C $HERE add $out
+  print $"  → ($out)"
 }
 
 # tokens.css is a projection of tufte-dracula.css, not a second source: the :root

@@ -17,7 +17,7 @@ jobs:
           for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md CONTRACT.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
-          echo "All 9 contract files present."
+          echo "All 10 contract files present."
 
       - name: Stylesheet wrapper is exactly the first and last line
         run: |
@@ -65,13 +65,35 @@ jobs:
           # the canonical ones.
           # grep -o, not grep -c: -c counts matching *lines*, so a second block
           # opened on a line that already holds one reads as 1 and passes.
-          for f in sample.html sample-conn-map.html; do
+          for f in sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html; do
             n=$(grep -o "<style" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <style> block (canonical CSS), found $n"; exit 1; }
             n=$(grep -o "<script" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 2 ] || { echo "$f: expected exactly 2 <script> blocks (canonical mermaid.js + filter.js), found $n"; exit 1; }
           done
           echo "No hand-rolled style/script blocks."
+
+      - name: Light previews must actually force light
+        run: |
+          # The previews are the fixtures with the light condition forced on and the
+          # contrast condition forced off, so Pages can serve the light palette to a
+          # visitor on any OS. If the stylesheet renames either condition, the
+          # generator's `str replace` no-ops: it raises, but a hand-edited preview
+          # would not go through the generator. Then Pages serves a dark page called
+          # light, which is the kind of quiet wrong this repo gates against.
+          fail=0
+          for f in preview-light.html preview-conn-map-light.html; do
+            grep -q '@media all {' "$f" \
+              || { echo "$f: no forced '@media all {' — the light palette is not on"; fail=1; }
+            grep -q '@media not all {' "$f" \
+              || { echo "$f: no '@media not all {' — the contrast block is still live"; fail=1; }
+            # The banner prose names the condition it forces, so it is stripped
+            # before the leftover check. Anything else is a condition that survived.
+            perl -0pe 's{<p>This page forces.*?</p>}{}s' "$f" | grep -q 'prefers-color-scheme' \
+              && { echo "$f: a prefers-color-scheme condition survived the rewrite"; fail=1; }
+          done
+          [ "$fail" -eq 0 ] && echo "Light previews force light."
+          exit $fail
 
       - name: Install nu
         uses: hustcer/setup-nu@v3
@@ -90,8 +112,8 @@ jobs:
           # `git diff HEAD`, not `git diff`: build-sample.nu git-adds what it writes,
           # so an index-vs-worktree diff is always empty and this gate would pass
           # vacuously. HEAD-vs-worktree is what "stale in the commit" actually means.
-          git diff HEAD --exit-code -- sample.html sample-conn-map.html tokens.css || {
-            echo "tokens.css / sample.html / sample-conn-map.html are stale — run 'nu build-sample.nu' and commit the result."
+          git diff HEAD --exit-code -- sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html tokens.css || {
+            echo "tokens.css / the fixtures / the light previews are stale — run 'nu build-sample.nu' and commit the result."
             exit 1
           }
 

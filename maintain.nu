@@ -72,12 +72,28 @@ def "main check" [] {
 
   # Count occurrences, not matching lines. `grep -c` reports lines, so a second
   # block opened on a line that already has one reads as 1 and passes.
-  for f in [sample.html sample-conn-map.html] {
+  for f in [sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html] {
     let body = (open --raw ($HERE | path join $f))
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
     if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
+  }
+
+  # The previews are the fixtures with the light condition forced on and the
+  # contrast condition forced off. If the stylesheet renames either one,
+  # `str replace` no-ops and the preview ships the default palette while still
+  # regenerating cleanly, so Pages would serve a dark page called light. The
+  # generator raises on that, and this asserts the same property on the committed
+  # file, which is what a hand-edit would get past the generator.
+  for f in [preview-light.html preview-conn-map-light.html] {
+    let body = (open --raw ($HERE | path join $f))
+    if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {` — the light palette is not on"; $ok = false }
+    if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {` — the contrast block is still live"; $ok = false }
+    if ($body | str replace --all --regex '(?s)<p>This page forces.*?</p>' '') =~ 'prefers-color-scheme' {
+      print $"($f): a prefers-color-scheme condition survived the rewrite"
+      $ok = false
+    }
   }
 
   # Light and high-contrast mode are media queries, so no fixture shows them and
@@ -97,7 +113,7 @@ def "main check" [] {
   # git: build-sample.nu git-adds what it writes, so `git diff` is always empty
   # (the gate never fires), and `git diff HEAD` would flag work-in-progress edits
   # that are legitimately uncommitted. CI, with a clean tree, uses `git diff HEAD`.
-  let generated = [sample.html sample-conn-map.html tokens.css]
+  let generated = [sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html tokens.css]
   let before = ($generated | each {|f| open --raw ($HERE | path join $f) })
   nu ($HERE | path join "build-sample.nu")
   let after = ($generated | each {|f| open --raw ($HERE | path join $f) })

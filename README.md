@@ -19,6 +19,18 @@ GitHub Pages renders these from main, no build step:
 - [sample.html](https://e128.github.io/dracula-tufte/sample.html): component sample
 - [sample-conn-map.html](https://e128.github.io/dracula-tufte/sample-conn-map.html): connections-map layout
 
+Both follow your system appearance, so a dark-mode reader never sees the light palette. These two
+force it, and are generated from the fixtures above by the same run:
+
+- [preview-light.html](https://e128.github.io/dracula-tufte/preview-light.html): component sample, forced light
+- [preview-conn-map-light.html](https://e128.github.io/dracula-tufte/preview-conn-map-light.html): connections-map layout, forced light
+
+**Do not inline CSS from a preview.** The stylesheet inside those two has had its `@media`
+conditions rewritten, so it is not the payload. Each one says so in a banner and links back to its
+fixture. High-contrast mode has no preview page: it changes the accents, not `--surface`, so a
+forced page would look nearly identical to the dark sample. CI renders it and attaches the image to
+each pull request instead.
+
 ## The Ten Files
 
 | File | What it is |

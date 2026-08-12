@@ -1244,7 +1244,37 @@ paid by every consumer forever to serve a review convenience. Take it when a con
 manual override as a feature, and treat it then as a public API decision — the selector, the
 persistence, the first-paint flash — not as a fixture fix.
 
-**Two gates cover the modes instead, and they cover different halves.** Neither is a screenshot
+**Two generated preview pages carry the light palette to the web instead.** Pages serves this repo
+root from `main`, so `preview-light.html` and `preview-conn-map-light.html` are live on merge with no
+workflow, no deploy step and no `docs/` directory. `build-sample.nu` writes each one right after its
+fixture, using the rewrite `render-modes.py` already does: the light condition becomes `@media all`
+and the contrast condition becomes `@media not all`.
+
+Forcing light alone would very nearly do, because the light block is declared after the contrast
+block and overrides every token it sets. It would leave the contrast block's two non-token rules
+live, though — the 2px `currentColor` underline and the 3px focus ring — so a visitor who asks for
+more contrast would get a preview nobody else gets. A preview exists to show one thing, so the
+condition goes off.
+
+**The generator raises when the rewrite no-ops.** If the stylesheet renames either condition,
+`str replace` matches nothing, the preview equals the fixture, and Pages serves a dark page called
+light while regeneration still compares clean. That is exactly the shape of quiet wrong this repo
+gates against, so `build-sample.nu` errors on it, and `maintain.nu check` plus CI assert the same
+property on the committed file, which is what a hand-edit would get past the generator.
+
+**The banner is the mitigation for the one new footgun.** A preview carries a stylesheet that is not
+the payload, and this repo's README already warns about copies taken from the wrong place. Each
+preview therefore opens with a `markdown-alert-caution` block that says so and links back to its
+fixture, the name is `preview-`, not `sample-`, and CONTRACT.md §1 states it where a consumer's agent
+reads. They are also deliberately **not** among the ten contract files: nothing outside this repo
+should ever pin them.
+
+**No high-contrast preview page.** That block leaves `--surface` alone, so a forced page would look
+almost exactly like the dark sample, and a preview that looks like the thing it is contrasted with
+teaches nothing. CI renders it and attaches the image to the pull request, which is the right place
+for a comparison a person makes once.
+
+**Two gates cover the modes as well, and they cover different halves.** Neither is a screenshot
 diff, because layout is identical across the modes and only color moves, so a diff would be noise.
 
 `.github/palette-check.py` **check 6** re-derives the contrast floor for all four palettes on every
