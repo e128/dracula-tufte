@@ -86,8 +86,10 @@ if len(palette) < 17:
     sys.exit(f"Only parsed {len(palette)} oklch tokens from :root — expected 17.")
 
 # --dump is the generator side of the same parse: create-themes.nu needs the palette
-# as data, and re-deriving oklch -> sRGB in Nushell (no trig builtins) would mean a
-# second implementation of the matrix above, free to drift from the one CI checks.
+# as data, and re-deriving oklch -> sRGB in Nushell would mean a second implementation
+# of the matrix above, free to drift from the one CI checks. This comment used to say
+# Nushell had no trig builtins. It does — `math sin` and `math cos` both work, checked
+# on 0.114.1 — so the reason is one implementation, not a missing primitive.
 # `bright` is the L + 0.07 rule the Ghostty ANSI slots already document; it lives
 # here because it needs oklch, not because it is palette policy. The ceiling is
 # 0.99, not 1.0: --on-surface sits at L 0.977, so an unclamped bump lands on
