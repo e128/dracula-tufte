@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.24.0 */
+    /* Dracula-Tufte (muted) v1.25.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -66,7 +66,7 @@
     h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
     h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: var(--space-6) 0 0.4rem; }
     h4 { font-weight: 600; line-height: 1.35; font-size: 1em; color: var(--label); margin: var(--space-4) 0 0.3rem; }
-    h5, h6 { font-weight: 600; line-height: 1.4; font-size: 1em; color: var(--muted); margin: var(--space-3) 0 0.3rem; }
+    h5, h6 { font-weight: 500; line-height: 1.4; font-size: 1em; color: var(--muted); margin: var(--space-3) 0 0.3rem; }
     h6 { font-style: italic; }
     p { margin: var(--space-2) 0; text-wrap: pretty; }
     .indented p { margin-block: 0; }
@@ -282,12 +282,14 @@
       pointer-events: none; overscroll-behavior: contain;
     }
     .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
-    .mermaid-overlay::after { content: "✕"; position: absolute; top: 0.75rem; inset-inline-end: 1rem;
+    .mermaid-overlay::after { content: "✕"; position: absolute;
+      top: max(0.75rem, env(safe-area-inset-top, 0px));
+      inset-inline-end: max(1rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
       font-size: 1.75rem; line-height: 1; color: var(--label); }
     @supports (content: "x" / "y") {
       .mermaid-overlay::after { content: "✕" / ""; }
     }
-    .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(0 0 0 / 0.5)); }
+    .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(from var(--surface-alt) 0.15 c h / 0.5)); }
     pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
     pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
     pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
@@ -308,6 +310,7 @@
       body.conn-map article > section:nth-of-type(1) {
         flex: 0 0 clamp(220px, 22vw, 300px);
         position: sticky; top: 1rem;
+        max-height: calc(100vh - 2rem); overflow-y: auto; overscroll-behavior: contain;
         border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem;
       }
       body.conn-map article > section:nth-of-type(2) {
@@ -350,6 +353,7 @@
         --green:       oklch(0.820 0.100 155.397);
       }
       a { text-decoration-thickness: max(2px, 0.1em); text-decoration-color: currentColor; }
+      .nav-list li a { text-decoration-color: currentColor; }
       a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
       .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline-width: 3px; }
     }
@@ -370,6 +374,10 @@
         --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
         --pink:        oklch(0.545 0.120 349.392);
         --green:       oklch(0.515 0.100 155.397);
+        --data-1:      oklch(0.624 0.146 255.000);
+        --data-2:      oklch(0.643 0.156 340.000);
+        --data-3:      oklch(0.613 0.079 165.000);
+        --data-4:      oklch(0.619 0.078 112.500);
         --ring:        oklch(0 0 0 / 0.1);
         --mermaid-scheme: light;
       }
@@ -398,6 +406,10 @@
         --green:       oklch(0.530 0.100 155.397);
         --orange:      oklch(0.550 0.092 61.444);
         --red:         oklch(0.560 0.142 21.457);
+        --data-1:      oklch(0.624 0.146 255.000);
+        --data-2:      oklch(0.643 0.156 340.000);
+        --data-3:      oklch(0.613 0.079 165.000);
+        --data-4:      oklch(0.619 0.078 112.500);
         --ring:        oklch(0 0 0 / 0.1);
       }
       mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }

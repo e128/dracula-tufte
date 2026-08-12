@@ -1,17 +1,17 @@
 #!/usr/bin/env nu
-# build-sample.nu — regenerate the samples/ pages, a living demo of every
+# build-sample.nu regenerates the samples/ pages, a living demo of every
 # component in tufte-dracula.css + mermaid.js. Re-inlines the two source files
 # verbatim (same bytes the renderer emits), so a CSS or mermaid edit shows up
 # here on the next run. Run: `nu scripts/build-sample.nu` (writes + git-adds).
 #
 # ponytail: static demo body, no markdown pipeline. This is a style fixture, not
-# a lode scroll — html-render.nu owns real content. Add a component here whenever
+# a lode scroll. html-render.nu owns real content. Add a component here whenever
 # tufte-dracula.css gains one.
 
 # path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
 # SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
-# chain in Nushell — the second step has to read a name that is already bound.
+# chain in Nushell, because the second step has to read a name that is already bound.
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
@@ -22,11 +22,11 @@ def main [] {
 
   tokens $css
 
-  # (filename, <body> tag, title, body-content, light-preview filename) — one page
+  # (filename, <body> tag, title, body-content, light-preview filename), one page
   # per layout mode, each with a forced-light twin for Pages.
   [
-    ["dark.html" "<body>" "Tufte-Dracula — component sample" (body) "light.html"]
-    ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body) "light-conn-map.html"]
+    ["dark.html" "<body>" "Tufte-Dracula component sample" (body) "light.html"]
+    ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula connections-map layout" (conn-map-body) "light-conn-map.html"]
   ] | each {|p|
     let html = ([
       "<!DOCTYPE html>"
@@ -61,24 +61,24 @@ def main [] {
 #
 # The rewrite is the one render-modes.py uses: the light condition becomes
 # `@media all` so it always matches, and the high-contrast condition becomes
-# `@media not all` so it never does. Forcing light alone would be almost enough —
+# `@media not all` so it never does. Forcing light alone would be almost enough,
 # the light block is declared after the contrast block and overrides every token
-# it sets — but it would leave the contrast block's two non-token rules live, so a
+# it sets, but it would leave the contrast block's two non-token rules live, so a
 # visitor who asks for more contrast would see a preview nobody else sees.
 # Deterministic beats almost.
 #
 # light.html is NOT the payload: the stylesheet inside it has had its media
 # conditions rewritten, so it is not the file a consumer inlines. It sits beside
 # dark.html under one folder and reads like an equal peer, which is exactly why
-# the banner is not optional — the filename no longer carries the warning.
+# the banner is not optional, because the filename no longer carries the warning.
 def preview [html: string, fixture: string, title: string, name: string] {
   # Each condition is checked on its own, not "did anything change". A first cut
   # compared the whole string before and after and passed when only the contrast
-  # condition still matched — which is the case that matters least. Renaming the
+  # condition still matched, which is the case that matters least. Renaming the
   # light condition alone would have shipped a dark page called light.
   for c in ["@media (prefers-color-scheme: light)" "@media (prefers-contrast: more)"] {
     if not ($html | str contains $c) {
-      error make {msg: $"preview: ($fixture) has no `($c)` — the stylesheet renamed it, so the preview would ship the default palette under a light name"}
+      error make {msg: $"preview: ($fixture) has no `($c)`: the stylesheet renamed it, so the preview would ship the default palette under a light name"}
     }
   }
   let forced = ($html
@@ -86,13 +86,13 @@ def preview [html: string, fixture: string, title: string, name: string] {
     | str replace "@media (prefers-contrast: more)" "@media not all")
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
-    "    <p class=\"markdown-alert-title\">Preview only &mdash; not the payload</p>"
+    "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
     $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
     "  </div>"
   ] | str join "\n")
   let out = ($ROOT | path join "samples" $name)
   ($forced
-    | str replace $"<title>($title)</title>" $"<title>($title) — forced light preview</title>"
+    | str replace $"<title>($title)</title>" $"<title>($title): forced light preview</title>"
     | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out
   ^git -C $ROOT add $out
   print $"  → ($out)"
@@ -100,7 +100,7 @@ def preview [html: string, fixture: string, title: string, name: string] {
 
 # tokens.css is a projection of tufte-dracula.css, not a second source: the :root
 # block sliced out verbatim (only the shared indent is stripped). Verbatim means
-# no transform step, so nothing to drift — the AA-tuning comments, the
+# no transform step, so nothing to drift. The AA-tuning comments, the
 # `--rule: var(--muted)` alias and the layout tokens all come along as written.
 # The staleness gate in contract-check.yml covers this file for free.
 def tokens [css: string] {
@@ -112,7 +112,7 @@ def tokens [css: string] {
   let out = ($ROOT | path join "tokens.css")
   ([
     $"/* Tufte-Dracula palette tokens \(template v($version)\)."
-    " * GENERATED by scripts/build-sample.nu — the :root block of tufte-dracula.css, verbatim."
+    " * GENERATED by scripts/build-sample.nu from the :root block of tufte-dracula.css, verbatim."
     " * Reference only; the renderer inlines the full tufte-dracula.css, which already"
     " * carries these declarations. Do not hand-edit: change tufte-dracula.css and run"
     " * `nu scripts/build-sample.nu`. */"
@@ -131,14 +131,14 @@ def tokens [css: string] {
 # Links comes FIRST in the DOM as of v1.8.0 so tab and screen-reader order match
 # the visual order. The stylesheet no longer reorders; markup order is the layout
 # order. A page emitted with the old (Graph, Links) markup renders reversed under
-# this stylesheet — see NOTES.md.
+# this stylesheet. See NOTES.md.
 def conn-map-body [] {
   [
     "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
     "  <main>"
     "  <article>"
     "    <h1>Connections-Map Layout Sample</h1>"
-    "    <p class=\"byline\">body.conn-map &mdash; Links column left, graph right (wide screens)</p>"
+    "    <p class=\"byline\">body.conn-map, Links column left, graph right (wide screens)</p>"
     "    <section>"
     "      <h2>Links</h2>"
     "      <h3>Antecedents</h3>"
@@ -162,7 +162,7 @@ def body [] {
     "  <main>"
     "  <article>"
     "    <h1>Tufte-Dracula Component Sample</h1>"
-    "    <p class=\"byline\">Living style fixture &mdash; every rule in tufte-dracula.css + mermaid.js</p>"
+    "    <p class=\"byline\">Living style fixture: every rule in tufte-dracula.css + mermaid.js</p>"
     ""
     # Enough sibling links to wrap at 390px, because the v1.22.0 `nav > a + a`
     # separator is a border on the link, so a link that starts a wrapped line
@@ -182,14 +182,14 @@ def body [] {
     "    <section>"
     "      <h2>Headings &amp; text</h2>"
     "      <h3>Third-level heading</h3>"
-    "      <h4>Fourth level &mdash; body size, label tier</h4>"
-    "      <h5>Fifth level &mdash; body size, muted tier</h5>"
-    "      <h6>Sixth level &mdash; muted and italic</h6>"
+    "      <h4>Fourth level: body size, label tier</h4>"
+    "      <h5>Fifth level: body size, muted tier</h5>"
+    "      <h6>Sixth level: muted and italic</h6>"
     "      <p><span class=\"newthought\">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (orange)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href=\"#\">internal hyperlink</a>, an <a href=\"https://example.com\">outbound link</a> carrying its marker, a source citation <cite>src/theme/tokens.css:14</cite>, and inline <code>code()</code>.</p>"
     "      <p>Status spans: <span class=\"verified\">verified</span>, <span class=\"unverified\">unverified</span>, <span class=\"correction\">correction</span>.</p>"
-    "      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd> &mdash; a ringed chip, distinct from inline <code>code()</code>.</p>"
+    "      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd>, a ringed chip distinct from inline <code>code()</code>.</p>"
     "      <p>Markdown inline output: <del>struck through</del> drops to the muted tier, <samp>program output</samp> takes the mono face without the code chip, an <abbr title=\"HyperText Markup Language\">HTML</abbr> abbreviation carries a dotted rule, and H<sub>2</sub>O sits beside 10<sup>3</sup> without opening the line.</p>"
-    "      <p>A sidenote lives here.<label for=\"sn-1\" class=\"margin-toggle sidenote-number\"></label><input type=\"checkbox\" id=\"sn-1\" class=\"margin-toggle\"/><span class=\"sidenote\">This is a Tufte sidenote &mdash; it floats to the right margin and auto-numbers.</span> And a margin note follows.<label for=\"mn-1\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-1\" class=\"margin-toggle\"/><span class=\"marginnote\">A margin note carries no number.</span></p>"
+    "      <p>A sidenote lives here.<label for=\"sn-1\" class=\"margin-toggle sidenote-number\"></label><input type=\"checkbox\" id=\"sn-1\" class=\"margin-toggle\"/><span class=\"sidenote\">This is a Tufte sidenote. It floats to the right margin and auto-numbers.</span> And a margin note follows.<label for=\"mn-1\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-1\" class=\"margin-toggle\"/><span class=\"marginnote\">A margin note carries no number.</span></p>"
     "    </section>"
     ""
     "    <section>"
@@ -206,6 +206,7 @@ def body [] {
     "      <table>"
     "        <caption>Table caption: annotation register, start-aligned like every other block.</caption>"
     "        <thead><tr><th scope=\"col\">Column</th><th scope=\"col\" class=\"num\">Value</th><th scope=\"col\">Note</th></tr></thead>"
+    "        <!-- mock: the figures exist to demonstrate tabular-nums alignment, not to state data -->"
     "        <tbody>"
     "          <tr><td>alpha</td><td class=\"num\">1234</td><td>no stripe, no fill</td></tr>"
     "          <tr><td>beta</td><td class=\"num\">567</td><td>figures align on the class, not the cell</td></tr>"
@@ -232,7 +233,7 @@ def body [] {
     ""
     "    <section>"
     "      <h2>Blockquote, aside, details</h2>"
-    "      <blockquote><p>Stat crux dum volvitur orbis &mdash; the Cross stands while the world turns.</p></blockquote>"
+    "      <blockquote><p>Stat crux dum volvitur orbis. The Cross stands while the world turns.</p></blockquote>"
     "      <aside>An aside: orange accent-bar, no fill. For asides and callouts. A <mark>marked passage inside the label tier</mark> keeps body-copy text, since the wash carries nothing dimmer.</aside>"
     "      <details><summary>Collapsible summary</summary><p>Hidden content revealed on click.</p></details>"
     "    </section>"
@@ -251,7 +252,7 @@ def body [] {
     ""
     "    <section>"
     "      <h2>Markdown callouts, math &amp; footnotes</h2>"
-    "      <p>GitHub alert blocks share the <code>aside</code> form &mdash; one accent bar, no fill &mdash; and carry the hue on the title line only.<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\">1</a></sup></p>"
+    "      <p>GitHub alert blocks share the <code>aside</code> form (one accent bar, no fill) and carry the hue on the title line only.<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\">1</a></sup></p>"
     "      <div class=\"markdown-alert markdown-alert-note\"><p class=\"markdown-alert-title\">Note</p><p>Link-blue bar. Neutral information.</p></div>"
     "      <div class=\"markdown-alert markdown-alert-tip\"><p class=\"markdown-alert-title\">Tip</p><p>Green bar. Optional advice.</p></div>"
     "      <div class=\"markdown-alert markdown-alert-important\"><p class=\"markdown-alert-title\">Important</p><p>Purple bar. Do not skip this.</p></div>"
@@ -271,7 +272,7 @@ def body [] {
     "    <section class=\"indented\">"
     "      <h2>Indented paragraphs (opt-in)</h2>"
     "      <p>A container carrying <code>class=\"indented\"</code> sets its paragraphs the way a book does: no gap between them, and every paragraph after the first opens with a 1.5em indent. The first paragraph is never indented, because nothing precedes it to break from.</p>"
-    "      <p>This paragraph is the second, so it indents. The break is carried by the indent rather than by white space, which is the convention the rest of the page deliberately does not use &mdash; the default remains spaced paragraphs with no indent, and this class is the only way to get the other one.</p>"
+    "      <p>This paragraph is the second, so it indents. The break is carried by the indent rather than by white space, which is the convention the rest of the page deliberately does not use. The default remains spaced paragraphs with no indent, and this class is the only way to get the other one.</p>"
     "      <p>Lists keep their own margin here, as they do everywhere else, so they do not butt against the paragraph above even though the paragraphs themselves carry none.</p>"
     "      <ul><li>A list inside the indented container</li><li>Second item</li></ul>"
     "    </section>"
@@ -291,14 +292,14 @@ def body [] {
     "      <h2>Navigation index components</h2>"
     "      <label class=\"filter-label\" for=\"nav-filter\">Filter entries</label>"
     "      <input id=\"nav-filter\" type=\"search\" class=\"filter-box\" autocomplete=\"off\" placeholder=\"Type to filter&hellip;\"/>"
-    "      <p role=\"status\">3 entries</p>"
+    "      <p role=\"status\">4 entries</p>"
     "      <ul class=\"nav-list\" role=\"list\">"
     "        <li><a href=\"#\">A tappable nav-list link</a></li>"
     "        <li><a href=\"#\">Another entry <span class=\"badge badge-t1\">Tier 1</span></a></li>"
     "        <li><a href=\"#\">Failed audit <span class=\"badge badge-t3\">Tier 3</span></a></li>"
     "      </ul>"
-    "      <p class=\"filter-empty\">No entries match &ldquo;tier 4&rdquo;. Clear the filter to see all 3.</p>"
-    "      <details class=\"nav-group\" open><summary>Subfolder group <span class=\"count\">3</span></summary>"
+    "      <p class=\"filter-empty\" hidden>No entries match &ldquo;tier 4&rdquo;. Clear the filter to see all 4.</p>"
+    "      <details class=\"nav-group\" open><summary>Subfolder group <span class=\"count\">1</span></summary>"
     "        <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">grouped item <span class=\"badge badge-t2\">Tier 2</span></a></li></ul>"
     "      </details>"
     "    </section>"
@@ -328,7 +329,7 @@ def body [] {
     "    </section>"
     ""
     "    <hr/>"
-    "    <footer>Footer text &mdash; muted, small. Generated by scripts/build-sample.nu.</footer>"
+    "    <footer>Footer text, muted and small. Generated by scripts/build-sample.nu.</footer>"
     "  </article>"
     "  </main>"
   ] | str join "\n"

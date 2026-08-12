@@ -1,18 +1,18 @@
 #!/usr/bin/env nu
-# maintain.nu — regular upkeep: local contract check (mirrors CI without a
+# maintain.nu does regular upkeep: local contract check (mirrors CI without a
 # push round-trip), release-gate selftest, template-version bump across all 5
 # sites, CI-gated release tagging, mermaid CDN pin bump.
 # Run: `nu maintain.nu check|selftest|bump <version>|release <version>|mermaid <version>`
 #
 # ponytail: wraps existing build-sample.nu + string replace, no new build
-# system. bump/mermaid stop short of commit — that stays manual. `release` does
+# system. bump/mermaid stop short of commit, and that stays manual. `release` does
 # push and tag, because the ordering between them is the whole point: a tag
 # pushed beside its commit claims the contract held before anything checked it.
 
 # path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
 # SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
-# chain in Nushell — the second step has to read a name that is already bound.
+# chain in Nushell, because the second step has to read a name that is already bound.
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
@@ -40,7 +40,7 @@ def "main check" [] {
     }
   }
 
-  # Wrapper must stay one line at each end — consumers slice the bare body with
+  # Wrapper must stay one line at each end, because consumers slice the bare body with
   # `sed '1d;$d'` and that is a promise, not an accident.
   let css_lines = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right | lines)
   if ($css_lines | first) != "  <style>" { print "tufte-dracula.css line 1 must be exactly '  <style>'"; $ok = false }
@@ -65,7 +65,7 @@ def "main check" [] {
   for section in [init initLight] {
     let entries = ($palette_json | get $section | transpose key entry | where key != "_comment")
     if ($entries | length) < 19 {
-      print $"mermaid-palette.json .($section) has only ($entries | length) keys — refusing to pass vacuously"
+      print $"mermaid-palette.json .($section) has only ($entries | length) keys, refusing to pass vacuously"
       $ok = false
     }
     for e in $entries {
@@ -97,8 +97,8 @@ def "main check" [] {
   # the in-page banner distinguishes it from its dark twin in the same folder.
   for f in [samples/light.html samples/light-conn-map.html] {
     let body = (open --raw ($ROOT | path join $f))
-    if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {` — the light palette is not on"; $ok = false }
-    if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {` — the contrast block is still live"; $ok = false }
+    if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {`: the light palette is not on"; $ok = false }
+    if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {`: the contrast block is still live"; $ok = false }
     if ($body | str replace --all --regex '(?s)<p>This page forces.*?</p>' '') =~ 'prefers-color-scheme' {
       print $"($f): a prefers-color-scheme condition survived the rewrite"
       $ok = false
@@ -128,7 +128,7 @@ def "main check" [] {
     | where {|e| ($before | get $e.index) != ($after | get $e.index) }
     | get item)
   if ($stale | is-not-empty) {
-    print $"STALE: regen rewrote ($stale | str join ', ') — commit the result."
+    print $"STALE: regen rewrote ($stale | str join ', '). Commit the result."
     $ok = false
   } else {
     print "Generated files fresh."
@@ -137,11 +137,28 @@ def "main check" [] {
   # themes/ is generated too, from the same :root palette. A stale theme is worse
   # than a stale fixture: `release` attaches the Rider jar to the tag, so drift
   # here ships to whoever installs it. The jar is tracked and covered by this
-  # gate — create-themes.nu freezes the zip's entry timestamps precisely so its
+  # gate. create-themes.nu freezes the zip's entry timestamps precisely so its
   # bytes can be compared rather than assumed.
   let themes = (^nu ($SCRIPTS | path join "create-themes.nu") --check | complete)
   print ($themes.stdout | str trim)
   if $themes.exit_code != 0 { $ok = false }
+
+  # CLAUDE.md bans the em-dash and the en-dash outright. A prose rule with no gate
+  # decays, and this one governs a repo where most edits arrive from an agent that
+  # reaches for the character by default. `git ls-files` rather than a glob, so the
+  # scan covers exactly what ships and never a scratch file. rg exits 1 on no match,
+  # which is the passing case, so the exit code is read rather than trusted.
+  let dashes = (^git -C $ROOT ls-files | lines | each {|f|
+    let hits = (^rg -c --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete)
+    if $hits.exit_code == 0 { {file: $f, count: ($hits.stdout | str trim)} }
+  })
+  if ($dashes | is-not-empty) {
+    $dashes | each {|d| print $"DASH: ($d.file) carries ($d.count) em-dash or en-dash line\(s\)" }
+    print "CLAUDE.md bans both. Use a period, comma, colon, parentheses or a plain hyphen."
+    $ok = false
+  } else {
+    print "No em-dash or en-dash."
+  }
 
   if $ok {
     print "Contract OK."
@@ -164,7 +181,7 @@ def "main check" [] {
 #
 # STAMPS is therefore the whole contract: a stamp is a place that names the
 # CURRENT version, and nothing else in these files may be touched. Every pattern
-# must match, or the bump fails — a silent no-op leaves the tree claiming the old
+# must match, or the bump fails, because a silent no-op leaves the tree claiming the old
 # version while the release process believes it was stamped.
 const STAMPS = [
   [file pattern template]; # pattern is a regex; template takes {v}
@@ -174,6 +191,18 @@ const STAMPS = [
 ]
 
 def "main bump" [version: string] {
+  # Refuse before stamping, not after. A release stamps four files, rebuilds the
+  # fixtures, the themes and the plugin zip, so a dash caught at `check` time means
+  # unwinding all of it. CLAUDE.md bans the character; this is the point in the flow
+  # where it is cheapest to enforce. Patterns are `\u{...}` escapes because this file
+  # is tracked and a literal one would trip the gate it implements.
+  let dashes = (^git -C $ROOT ls-files | lines | where {|f|
+    (^rg -q --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete).exit_code == 0
+  })
+  if ($dashes | is-not-empty) {
+    error make { msg: $"bump refuses: ($dashes | str join ', ') carry an em-dash or en-dash, which CLAUDE.md bans. Fix them, then bump." }
+  }
+
   let current = (open --raw ($ROOT | path join "tufte-dracula.css")
     | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
   print $"Bumping v($current) -> v($version)"
@@ -183,7 +212,7 @@ def "main bump" [version: string] {
     let before = (open --raw $path)
     let after = ($before | str replace --all --regex $stamp.pattern ($stamp.template | str replace "{v}" $version))
     if $after == $before {
-      error make { msg: $"bump found no match for ($stamp.pattern) in ($stamp.file) — stamp moved or already current, and a silent no-op would ship the wrong version" }
+      error make { msg: $"bump found no match for ($stamp.pattern) in ($stamp.file): stamp moved or already current, and a silent no-op would ship the wrong version" }
     }
     $after | save -f $path
     print $"  stamped ($stamp.file)"
@@ -191,7 +220,7 @@ def "main bump" [version: string] {
 
   nu ($SCRIPTS | path join "build-sample.nu")
   # The plugin zip's filename carries the version and META-INF/plugin.xml reads it
-  # off the stylesheet header, which is what just changed — so this writes a new
+  # off the stylesheet header, which is what just changed, so this writes a new
   # artefact and leaves the old one behind. Deleting it is the point: a stale
   # dracula-tufte-rider-<old>.zip in the tree is installable, and nothing
   # regenerates or checks it.
@@ -204,14 +233,14 @@ def "main bump" [version: string] {
   if ($old | is-not-empty) { rm --force ...$old }
   nu ($SCRIPTS | path join "create-themes.nu")
   print $"Bumped. Review the diff, then:"
-  print $"  git add -A && git commit -m 'feat: v($version) — <summary>'"
+  print $"  git add -A && git commit -m 'feat: v($version) - <summary>'"
   print $"  nu maintain.nu release ($version)"
 }
 
 # Tag a release only after CI has gone green on the exact commit being tagged.
 #
 # This verb does NOT push. `main` requires the `contract` status check, and a
-# required check can only be satisfied by a pull request — the check runs after
+# required check can only be satisfied by a pull request, because the check runs after
 # a push, so a direct push to main can never have satisfied it and is recorded
 # as `Bypassed rule violations`. The work lands through a PR; this runs once it
 # has, confirms the check really is green on what merged, and tags that.
@@ -220,7 +249,7 @@ def "main bump" [version: string] {
 # The gate belongs where a human or an agent tags, not in another YAML file.
 #
 # Only REQUIRED_CHECKS decide. GitHub attaches a check run to a commit for every
-# workflow that fires, including ones it generates itself — pages-build-deployment
+# workflow that fires, including ones it generates itself. pages-build-deployment
 # contributes build/deploy/report-build-status. Those say nothing about the payload,
 # and gating on "every check green" meant a stalled Pages deploy could block, or
 # permanently refuse, a tag whose contract CI had already verified in 14 seconds.
@@ -261,7 +290,7 @@ def "main release" [version: string] {
     | get 0 | $"($in.owner)/($in.repo)")
 
   if (^git -C $ROOT status --porcelain | str trim) != "" {
-    print "Working tree is dirty — commit or stash before releasing."
+    print "Working tree is dirty. Commit or stash before releasing."
     exit 1
   }
   # The commit must already be what origin/main points at. That is what proves
@@ -315,7 +344,7 @@ def "main release" [version: string] {
         })
 
     # Absent is not passing. A required check that never appeared means a commit CI
-    # never saw, which is exactly the thing this verb exists to refuse to tag — so
+    # never saw, which is exactly the thing this verb exists to refuse to tag, so
     # wait for every name in REQUIRED_CHECKS to be present *and* completed.
     if (check-ready $checks) { break }
     if $waited >= 600 {
@@ -337,14 +366,14 @@ def "main release" [version: string] {
   }
   let failed = (check-failures $checks)
   if ($failed | is-not-empty) {
-    print $"NOT TAGGING — ($failed | length) required check\(s\) did not pass on ($sha)."
+    print $"NOT TAGGING: ($failed | length) required check\(s\) did not pass on ($sha)."
     exit 1
   }
 
   # Annotated, never lightweight: a lightweight tag is just a second name for a
   # commit, with no tagger, no date and nothing `git tag -v` can even look at.
   let subject = (^git -C $ROOT log -1 --pretty=%s | str trim)
-  ^git -C $ROOT tag -a $tag -m $"($tag) — ($subject)"
+  ^git -C $ROOT tag -a $tag -m $"($tag): ($subject)"
   # A failed push used to still print "Tagged … verified green", leaving a tag that
   # exists only on this machine while the message says consumers can pin it.
   let pushed = (^git -C $ROOT push origin $tag | complete)
@@ -364,7 +393,7 @@ def "main release" [version: string] {
 # install rather than something they have to build.
 #
 # The other editor themes go up as one themes zip alongside it. They are plain
-# files in the tree, so GitHub's own source zip already carries them — but only
+# files in the tree, so GitHub's own source zip already carries them, but only
 # for someone willing to download the whole template and find themes/. An asset
 # named for the job is what a person on a second machine actually wants, and
 # v1.17.0 shipped with neither: the tag landed on a commit before themes/ existed
@@ -395,11 +424,11 @@ def publish-plugin [tag: string, slug: string, version: string] {
 
 # Zip the editor themes for the release. The exclusions are the whole content
 # decision:
-#   - dist/* — the jar is its own asset, and a jar nested inside a zip is a thing
+#   - dist/*: the jar is its own asset, and a jar nested inside a zip is a thing
 #     people install by mistake.
-#   - *.in — the generation templates. They carry `{{token}}` placeholders, so a
+#   - *.in: the generation templates. They carry `{{token}}` placeholders, so a
 #     consumer who installs one gets a theme with literal braces for colours.
-#   - .DS_Store — gitignored, so git never sees it, but zip walks the real disk.
+#   - .DS_Store: gitignored, so git never sees it, but zip walks the real disk.
 # Written to dist/, which .gitignore covers for *.zip, so this leaves no
 # untracked artefact behind to go stale.
 def theme-bundle [version: string]: nothing -> path {
@@ -415,7 +444,7 @@ def theme-bundle [version: string]: nothing -> path {
 }
 
 # Drive the release gate with the check shapes GitHub really produces. No network,
-# no repo state — it exists because the gate cannot otherwise be exercised without
+# no repo state, and it exists because the gate cannot otherwise be exercised without
 # waiting on a live commit, and the two cases marked below are bugs that shipped.
 def "main selftest" [] {
   let cases = [

@@ -1,5 +1,5 @@
 #!/usr/bin/env nu
-# create-themes.nu — regenerate everything under themes/ from tufte-dracula.css,
+# create-themes.nu regenerates everything under themes/ from tufte-dracula.css,
 # then package the Rider theme as an installable plugin jar.
 # Run: `nu scripts/create-themes.nu` | `… --check` | `… --no-jar`
 #
@@ -12,7 +12,7 @@
 #   {{mix:surface:red:20}}     20% red over surface, mixed in sRGB
 #   {{version}}                the template version parsed out of the CSS
 #
-# Templates write bare hex, never `#rrggbb` — the `#` belongs to the format, so
+# Templates write bare hex, never `#rrggbb`, because the `#` belongs to the format, so
 # Ghostty and the Rider theme.json write `#{{green}}` and the .icls writes
 # `{{green}}`. One placeholder vocabulary, no per-file escaping rule.
 #
@@ -26,7 +26,7 @@
 # path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
 # SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
-# chain in Nushell — the second step has to read a name that is already bound.
+# chain in Nushell, because the second step has to read a name that is already bound.
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
@@ -65,7 +65,7 @@ def main [
   if not $no_jar {
     if $check {
       # Build a throwaway and compare bytes. Only meaningful because package
-      # freezes every entry timestamp — see there.
+      # freezes every entry timestamp. See there.
       let probe = ($plugin | path dirname | path join ".probe.zip")
       package $probe $version
       if (not ($plugin | path exists)) or (open --raw $plugin) != (open --raw $probe) {
@@ -78,7 +78,7 @@ def main [
       # it is the shape Install Plugin from Disk refuses.
       for old in (glob ($plugin | path dirname | path join "*.{jar,zip}")) {
         if $old != $plugin and ($old | path basename | str starts-with "dracula-tufte-rider-") {
-          $drift = ($drift | append $"($old | path relative-to $ROOT) — built for a version no longer stamped")
+          $drift = ($drift | append $"($old | path relative-to $ROOT) , built for a version no longer stamped")
         }
       }
     } else {
@@ -92,7 +92,7 @@ def main [
     if ($drift | is-empty) {
       print "Themes fresh."
     } else {
-      $drift | each {|f| print $"STALE: ($f) — run `nu scripts/create-themes.nu`" }
+      $drift | each {|f| print $"STALE: ($f). Run `nu scripts/create-themes.nu`" }
       exit 1
     }
   }
@@ -103,7 +103,7 @@ def plugin-path [version: string]: nothing -> path {
 }
 
 # Line 2 of the stylesheet is machine-read in three places already (build-sample.nu,
-# maintain.nu bump, and here). Fail loudly rather than stamping a plugin "v" — a
+# maintain.nu bump, and here). Fail loudly rather than stamping a plugin "v", because a
 # jar with a blank version installs fine and then never updates.
 def version-of-css []: nothing -> string {
   let line = (open --raw ($ROOT | path join "tufte-dracula.css") | lines | get 1)
@@ -128,7 +128,7 @@ def resolve [key: string, palette: record, version: string]: nothing -> string {
   if ($key | str starts-with "mix:") {
     let p = ($key | split row ":")
     if ($p | length) != 4 {
-      error make {msg: $"bad placeholder {{($key)}} — want mix:base:accent:percent"}
+      error make {msg: $"bad placeholder {{($key)}}: want mix:base:accent:percent"}
     }
     return (mix (token $palette $p.1) (token $palette $p.2) ($p.3 | into float))
   }
@@ -171,7 +171,7 @@ def byte-hex []: int -> string {
 }
 
 # Rider loads a UI theme only from a plugin, so the installable artefact is built
-# here — and it is a zip wrapping a jar, not a bare jar. That distinction is the
+# here, and it is a zip wrapping a jar, not a bare jar. That distinction is the
 # whole reason this function is shaped the way it is.
 #
 # A bare jar dropped straight into `<config>/plugins/` loads fine. Verified: Rider
@@ -193,7 +193,7 @@ def byte-hex []: int -> string {
 #         dracula-tufte.xml
 #
 # Directory entries are written in their own right, ahead of what is inside them.
-# Naming only the files gives a zip with no directory entries — legal, and
+# Naming only the files gives a zip with no directory entries, which is legal, and
 # java.util.zip reads it back without complaint, but not the shape of anything
 # known to load, and the one jar that had demonstrably loaded here carried them.
 #
@@ -209,7 +209,7 @@ def byte-hex []: int -> string {
 #   - `touch -t 198001010000` on every staged entry. A zip records each file's
 #     mtime in its header, so an unfrozen build of identical content is a
 #     different file. 1980-01-01 is the earliest a zip can store. It has to be
-#     applied twice — once before the inner jar is built, and again to the jar
+#     applied twice: once before the inner jar is built, and again to the jar
 #     itself, which is created new and therefore carries a live mtime.
 #   - `-X` drops the uid/gid and extended attributes, which differ per machine.
 #   - Entries are named in a fixed order rather than swept up with `-r`. Recursion
@@ -221,7 +221,7 @@ def byte-hex []: int -> string {
 # dracula-tufte.xml: a theme's `editorScheme` resolves through SchemeManager,
 # which registers only *.xml out of a plugin, so a bundled .icls loads as nothing
 # and Rider logs "refers to unknown color scheme" while still showing the UI
-# theme. It stays .icls on disk — that is what Import Scheme… expects.
+# theme. It stays .icls on disk, which is what Import Scheme… expects.
 def package [out: path, version: string] {
   let dir = ($ROOT | path join "themes" "rider")
   let dist = ($dir | path join "dist")

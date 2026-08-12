@@ -64,3 +64,32 @@ read as links.
 Two stay recorded, and they are not entries. `address` keeps its UA italic, which is
 arguably correct for a postal block. `.tabbed-set` shows every panel at once, and a fix
 means the sheet claims a radio-driven widget.
+
+## Open after v1.25.0
+
+**A light twin for the `classdef` fills.** v1.25.0 gave `--data-1..4` light and print values and
+moved `initLight.pie1..4` onto them, so a pie chart now clears 3.2:1 against the light card. The
+`classdef` section in `mermaid-palette.json` did not move: it holds one set, projected from the dark
+ramp, and `.github/palette-check.py` check 2 resolves it against the dark palette only. A generator
+that writes its own `classDef name fill:...` lines still paints dark-ground fills on a light page,
+at the 1.69 to 2.15:1 the token work just fixed everywhere else.
+
+Take it when a consumer emits `classDef` lines on a page that can render light. The cost is not the
+hex: it is that a fence has no CSS to read, so the generator has to decide which set to emit, and
+that decision needs a rule this repo does not have yet. `NOTES.md` under *Form follows role* records
+the measurement and the reasoning.
+
+**Pie slice opacity and the dark-mode slice label.** Two coupled defects, both found by rendering a
+`pie` fence rather than by reading tokens, and both older than v1.25.0.
+
+Mermaid sets `.pieCircle { opacity: 0.7 }`, so a slice composites to 2.15 to 2.22:1 against the
+light card even after the v1.25.0 ramp cleared 3.2:1 flat. Separately, a dark-mode slice label is
+`textColor` at `#f8f8f2`, drawn on a pale fill, measuring 1.81:1 flat and 2.86 to 3.47:1
+composited. The fills are pale in dark mode and dark in light mode, which is the inverse of what
+Mermaid's single `textColor` assumes, so one value cannot serve both.
+
+Forcing `opacity: 1` fixes the first and makes the second worse, so they move together or not at
+all. The shape of a real fix is `pieSectionTextColor` per palette, dark text in the dark scheme
+where fills are pale and light text in the light scheme where fills are not, plus a decision about
+whether a seventh `!important` against Mermaid's stylesheet is worth the boundary. No fixture has a
+pie chart, which is why this went unmeasured for so long; take this together with adding one.

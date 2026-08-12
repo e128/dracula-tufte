@@ -22,6 +22,7 @@
       if (!empty) {
         empty = document.createElement('p');
         empty.className = 'filter-empty';
+        empty.textContent = 'No entries match. Clear the filter to see all entries.';
         empty.hidden = true;
         scope[scope.length - 1].after(empty);
       }

@@ -58,7 +58,8 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
-| v1.24.0 | drop any specificity hack or `!important` you added to override the template — the sheet is in `@layer tufte-dracula` and your unlayered CSS wins on its own |
+| v1.25.0 | nothing. The stylesheet changes are self-contained: `--data-1..4` gained light and print values, `h5` and `h6` dropped to weight 500, and the conn-map Links column is height-bounded. `filter.js` now writes `No entries match. Clear the filter to see all entries.` into a `.filter-empty` it creates, and still leaves your own copy untouched when you emit one |
+| v1.24.0 | drop any specificity hack or `!important` you added to override the template. The sheet is in `@layer tufte-dracula` and your unlayered CSS wins on its own |
 | v1.24.0 | nothing for light or high-contrast mode; both are media queries over the same markup |
 | v1.22.0 | emit `<nav>` with sibling `<a>` children to get link separators; nothing to change if you already do |
 | v1.22.0 | supply `tabindex="0"`, `role="region"` and a label on any `<math display="block">` |
@@ -105,4 +106,5 @@ only relationship your markup states, so state it by putting the content after t
 
 A `[role="status"]` element inside the input's parent receives the visible count. A
 `.filter-empty` element receives the no-matches line, and the script creates a hidden one after
-the span when your markup omits it.
+the span when your markup omits it. The created one carries its own copy as of v1.25.0, so a page
+that omits the element still shows a real no-matches line rather than a blank gap.

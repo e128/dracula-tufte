@@ -28,7 +28,7 @@ jobs:
             || { echo "tufte-dracula.css line 1 must be exactly '  <style>'"; exit 1; }
           tail -1 tufte-dracula.css | grep -qx '  </style>' \
             || { echo "tufte-dracula.css last line must be exactly '  </style>'"; exit 1; }
-          echo "Wrapper intact — sed '1d;\$d' yields the bare body."
+          echo "Wrapper intact. sed '1d;\$d' yields the bare body."
 
       - name: Mermaid themeVariables must match mermaid-palette.json (both palettes)
         run: |
@@ -43,7 +43,7 @@ jobs:
           rows=$(jq -er '(.init, .initLight) | to_entries[] | select(.key != "_comment") | "\(.key) \(.value.hex)"' mermaid-palette.json) \
             || { echo "cannot read .init / .initLight out of mermaid-palette.json"; exit 1; }
           n=$(printf '%s\n' "$rows" | grep -c .)
-          [ "$n" -ge 38 ] || { echo "mermaid-palette.json has only $n init rows across both palettes — refusing to pass vacuously"; exit 1; }
+          [ "$n" -ge 38 ] || { echo "mermaid-palette.json has only $n init rows across both palettes, refusing to pass vacuously"; exit 1; }
           fail=0
           while read -r key hex; do
             grep -qE "$key:[[:space:]]*'$hex'" mermaid.js \
@@ -51,7 +51,7 @@ jobs:
           done <<< "$rows"
           grep -q "theme: 'base'" mermaid.js || { echo "mermaid.js must use theme:'base', not 'dark'"; fail=1; }
           exit $fail
-          # No separate "must not be oklch()" gate needed — the per-key hex match
+          # No separate "must not be oklch()" gate needed, because the per-key hex match
           # above already fails on any non-hex value.
 
       - name: mermaid-palette.json hex must match the CSS oklch
@@ -84,14 +84,14 @@ jobs:
           # visitor on any OS. If the stylesheet renames either condition, the
           # generator's `str replace` no-ops: it raises, but a hand-edited page would not
           # go through the generator. Then Pages serves a dark page called light, which
-          # is the kind of quiet wrong this repo gates against — and the filename no
+          # is the kind of quiet wrong this repo gates against, and the filename no
           # longer warns anyone, now that it is `light.html` beside `dark.html`.
           fail=0
           for f in samples/light.html samples/light-conn-map.html; do
             grep -q '@media all {' "$f" \
-              || { echo "$f: no forced '@media all {' — the light palette is not on"; fail=1; }
+              || { echo "$f: no forced '@media all {': the light palette is not on"; fail=1; }
             grep -q '@media not all {' "$f" \
-              || { echo "$f: no '@media not all {' — the contrast block is still live"; fail=1; }
+              || { echo "$f: no '@media not all {': the contrast block is still live"; fail=1; }
             # The banner prose names the condition it forces, so it is stripped
             # before the leftover check. Anything else is a condition that survived.
             perl -0pe 's{<p>This page forces.*?</p>}{}s' "$f" | grep -q 'prefers-color-scheme' \
@@ -99,6 +99,23 @@ jobs:
           done
           [ "$fail" -eq 0 ] && echo "Light previews force light."
           exit $fail
+
+      - name: No em-dash and no en-dash in any tracked file
+        run: |
+          # CLAUDE.md bans U+2014 and U+2013 outright. This mirrors the same gate in
+          # `nu scripts/maintain.nu check` so a contributor who never runs the local
+          # check still cannot land one. `git ls-files -z` scans exactly what ships.
+          # rg exits 1 when it matches nothing, which is the passing case here, so the
+          # match list is collected rather than the exit code trusted. The patterns are
+          # `\u{...}` escapes, not the characters themselves: this file is tracked, so a
+          # literal pattern would make the gate fail on its own implementation.
+          hits=$(git ls-files -z | xargs -0 rg -n --no-messages -e '\u{2014}' -e '\u{2013}' || true)
+          if [ -n "$hits" ]; then
+            printf '%s\n' "$hits"
+            echo "CLAUDE.md bans the em-dash and the en-dash. Use a period, comma, colon, parentheses or a plain hyphen."
+            exit 1
+          fi
+          echo "No em-dash or en-dash."
 
       - name: Install nu
         uses: hustcer/setup-nu@v3
@@ -118,7 +135,7 @@ jobs:
           # so an index-vs-worktree diff is always empty and this gate would pass
           # vacuously. HEAD-vs-worktree is what "stale in the commit" actually means.
           git diff HEAD --exit-code -- samples tokens.css || {
-            echo "tokens.css / the samples/ pages are stale — run 'nu scripts/build-sample.nu' and commit the result."
+            echo "tokens.css / the samples/ pages are stale. Run 'nu scripts/build-sample.nu' and commit the result."
             exit 1
           }
 

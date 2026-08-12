@@ -1,9 +1,9 @@
-# Dracula-Tufte (muted) — JetBrains Rider theme
+# Dracula-Tufte (muted): JetBrains Rider theme
 
 Two artefacts, one palette:
 
-- `dracula-tufte.icls` — editor colour scheme (syntax, gutter, diff, console ANSI).
-- `dracula-tufte.theme.json` — IDE chrome (tool windows, tabs, menus, popups, icons).
+- `dracula-tufte.icls`: editor colour scheme (syntax, gutter, diff, console ANSI).
+- `dracula-tufte.theme.json`: IDE chrome (tool windows, tabs, menus, popups, icons).
 
 Every hex here is the sRGB rendering of a `tufte-dracula.css` `:root` `oklch()`
 token. The ANSI slots match `themes/ghostty/dracula-tufte` one-for-one, so the
@@ -22,7 +22,7 @@ nu scripts/create-themes.nu --no-jar  # themes only
 
 ## Install
 
-**Whole theme** — UI plus colour scheme:
+**Whole theme**, UI plus colour scheme:
 
 ```sh
 nu scripts/create-themes.nu
@@ -43,7 +43,7 @@ dracula-tufte-rider-<version>.zip
 ```
 
 Through v1.18.0 it was a bare jar, and that shape has a trap in it. A bare jar
-copied by hand into `<config>/plugins/` loads perfectly — Rider 2026.2 reports
+copied by hand into `<config>/plugins/` loads perfectly, and Rider 2026.2 reports
 `Loaded custom plugins: … Dracula-Tufte (muted) …` and the theme appears. But
 **Install Plugin from Disk… refuses it**, which is how everyone actually
 installs. Bare-jar plugins are the legacy form; `Name/lib/*.jar` is what every
@@ -56,7 +56,7 @@ problem.
 The plugin is tracked, and `nu scripts/maintain.nu release` attaches it to the GitHub
 release for the tag, so it can also be downloaded without cloning. Tracking a
 zip only works because the build is reproducible: every staged entry is stamped
-`1980-01-01` — twice, since the inner jar is itself created new — `-X` drops
+`1980-01-01` twice, since the inner jar is itself created new. `-X` drops
 per-machine uid/gid and xattrs, and entries are named in a fixed order instead of
 swept up by `-r`. `META-INF/MANIFEST.MF` deliberately carries no JVM, OS or
 platform-build stamps for the same reason. Rebuilding unchanged inputs is
@@ -95,13 +95,13 @@ recomputes it from `--purple` rather than restating the hex.
 | `--label` | `#b7bfe4` | `h3`, sidenotes | instance and static fields |
 | `--muted` | `#979fc4` | `cite` | comments (italic), inlay hints |
 | `--rule-light` | `#707388` | hairlines | line numbers, unused symbols |
-| `--red` | `#f68281` | — | errors, deleted lines |
+| `--red` | `#f68281` | n/a | errors, deleted lines |
 | `--data-1..4` | `#99bdec` `#de8dc3` `#74caa6` `#bbc175` | diagram categories | VCS status, diff, log refs |
 
 The jobs are kept, but the *weighting* is not. Prose can afford a quiet tier because colour is
 sparse there; an editor colours nearly every glyph, so the same tier reads as wash. Punctuation
 sits at `--on-surface` rather than `--label`, and types take `--purple` at L+0.07 rather than
-plain — see [Editor themes](../../NOTES.md#editor-themes) for the measurements and the three
+plain. See [Editor themes](../../NOTES.md#editor-themes) for the measurements and the three
 slot maps that were rendered and rejected.
 
 The `--data-*` ramp stays on categorical things (diff, VCS, file colours) for the
