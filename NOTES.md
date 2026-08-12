@@ -1956,6 +1956,46 @@ Verified after the move by running `nu ../scripts/maintain.nu check` from `theme
 The payload, the fixtures, `tokens.css` and the docs stay at the root. Pages serves the root, and
 consumers pin paths into it, so moving any of those breaks a pinned consumer for no gain.
 
+### Python stays, and the alternatives were measured rather than argued
+
+Both helpers were put up for rewrite in v1.24.0 and both stayed. **Neither the color math nor the
+contrast math is the obstacle. Both ports work, exactly.** Each candidate was run against all 17
+`:root` tokens and compared to `palette-check.py --dump` as strings, because CI compares hex as
+strings:
+
+| candidate | result |
+| --- | --- |
+| awk | 17 tokens compared, 0 mismatch |
+| Nushell | 17 tokens compared, 0 mismatch |
+
+So the reasons are the other three.
+
+**"Bash" is not an option; only awk is.** Bash has no floating-point arithmetic, and the Oklab
+matrix needs `cos`, `sin` and `x^(1/2.4)`. A bash version is an awk program in a shell wrapper, which
+takes the repo from `{nu, python, bash}` to `{nu, bash, awk}` — the same three languages, with the
+math in the least readable of them.
+
+**Nushell would genuinely drop one language, and it is a rewrite of the primary gate.** `math sin`
+and `math cos` exist, and `format number | get lowerhex` formats the byte, so `palette-check` could
+be `scripts/palette-check.nu` and `create-themes.nu` could stop shelling out to `python3` for
+`--dump`. That is a real gain and it is two hundred lines of the most load-bearing check in the repo,
+rewritten to save a dependency that is preinstalled everywhere it runs. Take it if the check needs a
+substantial change for its own reasons, and do the rewrite then, not on its own.
+
+**`render-modes.py` cannot move at all, and this is the hard blocker.** Reading one PNG pixel needs
+zlib inflate. Nushell has no decompress command and neither does bash. The known workaround strips
+the two-byte zlib header and prepends a hand-built gzip header:
+
+```
+{ printf '\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03'; dd if=z.bin bs=1 skip=2; } | gzip -dc
+```
+
+It inflates correctly and then **always fails its trailer**, because a zlib adler32 is not a gzip
+crc32. `gzip` prints `invalid compressed data--crc error` and exits non-zero on a *healthy* PNG, so
+the check would have to ignore its own exit status and could no longer tell a corrupt screenshot
+from a good one. That is the exact class of quiet wrongness the gate exists to catch, so the
+workaround costs more than the dependency.
+
 ## Odds and ends
 
 **`hr` is a `border-block-start`, not a `box-shadow`, because the shadow painted nothing at all.**
