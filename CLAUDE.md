@@ -60,7 +60,7 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
 
 ## Regeneration and the contract
 
-- `scripts/build-sample.nu` generates `sample.html`, `sample-conn-map.html` and `tokens.css`. Never edit
+- `scripts/build-sample.nu` generates `samples/dark.html`, `samples/dark-conn-map.html` and `tokens.css`. Never edit
   them by hand. Change `tufte-dracula.css`, `mermaid.js` or `scripts/build-sample.nu`, then regenerate.
 - Run `nu scripts/maintain.nu check` after every change. It mirrors CI: file presence, the palette
   hex-against-oklch gate, exactly one `<style>` and one `<script>` per fixture, and a staleness

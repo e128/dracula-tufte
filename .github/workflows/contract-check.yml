@@ -14,7 +14,7 @@ jobs:
 
       - name: Verify the ten contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html scripts/build-sample.nu README.md CONTRACT.md; do
+          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
           echo "All 10 contract files present."
@@ -65,7 +65,7 @@ jobs:
           # the canonical ones.
           # grep -o, not grep -c: -c counts matching *lines*, so a second block
           # opened on a line that already holds one reads as 1 and passes.
-          for f in sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html; do
+          for f in samples/dark.html samples/dark-conn-map.html samples/light.html samples/light-conn-map.html; do
             n=$(grep -o "<style" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <style> block (canonical CSS), found $n"; exit 1; }
             n=$(grep -o "<script" "$f" | wc -l | tr -d ' ')
@@ -75,14 +75,15 @@ jobs:
 
       - name: Light previews must actually force light
         run: |
-          # The previews are the fixtures with the light condition forced on and the
+          # samples/light*.html are the dark pages with the light condition forced on and the
           # contrast condition forced off, so Pages can serve the light palette to a
           # visitor on any OS. If the stylesheet renames either condition, the
-          # generator's `str replace` no-ops: it raises, but a hand-edited preview
-          # would not go through the generator. Then Pages serves a dark page called
-          # light, which is the kind of quiet wrong this repo gates against.
+          # generator's `str replace` no-ops: it raises, but a hand-edited page would not
+          # go through the generator. Then Pages serves a dark page called light, which
+          # is the kind of quiet wrong this repo gates against — and the filename no
+          # longer warns anyone, now that it is `light.html` beside `dark.html`.
           fail=0
-          for f in preview-light.html preview-conn-map-light.html; do
+          for f in samples/light.html samples/light-conn-map.html; do
             grep -q '@media all {' "$f" \
               || { echo "$f: no forced '@media all {' — the light palette is not on"; fail=1; }
             grep -q '@media not all {' "$f" \
@@ -112,8 +113,8 @@ jobs:
           # `git diff HEAD`, not `git diff`: scripts/build-sample.nu git-adds what it writes,
           # so an index-vs-worktree diff is always empty and this gate would pass
           # vacuously. HEAD-vs-worktree is what "stale in the commit" actually means.
-          git diff HEAD --exit-code -- sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html tokens.css || {
-            echo "tokens.css / the fixtures / the light previews are stale — run 'nu scripts/build-sample.nu' and commit the result."
+          git diff HEAD --exit-code -- samples tokens.css || {
+            echo "tokens.css / the samples/ pages are stale — run 'nu scripts/build-sample.nu' and commit the result."
             exit 1
           }
 
@@ -123,6 +124,8 @@ jobs:
         # pixel is that mode's --surface, which is the end-to-end half that
         # palette-check.py cannot see: it reads values, not what Chrome paints.
         # google-chrome is preinstalled on the ubuntu runner image.
+        # The outdir argument is what makes it write into the workspace at all; without
+        # one it uses a temp dir. CI wants the files, so it names a gitignored path.
         run: python3 .github/render-modes.py mode-renders
 
       - name: Upload the mode renders

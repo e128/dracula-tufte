@@ -16,7 +16,7 @@ Two comments remain in the CSS. A machine reads both, and neither is prose:
 The prose-comment removal was verified as behavior-neutral. Computed styles for every element in
 both fixtures at 390 / 900 / 1280 / 1920px are byte-identical to the commented version: 0
 differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 bytes, `mermaid.js`
-4731 to 2079, `sample.html` 45173 to 20728 (54%), and `sample-conn-map.html` 41030 to 16585
+4731 to 2079, `samples/dark.html` 45173 to 20728 (54%), and `samples/dark-conn-map.html` 41030 to 16585
 (60%). That reduction lands in every page a consumer generates.
 
 ## Contents
@@ -321,7 +321,7 @@ rule.
 list with `list-style: none`: no "list, N items", and no item position. With the markers restored,
 prose lists keep their semantics natively, and only `.nav-list` needs `role="list"` in the markup,
 which is now a documented consumer obligation. The real accessibility tree verified it (CDP
-`Accessibility.getFullAXTree`): eight `list` nodes in `sample.html`, four nav lists by explicit
+`Accessibility.getFullAXTree`): eight `list` nodes in `samples/dark.html`, four nav lists by explicit
 role and the prose lists by having markers again.
 
 ## Tables
@@ -616,7 +616,7 @@ rather than semantic, and because that is the color the border already was.
 --orange  strong, aside accent bar, .unverified
 ```
 
-The overlap a reader can actually see is `--orange`. `sample.html` puts `strong` and
+The overlap a reader can actually see is `--orange`. `samples/dark.html` puts `strong` and
 `.unverified` in adjacent paragraphs, so orange means *emphasis* on one line and *status* on the
 next. It stays because form separates the other two pairs. `--pink` is a 1.75em heading against
 an italic 0.95em table header, and `--purple` is a heading against a 3px bar and a selection
@@ -862,7 +862,7 @@ shifted from black-white blends (`#ababab`, `#222223`) to purple-white blends (`
 `#60537a`), confirming the text itself repainted and not just the box behind it. No hex needed
 adding to `mermaid-palette.json`: every value reused is already a `var()` token from the CSS side
 of the palette, not a new literal, so check 4 of `.github/palette-check.py` has nothing new to
-drift. `sample.html` carries a `packet-beta` fence for the same reason the sequence and quadrant
+drift. `samples/dark.html` carries a `packet-beta` fence for the same reason the sequence and quadrant
 fences exist — the bug shipped invisibly because nothing had ever rendered the diagram type
 before, and a fixture that never uses a component cannot catch a regression in it.
 
@@ -989,7 +989,7 @@ then a rush, so the click felt late. Every other transition in the sheet was alr
 
 **Zoom is a real `<button>` that `mermaid.js` injects, not a focusable `pre`.** Before it, the
 only way to zoom was a click on the SVG. `tabindex` was null on both `pre` and `svg` with zero
-focusable descendants, so Tab produced 12 stops in `sample.html` and none of them was the diagram
+focusable descendants, so Tab produced 12 stops in `samples/dark.html` and none of them was the diagram
 (WCAG 2.1.1). Two cheaper fixes were rejected:
 
 - `tabindex="0"` plus `role="button"` on `pre.mermaid` makes the button's content
@@ -1033,7 +1033,7 @@ defect it would paper over.
 
 **The zoom button is named from the diagram, not from a constant.** `textContent` was a hard-coded
 `'Zoom diagram'`, so a page with two diagrams exposed two identically named buttons, verified in
-the AX tree by adding a pie chart to `sample.html`. The distinguishing text already existed and
+the AX tree by adding a pie chart to `samples/dark.html`. The distinguishing text already existed and
 was being thrown away: mermaid writes each fence's `accTitle:` into the SVG's root `<title>`,
 which is exactly the obligation `README.md` demands. `aria-label` is now `label + ': ' + title`
 (`'Zoom diagram: Decision flow sample'`), with the visible text left short. The overlay takes the
@@ -1129,7 +1129,7 @@ are worse than the problem. A layer settles it by origin instead of by weight. *
 styles beat every layered author style for normal declarations, whatever the specificity.** So
 `h1 { color: … }` in a consumer's own `<style>` now wins, and nothing in this sheet has to move.
 
-Verified against `sample.html`: a bare `h1 { color: rgb(0, 255, 0) }` added after the payload
+Verified against `samples/dark.html`: a bare `h1 { color: rgb(0, 255, 0) }` added after the payload
 paints the heading green, and no `--pink` pixel survives in the heading box.
 
 **The `!important` declarations became harder to override, not easier, and that is the trade.** In
@@ -1246,7 +1246,7 @@ manual override as a feature, and treat it then as a public API decision — the
 persistence, the first-paint flash — not as a fixture fix.
 
 **Two generated preview pages carry the light palette to the web instead.** Pages serves this repo
-root from `main`, so `preview-light.html` and `preview-conn-map-light.html` are live on merge with no
+root from `main`, so `samples/light.html` and `samples/light-conn-map.html` are live on merge with no
 workflow, no deploy step and no `docs/` directory. `scripts/build-sample.nu` writes each one right after its
 fixture, using the rewrite `render-modes.py` already does: the light condition becomes `@media all`
 and the contrast condition becomes `@media not all`.
@@ -1263,12 +1263,20 @@ light while regeneration still compares clean. That is exactly the shape of quie
 gates against, so `scripts/build-sample.nu` errors on it, and `scripts/maintain.nu check` plus CI assert the same
 property on the committed file, which is what a hand-edit would get past the generator.
 
-**The banner is the mitigation for the one new footgun.** A preview carries a stylesheet that is not
-the payload, and this repo's README already warns about copies taken from the wrong place. Each
-preview therefore opens with a `markdown-alert-caution` block that says so and links back to its
-fixture, the name is `preview-`, not `sample-`, and CONTRACT.md §1 states it where a consumer's agent
-reads. They are also deliberately **not** among the ten contract files: nothing outside this repo
-should ever pin them.
+**The banner is the only thing left warning anyone, and that is a real cost of the rename.** These
+shipped as `preview-light.html` and `preview-conn-map-light.html`, where the filename carried the
+warning: a `preview-` prefix beside `sample-` said which one was not the payload. The four pages were
+then unified as `samples/dark.html`, `samples/dark-conn-map.html`, `samples/light.html` and
+`samples/light-conn-map.html`, which reads far better as a set and costs that signal. `light.html`
+now sits beside `dark.html` in one folder and looks like an equal peer, when its stylesheet has had
+its `@media` conditions rewritten and `dark.html`'s has not.
+
+Three things carry the warning instead. Each light page opens with a `markdown-alert-caution` block
+that says it is not the payload and links back to its dark twin. CONTRACT.md §1 states it where a
+consumer's agent reads, rather than only in README. And the two light pages are deliberately **not**
+among the ten contract files, while the two dark ones are — nothing outside this repo should pin a
+page whose media queries were rewritten. **Do not remove that banner to tidy the page.** It is the
+last thing standing between a consumer and a stylesheet locked to one appearance.
 
 **No high-contrast preview page.** That block leaves `--surface` alone, so a forced page would look
 almost exactly like the dark sample, and a preview that looks like the thing it is contrasted with
@@ -1354,7 +1362,7 @@ the print stylesheet waiting for someone to reuse the token.
 widows: 2` on `p`, `break-after: avoid` on `h1`, `h2` and `h3`, which replaces the lone legacy
 `page-break-after`, `break-inside: avoid` on `tr`, `blockquote`, `aside`, `details`, `.scorecard`,
 `.verdict` and `img`, and `thead { display: table-header-group }` so a table that crosses a page
-repeats its header. Verified against a 7-page Letter PDF of `sample.html`: the tree table moves
+repeats its header. Verified against a 7-page Letter PDF of `samples/dark.html`: the tree table moves
 whole to page 2 and reprints its header there, the scorecard and both callouts stay intact, and
 no single line strands.
 
@@ -1417,7 +1425,7 @@ and the reversal is deliberate rather than an oversight of it.
 
 Two measurements forced it.
 
-**The fixture's own filter box was inert, and had been since v1.16.0.** `sample.html` carries
+**The fixture's own filter box was inert, and had been since v1.16.0.** `samples/dark.html` carries
 exactly one `input.filter-box`, and what follows it is a `.nav-list` and a `details.nav-group`.
 There is no table in that section. The old script walked `nextElementSibling` for the first
 `TABLE`, found none, and returned at `if (!table) return`. So the living style fixture, which
@@ -1454,8 +1462,8 @@ of sibling `<a>` children rendered as an undifferentiated run of link text, beca
 styled `nav` for margin, color and size but never separated its children.
 
 **Neither fixture contained a `<nav>` element at all before v1.22.0**, though `README.md` listed
-nav among the components `sample.html` shows. The rule that fixed the run-together nav therefore
-shipped unmodeled, and the nav that motivated it lived only in a consumer's output. `sample.html`
+nav among the components `samples/dark.html` shows. The rule that fixed the run-together nav therefore
+shipped unmodeled, and the nav that motivated it lived only in a consumer's output. `samples/dark.html`
 now carries seven sibling links, which is enough to wrap at 390px.
 
 **The wrapped-line separator is a known artefact and it is accepted.** The separator is a border on
@@ -1489,7 +1497,7 @@ would have rewritten every row of it on the next release.
 The sheet styles about forty elements. Four that a document generator can emit were never
 claimed, so each rendered in whatever the UA decided. One of those was the same class of bug as
 the mermaid sequence note: a light-mode default surviving inside a dark theme because nobody had
-looked. Injected into `sample.html` at 1280px and measured before the fix:
+looked. Injected into `samples/dark.html` at 1280px and measured before the fix:
 
 | element | rendered as | now |
 | --- | --- | --- |
@@ -1719,9 +1727,9 @@ paper and wrong on screen. See [Diagram sizing](#diagram-sizing).
 fixtures were measured at 320 / 390 / 600 / 601 / 768 / 900 / 1280 / 1920 / 2560px, before and
 after, on `document.scrollWidth`, every `pre.mermaid svg` box, every distinct label `font-size`,
 and each `pre`'s width, `scrollWidth` and computed `overflow-x`. **All four probes are identical
-at all 18 fixture-width pairs.** The SVG boxes stay `[368, 754, 500]` on `sample.html`, including
+at all 18 fixture-width pairs.** The SVG boxes stay `[368, 754, 500]` on `samples/dark.html`, including
 the 601px step down to `[368, 505, 500]` and the 768px step to `[368, 659, 500]`, and `[416]` on
-`sample-conn-map.html`. The labels stay 12px and 16px. The only difference the diff reported was
+`samples/dark-conn-map.html`. The labels stay 12px and 16px. The only difference the diff reported was
 mermaid's per-render element ids. `pre.mermaid svg` already carries `max-width` through its own
 rules, and below 600px it carries `max-width: none !important`, so the new rule is outranked
 exactly where a diagram needs to escape. Print and forced-colors were swept too: no scroll on
@@ -1820,7 +1828,7 @@ own. The rule fixes the typography defect and leaves the widget to the UA, which
 `.s`, `.c1` and `.nf` all inherited `--on-surface`, so a Sphinx or MkDocs page rendered flat white
 code inside a styled `pre`. The names now sit in the same seven grouped selectors as
 `highlight.js`, pandoc and Prism, so no new color and no new rule appeared: only more selectors.
-Verified in `sample.html`: `.c1` muted, `.k` and `.o` pink, `.nf` link, `.kt` and `.nc`
+Verified in `samples/dark.html`: `.c1` muted, `.k` and `.o` pink, `.nf` link, `.kt` and `.nc`
 purple-bright, `.mi` orange, `.s2` green, `.na` label, `.p` inherited.
 
 **The one-letter risk is real and it is bounded by the scoping.** `:is(pre, code) .m` is far
@@ -1881,11 +1889,11 @@ reconstructing it costs more than the bytes do.
 
 ## Fixtures are coverage
 
-A fixture demonstrates states. It does not simulate them. Several details in `sample.html` and
-`sample-conn-map.html` look like filler and are regression checks. **Shortening any of these
+A fixture demonstrates states. It does not simulate them. Several details in `samples/dark.html` and
+`samples/dark-conn-map.html` look like filler and are regression checks. **Shortening any of these
 retires the check it exists to be.**
 
-- **The sequence diagram and quadrant chart** in `sample.html`, alongside the flowchart. Both
+- **The sequence diagram and quadrant chart** in `samples/dark.html`, alongside the flowchart. Both
   label-measurement bugs above shipped and survived because a flowchart is the one diagram type
   that shows neither. Its labels are `foreignObject` HTML that the browser measures rather than
   `calculateTextDimensions`, and its viewBox comes from the laid-out graph rather than from a
@@ -2032,7 +2040,7 @@ veil, not a hue, and `.github/palette-check.py` never sees it. The alpha-slash f
 its `oklch(L C h)` regex, so the parsed token count stays at 17 and the "expected 17" guard still
 means what it says.
 
-**The W3C CSS validator reports two errors on `sample.html`, and both are the validator, not the
+**The W3C CSS validator reports two errors on `samples/dark.html`, and both are the validator, not the
 stylesheet.** It flags `container-type` as a property that "doesn't exist" and `@container` as an
 "unrecognized at-rule". Both come from CSS Containment Module Level 3, which the Jigsaw
 validator's `css3` profile predates. Container queries have shipped in every major engine since

@@ -2,7 +2,7 @@
 """Render each fixture in each appearance mode, and prove the palette applied.
 
 Light mode and high-contrast mode are media queries, so nothing in the fixture
-set shows them: `sample.html` renders dark and the other two palettes are
+set shows them: `samples/dark.html` follows the host and the other two palettes are
 invisible until a reader's OS asks for them. That left both without coverage.
 
 Headless Chrome cannot be told which media query to match. It reads
@@ -47,11 +47,12 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import tempfile
 import zlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-FIXTURES = ["sample.html", "sample-conn-map.html"]
+FIXTURES = ["samples/dark.html", "samples/dark-conn-map.html"]
 
 # surface is the expected top-left pixel: `body { background: var(--surface) }`.
 # dark is the default palette, so no condition of its own — it is what shows when
@@ -121,9 +122,14 @@ def render(chrome, source, outfile):
 
 
 def main():
-    if len(sys.argv) != 2:
-        sys.exit("usage: render-modes.py <outdir>")
-    outdir = pathlib.Path(sys.argv[1]).resolve()
+    # outdir is optional and defaults to a temp dir, because the scratch HTML and the
+    # PNGs are not tracked and must never land in the working tree. An earlier commit
+    # here shipped ten stray files from an ad-hoc `render-modes.py modes2` run inside
+    # the repo, half of them renders of deliberately broken states. CI passes
+    # `mode-renders`, which .gitignore covers, so it can upload the artifact.
+    if len(sys.argv) > 2:
+        sys.exit("usage: render-modes.py [outdir]   (default: a temp dir)")
+    outdir = pathlib.Path(sys.argv[1] if len(sys.argv) == 2 else tempfile.mkdtemp()).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
     chrome = find_chrome()
     fail = 0
@@ -143,9 +149,9 @@ def main():
             body = html
             for c in CONDITIONS:
                 body = body.replace(c, "@media all" if c == condition else "@media not all", 1)
-            source = outdir / f"{fixture.stem}-{mode}.html"
+            source = outdir / f"{fixture.stem}-in-{mode}.html"
             source.write_text(body)
-            png = outdir / f"{fixture.stem}-{mode}.png"
+            png = outdir / f"{fixture.stem}-in-{mode}.png"
             render(chrome, source, png)
             got = first_pixel(png.read_bytes())
             want = tuple(int(want_hex[i:i + 2], 16) for i in (1, 3, 5))

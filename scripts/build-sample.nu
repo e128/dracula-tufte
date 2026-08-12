@@ -1,5 +1,5 @@
 #!/usr/bin/env nu
-# build-sample.nu — regenerate sample.html, a living demo of every
+# build-sample.nu — regenerate the samples/ pages, a living demo of every
 # component in tufte-dracula.css + mermaid.js. Re-inlines the two source files
 # verbatim (same bytes the renderer emits), so a CSS or mermaid edit shows up
 # here on the next run. Run: `nu scripts/build-sample.nu` (writes + git-adds).
@@ -25,8 +25,8 @@ def main [] {
   # (filename, <body> tag, title, body-content, light-preview filename) — one page
   # per layout mode, each with a forced-light twin for Pages.
   [
-    ["sample.html" "<body>" "Tufte-Dracula — component sample" (body) "preview-light.html"]
-    ["sample-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body) "preview-conn-map-light.html"]
+    ["dark.html" "<body>" "Tufte-Dracula — component sample" (body) "light.html"]
+    ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body) "light-conn-map.html"]
   ] | each {|p|
     let html = ([
       "<!DOCTYPE html>"
@@ -45,7 +45,7 @@ def main [] {
       "</body>"
       "</html>"
     ] | str join "\n")
-    let out = ($ROOT | path join $p.0)
+    let out = ($ROOT | path join "samples" $p.0)
     $html | save -f $out
     ^git -C $ROOT add $out
     print $"  → ($out)"
@@ -67,9 +67,10 @@ def main [] {
 # visitor who asks for more contrast would see a preview nobody else sees.
 # Deterministic beats almost.
 #
-# These are previews, NOT the payload: the stylesheet inside them has had its
-# media conditions rewritten, so it is not the file a consumer inlines. That is
-# what the banner is for, and it is why the name is preview-, not sample-.
+# light.html is NOT the payload: the stylesheet inside it has had its media
+# conditions rewritten, so it is not the file a consumer inlines. It sits beside
+# dark.html under one folder and reads like an equal peer, which is exactly why
+# the banner is not optional — the filename no longer carries the warning.
 def preview [html: string, fixture: string, title: string, name: string] {
   # Each condition is checked on its own, not "did anything change". A first cut
   # compared the whole string before and after and passed when only the contrast
@@ -86,10 +87,10 @@ def preview [html: string, fixture: string, title: string, name: string] {
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
     "    <p class=\"markdown-alert-title\">Preview only &mdash; not the payload</p>"
-    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. The stylesheet inside it has had its media conditions rewritten and is <strong>not</strong> the file to inline. Inline <code>tufte-dracula.css</code>, never this page. The real fixture is <a href=\"($fixture)\">($fixture)</a>.</p>"
+    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
     "  </div>"
   ] | str join "\n")
-  let out = ($ROOT | path join $name)
+  let out = ($ROOT | path join "samples" $name)
   ($forced
     | str replace $"<title>($title)</title>" $"<title>($title) — forced light preview</title>"
     | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out

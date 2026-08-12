@@ -16,14 +16,14 @@ fork of either. It rewrites the ideas as one inline stylesheet with no build ste
 
 GitHub Pages renders these from main, no build step:
 
-- [sample.html](https://e128.github.io/dracula-tufte/sample.html): component sample
-- [sample-conn-map.html](https://e128.github.io/dracula-tufte/sample-conn-map.html): connections-map layout
+- [samples/dark.html](https://e128.github.io/dracula-tufte/samples/dark.html): component sample
+- [samples/dark-conn-map.html](https://e128.github.io/dracula-tufte/samples/dark-conn-map.html): connections-map layout
 
 Both follow your system appearance, so a dark-mode reader never sees the light palette. These two
 force it, and are generated from the fixtures above by the same run:
 
-- [preview-light.html](https://e128.github.io/dracula-tufte/preview-light.html): component sample, forced light
-- [preview-conn-map-light.html](https://e128.github.io/dracula-tufte/preview-conn-map-light.html): connections-map layout, forced light
+- [samples/light.html](https://e128.github.io/dracula-tufte/samples/light.html): component sample, forced light
+- [samples/light-conn-map.html](https://e128.github.io/dracula-tufte/samples/light-conn-map.html): connections-map layout, forced light
 
 **Do not inline CSS from a preview.** The stylesheet inside those two has had its `@media`
 conditions rewritten, so it is not the payload. Each one says so in a banner and links back to its
@@ -41,8 +41,8 @@ each pull request instead.
 | `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
 | `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `scripts/build-sample.nu`. Do not edit by hand. |
 | `scripts/build-sample.nu` | The regenerator. `nu scripts/build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
-| `sample.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
-| `sample-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
+| `samples/dark.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
+| `samples/dark-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
 | `CONTRACT.md` | The consumer checklist. What to inline, the markup a generator owes, what changed in each release, how to spot a stale artifact, and what each pin mode costs. Imperative and short, because a consumer's agent reads it on every bump. It carries no reasoning: `NOTES.md` holds that. |
 | `README.md` | This file. |
 
@@ -133,7 +133,7 @@ seven things, and both fixtures model each one.
   `<pre tabindex="0" role="region" aria-label="Code block">`. The label is a consumer string, so
   translate it.
 
-**Four opt-in patterns, plus one group that needs no class. `sample.html` models all but the
+**Four opt-in patterns, plus one group that needs no class. `samples/dark.html` models all but the
 table wrapper.** Nothing here is required. The stylesheet does nothing until the markup asks.
 
 - **`.table-scroll` around a wide table** keeps its header pinned. A table below 1000px already

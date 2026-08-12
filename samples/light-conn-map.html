@@ -574,7 +574,7 @@
 <body class="conn-map">
   <div class="markdown-alert markdown-alert-caution">
     <p class="markdown-alert-title">Preview only &mdash; not the payload</p>
-    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. The stylesheet inside it has had its media conditions rewritten and is <strong>not</strong> the file to inline. Inline <code>tufte-dracula.css</code>, never this page. The real fixture is <a href="sample-conn-map.html">sample-conn-map.html</a>.</p>
+    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href="dark-conn-map.html">dark-conn-map.html</a> is the same fixture with the stylesheet verbatim.</p>
   </div>
   <div class="mermaid-overlay" id="mermaid-zoom"></div>
   <main>

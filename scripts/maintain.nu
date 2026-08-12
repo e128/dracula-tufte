@@ -33,7 +33,7 @@ def main [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html scripts/build-sample.nu README.md CONTRACT.md] {
+  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md] {
     if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -77,7 +77,7 @@ def "main check" [] {
 
   # Count occurrences, not matching lines. `grep -c` reports lines, so a second
   # block opened on a line that already has one reads as 1 and passes.
-  for f in [sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html] {
+  for f in [samples/dark.html samples/dark-conn-map.html samples/light.html samples/light-conn-map.html] {
     let body = (open --raw ($ROOT | path join $f))
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
@@ -85,13 +85,15 @@ def "main check" [] {
     if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
   }
 
-  # The previews are the fixtures with the light condition forced on and the
+  # samples/light*.html are the dark pages with the light condition forced on and the
   # contrast condition forced off. If the stylesheet renames either one,
   # `str replace` no-ops and the preview ships the default palette while still
   # regenerating cleanly, so Pages would serve a dark page called light. The
   # generator raises on that, and this asserts the same property on the committed
-  # file, which is what a hand-edit would get past the generator.
-  for f in [preview-light.html preview-conn-map-light.html] {
+  # file, which is what a hand-edit would get past the generator. It matters more now
+  # that the filename says `light` instead of `preview-`: nothing but this check and
+  # the in-page banner distinguishes it from its dark twin in the same folder.
+  for f in [samples/light.html samples/light-conn-map.html] {
     let body = (open --raw ($ROOT | path join $f))
     if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {` — the light palette is not on"; $ok = false }
     if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {` — the contrast block is still live"; $ok = false }
@@ -101,24 +103,22 @@ def "main check" [] {
     }
   }
 
-  # Light and high-contrast mode are media queries, so no fixture shows them and
-  # nothing else here proves they reach the page. Writes into a temp dir rather
-  # than the repo: the PNGs are review output in CI, not tracked files, and a
-  # stray mode-renders/ would show up as untracked noise on every local check.
-  let renders = (mktemp -d)
-  let modes = (^python3 ($ROOT | path join ".github/render-modes.py") $renders | complete)
+  # Light and high-contrast mode are media queries, so nothing else here proves they
+  # reach the page. No outdir argument: render-modes.py then writes its scratch HTML
+  # and PNGs to a temp dir of its own, so a local check cannot leave anything in the
+  # tree. CI passes `mode-renders` because it uploads the images as an artifact.
+  let modes = (^python3 ($ROOT | path join ".github/render-modes.py") | complete)
   print ($modes.stdout | str trim)
   if $modes.exit_code != 0 {
     print ($modes.stderr | str trim)
     $ok = false
   }
-  rm -rf $renders
 
   # Regeneration must be a no-op. Compare bytes across the regen rather than ask
   # git: build-sample.nu git-adds what it writes, so `git diff` is always empty
   # (the gate never fires), and `git diff HEAD` would flag work-in-progress edits
   # that are legitimately uncommitted. CI, with a clean tree, uses `git diff HEAD`.
-  let generated = [sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html tokens.css]
+  let generated = [samples/dark.html samples/dark-conn-map.html samples/light.html samples/light-conn-map.html tokens.css]
   let before = ($generated | each {|f| open --raw ($ROOT | path join $f) })
   nu ($SCRIPTS | path join "build-sample.nu")
   let after = ($generated | each {|f| open --raw ($ROOT | path join $f) })
@@ -446,7 +446,7 @@ def "main selftest" [] {
 }
 
 # Bump the mermaid CDN pin to an exact version, regenerate fixtures so the pin
-# lands in sample.html/sample-conn-map.html too.
+# lands in the samples/ pages too.
 def "main mermaid" [version: string] {
   let path = ($ROOT | path join "mermaid.js")
   open --raw $path | str replace --regex 'mermaid@[\d.]+' $"mermaid@($version)" | save -f $path

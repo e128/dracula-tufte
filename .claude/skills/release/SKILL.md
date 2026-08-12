@@ -91,7 +91,7 @@ co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
 - **Never `--no-verify`. Never force-move a pushed tag.** Consumers pin through a
   submodule; a moved tag silently changes what they resolve to.
 - **Annotated tags only.** `scripts/maintain.nu release` does this; do not hand-tag.
-- Do not hand-edit `sample.html`, `sample-conn-map.html` or `tokens.css`. Ever.
+- Do not hand-edit `samples/dark.html`, `samples/dark-conn-map.html` or `tokens.css`. Ever.
   They are generated, and `check` fails if regeneration is not a no-op.
 
 ## Tooling-only changes
