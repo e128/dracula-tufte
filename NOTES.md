@@ -1229,6 +1229,38 @@ deliberate object rather than a broken one, and the reading is the same one Tuft
 `--rule` is declared there as `var(--muted)`, not as a copied literal. Custom-property substitution
 happens on the element, so it picks up the dark `--muted` from the same block.
 
+**On the conn-map the card has to hug the diagram, and only there.** `pre.mermaid` is a block, so it
+takes the full column, and in dark mode nothing paints it so nobody ever noticed. Painting it made
+the emptiness the loudest thing on the page: measured at 1500px the graph card ran **1009px** wide
+around a **441px** diagram, so roughly 570px of dead slab, on the one layout where the graph *is* the
+content and sits beside a light sidebar. `body.conn-map pre.mermaid { width: fit-content; max-width:
+100%; margin-inline: auto }` shrinks it to 441px. `max-width: 100%` is load-bearing: without it the
+narrow-width rule that sets the SVG to `var(--natural-width)` would drag the card past the viewport
+and reintroduce the document-level sideways scroll that all of *Diagram sizing* exists to prevent.
+Verified no document-level overflow at 320, 390, 600, 601, 768, 899, 900, 1280, 1920 and 2560px on
+all four pages, by reading `documentElement.scrollWidth` against `clientWidth` rather than by eye.
+
+`margin-inline: auto` rather than `0`, because *Diagram sizing* settled that a diagram narrower than
+its column stays centered in **both** layouts. The card follows the diagram it wraps.
+
+**Widening that rule to every `pre.mermaid` was tried and it breaks the component sample twice.**
+Both were rendered, not reasoned about:
+
+1. **`quadrantChart` labels get cut.** Its point labels overrun the viewBox by design — that is why
+   `pre.mermaid` carries `overflow: visible` — so a card sized to the viewBox clips them at its edge,
+   and the part that escapes lands in dark-palette near-white text on the light page, where it is
+   invisible. "A label long enough to reach past the edge" fades out mid-word at the card boundary.
+2. **`sequenceDiagram` and `packet-beta` collapse.** They use mermaid's default `useMaxWidth`, so the
+   SVG carries `width="100%"` with its real size as an inline `max-width`. `fit-content` on the
+   parent makes that percentage resolve against a box the SVG is itself sizing, and both diagrams
+   shrink to near-unreadable — the 8px-label bug from the narrow end of *Diagram sizing*, back at
+   full width.
+
+The conn-map escapes both because its one fence sets `useMaxWidth: false`, which gives the SVG a real
+width attribute and no inline `max-width`, and because a `flowchart` keeps its content inside its own
+viewBox. **Keep the `body.conn-map` scope.** A future agent tidying it into a bare `pre.mermaid` rule
+gets a clipped quadrant chart and two shrunken diagrams, none of which is visible in dark mode.
+
 **That block is a third projection of `:root`, so check 5 of `.github/palette-check.py` gates it.**
 Nine `oklch()` literals duplicate `:root` values, and a duplicate with no gate is the failure this
 repo keeps finding. The check compares the **declaration text**, not the computed hex: two
