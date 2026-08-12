@@ -1270,9 +1270,23 @@ repeats its header. Verified against a 7-page Letter PDF of `sample.html`: the t
 whole to page 2 and reprints its header there, the scorecard and both callouts stay intact, and
 no single line strands.
 
-`pre` is deliberately **not** in that list. A code block can be longer than a page, and
-`break-inside: avoid` on something that cannot fit is either ignored or overflows, so the
-guarantee would be a lie for exactly the element most likely to need it.
+**`pre` joined that list in v1.20.0, and `math[display="block"]` in the commit after it.** This
+paragraph claimed the opposite until v1.24.0, on the reasoning that a code block can be longer than
+a page and that `break-inside: avoid` on something that cannot fit would be "either ignored or
+overflows", making the guarantee a lie. The first half of that is right and the conclusion is
+wrong, which is why the selector went in without anyone noticing the note contradicting it.
+
+Measured on a Letter PDF built to force both cases. A 20-line fence pushed to a page boundary
+**moves whole to the next page**, and the `h2` above it comes with it, because `break-after: avoid`
+on the heading and `break-inside: avoid` on the fence resolve together. A 200-line fence, which
+cannot fit under any placement, **splits across six pages with nothing lost**: the `--code-bg` fill
+and the purple accent bar reprint on every fragment, and the text after it follows normally.
+
+So the declaration is honored when the block fits and dropped when it cannot. That is the standard
+resolution for an unforced break with no legal alternative, not an overflow and not a silent drop
+of content, and it is the behavior you want here: a fence that fits stays whole, and a fence that
+cannot fit still prints. The element most likely to need the rule is also the one that degrades
+best without it.
 
 **`.verdict` prints as an outlined label**, with `background: none` plus `box-shadow: inset 0 0 0
 1px currentColor` and the semantic color moved to `color`. Its fill carried the meaning, and
