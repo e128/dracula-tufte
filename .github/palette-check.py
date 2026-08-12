@@ -12,7 +12,7 @@ contract-check.yml already pins mermaid.js to mermaid-palette.json. This closes
 the remaining edge: mermaid-palette.json back to the CSS it claims to project.
 It is what makes the "from" fields load-bearing rather than decorative.
 
-Paths resolve from this script's location, so cwd does not matter (maintain.nu
+Paths resolve from this script's location, so cwd does not matter (scripts/maintain.nu
 calls it by absolute path). Exit 1 on any drift.
 
 ponytail: stdlib-only Oklab -> sRGB, no colour-science dependency for 17 values.
@@ -85,7 +85,7 @@ palette = {name: oklch_to_hex(*lch) for name, lch in triples.items()}
 if len(palette) < 17:
     sys.exit(f"Only parsed {len(palette)} oklch tokens from :root — expected 17.")
 
-# --dump is the generator side of the same parse: create-themes.nu needs the palette
+# --dump is the generator side of the same parse: scripts/create-themes.nu needs the palette
 # as data, and re-deriving oklch -> sRGB in Nushell would mean a second implementation
 # of the matrix above, free to drift from the one CI checks. This comment used to say
 # Nushell had no trig builtins. It does — `math sin` and `math cos` both work, checked

@@ -14,7 +14,7 @@ jobs:
 
       - name: Verify the ten contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md CONTRACT.md; do
+          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html scripts/build-sample.nu README.md CONTRACT.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
           echo "All 10 contract files present."
@@ -59,7 +59,7 @@ jobs:
       - name: Sanity check (no hand-rolled style blocks)
         run: |
           # tufte-dracula.css/mermaid.js/filter.js are contracts that already carry
-          # their own <style>/<script> wrapper, and build-sample.nu inlines them
+          # their own <style>/<script> wrapper, and scripts/build-sample.nu inlines them
           # verbatim into each fixture -- so exactly one <style> and two <script>
           # blocks are expected. More means a hand-rolled block was added alongside
           # the canonical ones.
@@ -101,19 +101,19 @@ jobs:
           version: "*"
 
       - name: Release gate still refuses what it should
-        run: nu maintain.nu selftest
+        run: nu scripts/maintain.nu selftest
 
       - name: Generated files must be regenerated (fails if stale vs CSS/JS)
         run: |
           # tokens.css is included here on purpose: it is a verbatim slice of the
           # tufte-dracula.css :root block, so this gate is what keeps the palette
           # reference from becoming a second, hand-edited source of truth.
-          nu build-sample.nu
-          # `git diff HEAD`, not `git diff`: build-sample.nu git-adds what it writes,
+          nu scripts/build-sample.nu
+          # `git diff HEAD`, not `git diff`: scripts/build-sample.nu git-adds what it writes,
           # so an index-vs-worktree diff is always empty and this gate would pass
           # vacuously. HEAD-vs-worktree is what "stale in the commit" actually means.
           git diff HEAD --exit-code -- sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html tokens.css || {
-            echo "tokens.css / the fixtures / the light previews are stale — run 'nu build-sample.nu' and commit the result."
+            echo "tokens.css / the fixtures / the light previews are stale — run 'nu scripts/build-sample.nu' and commit the result."
             exit 1
           }
 
@@ -126,7 +126,7 @@ jobs:
         run: python3 .github/render-modes.py mode-renders
 
       - name: Upload the mode renders
-        # Advisory, and deliberately not in maintain.nu's REQUIRED_CHECKS: the
+        # Advisory, and deliberately not in scripts/maintain.nu's REQUIRED_CHECKS: the
         # assertions above are the gate, and these images are for a human to
         # look at on the pull request. `always()` so a failed render still
         # uploads whatever it managed to paint, which is the thing you want to
@@ -140,9 +140,9 @@ jobs:
 
       - name: Themes must be regenerated (fails if stale vs the CSS palette)
         # themes/ projects the same :root palette into Ghostty, Rider and Zed.
-        # `nu maintain.nu release` attaches the Rider jar to the tag, so drift
+        # `nu scripts/maintain.nu release` attaches the Rider jar to the tag, so drift
         # here ships to whoever installs it. The jar is tracked and checked too:
-        # create-themes.nu freezes every zip entry timestamp, so a rebuild of
+        # scripts/create-themes.nu freezes every zip entry timestamp, so a rebuild of
         # unchanged inputs is byte-identical and a diff means a real change.
         # Needs `zip`, which is preinstalled on ubuntu-latest.
-        run: nu create-themes.nu --check
+        run: nu scripts/create-themes.nu --check

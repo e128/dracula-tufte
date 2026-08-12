@@ -9,10 +9,15 @@
 # push and tag, because the ordering between them is the whole point: a tag
 # pushed beside its commit claims the contract held before anything checked it.
 
-const HERE = path self | path dirname
+# path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
+# Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
+# SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
+# chain in Nushell — the second step has to read a name that is already bound.
+const SCRIPTS = path self | path dirname
+const ROOT = $SCRIPTS | path dirname
 
 def main [] {
-  print "usage: nu maintain.nu <check|selftest|bump <version>|release <version>|mermaid <version>>"
+  print "usage: nu scripts/maintain.nu <check|selftest|bump <version>|release <version>|mermaid <version>>"
 }
 
 # Mirrors .github/workflows/contract-check.yml locally, step for step: ten files
@@ -28,8 +33,8 @@ def main [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html build-sample.nu README.md CONTRACT.md] {
-    if not ($HERE | path join $f | path exists) {
+  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css sample.html sample-conn-map.html scripts/build-sample.nu README.md CONTRACT.md] {
+    if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
     }
@@ -37,11 +42,11 @@ def "main check" [] {
 
   # Wrapper must stay one line at each end — consumers slice the bare body with
   # `sed '1d;$d'` and that is a promise, not an accident.
-  let css_lines = (open --raw ($HERE | path join "tufte-dracula.css") | str trim --right | lines)
+  let css_lines = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right | lines)
   if ($css_lines | first) != "  <style>" { print "tufte-dracula.css line 1 must be exactly '  <style>'"; $ok = false }
   if ($css_lines | last) != "  </style>" { print "tufte-dracula.css last line must be exactly '  </style>'"; $ok = false }
 
-  let palette = (^python3 ($HERE | path join ".github/palette-check.py") | complete)
+  let palette = (^python3 ($ROOT | path join ".github/palette-check.py") | complete)
   print ($palette.stdout | str trim)
   if $palette.exit_code != 0 {
     # stderr carries the parse-guard message and any traceback; `complete` swallows
@@ -55,13 +60,13 @@ def "main check" [] {
   # palette colour; it cannot see that a key points at the wrong one. That pairing
   # gate lived only in CI, which meant a themeVariable set to some other palette
   # colour passed here and failed on the push.
-  let init = (open ($HERE | path join "mermaid-palette.json") | get init
+  let init = (open ($ROOT | path join "mermaid-palette.json") | get init
     | transpose key entry | where key != "_comment")
   if ($init | length) < 16 {
     print $"mermaid-palette.json .init has only ($init | length) keys — refusing to pass vacuously"
     $ok = false
   }
-  let js = (open --raw ($HERE | path join "mermaid.js"))
+  let js = (open --raw ($ROOT | path join "mermaid.js"))
   for e in $init {
     if not ($js =~ $"($e.key):\\s*'($e.entry.hex)'") {
       print $"DRIFT: mermaid.js ($e.key) is not '($e.entry.hex)' \(mermaid-palette.json)"
@@ -73,7 +78,7 @@ def "main check" [] {
   # Count occurrences, not matching lines. `grep -c` reports lines, so a second
   # block opened on a line that already has one reads as 1 and passes.
   for f in [sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html] {
-    let body = (open --raw ($HERE | path join $f))
+    let body = (open --raw ($ROOT | path join $f))
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
@@ -87,7 +92,7 @@ def "main check" [] {
   # generator raises on that, and this asserts the same property on the committed
   # file, which is what a hand-edit would get past the generator.
   for f in [preview-light.html preview-conn-map-light.html] {
-    let body = (open --raw ($HERE | path join $f))
+    let body = (open --raw ($ROOT | path join $f))
     if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {` — the light palette is not on"; $ok = false }
     if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {` — the contrast block is still live"; $ok = false }
     if ($body | str replace --all --regex '(?s)<p>This page forces.*?</p>' '') =~ 'prefers-color-scheme' {
@@ -101,7 +106,7 @@ def "main check" [] {
   # than the repo: the PNGs are review output in CI, not tracked files, and a
   # stray mode-renders/ would show up as untracked noise on every local check.
   let renders = (mktemp -d)
-  let modes = (^python3 ($HERE | path join ".github/render-modes.py") $renders | complete)
+  let modes = (^python3 ($ROOT | path join ".github/render-modes.py") $renders | complete)
   print ($modes.stdout | str trim)
   if $modes.exit_code != 0 {
     print ($modes.stderr | str trim)
@@ -114,9 +119,9 @@ def "main check" [] {
   # (the gate never fires), and `git diff HEAD` would flag work-in-progress edits
   # that are legitimately uncommitted. CI, with a clean tree, uses `git diff HEAD`.
   let generated = [sample.html sample-conn-map.html preview-light.html preview-conn-map-light.html tokens.css]
-  let before = ($generated | each {|f| open --raw ($HERE | path join $f) })
-  nu ($HERE | path join "build-sample.nu")
-  let after = ($generated | each {|f| open --raw ($HERE | path join $f) })
+  let before = ($generated | each {|f| open --raw ($ROOT | path join $f) })
+  nu ($SCRIPTS | path join "build-sample.nu")
+  let after = ($generated | each {|f| open --raw ($ROOT | path join $f) })
   let stale = ($generated | enumerate
     | where {|e| ($before | get $e.index) != ($after | get $e.index) }
     | get item)
@@ -132,7 +137,7 @@ def "main check" [] {
   # here ships to whoever installs it. The jar is tracked and covered by this
   # gate — create-themes.nu freezes the zip's entry timestamps precisely so its
   # bytes can be compared rather than assumed.
-  let themes = (^nu ($HERE | path join "create-themes.nu") --check | complete)
+  let themes = (^nu ($SCRIPTS | path join "create-themes.nu") --check | complete)
   print ($themes.stdout | str trim)
   if $themes.exit_code != 0 { $ok = false }
 
@@ -167,12 +172,12 @@ const STAMPS = [
 ]
 
 def "main bump" [version: string] {
-  let current = (open --raw ($HERE | path join "tufte-dracula.css")
+  let current = (open --raw ($ROOT | path join "tufte-dracula.css")
     | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
   print $"Bumping v($current) -> v($version)"
 
   for stamp in $STAMPS {
-    let path = ($HERE | path join $stamp.file)
+    let path = ($ROOT | path join $stamp.file)
     let before = (open --raw $path)
     let after = ($before | str replace --all --regex $stamp.pattern ($stamp.template | str replace "{v}" $version))
     if $after == $before {
@@ -182,7 +187,7 @@ def "main bump" [version: string] {
     print $"  stamped ($stamp.file)"
   }
 
-  nu ($HERE | path join "build-sample.nu")
+  nu ($SCRIPTS | path join "build-sample.nu")
   # The plugin zip's filename carries the version and META-INF/plugin.xml reads it
   # off the stylesheet header, which is what just changed — so this writes a new
   # artefact and leaves the old one behind. Deleting it is the point: a stale
@@ -193,9 +198,9 @@ def "main bump" [version: string] {
   # through v1.18.0. That shape loads when copied into plugins/ by hand but
   # Install Plugin from Disk refuses it, so leaving one behind hands someone the
   # exact file that already failed.
-  let old = (glob ($HERE | path join "themes" "rider" "dist" "dracula-tufte-rider-*.{jar,zip}"))
+  let old = (glob ($ROOT | path join "themes" "rider" "dist" "dracula-tufte-rider-*.{jar,zip}"))
   if ($old | is-not-empty) { rm --force ...$old }
-  nu ($HERE | path join "create-themes.nu")
+  nu ($SCRIPTS | path join "create-themes.nu")
   print $"Bumped. Review the diff, then:"
   print $"  git add -A && git commit -m 'feat: v($version) — <summary>'"
   print $"  nu maintain.nu release ($version)"
@@ -244,24 +249,24 @@ def check-missing [checks: list] {
 
 def "main release" [version: string] {
   let tag = $"v($version)"
-  # Every git call is pinned to $HERE and gh to the slug read from its origin.
+  # Every git call is pinned to $ROOT and gh to the slug read from its origin.
   # Bare `git` and gh's {owner}/{repo} both resolve against the cwd, so running
   # this script by absolute path from inside another repo would read that repo's
   # HEAD and push a tag there, while validating this one's version stamp.
-  let sha = (^git -C $HERE rev-parse HEAD | str trim)
-  let slug = (^git -C $HERE remote get-url origin | str trim
+  let sha = (^git -C $ROOT rev-parse HEAD | str trim)
+  let slug = (^git -C $ROOT remote get-url origin | str trim
     | parse --regex '[:/](?<owner>[^/:]+)/(?<repo>[^/]+?)(:?\.git)?$'
     | get 0 | $"($in.owner)/($in.repo)")
 
-  if (^git -C $HERE status --porcelain | str trim) != "" {
+  if (^git -C $ROOT status --porcelain | str trim) != "" {
     print "Working tree is dirty — commit or stash before releasing."
     exit 1
   }
   # The commit must already be what origin/main points at. That is what proves
   # it arrived through the PR gate rather than around it, and it stops a tag
   # ever naming a commit no one else can fetch.
-  ^git -C $HERE fetch --quiet origin main
-  let remote = (^git -C $HERE rev-parse origin/main | str trim)
+  ^git -C $ROOT fetch --quiet origin main
+  let remote = (^git -C $ROOT rev-parse origin/main | str trim)
   if $sha != $remote {
     print $"HEAD ($sha | str substring 0..7) is not origin/main ($remote | str substring 0..7)."
     print "  Land the change through a pull request first, then pull and re-run."
@@ -269,14 +274,14 @@ def "main release" [version: string] {
   }
   # The tag has to name what the stylesheet says it is, or consumers pin a
   # version that disagrees with the payload they inline.
-  let stamped = (open --raw ($HERE | path join "tufte-dracula.css")
+  let stamped = (open --raw ($ROOT | path join "tufte-dracula.css")
     | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
   if $stamped != $version {
     print $"tufte-dracula.css is stamped v($stamped), not v($version)."
     print $"  Run `nu maintain.nu bump ($version)` and commit first."
     exit 1
   }
-  if (^git -C $HERE tag --list $tag | str trim) != "" {
+  if (^git -C $ROOT tag --list $tag | str trim) != "" {
     print $"($tag) already exists locally. Delete it or pick the next version."
     exit 1
   }
@@ -284,7 +289,7 @@ def "main release" [version: string] {
   # from the theme files on disk and attaches it to the release. Stale files
   # here would ship a jar that disagrees with the tag, and regenerating after
   # the clean-tree check would dirty the tree behind our own gate.
-  let themes = (^nu ($HERE | path join "create-themes.nu") --check | complete)
+  let themes = (^nu ($SCRIPTS | path join "create-themes.nu") --check | complete)
   if $themes.exit_code != 0 {
     print ($themes.stdout | str trim)
     print "  Run `nu create-themes.nu` and commit the result first."
@@ -336,11 +341,11 @@ def "main release" [version: string] {
 
   # Annotated, never lightweight: a lightweight tag is just a second name for a
   # commit, with no tagger, no date and nothing `git tag -v` can even look at.
-  let subject = (^git -C $HERE log -1 --pretty=%s | str trim)
-  ^git -C $HERE tag -a $tag -m $"($tag) — ($subject)"
+  let subject = (^git -C $ROOT log -1 --pretty=%s | str trim)
+  ^git -C $ROOT tag -a $tag -m $"($tag) — ($subject)"
   # A failed push used to still print "Tagged … verified green", leaving a tag that
   # exists only on this machine while the message says consumers can pin it.
-  let pushed = (^git -C $HERE push origin $tag | complete)
+  let pushed = (^git -C $ROOT push origin $tag | complete)
   if $pushed.exit_code != 0 {
     print $"($tag) was created locally but the push failed:"
     print ($pushed.stderr | str trim)
@@ -367,8 +372,8 @@ def "main release" [version: string] {
 # failed upload must not be able to un-say it. If this half fails the tag stands
 # and the retry is one command.
 def publish-plugin [tag: string, slug: string, version: string] {
-  nu ($HERE | path join "create-themes.nu")
-  let plugin = ($HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip")
+  nu ($SCRIPTS | path join "create-themes.nu")
+  let plugin = ($ROOT | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip")
   if not ($plugin | path exists) {
     print $"create-themes.nu produced no ($plugin | path basename). ($tag) is tagged with no plugin attached."
     exit 1
@@ -396,9 +401,9 @@ def publish-plugin [tag: string, slug: string, version: string] {
 # Written to dist/, which .gitignore covers for *.zip, so this leaves no
 # untracked artefact behind to go stale.
 def theme-bundle [version: string]: nothing -> path {
-  let out = ($HERE | path join "themes" "rider" "dist" $"dracula-tufte-themes-($version).zip")
+  let out = ($ROOT | path join "themes" "rider" "dist" $"dracula-tufte-themes-($version).zip")
   rm --force $out
-  cd $HERE
+  cd $ROOT
   let z = (^zip -q -r -X $out themes -x 'themes/rider/dist/*' '*.in' '*.DS_Store' | complete)
   if $z.exit_code != 0 or (not ($out | path exists)) {
     print $"zip failed building ($out | path basename): ($z.stderr | str trim)"
@@ -443,8 +448,8 @@ def "main selftest" [] {
 # Bump the mermaid CDN pin to an exact version, regenerate fixtures so the pin
 # lands in sample.html/sample-conn-map.html too.
 def "main mermaid" [version: string] {
-  let path = ($HERE | path join "mermaid.js")
+  let path = ($ROOT | path join "mermaid.js")
   open --raw $path | str replace --regex 'mermaid@[\d.]+' $"mermaid@($version)" | save -f $path
-  nu ($HERE | path join "build-sample.nu")
+  nu ($SCRIPTS | path join "build-sample.nu")
   print $"mermaid.js pinned to ($version). Review + commit."
 }

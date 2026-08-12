@@ -6,8 +6,8 @@ live in them. **Chromium measured every number below. Nobody reasoned one out.**
 
 Two comments remain in the CSS. A machine reads both, and neither is prose:
 
-- **Line 2, the version** (`/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`). `build-sample.nu`
-  reads it from `lines | get 1` to stamp `tokens.css`, and `maintain.nu bump` rewrites it. A
+- **Line 2, the version** (`/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`). `scripts/build-sample.nu`
+  reads it from `lines | get 1` to stamp `tokens.css`, and `scripts/maintain.nu bump` rewrites it. A
   strip of that line broke regeneration with `index too large (empty content)`. The pipe swallowed
   that error, so the fixtures went stale while they still looked correct.
 - **The `/* was #rrggbb */` notes on ten `:root` tokens.** Check 3 of `.github/palette-check.py`
@@ -47,6 +47,7 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Markdown coverage](#markdown-coverage) | Every construct a converter emits, and the eleven that were unstyled |
 | [Raw HTML and other generators](#raw-html-and-other-generators) | Intrinsic-width media, unbreakable tokens, `tfoot`, permalinks |
 | [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details exist to catch a regression |
+| [Repo layout](#repo-layout) | Why `scripts/` holds the Nushell and `.github/` keeps the Python |
 | [Odds and ends](#odds-and-ends) | `hr`, `--ring` |
 
 ---
@@ -647,7 +648,7 @@ instance and static fields, which are legitimately secondary.
 
 **Types cannot sit on plain `--purple`.** At L 0.698 and 5.10 on `--surface` it is the dimmest
 accent in the palette, and in C# type names are the highest-frequency token there is. They use
-`{{purple.bright}}` (#bfa4ed, 6.40), which is the existing `.bright` lift in `create-themes.nu`,
+`{{purple.bright}}` (#bfa4ed, 6.40), which is the existing `.bright` lift in `scripts/create-themes.nu`,
 not a new placeholder and not a palette change.
 
 **Three alternatives were rendered and rejected**, all variants of adopting Dracula's full slot
@@ -1154,7 +1155,7 @@ selector rather than by layer.
 correct-looking change and it rewrites every line in the file, which puts `git blame` on the whole
 stylesheet at the layer commit. This repo's discipline depends on being able to trace a declaration
 back to the change that made it look that way. NOTES.md is the primary record, but blame is the
-index into it. `build-sample.nu` also slices `:root` with a hard-coded `^    ` de-indent for
+index into it. `scripts/build-sample.nu` also slices `:root` with a hard-coded `^    ` de-indent for
 `tokens.css`, so the indent that stayed is the indent that needs no second edit.
 
 **`:where(ul, ol, menu):where(:not(.nav-list))` replaced the `:is()` form, and it fixed an inert
@@ -1246,7 +1247,7 @@ persistence, the first-paint flash — not as a fixture fix.
 
 **Two generated preview pages carry the light palette to the web instead.** Pages serves this repo
 root from `main`, so `preview-light.html` and `preview-conn-map-light.html` are live on merge with no
-workflow, no deploy step and no `docs/` directory. `build-sample.nu` writes each one right after its
+workflow, no deploy step and no `docs/` directory. `scripts/build-sample.nu` writes each one right after its
 fixture, using the rewrite `render-modes.py` already does: the light condition becomes `@media all`
 and the contrast condition becomes `@media not all`.
 
@@ -1259,7 +1260,7 @@ condition goes off.
 **The generator raises when the rewrite no-ops.** If the stylesheet renames either condition,
 `str replace` matches nothing, the preview equals the fixture, and Pages serves a dark page called
 light while regeneration still compares clean. That is exactly the shape of quiet wrong this repo
-gates against, so `build-sample.nu` errors on it, and `maintain.nu check` plus CI assert the same
+gates against, so `scripts/build-sample.nu` errors on it, and `scripts/maintain.nu check` plus CI assert the same
 property on the committed file, which is what a hand-edit would get past the generator.
 
 **The banner is the mitigation for the one new footgun.** A preview carries a stylesheet that is not
@@ -1317,7 +1318,7 @@ the mode paints without error, plus an image to look at.
 That pixel read needs no image library. **For the first pixel of PNG row 0 every filter type
 predicts from a left byte and an above byte that are both zero, so the filtered bytes are the raw
 bytes** — `zlib.decompress`, skip the filter byte, take three. That is why the script has no
-puppeteer, no playwright and no PIL, and why `maintain.nu check` can run the identical step locally.
+puppeteer, no playwright and no PIL, and why `scripts/maintain.nu check` can run the identical step locally.
 
 The renders upload as a pull-request artifact and are **advisory on purpose**. They are not in
 `REQUIRED_CHECKS`, because the assertions are the gate and the images are for a person to look at.
@@ -1467,7 +1468,7 @@ phone width rather than hiding it behind a two-link nav.
 
 ## Version stamps are not version history
 
-`maintain.nu bump` replaced every occurrence of the current version string across `README.md`. Six
+`scripts/maintain.nu bump` replaced every occurrence of the current version string across `README.md`. Six
 of those occurrences were historical claims, not stamps: prose of the form "raw HTML is covered as
 of v1.21.0" states when a feature landed. The blanket replace walked all six forward on every
 release, so v1.22.0's working tree credited v1.22.0 with raw-HTML coverage, Pygments support, the
@@ -1602,7 +1603,7 @@ under `:is(pre, code)`, because an unscoped `.dt` or `.op` would repaint a consu
 `--purple` is 4.23 on `--code-bg`, the one ratio [the contrast
 budget](#color-and-the-contrast-budget) records as failing and left alone because "nothing puts
 purple *text* on the gray". A syntax slot map does exactly that. `--purple-bright` is
-`oklch(from var(--purple) calc(l + 0.07) c h)`, the same +0.07 L that `create-themes.nu` and
+`oklch(from var(--purple) calc(l + 0.07) c h)`, the same +0.07 L that `scripts/create-themes.nu` and
 `.github/palette-check.py` already call `bright`, so the token needs no new hex and no new
 `/* was */` note. `palette-check.py` matches only literal `oklch(L C h)` triples, so the count it
 asserts stays at 17. Pixel-sampled: **5.47 on `--code-bg`**, 6.61 on `--surface`.
@@ -1924,6 +1925,36 @@ retires the check it exists to be.**
 - **The `<em>` label says what `em` actually does.** It read `<em>emphasis (label)</em>` long
   after the `em` color rule was deleted, so the reference a consumer reads named a color the
   sheet no longer paints. It now reads `<em>emphasis (inherits its surroundings)</em>`.
+
+## Repo layout
+
+**The three Nushell scripts moved to `scripts/` in v1.24.0. The two Python helpers deliberately did
+not.** The split is by who invokes a file, not by what language it is written in. Each Python helper
+is a CI step of its own — `python3 .github/palette-check.py` and `python3 .github/render-modes.py`
+appear verbatim in `contract-check.yml` — so they live beside the workflow that runs them. The
+Nushell scripts are the commands a person types, so they get a folder whose name says so.
+
+`.nu` scripts are also invoked by CI, which makes the rule a judgment rather than a law. The tiebreak
+is direction: a Python helper exists only to answer a check, and its only human caller is a Nushell
+script forwarding to it, while `scripts/maintain.nu check` is the documented front door.
+
+**Both kinds resolve every path from the repo root, never from `cwd`.** The Python side needed no
+change at all: `pathlib.Path(__file__).resolve().parent.parent` was already the root from `.github/`,
+and it is still the root from anywhere one level down. The Nushell side did, because `const HERE =
+path self | path dirname` used to be the root and became `scripts/`. It is now two constants:
+
+```nu
+const SCRIPTS = path self | path dirname
+const ROOT = $SCRIPTS | path dirname
+```
+
+`SCRIPTS` exists because `path self | path dirname | path dirname` is **not** a legal const chain in
+Nushell — the second step has to read a name that is already bound, and the one-liner fails to parse.
+Verified after the move by running `nu ../scripts/maintain.nu check` from `themes/`, which prints
+`Contract OK`.
+
+The payload, the fixtures, `tokens.css` and the docs stay at the root. Pages serves the root, and
+consumers pin paths into it, so moving any of those breaks a pinned consumer for no gain.
 
 ## Odds and ends
 

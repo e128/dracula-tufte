@@ -39,12 +39,26 @@ each pull request instead.
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
 | `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
-| `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `build-sample.nu`. Do not edit by hand. |
-| `build-sample.nu` | The regenerator. `nu build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
+| `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `scripts/build-sample.nu`. Do not edit by hand. |
+| `scripts/build-sample.nu` | The regenerator. `nu scripts/build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
 | `sample.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
 | `sample-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
 | `CONTRACT.md` | The consumer checklist. What to inline, the markup a generator owes, what changed in each release, how to spot a stale artifact, and what each pin mode costs. Imperative and short, because a consumer's agent reads it on every bump. It carries no reasoning: `NOTES.md` holds that. |
 | `README.md` | This file. |
+
+**Where the rest lives.** The payload, the fixtures and the docs sit at the repo root, because Pages
+serves the root and consumers pin paths into it. Everything else is split by who runs it:
+
+| path | what | who runs it |
+| --- | --- | --- |
+| `scripts/*.nu` | `build-sample.nu`, `maintain.nu`, `create-themes.nu` | you, by hand, and CI |
+| `.github/*.py` | `palette-check.py`, `render-modes.py` | CI steps, and the Nushell scripts above |
+| `.github/workflows/` | `contract-check.yml`, the one workflow | GitHub |
+
+The Python helpers stay in `.github/` because a CI step invokes each of them directly. The Nushell
+scripts are the commands a person types, so they get a folder with a name that says so. Both resolve
+every path from the repo root rather than from `cwd`, so `nu scripts/maintain.nu check` works from
+anywhere in the tree.
 
 ## Consumers
 
@@ -263,8 +277,8 @@ generates and gates them from a `.in` template beside each output:
 | **Ghostty** | `dracula-tufte` | Drop into `~/.config/ghostty/themes/`, then `theme = dracula-tufte` |
 
 ```sh
-nu create-themes.nu           # write every theme, then package the Rider plugin
-nu create-themes.nu --check   # fail if any output drifts from its template
+nu scripts/create-themes.nu           # write every theme, then package the Rider plugin
+nu scripts/create-themes.nu --check   # fail if any output drifts from its template
 ```
 
 **Rider loads a UI theme only from a plugin, which is why there is an artifact to build at all.**
@@ -272,7 +286,7 @@ It ships as a zip that wraps a jar (`Dracula-Tufte/lib/*.jar`), because Install 
 Disk… refuses a bare jar, even though the same jar loads when you copy it into
 `<config>/plugins/` by hand. That trap shipped through v1.18.0. Delete any old
 `dracula-tufte-rider-*.jar` from your plugins directory before you install the zip: two copies of
-one plugin ID is its own problem. `nu maintain.nu release` attaches the plugin and a themes zip
+one plugin ID is its own problem. `nu scripts/maintain.nu release` attaches the plugin and a themes zip
 to the GitHub release, so neither needs a clone.
 
 **Prose weighting does not transfer to an editor.** The accents keep their jobs: pink is
@@ -291,9 +305,9 @@ every published page.
 
 1. Edit the stylesheet or the Mermaid script. Colors change in the `tufte-dracula.css` `:root`
    block and nowhere else. When Mermaid needs that color, recompute its hex in
-   `mermaid-palette.json` and `mermaid.js`. `nu maintain.nu check` tells you which ones.
-2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
-3. Bump the version with `nu maintain.nu bump <version>`. It stamps `tufte-dracula.css` and this
+   `mermaid-palette.json` and `mermaid.js`. `nu scripts/maintain.nu check` tells you which ones.
+2. Run `nu scripts/build-sample.nu` to regenerate `tokens.css` and both fixtures.
+3. Bump the version with `nu scripts/maintain.nu bump <version>`. It stamps `tufte-dracula.css` and this
    README, and it regenerates the fixtures. Write the version as `vX.Y.Z` wherever it appears in
    prose. `bump` rewrites only the `v`-prefixed form, so a bare `X.Y.Z` in a doc example goes
    stale without anyone noticing.
@@ -302,7 +316,7 @@ every published page.
 5. Open a pull request and let the `contract` check pass on it:
    `gh pr create --fill && gh pr checks --watch`, then `gh pr merge --squash`. The merge is what
    the required check gates.
-6. From an updated `main`, run `nu maintain.nu release <version>`. It verifies that `HEAD` is
+6. From an updated `main`, run `nu scripts/maintain.nu release <version>`. It verifies that `HEAD` is
    `origin/main`. It refuses a version the stylesheet does not carry. It waits for the required
    checks on that exact SHA, which `REQUIRED_CHECKS` at the top of the verb lists, currently just
    `contract`. It writes an annotated tag only when every one concludes `success`. A red required
@@ -327,8 +341,8 @@ verifies that all ten files exist. It verifies the `<style>` wrapper is exactly 
 and the last line, which keeps `sed '1d;$d'` a safe slice. It verifies `mermaid.js` still uses
 `theme: 'base'`. It verifies every `themeVariables` hex in `mermaid.js` matches
 `mermaid-palette.json`. It verifies the release gate still refuses a missing or red required
-check (`nu maintain.nu selftest`). It verifies that `tokens.css`, both fixtures, every file under
-`themes/` and the Rider plugin zip are freshly regenerated (`nu create-themes.nu --check`). The
+check (`nu scripts/maintain.nu selftest`). It verifies that `tokens.css`, both fixtures, every file under
+`themes/` and the Rider plugin zip are freshly regenerated (`nu scripts/create-themes.nu --check`). The
 zip freezes every entry timestamp to `1980-01-01`, so a rebuild of unchanged inputs is
 byte-identical and any diff means a real change. Consumers run their own contract gates, which
 scan for hand-rolled `<style>` blocks that bypass the submodule. Those gates fail CI.
@@ -348,7 +362,7 @@ be told which media query to match — it reads `prefers-color-scheme` from the 
 rewrites the mode's `@media` condition in a scratch copy and checks the real fixture separately
 for the condition's presence. The images upload as a pull-request artifact for review, and they
 are advisory: the assertions are the gate. Run the whole set locally with
-`nu maintain.nu check`. It mirrors the CI workflow step for step, including the `themeVariables`
+`nu scripts/maintain.nu check`. It mirrors the CI workflow step for step, including the `themeVariables`
 pairing gate that used to run only in CI, so a local pass and a CI pass now mean the same thing.
 
 If you find a violation in a consumer, fix the consumer to read from `external/dracula-tufte/`.

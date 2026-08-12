@@ -11,13 +11,13 @@ Rider console and the terminal agree.
 
 ## These files are generated
 
-`create-themes.nu` writes all four, plus the installable plugin, from the `.in`
+`scripts/create-themes.nu` writes all four, plus the installable plugin, from the `.in`
 template beside each one. Edit the template, never the output.
 
 ```sh
-nu create-themes.nu           # write the themes, then package the plugin
-nu create-themes.nu --check   # fail if any output drifts from its template
-nu create-themes.nu --no-jar  # themes only
+nu scripts/create-themes.nu           # write the themes, then package the plugin
+nu scripts/create-themes.nu --check   # fail if any output drifts from its template
+nu scripts/create-themes.nu --no-jar  # themes only
 ```
 
 ## Install
@@ -25,7 +25,7 @@ nu create-themes.nu --no-jar  # themes only
 **Whole theme** — UI plus colour scheme:
 
 ```sh
-nu create-themes.nu
+nu scripts/create-themes.nu
 ```
 
 Settings → Plugins → gear → Install Plugin from Disk… → pick
@@ -53,7 +53,7 @@ If you have an old `dracula-tufte-rider-*.jar` in your plugins directory, delete
 it before installing the zip. Two copies of the same plugin ID is its own
 problem.
 
-The plugin is tracked, and `nu maintain.nu release` attaches it to the GitHub
+The plugin is tracked, and `nu scripts/maintain.nu release` attaches it to the GitHub
 release for the tag, so it can also be downloaded without cloning. Tracking a
 zip only works because the build is reproducible: every staged entry is stamped
 `1980-01-01` — twice, since the inner jar is itself created new — `-X` drops
@@ -110,7 +110,7 @@ category must not borrow them.
 
 Greys and tinted backgrounds are not tokens. They are sRGB mixes over
 `--surface`, written in the templates as `{{mix:surface:red:20}}` and resolved
-by `create-themes.nu`: the neutral ramp mixes toward `--rule-light` so it keeps
+by `scripts/create-themes.nu`: the neutral ramp mixes toward `--rule-light` so it keeps
 the palette's violet cast, and every diff, file-colour and search background is
 its accent at a fixed 10 / 20 / 28 / 35 percent.
 

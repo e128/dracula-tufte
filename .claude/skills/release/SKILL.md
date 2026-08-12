@@ -5,7 +5,7 @@ description: Cut a tagged, verified release of the Dracula-Tufte template — bu
 
 # Release the template
 
-`maintain.nu` does the work. This skill is the order to call it in, and the two
+`scripts/maintain.nu` does the work. This skill is the order to call it in, and the two
 places where the order is the whole point.
 
 Read [CLAUDE.md](../../../CLAUDE.md) "A tag is a claim the contract held" before
@@ -16,8 +16,8 @@ deviating. Everything below is that section made runnable.
 Read the current one, then decide the next:
 
 ```
-sed -n '2p' tufte-dracula.css        # /* Dracula-Tufte (muted) vX.Y.Z */
-git log --oneline "v$(...)"..HEAD    # what has landed untagged
+sed -n '2p' tufte-dracula.css     # /* Dracula-Tufte (muted) vX.Y.Z */
+git log --oneline "v$(...)"..HEAD # what has landed untagged
 ```
 
 - `feat:` commits since the last tag, or any new consumer-visible file → **minor**
@@ -30,16 +30,16 @@ genuine mix that could read either way.
 ## Run it
 
 ```bash
-git switch -c release/vX.Y.Z-<slug>          # never work on main
-nu maintain.nu bump X.Y.Z                    # stamps CSS + README, rebuilds fixtures + themes + plugin
-nu maintain.nu check                          # must print "Contract OK"
-git add -A && git commit -F -                 # message from the diff, see below
+git switch -c release/vX.Y.Z-<slug>  # never work on main
+nu scripts/maintain.nu bump X.Y.Z    # stamps CSS + README, rebuilds fixtures + themes + plugin
+nu scripts/maintain.nu check         # must print "Contract OK"
+git add -A && git commit -F -        # message from the diff, see below
 git push -u origin release/vX.Y.Z-<slug>
 gh pr create --fill
-gh pr checks --watch                          # `contract` must pass HERE, not after
+gh pr checks --watch                 # `contract` must pass HERE, not after
 gh pr merge --squash
 git switch main && git pull --ff-only
-nu maintain.nu release X.Y.Z                  # verifies green on the merged SHA, then tags + publishes
+nu scripts/maintain.nu release X.Y.Z # verifies green on the merged SHA, then tags + publishes
 ```
 
 `bump` deletes the old plugin zip and writes a new one — the filename carries the
@@ -55,10 +55,10 @@ release cut at all.
 
 ```bash
 gh release view vX.Y.Z --json tagName,assets --jq '.tagName, (.assets[] | "\(.name)  \(.size)B")'
-git cat-file -t vX.Y.Z                        # must be `tag`, not `commit`
-git ls-tree -r --name-only vX.Y.Z | rg '^themes'   # the tag must contain what it claims
+git cat-file -t vX.Y.Z                                   # must be `tag`, not `commit`
+git ls-tree -r --name-only vX.Y.Z | rg '^themes'         # the tag must contain what it claims
 shasum -a 256 themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip
-unzip -l themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip   # Dracula-Tufte/lib/*.jar
+unzip -l themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip # Dracula-Tufte/lib/*.jar
 ```
 
 Both assets must be present: `dracula-tufte-rider-X.Y.Z.zip` and
@@ -90,14 +90,14 @@ co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
   tag. Offer to revert.
 - **Never `--no-verify`. Never force-move a pushed tag.** Consumers pin through a
   submodule; a moved tag silently changes what they resolve to.
-- **Annotated tags only.** `maintain.nu release` does this; do not hand-tag.
+- **Annotated tags only.** `scripts/maintain.nu release` does this; do not hand-tag.
 - Do not hand-edit `sample.html`, `sample-conn-map.html` or `tokens.css`. Ever.
   They are generated, and `check` fails if regeneration is not a no-op.
 
 ## Tooling-only changes
 
 A change that touches no consumer payload — this skill file, a CI workflow, a
-`maintain.nu` refactor — still lands through a PR, but takes **no version bump**
+`scripts/maintain.nu` refactor — still lands through a PR, but takes **no version bump**
 and **no tag**. Commit it as `chore:` and stop. An untagged commit on `main` is
 fine; a tag that consumers pin to for nothing is not.
 

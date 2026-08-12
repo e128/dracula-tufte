@@ -4,12 +4,12 @@ One file, schema `v0.2.0`: 148 style keys, 43 syntax slots, 7 player colours.
 
 ## Generated — do not hand-edit
 
-`create-themes.nu` writes `dracula-tufte.json` from `dracula-tufte.json.in`.
+`scripts/create-themes.nu` writes `dracula-tufte.json` from `dracula-tufte.json.in`.
 Edit the template.
 
 ```sh
-nu create-themes.nu
-nu create-themes.nu --check
+nu scripts/create-themes.nu
+nu scripts/create-themes.nu --check
 ```
 
 ## Install

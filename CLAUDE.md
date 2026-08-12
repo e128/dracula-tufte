@@ -36,15 +36,15 @@ comment here is not written once. Every page a consumer renders carries a copy o
 - `mermaid-palette.json` already has `_comment` keys. Do not add more.
 - **Two exceptions exist. A machine reads both. Do not remove them:**
   - **Line 2 of `tufte-dracula.css`** must be a comment that holds the template version, in the
-    form `/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`. `build-sample.nu` parses it out of
-    `lines | get 1` to stamp `tokens.css`, and `maintain.nu bump` rewrites it. If you remove it,
+    form `/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`. `scripts/build-sample.nu` parses it out of
+    `lines | get 1` to stamp `tokens.css`, and `scripts/maintain.nu bump` rewrites it. If you remove it,
     regeneration dies with `index too large (empty content)`. That failure is *silent* when you
     pipe the output, and it leaves stale fixtures that look correct.
   - **The `/* was #rrggbb */` notes on ten `:root` tokens.** Check 3 of
     `.github/palette-check.py` parses them, and the check fails when a stated hex disagrees with
     its `oklch()`. If you delete a note, you disable that gate in silence. Match the exact
     format when you add a token.
-- The Nushell scripts (`build-sample.nu`, `maintain.nu`), `README.md`, `backlog.md` and this
+- The Nushell scripts (`scripts/build-sample.nu`, `scripts/maintain.nu`), `README.md`, `backlog.md` and this
   file are **not** inlined. Comment those files as normal.
 
 **Put the reasoning in one of these places instead**, in order of preference:
@@ -60,9 +60,9 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
 
 ## Regeneration and the contract
 
-- `build-sample.nu` generates `sample.html`, `sample-conn-map.html` and `tokens.css`. Never edit
-  them by hand. Change `tufte-dracula.css`, `mermaid.js` or `build-sample.nu`, then regenerate.
-- Run `nu maintain.nu check` after every change. It mirrors CI: file presence, the palette
+- `scripts/build-sample.nu` generates `sample.html`, `sample-conn-map.html` and `tokens.css`. Never edit
+  them by hand. Change `tufte-dracula.css`, `mermaid.js` or `scripts/build-sample.nu`, then regenerate.
+- Run `nu scripts/maintain.nu check` after every change. It mirrors CI: file presence, the palette
   hex-against-oklch gate, exactly one `<style>` and one `<script>` per fixture, and a staleness
   check that proves regeneration changes nothing. It must print `Contract OK`.
 - The first line of `tufte-dracula.css` must be exactly `  <style>`. The last line must be
@@ -87,17 +87,17 @@ The flow, start to finish. The `release` skill
 release" invokes that skill.
 
 ```
-git switch -c fix/whatever                       # never work on main
-nu maintain.nu bump 1.11.0                       # stamps the CSS + README
+git switch -c fix/whatever                  # never work on main
+nu scripts/maintain.nu bump 1.11.0          # stamps the CSS + README
 git add -A && git commit -m 'fix: v1.11.0 — <summary>'
 git push -u origin fix/whatever
-gh pr create --fill && gh pr checks --watch      # `contract` must pass here
-gh pr merge --squash                             # the merge is what the check gates
+gh pr create --fill && gh pr checks --watch # `contract` must pass here
+gh pr merge --squash                        # the merge is what the check gates
 git switch main && git pull
-nu maintain.nu release 1.11.0                    # verifies, then tags
+nu scripts/maintain.nu release 1.11.0       # verifies, then tags
 ```
 
-`nu maintain.nu release <version>` does **not** push a branch. It refuses a dirty tree. It
+`nu scripts/maintain.nu release <version>` does **not** push a branch. It refuses a dirty tree. It
 refuses a version that the stylesheet does not carry. It refuses a tag that already exists. It
 refuses a `HEAD` that is not already `origin/main`, and that last refusal is what proves the
 commit arrived through the gate instead of around it. It then polls the check runs for that
