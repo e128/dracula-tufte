@@ -138,9 +138,12 @@ request was explicitly to release.
   falls back to a system serif and the text still renders. Mermaid is the existing exception,
   and it fails hard offline.
 - **Mermaid colors must be hex, never `oklch()`.** Its color engine (khroma) throws
-  "Unsupported color format" on an `oklch()` string and aborts init, so no diagram renders.
-  `mermaid-palette.json` and `.github/palette-check.py` keep the hex honest against the oklch
-  source.
+  "Unsupported color format" on an `oklch()` string and aborts init, so no diagram renders. It never
+  resolves a `var()` either, so `mermaid.js` carries **two** hex palettes and picks one at init by
+  reading the `--mermaid-scheme` token off `:root`. Read the token, never `matchMedia`: the
+  forced-light sample pages rewrite an `@media` condition, which the cascade sees and `matchMedia`
+  does not. `mermaid-palette.json` holds both sets as `init` and `initLight`, and
+  `.github/palette-check.py` keeps both honest against the oklch source.
 - Pin every CDN dependency to an exact version, never to a range.
 
 ## Style decisions that are already settled

@@ -107,16 +107,45 @@ if "--dump" in sys.argv:
 pal = json.loads((ROOT / "mermaid-palette.json").read_text())
 fail = 0
 
-# 1. Every init hex is exactly the conversion of the variable it names.
-for key, entry in pal["init"].items():
-    if key == "_comment":
-        continue
-    want = palette.get(entry["from"].lstrip("-"))
-    if want is None:
-        print(f"DRIFT: init.{key} names {entry['from']}, which is not in :root")
+# The light palette is the base :root overlaid with the light block's overrides, which
+# is how the cascade resolves it. mermaid.js carries both hex sets because khroma cannot
+# read a var() or an oklch(), and picks one at init from the --mermaid-scheme token.
+light_block = re.search(
+    r"@media \(prefers-color-scheme: light\) \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S
+)
+if not light_block:
+    sys.exit("Could not find the light :root block in tufte-dracula.css.")
+light_triples = dict(triples)
+light_triples.update({
+    name: (float(L), float(C), float(h))
+    for name, L, C, h in re.findall(
+        r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", light_block.group(1)
+    )
+})
+light_palette = {name: oklch_to_hex(*lch) for name, lch in light_triples.items()}
+
+# 1. Every init hex is exactly the conversion of the variable it names, in both
+#    palettes. initLight names the same tokens and resolves them through the light
+#    block, so a light-only token edit cannot slip past by looking right in dark.
+for section, source in (("init", palette), ("initLight", light_palette)):
+    if section not in pal:
+        print(f"DRIFT: mermaid-palette.json has no {section} section")
         fail = 1
-    elif entry["hex"] != want:
-        print(f"DRIFT: init.{key} is {entry['hex']}, {entry['from']} computes to {want}")
+        continue
+    keys = [k for k in pal[section] if k != "_comment"]
+    if len(keys) < 19:
+        sys.exit(f"{section} has only {len(keys)} keys — refusing to pass vacuously.")
+    for key in keys:
+        entry = pal[section][key]
+        want = source.get(entry["from"].lstrip("-"))
+        if want is None:
+            print(f"DRIFT: {section}.{key} names {entry['from']}, which is not in :root")
+            fail = 1
+        elif entry["hex"] != want:
+            print(f"DRIFT: {section}.{key} is {entry['hex']}, {entry['from']} computes to {want}")
+            fail = 1
+    if set(keys) != set(k for k in pal["init"] if k != "_comment"):
+        print(f"DRIFT: {section} and init cover different themeVariables keys")
         fail = 1
 
 # 2. Each classdef fill is exactly the variable its `from` field names — that is
@@ -148,32 +177,13 @@ for name, stated in re.findall(
 # 4. contract-check.yml maps every palette key onto mermaid.js; this is the
 #    reverse — a hex inline in mermaid.js that is no longer a palette color at all
 #    (a hand-added themeVariable, a stale value under a renamed key).
+known = set(palette.values()) | set(light_palette.values())
 for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_text()))):
-    if found not in palette.values():
+    if found not in known:
         print(f"DRIFT: mermaid.js hex {found} is not a tufte-dracula.css palette color")
         fail = 1
 
-# 5. The light theme re-declares the dark palette on `pre.mermaid, .mermaid-overlay`,
-#    because mermaid.js bakes the dark hex in and cannot be re-themed by a media
-#    query. That block is a third projection of :root and can drift from it exactly
-#    like mermaid-palette.json could, so every value in it must be the literal
-#    :root value of the same token. Not a hex comparison: two different oklch()
-#    triples can round to the same hex, and what has to hold here is that the
-#    declaration was copied rather than re-derived.
-diagram = re.search(r"pre\.mermaid, \.mermaid-overlay \{(.*?)\n\s*\}", stylesheet, re.S)
-if not diagram:
-    sys.exit("Could not find the `pre.mermaid, .mermaid-overlay` palette block.")
-root_literal = dict(re.findall(r"--([\w-]+):\s*(oklch\([^)]*\))", css))
-overrides = re.findall(r"--([\w-]+):\s*(oklch\([^)]*\))", diagram.group(1))
-if len(overrides) < 9:
-    sys.exit(f"Only parsed {len(overrides)} oklch overrides from the diagram block — expected 9.")
-for name, stated in overrides:
-    want = root_literal.get(name)
-    if stated != want:
-        print(f"DRIFT: diagram block --{name} is {stated}, :root declares {want}")
-        fail = 1
-
-# 6. Every mode has to hold its own contrast floor. The stylesheet ships four
+# 5. Every mode has to hold its own contrast floor. The stylesheet ships four
 #    palettes now — the default, `prefers-contrast: more`, `prefers-color-scheme:
 #    light` and print — and the ratios behind each one were measured by hand and
 #    written into NOTES.md. A measurement in prose is not a gate: a later edit to
@@ -238,6 +248,28 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
                         f"below the {floor} floor for this mode"
                     )
                     fail = 1
+
+# 6. --mermaid-scheme is the whole mechanism that lets a diagram follow the palette,
+#    and deleting it fails silently: mermaid.js reads an empty string, decides "not
+#    light", and renders a dark diagram on a light page while every other check stays
+#    green. That is the exact defect this token was added to fix, so it is gated
+#    rather than trusted. The token is not an oklch() value, so nothing else here sees
+#    it, and the JS side is checked by name because a renamed token is the same bug.
+mermaid_js = (ROOT / "mermaid.js").read_text()
+for where, want, block_text in (
+    (":root", "dark", css),
+    ("the light :root block", "light", light_block.group(1)),
+):
+    if not re.search(r"--mermaid-scheme:\s*" + want + r"\s*;", block_text):
+        print(f"DRIFT: {where} does not declare --mermaid-scheme: {want}")
+        fail = 1
+if "--mermaid-scheme" not in mermaid_js:
+    print("DRIFT: mermaid.js never reads --mermaid-scheme, so a diagram cannot follow the palette")
+    fail = 1
+if "matchMedia" in mermaid_js:
+    print("DRIFT: mermaid.js reads matchMedia — that reports the host, not the cascade, "
+          "so the forced-light sample pages would render a dark diagram")
+    fail = 1
 
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)

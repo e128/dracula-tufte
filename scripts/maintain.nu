@@ -60,17 +60,19 @@ def "main check" [] {
   # palette colour; it cannot see that a key points at the wrong one. That pairing
   # gate lived only in CI, which meant a themeVariable set to some other palette
   # colour passed here and failed on the push.
-  let init = (open ($ROOT | path join "mermaid-palette.json") | get init
-    | transpose key entry | where key != "_comment")
-  if ($init | length) < 16 {
-    print $"mermaid-palette.json .init has only ($init | length) keys — refusing to pass vacuously"
-    $ok = false
-  }
+  let palette_json = (open ($ROOT | path join "mermaid-palette.json"))
   let js = (open --raw ($ROOT | path join "mermaid.js"))
-  for e in $init {
-    if not ($js =~ $"($e.key):\\s*'($e.entry.hex)'") {
-      print $"DRIFT: mermaid.js ($e.key) is not '($e.entry.hex)' \(mermaid-palette.json)"
+  for section in [init initLight] {
+    let entries = ($palette_json | get $section | transpose key entry | where key != "_comment")
+    if ($entries | length) < 19 {
+      print $"mermaid-palette.json .($section) has only ($entries | length) keys — refusing to pass vacuously"
       $ok = false
+    }
+    for e in $entries {
+      if not ($js =~ $"($e.key):\\s*'($e.entry.hex)'") {
+        print $"DRIFT: mermaid.js ($section) ($e.key) is not '($e.entry.hex)' \(mermaid-palette.json)"
+        $ok = false
+      }
     }
   }
   if not ($js =~ "theme: 'base'") { print "mermaid.js must use theme:'base', not 'dark'"; $ok = false }

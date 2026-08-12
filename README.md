@@ -38,7 +38,7 @@ each pull request instead.
 | `tufte-dracula.css` | The stylesheet payload (template v1.24.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
-| `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
+| `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, in two sections — `init` for dark and `initLight` for light — plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
 | `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `scripts/build-sample.nu`. Do not edit by hand. |
 | `scripts/build-sample.nu` | The regenerator. `nu scripts/build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
 | `samples/dark.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
@@ -91,9 +91,12 @@ beat Mermaid's inline styles or to keep a filtered row hidden.
 
 **Three appearance modes ship, and you supply nothing for any of them.** Dark is the default.
 `prefers-contrast: more` raises every accent to 7:1 against the code fill. `prefers-color-scheme:
-light` swaps in a full light palette where every accent clears 4.5:1 on both backgrounds. Mermaid
-diagrams keep the dark palette in light mode and render as dark figures, because `mermaid.js` bakes
-its colors in as hex at init time and a media query cannot reach them.
+light` swaps in a full light palette where every accent clears 4.5:1 on both backgrounds. **Mermaid
+diagrams follow the light palette too.** `mermaid.js` has to pass hex, because Mermaid's color engine
+throws on `oklch()`, so it carries both palettes inline and picks one at init by reading the
+`--mermaid-scheme` token off `:root` — the cascade, not `matchMedia`, which is what makes a
+forced-light page render a light diagram. The token is read once at load, so a reader who changes
+system appearance with the page open sees a stale diagram until they reload.
 
 **The overlay CSS ships unconditionally.** A page with no diagram pays about a dozen inert lines.
 Omit `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` instead. The script

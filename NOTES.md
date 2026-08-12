@@ -40,7 +40,7 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Keyboard and assistive technology](#keyboard-and-assistive-technology) | Zoom button, modal overlay, inert |
 | [Direction, zoom and growth](#direction-zoom-and-growth) | RTL, text-only zoom, safe-area insets |
 | [Cascade layer](#cascade-layer) | `@layer tufte-dracula`, the `!important` inversion, the indent that stayed |
-| [Appearance modes](#appearance-modes) | `prefers-contrast: more`, `prefers-color-scheme: light`, the diagram island, the two mode gates |
+| [Appearance modes](#appearance-modes) | `prefers-contrast: more`, `prefers-color-scheme: light`, `--mermaid-scheme`, the two mode gates |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its three load-bearing decisions |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `figure`, `figcaption`, and the UA defaults they had |
@@ -1215,58 +1215,81 @@ light accents measures 5.16 to 5.21:1, so the print block's outlined variant is 
 `::selection` is 5.25. `mark` is 10.83. `--purple-bright` inverts its rule to `calc(l - 0.06)`,
 because brighter is *less* contrast on a light ground.
 
-**Mermaid cannot follow the media query, so the diagrams became islands.** `mermaid.js` bakes the
-dark palette in as hex at init time, because khroma throws on `oklch()` and because there is no
-build step to generate a second set. A media query cannot reach it, and re-initialising on a
-scheme change means the script grows a listener and a re-render. So light mode gives
-`pre.mermaid, .mermaid-overlay` the **dark palette back** as a custom-property declaration, and
-`pre.mermaid` a `--code-bg` card with padding and a radius. Custom properties inherit, so every
-existing rule inside a diagram resolves to the dark value with no second selector: the zoom button
-(`mermaid.js` appends it inside the `pre`, which is what makes the inheritance work), the packet
-`!important` fills, the overlay scrim, the `::after` close mark. A dark figure on a light page is a
-deliberate object rather than a broken one, and the reading is the same one Tufte's plates take.
+**Mermaid follows the media query, and it does it by reading a CSS token.** `mermaid.js` has to
+pass hex, because khroma throws `Unsupported color format` on an `oklch()` string and never resolves
+a `var()`. So it carries **two** hex palettes inline and picks one at init:
 
-`--rule` is declared there as `var(--muted)`, not as a copied literal. Custom-property substitution
-happens on the element, so it picks up the dark `--muted` from the same block.
+```js
+const mermaidLight = getComputedStyle(document.documentElement)
+  .getPropertyValue('--mermaid-scheme').trim() === 'light';
+```
 
-**On the conn-map the card has to hug the diagram, and only there.** `pre.mermaid` is a block, so it
-takes the full column, and in dark mode nothing paints it so nobody ever noticed. Painting it made
-the emptiness the loudest thing on the page: measured at 1500px the graph card ran **1009px** wide
-around a **441px** diagram, so roughly 570px of dead slab, on the one layout where the graph *is* the
-content and sits beside a light sidebar. `body.conn-map pre.mermaid { width: fit-content; max-width:
-100%; margin-inline: auto }` shrinks it to 441px. `max-width: 100%` is load-bearing: without it the
-narrow-width rule that sets the SVG to `var(--natural-width)` would drag the card past the viewport
-and reintroduce the document-level sideways scroll that all of *Diagram sizing* exists to prevent.
-Verified no document-level overflow at 320, 390, 600, 601, 768, 899, 900, 1280, 1920 and 2560px on
-all four pages, by reading `documentElement.scrollWidth` against `clientWidth` rather than by eye.
+`:root` declares `--mermaid-scheme: dark` and the light block overrides it to `light`. That token is
+the whole mechanism, and reading it instead of `matchMedia('(prefers-color-scheme: light)')` is the
+load-bearing choice. **`matchMedia` reads the host; the token reads the cascade.** The forced-light
+sample pages work only because of that: they force the palette by rewriting the `@media` condition in
+their own copy of the stylesheet, which `matchMedia` cannot see and a computed custom property
+resolves correctly. Anything driven off `matchMedia` would render a dark diagram on `light.html`,
+which is precisely the bug that was reported.
 
-`margin-inline: auto` rather than `0`, because *Diagram sizing* settled that a diagram narrower than
-its column stays centered in **both** layouts. The card follows the diagram it wraps.
+The light projection, measured against the light `--code-bg` the diagram is drawn on: node and note
+text at **16.10:1**, `nodeBorder` and `primaryBorderColor` 4.80, `lineColor` 4.74, `clusterBorder`
+and `noteBorderColor` 3.53. The `pie1..4` ramp is unchanged across both schemes — `--data-1..4` are
+pale by design, which reads as 1.69 to 2.15:1 against the light card and is weak separation from the
+ground, but each slice carries `textColor` at 7.48 to 9.52:1 and slices abut each other rather than
+the background. No fixture has a pie chart, so that pair is derived rather than rendered.
 
-**Widening that rule to every `pre.mermaid` was tried and it breaks the component sample twice.**
-Both were rendered, not reasoned about:
+**This replaced a dark-island design, and the earlier approach is worth knowing about because it
+looked fine.** The first cut accepted that mermaid could not be re-themed and leaned into it: light
+mode handed `pre.mermaid, .mermaid-overlay` the dark palette back as inherited custom properties and
+painted `pre.mermaid` a `--code-bg` card, so a diagram read as a deliberate dark plate on a light
+page. Custom-property inheritance made it cheap — the zoom button, the packet `!important` fills, the
+overlay scrim and the `::after` close mark all resolved to dark with no extra selectors.
 
-1. **`quadrantChart` labels get cut.** Its point labels overrun the viewBox by design — that is why
-   `pre.mermaid` carries `overflow: visible` — so a card sized to the viewBox clips them at its edge,
-   and the part that escapes lands in dark-palette near-white text on the light page, where it is
-   invisible. "A label long enough to reach past the edge" fades out mid-word at the card boundary.
-2. **`sequenceDiagram` and `packet-beta` collapse.** They use mermaid's default `useMaxWidth`, so the
-   SVG carries `width="100%"` with its real size as an inline `max-width`. `fit-content` on the
-   parent makes that percentage resolve against a box the SVG is itself sizing, and both diagrams
-   shrink to near-unreadable — the 8px-label bug from the narrow end of *Diagram sizing*, back at
-   full width.
+It was wrong for three reasons that only showed up on the page:
 
-The conn-map escapes both because its one fence sets `useMaxWidth: false`, which gives the SVG a real
-width attribute and no inline `max-width`, and because a `flowchart` keeps its content inside its own
-viewBox. **Keep the `body.conn-map` scope.** A future agent tidying it into a bare `pre.mermaid` rule
-gets a clipped quadrant chart and two shrunken diagrams, none of which is visible in dark mode.
+1. **A dark slab beside a light sidebar reads as broken, not as a plate.** On the conn-map the graph
+   *is* the content, and `pre.mermaid` is a block, so the card ran **1009px** wide around a **441px**
+   diagram at 1500px — about 570px of dead dark space, next to a light column.
+2. **Fixing that needed a rule that could not be generalised.** `width: fit-content` on the card
+   shrank it correctly, but only on the conn-map. Rendered on the component sample it clipped
+   `quadrantChart`'s deliberately overflowing point labels at the card edge and left the escaped tail
+   as near-white text on a light page, and it collapsed `sequenceDiagram` and `packet-beta`, whose
+   SVGs carry `width="100%"` with the real size as an inline `max-width`, so a `fit-content` parent
+   makes that percentage resolve against a box the SVG is itself sizing.
+3. **It needed its own gate.** The dark palette re-declared in that block was a third projection of
+   `:root`, so `palette-check.py` grew a check comparing its nine `oklch()` literals against `:root`
+   as declaration text.
 
-**That block is a third projection of `:root`, so check 5 of `.github/palette-check.py` gates it.**
-Nine `oklch()` literals duplicate `:root` values, and a duplicate with no gate is the failure this
-repo keeps finding. The check compares the **declaration text**, not the computed hex: two
-different triples can round to the same `#rrggbb`, and what has to hold is that the value was
-copied rather than re-derived. Verified by tampering — `--purple` moved to `oklch(0.699 …)` and the
-check reported drift and exited 1.
+All three are gone. The card, the `fit-content` rule, the inherited-dark block and that check are
+deleted, because a light diagram needs none of them: `pre.mermaid` keeps `background: none`, the
+packet `!important` fills resolve to the light tokens on their own, and the overlay scrim was already
+derived from `--surface-alt`. **The net change is fewer rules than before the island existed.**
+
+**Both palettes are gated, key by key.** `mermaid-palette.json` gained an `initLight` section whose
+every entry names the same token in `from` as its `init` twin, and check 1 of `palette-check.py` now
+resolves `init` through `:root` and `initLight` through the light block, refusing either at fewer than
+19 keys and failing if the two sections cover different key sets. `contract-check.yml` and
+`scripts/maintain.nu check` both pair `mermaid.js` against both sections, 38 rows in total. Check 4,
+which asserts every hex in `mermaid.js` is a palette color, accepts either palette. **A drifted light
+hex is invisible to anyone reading in dark mode**, which is exactly why it needs the gate rather than
+an eye.
+
+**Deleting `--mermaid-scheme` used to fail silently, so check 6 of `palette-check.py` gates it.**
+`getPropertyValue` on a missing custom property returns an empty string, which is not `'light'`, so
+mermaid renders dark on a light page and every other check stays green — the exact defect the token
+was added to fix. The check asserts `:root` declares `dark`, the light block declares `light`,
+`mermaid.js` reads that token by name, and `mermaid.js` does **not** read `matchMedia`. All four were
+tampered with and all four reported. The last one is not pedantry: `matchMedia` looks correct on a
+real machine and silently breaks only the forced-light pages, which is the hardest version of this
+bug to see.
+
+**A scheme flip without a reload leaves the diagram stale.** The token is read once, at init. The CSS
+around it follows the media query live, so a reader who changes system appearance with the page open
+gets a light page with a dark diagram until they reload. Re-theming live means re-initialising mermaid
+and re-rendering every fence from source, which is a listener, a re-parse and a fresh `MutationObserver`
+race for a case that costs one refresh. Take it if a consumer ships an in-page appearance toggle,
+because then the flip is a click rather than a system setting.
 
 **A toggle was asked for and refused, because there is nowhere to put it.** The fixtures carry
 exactly one `<style>` and exactly two `<script>` blocks, and both counts are gated. The one

@@ -54,6 +54,7 @@
       --space-6:     1.5rem;
       --space-10:    2.5rem;
       --space-12:    3rem;
+      --mermaid-scheme: dark;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -377,22 +378,8 @@
         --pink:        oklch(0.545 0.120 349.392);
         --green:       oklch(0.515 0.100 155.397);
         --ring:        oklch(0 0 0 / 0.1);
+        --mermaid-scheme: light;
       }
-      pre.mermaid, .mermaid-overlay {
-        --surface:     oklch(0.288 0.022 277.509);
-        --surface-alt: oklch(0.243 0.019 280.395);
-        --on-surface:  oklch(0.977 0.008 106.545);
-        --code-bg:     oklch(0.340 0.027 276.046);
-        --label:       oklch(0.810 0.054 275.492);
-        --muted:       oklch(0.71 0.055 275);
-        --rule:        var(--muted);
-        --rule-light:  oklch(0.56 0.032 277.832);
-        --link:        oklch(0.802 0.064 216.782);
-        --purple:      oklch(0.698 0.107 300.909);
-      }
-      pre.mermaid { background: var(--code-bg); padding: var(--space-3); border-radius: var(--radius); }
-      body.conn-map pre.mermaid { width: fit-content; max-width: 100%; margin-inline: auto; }
-      .mermaid-overlay { background: oklch(from var(--surface-alt) l c h / 0.96); }
     }
     @media (forced-colors: active) {
       code, kbd, .verdict, .badge { border: 1px solid currentColor; }
@@ -440,29 +427,51 @@
   </style>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.esm.min.mjs';
+    const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
+    const mermaidFont = 'ui-monospace, "JetBrains Mono", "Fira Code", monospace';
+    const mermaidDark = {
+      background:          '#343746',
+      mainBkg:             '#343746',
+      primaryColor:        '#343746',
+      primaryTextColor:    '#f8f8f2',
+      primaryBorderColor:  '#a98ed6',
+      lineColor:           '#979fc4',
+      textColor:           '#f8f8f2',
+      secondaryColor:      '#1e1f29',
+      clusterBkg:          '#343746',
+      clusterBorder:       '#707388',
+      nodeBorder:          '#a98ed6',
+      edgeLabelBackground: '#343746',
+      noteBkgColor:        '#343746',
+      noteTextColor:       '#f8f8f2',
+      noteBorderColor:     '#707388',
+    };
+    const mermaidLightVars = {
+      background:          '#f0f1f9',
+      mainBkg:             '#f0f1f9',
+      primaryColor:        '#f0f1f9',
+      primaryTextColor:    '#161616',
+      primaryBorderColor:  '#785da1',
+      lineColor:           '#626a8c',
+      textColor:           '#161616',
+      secondaryColor:      '#ebebe7',
+      clusterBkg:          '#f0f1f9',
+      clusterBorder:       '#7b7f94',
+      nodeBorder:          '#785da1',
+      edgeLabelBackground: '#f0f1f9',
+      noteBkgColor:        '#f0f1f9',
+      noteTextColor:       '#161616',
+      noteBorderColor:     '#7b7f94',
+    };
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
       securityLevel: window.mermaidSecurityLevel || 'strict',
-      fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
+      fontFamily: mermaidFont,
       themeVariables: {
-        darkMode: true,
-        fontFamily: 'ui-monospace, "JetBrains Mono", "Fira Code", monospace',
+        darkMode: !mermaidLight,
+        fontFamily: mermaidFont,
         fontSize:   '1rem',
-        background:          '#343746',
-        mainBkg:             '#343746',
-        primaryColor:        '#343746',
-        primaryTextColor:    '#f8f8f2',
-        primaryBorderColor:  '#a98ed6',
-        lineColor:           '#979fc4',
-        textColor:           '#f8f8f2',
-        secondaryColor:      '#1e1f29',
-        clusterBkg:          '#343746',
-        clusterBorder:       '#707388',
-        nodeBorder:          '#a98ed6',
-        edgeLabelBackground: '#343746',
-        noteBkgColor:        '#343746',
-        noteTextColor:       '#f8f8f2',
-        noteBorderColor:     '#707388',
+        ...(mermaidLight ? mermaidLightVars : mermaidDark),
         pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
       },
     });
