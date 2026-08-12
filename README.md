@@ -16,27 +16,53 @@ fork of either. It rewrites the ideas as one inline stylesheet with no build ste
 
 GitHub Pages renders these from main, no build step:
 
-- [sample.html](https://e128.github.io/dracula-tufte/sample.html): component sample
-- [sample-conn-map.html](https://e128.github.io/dracula-tufte/sample-conn-map.html): connections-map layout
+- [samples/dark.html](https://e128.github.io/dracula-tufte/samples/dark.html): component sample
+- [samples/dark-conn-map.html](https://e128.github.io/dracula-tufte/samples/dark-conn-map.html): connections-map layout
+
+Both follow your system appearance, so a dark-mode reader never sees the light palette. These two
+force it, and are generated from the fixtures above by the same run:
+
+- [samples/light.html](https://e128.github.io/dracula-tufte/samples/light.html): component sample, forced light
+- [samples/light-conn-map.html](https://e128.github.io/dracula-tufte/samples/light-conn-map.html): connections-map layout, forced light
+
+**Do not inline CSS from a preview.** The stylesheet inside those two has had its `@media`
+conditions rewritten, so it is not the payload. Each one says so in a banner and links back to its
+fixture. High-contrast mode has no preview page: it changes the accents, not `--surface`, so a
+forced page would look nearly identical to the dark sample. CI renders it and attaches the image to
+each pull request instead.
 
 ## The Ten Files
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.23.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.24.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
-| `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
-| `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `build-sample.nu`. Do not edit by hand. |
-| `build-sample.nu` | The regenerator. `nu build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
-| `sample.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
-| `sample-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
+| `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, in two sections — `init` for dark and `initLight` for light — plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
+| `tokens.css` | Palette reference. Generated. The `:root` block sliced out by `scripts/build-sample.nu`. Do not edit by hand. |
+| `scripts/build-sample.nu` | The regenerator. `nu scripts/build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
+| `samples/dark.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
+| `samples/dark-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
 | `CONTRACT.md` | The consumer checklist. What to inline, the markup a generator owes, what changed in each release, how to spot a stale artifact, and what each pin mode costs. Imperative and short, because a consumer's agent reads it on every bump. It carries no reasoning: `NOTES.md` holds that. |
 | `README.md` | This file. |
 
+**Where the rest lives.** The payload, the fixtures and the docs sit at the repo root, because Pages
+serves the root and consumers pin paths into it. Everything else is split by who runs it:
+
+| path | what | who runs it |
+| --- | --- | --- |
+| `scripts/*.nu` | `build-sample.nu`, `maintain.nu`, `create-themes.nu` | you, by hand, and CI |
+| `.github/*.py` | `palette-check.py`, `render-modes.py` | CI steps, and the Nushell scripts above |
+| `.github/workflows/` | `contract-check.yml`, the one workflow | GitHub |
+
+The Python helpers stay in `.github/` because a CI step invokes each of them directly. The Nushell
+scripts are the commands a person types, so they get a folder with a name that says so. Both resolve
+every path from the repo root rather than from `cwd`, so `nu scripts/maintain.nu check` works from
+anywhere in the tree.
+
 ## Consumers
 
-The current release is **`v1.23.0`**. Consumers reach it through a git submodule. To refresh: bump
+The current release is **`v1.24.0`**. Consumers reach it through a git submodule. To refresh: bump
 the pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
 
 **Three pin modes are in use, and they are not equal.** A tag is the only pin that makes a
@@ -54,6 +80,23 @@ place is a much harder problem than running the generator again.
 `<style>` tags. A consumer whose generator supplies the wrapper takes the bare body with
 `sed '1d;$d'`. The wrapper is exactly one line at each end, and CI holds it there. `mermaid.js`
 and `filter.js` work the same way with their `<script>` tags.
+
+**Your own CSS now wins without a specificity fight.** The whole sheet sits in
+`@layer tufte-dracula` as of v1.24.0. Unlayered author styles beat layered ones for normal
+declarations, so a plain `h1 { color: … }` in your own `<style>` overrides the template no matter
+how weak the selector looks. Load your CSS in any order. The six `!important` declarations in the
+sheet go the other way — layered `!important` beats unlayered `!important` — so if you have to win
+against one of those, put your rules in a layer declared ahead of `tufte-dracula`. All six exist to
+beat Mermaid's inline styles or to keep a filtered row hidden.
+
+**Three appearance modes ship, and you supply nothing for any of them.** Dark is the default.
+`prefers-contrast: more` raises every accent to 7:1 against the code fill. `prefers-color-scheme:
+light` swaps in a full light palette where every accent clears 4.5:1 on both backgrounds. **Mermaid
+diagrams follow the light palette too.** `mermaid.js` has to pass hex, because Mermaid's color engine
+throws on `oklch()`, so it carries both palettes inline and picks one at init by reading the
+`--mermaid-scheme` token off `:root` — the cascade, not `matchMedia`, which is what makes a
+forced-light page render a light diagram. The token is read once at load, so a reader who changes
+system appearance with the page open sees a stale diagram until they reload.
 
 **The overlay CSS ships unconditionally.** A page with no diagram pays about a dozen inert lines.
 Omit `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` instead. The script
@@ -93,7 +136,7 @@ seven things, and both fixtures model each one.
   `<pre tabindex="0" role="region" aria-label="Code block">`. The label is a consumer string, so
   translate it.
 
-**Four opt-in patterns, plus one group that needs no class. `sample.html` models all but the
+**Four opt-in patterns, plus one group that needs no class. `samples/dark.html` models all but the
 table wrapper.** Nothing here is required. The stylesheet does nothing until the markup asks.
 
 - **`.table-scroll` around a wide table** keeps its header pinned. A table below 1000px already
@@ -237,8 +280,8 @@ generates and gates them from a `.in` template beside each output:
 | **Ghostty** | `dracula-tufte` | Drop into `~/.config/ghostty/themes/`, then `theme = dracula-tufte` |
 
 ```sh
-nu create-themes.nu           # write every theme, then package the Rider plugin
-nu create-themes.nu --check   # fail if any output drifts from its template
+nu scripts/create-themes.nu           # write every theme, then package the Rider plugin
+nu scripts/create-themes.nu --check   # fail if any output drifts from its template
 ```
 
 **Rider loads a UI theme only from a plugin, which is why there is an artifact to build at all.**
@@ -246,7 +289,7 @@ It ships as a zip that wraps a jar (`Dracula-Tufte/lib/*.jar`), because Install 
 Disk… refuses a bare jar, even though the same jar loads when you copy it into
 `<config>/plugins/` by hand. That trap shipped through v1.18.0. Delete any old
 `dracula-tufte-rider-*.jar` from your plugins directory before you install the zip: two copies of
-one plugin ID is its own problem. `nu maintain.nu release` attaches the plugin and a themes zip
+one plugin ID is its own problem. `nu scripts/maintain.nu release` attaches the plugin and a themes zip
 to the GitHub release, so neither needs a clone.
 
 **Prose weighting does not transfer to an editor.** The accents keep their jobs: pink is
@@ -265,9 +308,9 @@ every published page.
 
 1. Edit the stylesheet or the Mermaid script. Colors change in the `tufte-dracula.css` `:root`
    block and nowhere else. When Mermaid needs that color, recompute its hex in
-   `mermaid-palette.json` and `mermaid.js`. `nu maintain.nu check` tells you which ones.
-2. Run `nu build-sample.nu` to regenerate `tokens.css` and both fixtures.
-3. Bump the version with `nu maintain.nu bump <version>`. It stamps `tufte-dracula.css` and this
+   `mermaid-palette.json` and `mermaid.js`. `nu scripts/maintain.nu check` tells you which ones.
+2. Run `nu scripts/build-sample.nu` to regenerate `tokens.css` and both fixtures.
+3. Bump the version with `nu scripts/maintain.nu bump <version>`. It stamps `tufte-dracula.css` and this
    README, and it regenerates the fixtures. Write the version as `vX.Y.Z` wherever it appears in
    prose. `bump` rewrites only the `v`-prefixed form, so a bare `X.Y.Z` in a doc example goes
    stale without anyone noticing.
@@ -276,7 +319,7 @@ every published page.
 5. Open a pull request and let the `contract` check pass on it:
    `gh pr create --fill && gh pr checks --watch`, then `gh pr merge --squash`. The merge is what
    the required check gates.
-6. From an updated `main`, run `nu maintain.nu release <version>`. It verifies that `HEAD` is
+6. From an updated `main`, run `nu scripts/maintain.nu release <version>`. It verifies that `HEAD` is
    `origin/main`. It refuses a version the stylesheet does not carry. It waits for the required
    checks on that exact SHA, which `REQUIRED_CHECKS` at the top of the verb lists, currently just
    `contract`. It writes an annotated tag only when every one concludes `success`. A red required
@@ -301,8 +344,8 @@ verifies that all ten files exist. It verifies the `<style>` wrapper is exactly 
 and the last line, which keeps `sed '1d;$d'` a safe slice. It verifies `mermaid.js` still uses
 `theme: 'base'`. It verifies every `themeVariables` hex in `mermaid.js` matches
 `mermaid-palette.json`. It verifies the release gate still refuses a missing or red required
-check (`nu maintain.nu selftest`). It verifies that `tokens.css`, both fixtures, every file under
-`themes/` and the Rider plugin zip are freshly regenerated (`nu create-themes.nu --check`). The
+check (`nu scripts/maintain.nu selftest`). It verifies that `tokens.css`, both fixtures, every file under
+`themes/` and the Rider plugin zip are freshly regenerated (`nu scripts/create-themes.nu --check`). The
 zip freezes every entry timestamp to `1980-01-01`, so a rebuild of unchanged inputs is
 byte-identical and any diff means a real change. Consumers run their own contract gates, which
 scan for hand-rolled `<style>` blocks that bypass the submodule. Those gates fail CI.
@@ -310,9 +353,19 @@ scan for hand-rolled `<style>` blocks that bypass the submodule. Those gates fai
 **One palette, several projections.** The `:root` block of `tufte-dracula.css` is the only source
 of color truth. Everything else is derived and machine-checked. `tokens.css` and the fixtures are
 sliced or inlined verbatim. `.github/palette-check.py` converts each `oklch()` through Oklab to
-sRGB, then asserts that the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, and
-the `/* was #xxxxxx */` provenance comments all still agree. Run the whole set locally with
-`nu maintain.nu check`. It mirrors the CI workflow step for step, including the `themeVariables`
+sRGB, then asserts that the hex in `mermaid-palette.json`, the hex inline in `mermaid.js`, the
+dark palette re-declared on `pre.mermaid` for light mode, and the `/* was #xxxxxx */` provenance
+comments all still agree. It also re-derives the contrast floor for all four palettes — the
+default at 4.2:1, `prefers-contrast: more` at 7:1, light at 4.5:1, print at 4.5:1 — because those
+ratios were hand measurements in `NOTES.md` and prose is not a gate.
+
+**Every appearance mode is rendered, not just parsed.** `.github/render-modes.py` opens each
+fixture in each mode and asserts the page paints that mode's `--surface`. Headless Chrome cannot
+be told which media query to match — it reads `prefers-color-scheme` from the host — so the script
+rewrites the mode's `@media` condition in a scratch copy and checks the real fixture separately
+for the condition's presence. The images upload as a pull-request artifact for review, and they
+are advisory: the assertions are the gate. Run the whole set locally with
+`nu scripts/maintain.nu check`. It mirrors the CI workflow step for step, including the `themeVariables`
 pairing gate that used to run only in CI, so a local pass and a CI pass now mean the same thing.
 
 If you find a violation in a consumer, fix the consumer to read from `external/dracula-tufte/`.

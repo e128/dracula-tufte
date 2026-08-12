@@ -5,7 +5,7 @@ states what to inline, what markup to emit, and what changed in each release. It
 reasoning. [NOTES.md](NOTES.md) holds the reasoning, and [README.md](README.md) holds the
 narrative.
 
-**`sample.html` is the executable specification.** It models every requirement below, and CI
+**`samples/dark.html` is the executable specification.** It models every requirement below, and CI
 fails when it drifts from the stylesheet. When this file and the fixture disagree, the fixture is
 right. Read the fixture before you invent markup.
 
@@ -27,6 +27,13 @@ Two supported modes. Pick one and hold it:
 
 `mermaid.js` needs `<div class="mermaid-overlay" id="mermaid-zoom"></div>` as the first child of
 `<body>`. It throws a named error when the div is absent.
+
+**Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html` and
+`samples/light-conn-map.html` exist so a reader can see the light palette on a dark-mode machine.
+They carry a stylesheet whose `@media` conditions were rewritten to force that, so a copy taken
+from one of them is locked to light and can never follow a reader's system appearance. Each says so
+in a banner. `samples/dark.html` and `samples/dark-conn-map.html` do carry the payload verbatim, but the file
+is still the source.
 
 ## 2. Emit this markup
 
@@ -51,6 +58,8 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.24.0 | drop any specificity hack or `!important` you added to override the template — the sheet is in `@layer tufte-dracula` and your unlayered CSS wins on its own |
+| v1.24.0 | nothing for light or high-contrast mode; both are media queries over the same markup |
 | v1.22.0 | emit `<nav>` with sibling `<a>` children to get link separators; nothing to change if you already do |
 | v1.22.0 | supply `tabindex="0"`, `role="region"` and a label on any `<math display="block">` |
 | v1.22.0 | keep the `markdown-alert` and `markdown-alert-<type>` class pair on GFM alerts |

@@ -1,26 +1,32 @@
 #!/usr/bin/env nu
-# build-sample.nu — regenerate data/html/sample.html, a living demo of every
+# build-sample.nu — regenerate the samples/ pages, a living demo of every
 # component in tufte-dracula.css + mermaid.js. Re-inlines the two source files
 # verbatim (same bytes the renderer emits), so a CSS or mermaid edit shows up
-# here on the next run. Run: `nu data/html/build-sample.nu` (writes + git-adds).
+# here on the next run. Run: `nu scripts/build-sample.nu` (writes + git-adds).
 #
 # ponytail: static demo body, no markdown pipeline. This is a style fixture, not
 # a lode scroll — html-render.nu owns real content. Add a component here whenever
 # tufte-dracula.css gains one.
 
-const HERE = path self | path dirname
+# path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
+# Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
+# SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
+# chain in Nushell — the second step has to read a name that is already bound.
+const SCRIPTS = path self | path dirname
+const ROOT = $SCRIPTS | path dirname
 
 def main [] {
-  let css = (open --raw ($HERE | path join "tufte-dracula.css") | str trim --right)
-  let mermaid = (open --raw ($HERE | path join "mermaid.js") | str trim --right)
-  let filter = (open --raw ($HERE | path join "filter.js") | str trim --right)
+  let css = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right)
+  let mermaid = (open --raw ($ROOT | path join "mermaid.js") | str trim --right)
+  let filter = (open --raw ($ROOT | path join "filter.js") | str trim --right)
 
   tokens $css
 
-  # (filename, <body> tag, title, body-content) — one page per layout mode.
+  # (filename, <body> tag, title, body-content, light-preview filename) — one page
+  # per layout mode, each with a forced-light twin for Pages.
   [
-    ["sample.html" "<body>" "Tufte-Dracula — component sample" (body)]
-    ["sample-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body)]
+    ["dark.html" "<body>" "Tufte-Dracula — component sample" (body) "light.html"]
+    ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula — connections-map layout" (conn-map-body) "light-conn-map.html"]
   ] | each {|p|
     let html = ([
       "<!DOCTYPE html>"
@@ -29,7 +35,7 @@ def main [] {
       "  <meta charset=\"utf-8\"/>"
       "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>"
       $"  <title>($p.2)</title>"
-      "  <meta name=\"generated-by\" content=\"data/html/build-sample.nu\"/>"
+      "  <meta name=\"generated-by\" content=\"scripts/build-sample.nu\"/>"
       $css
       $mermaid
       $filter
@@ -39,12 +45,57 @@ def main [] {
       "</body>"
       "</html>"
     ] | str join "\n")
-    let out = ($HERE | path join $p.0)
+    let out = ($ROOT | path join "samples" $p.0)
     $html | save -f $out
-    ^git -C $HERE add $out
+    ^git -C $ROOT add $out
     print $"  → ($out)"
+    preview $html $p.0 $p.2 $p.4
   }
   null
+}
+
+# The light palette is a media query, so no fixture shows it: a visitor on a
+# dark-appearance OS sees dark and has to change a system setting to see anything
+# else. Pages serves this repo root from main, so one extra HTML file per fixture
+# is a live light-mode preview with no workflow, no deploy step and no docs/ dir.
+#
+# The rewrite is the one render-modes.py uses: the light condition becomes
+# `@media all` so it always matches, and the high-contrast condition becomes
+# `@media not all` so it never does. Forcing light alone would be almost enough —
+# the light block is declared after the contrast block and overrides every token
+# it sets — but it would leave the contrast block's two non-token rules live, so a
+# visitor who asks for more contrast would see a preview nobody else sees.
+# Deterministic beats almost.
+#
+# light.html is NOT the payload: the stylesheet inside it has had its media
+# conditions rewritten, so it is not the file a consumer inlines. It sits beside
+# dark.html under one folder and reads like an equal peer, which is exactly why
+# the banner is not optional — the filename no longer carries the warning.
+def preview [html: string, fixture: string, title: string, name: string] {
+  # Each condition is checked on its own, not "did anything change". A first cut
+  # compared the whole string before and after and passed when only the contrast
+  # condition still matched — which is the case that matters least. Renaming the
+  # light condition alone would have shipped a dark page called light.
+  for c in ["@media (prefers-color-scheme: light)" "@media (prefers-contrast: more)"] {
+    if not ($html | str contains $c) {
+      error make {msg: $"preview: ($fixture) has no `($c)` — the stylesheet renamed it, so the preview would ship the default palette under a light name"}
+    }
+  }
+  let forced = ($html
+    | str replace "@media (prefers-color-scheme: light)" "@media all"
+    | str replace "@media (prefers-contrast: more)" "@media not all")
+  let banner = ([
+    "  <div class=\"markdown-alert markdown-alert-caution\">"
+    "    <p class=\"markdown-alert-title\">Preview only &mdash; not the payload</p>"
+    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
+    "  </div>"
+  ] | str join "\n")
+  let out = ($ROOT | path join "samples" $name)
+  ($forced
+    | str replace $"<title>($title)</title>" $"<title>($title) — forced light preview</title>"
+    | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out
+  ^git -C $ROOT add $out
+  print $"  → ($out)"
 }
 
 # tokens.css is a projection of tufte-dracula.css, not a second source: the :root
@@ -58,18 +109,18 @@ def tokens [css: string] {
     | skip while {|l| ($l | str trim) != ":root {" }
     | take while {|l| ($l | str trim) != "}" }
     | each {|l| $l | str replace --regex '^    ' "" })
-  let out = ($HERE | path join "tokens.css")
+  let out = ($ROOT | path join "tokens.css")
   ([
     $"/* Tufte-Dracula palette tokens \(template v($version)\)."
-    " * GENERATED by build-sample.nu — the :root block of tufte-dracula.css, verbatim."
+    " * GENERATED by scripts/build-sample.nu — the :root block of tufte-dracula.css, verbatim."
     " * Reference only; the renderer inlines the full tufte-dracula.css, which already"
     " * carries these declarations. Do not hand-edit: change tufte-dracula.css and run"
-    " * `nu build-sample.nu`. */"
+    " * `nu scripts/build-sample.nu`. */"
     ...$root
     "}"
     ""
   ] | str join "\n") | save -f $out
-  ^git -C $HERE add $out
+  ^git -C $ROOT add $out
   print $"  → ($out)"
 }
 
@@ -277,7 +328,7 @@ def body [] {
     "    </section>"
     ""
     "    <hr/>"
-    "    <footer>Footer text &mdash; muted, small. Generated by data/html/build-sample.nu.</footer>"
+    "    <footer>Footer text &mdash; muted, small. Generated by scripts/build-sample.nu.</footer>"
     "  </article>"
     "  </main>"
   ] | str join "\n"

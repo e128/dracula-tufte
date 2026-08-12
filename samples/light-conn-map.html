@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tufte-Dracula — connections-map layout — forced light preview</title>
+  <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
     /* Dracula-Tufte (muted) v1.24.0 */
     @layer tufte-dracula {
@@ -335,7 +342,7 @@
       pre.mermaid svg, body.conn-map pre.mermaid svg { width: var(--natural-width, auto) !important; max-width: none !important; }
     }
     @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
-    @media (prefers-contrast: more) {
+    @media not all {
       :root {
         --on-surface:  oklch(1 0 0);
         --surface-alt: oklch(0.200 0.019 280.395);
@@ -353,7 +360,7 @@
       a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
       .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline-width: 3px; }
     }
-    @media (prefers-color-scheme: light) {
+    @media all {
       :root {
         color-scheme: light;
         --surface:     oklch(0.990 0.006 106.545);
@@ -418,3 +425,192 @@
     }
     }
   </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.esm.min.mjs';
+    const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
+    const mermaidFont = 'ui-monospace, "JetBrains Mono", "Fira Code", monospace';
+    const mermaidDark = {
+      background:          '#343746',
+      mainBkg:             '#343746',
+      primaryColor:        '#343746',
+      primaryTextColor:    '#f8f8f2',
+      primaryBorderColor:  '#a98ed6',
+      lineColor:           '#979fc4',
+      textColor:           '#f8f8f2',
+      secondaryColor:      '#1e1f29',
+      clusterBkg:          '#343746',
+      clusterBorder:       '#707388',
+      nodeBorder:          '#a98ed6',
+      edgeLabelBackground: '#343746',
+      noteBkgColor:        '#343746',
+      noteTextColor:       '#f8f8f2',
+      noteBorderColor:     '#707388',
+    };
+    const mermaidLightVars = {
+      background:          '#f0f1f9',
+      mainBkg:             '#f0f1f9',
+      primaryColor:        '#f0f1f9',
+      primaryTextColor:    '#161616',
+      primaryBorderColor:  '#785da1',
+      lineColor:           '#626a8c',
+      textColor:           '#161616',
+      secondaryColor:      '#ebebe7',
+      clusterBkg:          '#f0f1f9',
+      clusterBorder:       '#7b7f94',
+      nodeBorder:          '#785da1',
+      edgeLabelBackground: '#f0f1f9',
+      noteBkgColor:        '#f0f1f9',
+      noteTextColor:       '#161616',
+      noteBorderColor:     '#7b7f94',
+    };
+    mermaid.initialize({
+      startOnLoad: true, theme: 'base',
+      securityLevel: window.mermaidSecurityLevel || 'strict',
+      fontFamily: mermaidFont,
+      themeVariables: {
+        darkMode: !mermaidLight,
+        fontFamily: mermaidFont,
+        fontSize:   '1rem',
+        ...(mermaidLight ? mermaidLightVars : mermaidDark),
+        pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+      },
+    });
+    const overlay = document.getElementById('mermaid-zoom');
+    if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.tabIndex = -1;
+    overlay.inert = true;
+    const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
+    const named = (svg, label) => {
+      const title = titleOf(svg);
+      return title ? label + ': ' + title : label;
+    };
+    const siblings = () => [...document.body.children].filter(el => el !== overlay);
+    let opener = null;
+    const dismiss = () => {
+      overlay.classList.remove('active');
+      overlay.inert = true;
+      siblings().forEach(el => { el.inert = false; });
+      if (opener) { opener.focus(); opener = null; }
+    };
+    const zoom = (svg, trigger) => {
+      const zoomed = svg.cloneNode(true);
+      zoomed.removeAttribute('width');
+      zoomed.removeAttribute('height');
+      zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.setAttribute('aria-label', named(svg, zoomLabel));
+      overlay.replaceChildren(zoomed);
+      overlay.classList.add('active');
+      overlay.inert = false;
+      siblings().forEach(el => { el.inert = true; });
+      opener = trigger;
+      overlay.focus();
+    };
+    overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
+    document.querySelectorAll('pre.mermaid').forEach(pre => {
+      new MutationObserver(() => {
+        const svg = pre.querySelector('svg');
+        if (!svg) return;
+        if (!svg.dataset.zoomable) {
+          svg.dataset.zoomable = 'true';
+          svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
+        }
+        if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
+        pre.tabIndex = 0;
+        pre.setAttribute('role', 'region');
+        pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
+        if (!pre.querySelector('.mermaid-zoom')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mermaid-zoom';
+          button.textContent = zoomLabel;
+          button.setAttribute('aria-label', named(svg, zoomLabel));
+          button.addEventListener('click', () => zoom(svg, button));
+          pre.append(button);
+        }
+      }).observe(pre, { childList: true });
+    });
+    overlay.addEventListener('click', dismiss);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') dismiss(); });
+  </script>
+  <script type="module">
+    document.querySelectorAll('input.filter-box').forEach(input => {
+      const scope = [];
+      let el = input.nextElementSibling;
+      while (el) {
+        if (el.matches('input.filter-box') || el.querySelector('input.filter-box')) break;
+        scope.push(el);
+        el = el.nextElementSibling;
+      }
+      if (!scope.length) return;
+      const rows = [];
+      const groups = [];
+      scope.forEach(node => {
+        rows.push(...node.querySelectorAll('tbody tr, .nav-list > li'));
+        if (node.matches('details.nav-group')) groups.push(node);
+        groups.push(...node.querySelectorAll('details.nav-group'));
+      });
+      if (!rows.length) return;
+      const wasOpen = groups.map(group => group.open);
+      const status = input.parentElement.querySelector('[role="status"]');
+      let empty = input.parentElement.querySelector('.filter-empty');
+      if (!empty) {
+        empty = document.createElement('p');
+        empty.className = 'filter-empty';
+        empty.hidden = true;
+        scope[scope.length - 1].after(empty);
+      }
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+          const hit = !q || row.textContent.toLowerCase().includes(q);
+          row.classList.toggle('filter-hidden', !hit);
+          if (hit) visible += 1;
+        });
+        groups.forEach((group, i) => {
+          const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
+          group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
+          group.open = q ? shown > 0 : wasOpen[i];
+        });
+        empty.hidden = visible !== 0;
+        if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
+      });
+    });
+  </script>
+</head>
+<body class="conn-map">
+  <div class="markdown-alert markdown-alert-caution">
+    <p class="markdown-alert-title">Preview only &mdash; not the payload</p>
+    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href="dark-conn-map.html">dark-conn-map.html</a> is the same fixture with the stylesheet verbatim.</p>
+  </div>
+  <div class="mermaid-overlay" id="mermaid-zoom"></div>
+  <main>
+  <article>
+    <h1>Connections-Map Layout Sample</h1>
+    <p class="byline">body.conn-map &mdash; Links column left, graph right (wide screens)</p>
+    <section>
+      <h2>Links</h2>
+      <h3>Antecedents</h3>
+      <ul class="nav-list" role="list"><li><a href="#">Antecedent A</a></li><li><a href="#">Antecedent B</a></li></ul>
+      <h3>Descendants</h3>
+      <ul class="nav-list" role="list"><li><a href="#">Descendant X</a></li><li><a href="#">Descendant Y</a></li></ul>
+    </section>
+    <section>
+      <h2>Graph</h2>
+      <pre class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
+flowchart BT
+  accTitle: Connections map for the focus topic
+  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.
+  focus[Focus Topic with a deliberately long label that must fit its own box]
+  a1[Antecedent A] --> focus
+  a2[Antecedent B] --> focus
+  focus --> d1[Descendant X]
+  focus --> d2[Descendant Y]</pre>
+    </section>
+  </article>
+  </main>
+</body>
+</html>

@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 # create-themes.nu — regenerate everything under themes/ from tufte-dracula.css,
 # then package the Rider theme as an installable plugin jar.
-# Run: `nu create-themes.nu` | `nu create-themes.nu --check` | `nu create-themes.nu --no-jar`
+# Run: `nu scripts/create-themes.nu` | `… --check` | `… --no-jar`
 #
 # Each theme is a `.in` template beside its output. The template is the real
 # file with every colour replaced by a placeholder, so a diff between the two
@@ -23,7 +23,12 @@
 # Nushell has no trig builtins, and a second copy of the Oklab matrix would be
 # free to drift from the one CI checks.
 
-const HERE = path self | path dirname
+# path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
+# Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
+# SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
+# chain in Nushell — the second step has to read a name that is already bound.
+const SCRIPTS = path self | path dirname
+const ROOT = $SCRIPTS | path dirname
 
 # Pairs are (template, output). Output is always the template minus `.in`, but
 # spelling both keeps the list greppable from either direction.
@@ -39,12 +44,12 @@ def main [
   --check       # render in memory and fail on drift instead of writing
   --no-jar      # skip packaging, just write the theme files
 ] {
-  let palette = (^python3 ($HERE | path join ".github/palette-check.py") --dump | from json)
+  let palette = (^python3 ($ROOT | path join ".github/palette-check.py") --dump | from json)
   let version = (version-of-css)
 
   mut drift = []
   for rel in $THEMES {
-    let out = ($HERE | path join $rel)
+    let out = ($ROOT | path join $rel)
     let rendered = (render (open --raw $"($out).in") $palette $version)
     if $check {
       if (not ($out | path exists)) or (open --raw $out) != $rendered {
@@ -64,7 +69,7 @@ def main [
       let probe = ($plugin | path dirname | path join ".probe.zip")
       package $probe $version
       if (not ($plugin | path exists)) or (open --raw $plugin) != (open --raw $probe) {
-        $drift = ($drift | append ($plugin | path relative-to $HERE))
+        $drift = ($drift | append ($plugin | path relative-to $ROOT))
       }
       rm --force $probe
       # A plugin for a version we no longer build is installable and unmaintained.
@@ -73,12 +78,12 @@ def main [
       # it is the shape Install Plugin from Disk refuses.
       for old in (glob ($plugin | path dirname | path join "*.{jar,zip}")) {
         if $old != $plugin and ($old | path basename | str starts-with "dracula-tufte-rider-") {
-          $drift = ($drift | append $"($old | path relative-to $HERE) — built for a version no longer stamped")
+          $drift = ($drift | append $"($old | path relative-to $ROOT) — built for a version no longer stamped")
         }
       }
     } else {
       package $plugin $version
-      print $"  → ($plugin | path relative-to $HERE)"
+      print $"  → ($plugin | path relative-to $ROOT)"
       print "Install: Rider → Settings → Plugins → gear → Install Plugin from Disk…"
     }
   }
@@ -87,21 +92,21 @@ def main [
     if ($drift | is-empty) {
       print "Themes fresh."
     } else {
-      $drift | each {|f| print $"STALE: ($f) — run `nu create-themes.nu`" }
+      $drift | each {|f| print $"STALE: ($f) — run `nu scripts/create-themes.nu`" }
       exit 1
     }
   }
 }
 
 def plugin-path [version: string]: nothing -> path {
-  $HERE | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip"
+  $ROOT | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip"
 }
 
 # Line 2 of the stylesheet is machine-read in three places already (build-sample.nu,
 # maintain.nu bump, and here). Fail loudly rather than stamping a plugin "v" — a
 # jar with a blank version installs fine and then never updates.
 def version-of-css []: nothing -> string {
-  let line = (open --raw ($HERE | path join "tufte-dracula.css") | lines | get 1)
+  let line = (open --raw ($ROOT | path join "tufte-dracula.css") | lines | get 1)
   let m = ($line | parse --regex 'v(?<v>\d+\.\d+\.\d+)')
   if ($m | is-empty) {
     error make {msg: $"tufte-dracula.css line 2 carries no version: ($line)"}
@@ -218,7 +223,7 @@ def byte-hex []: int -> string {
 # and Rider logs "refers to unknown color scheme" while still showing the UI
 # theme. It stays .icls on disk — that is what Import Scheme… expects.
 def package [out: path, version: string] {
-  let dir = ($HERE | path join "themes" "rider")
+  let dir = ($ROOT | path join "themes" "rider")
   let dist = ($dir | path join "dist")
   let stage = ($dist | path join "stage")
   let jar_name = $"dracula-tufte-rider-($version).jar"
@@ -245,7 +250,7 @@ def package [out: path, version: string] {
   mkdir ($stage | path join "lib")
   cd $jstage
   let jz = (^zip -q -X $jar "META-INF/" META-INF/MANIFEST.MF META-INF/plugin.xml dracula-tufte.theme.json dracula-tufte.xml | complete)
-  cd $HERE
+  cd $ROOT
   if $jz.exit_code != 0 {
     rm --recursive --force $stage
     error make {msg: $"zip failed building ($jar_name): ($jz.stderr)"}
@@ -265,7 +270,7 @@ def package [out: path, version: string] {
 
   cd $stage
   let z = (^zip -q -X $out "Dracula-Tufte/" "Dracula-Tufte/lib/" $"Dracula-Tufte/lib/($jar_name)" | complete)
-  cd $HERE
+  cd $ROOT
   rm --recursive --force $stage
   if $z.exit_code != 0 {
     error make {msg: $"zip failed: ($z.stderr)"}

@@ -7,6 +7,8 @@ node_modules/
 *.log
 
 __pycache__/
+# render-modes.py output. CI uploads it as an artifact; nothing tracks it.
+mode-renders/
 themes/rider/dist/stage/
 themes/rider/dist/.probe.zip
 # The plugin zip (dracula-tufte-rider-*.zip) is tracked. The themes bundle is

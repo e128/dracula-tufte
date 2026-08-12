@@ -15,7 +15,7 @@ The narrative goes in the commit.
 
 ## No gate asks whether an inlined script binds
 
-**The problem.** `sample.html` shipped an inert `input.filter-box` from v1.16.0 to v1.21.0.
+**The problem.** `samples/dark.html` shipped an inert `input.filter-box` from v1.16.0 to v1.21.0.
 The handler walked forward for a `TABLE` that the fixture never had, and returned. Six
 releases passed. The contract check counts `<script>` blocks and compares bytes, and neither
 question is "does this handler attach to anything". The same blind spot covers `mermaid.js`:
@@ -23,7 +23,7 @@ CI proves its hex matches the palette and never proves it initialises.
 
 **The change.** A CI-only step that loads each fixture in a DOM, runs the two inlined
 scripts, and asserts observable behaviour. A working check already exists and is what
-verified the v1.22.0 filter widening: six assertions over the real `sample.html`, covering
+verified the v1.22.0 filter widening: six assertions over the real `samples/dark.html`, covering
 in-scope filtering, out-of-scope items staying put, group reveal, the empty line, the status
 count, and open-state restore.
 
