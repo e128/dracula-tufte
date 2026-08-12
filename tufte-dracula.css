@@ -1,5 +1,6 @@
   <style>
-    /* Dracula-Tufte (muted) v1.23.0 */
+    /* Dracula-Tufte (muted) v1.24.0 */
+    @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
@@ -208,7 +209,7 @@
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
     ul, ol, menu { padding-inline-start: 1.5rem; }
-    :is(ul, ol, menu):not(.nav-list) { margin-block: var(--space-3); }
+    :where(ul, ol, menu):where(:not(.nav-list)) { margin-block: var(--space-3); }
     li > :is(ul, ol, menu) { margin-block: 0; }
     li { padding: 0.15rem 0; line-height: 1.5; }
     li::marker { color: var(--muted); }
@@ -333,6 +334,58 @@
       pre.mermaid svg, body.conn-map pre.mermaid svg { width: var(--natural-width, auto) !important; max-width: none !important; }
     }
     @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @media (prefers-contrast: more) {
+      :root {
+        --on-surface:  oklch(1 0 0);
+        --surface-alt: oklch(0.200 0.019 280.395);
+        --label:       oklch(0.865 0.054 275.492);
+        --muted:       oklch(0.835 0.055 275);
+        --rule-light:  oklch(0.700 0.032 277.832);
+        --link:        oklch(0.830 0.064 216.782);
+        --orange:      oklch(0.840 0.092 61.444);
+        --red:         oklch(0.895 0.142 21.457);
+        --purple:      oklch(0.845 0.107 300.909);
+        --pink:        oklch(0.860 0.120 349.392);
+        --green:       oklch(0.820 0.100 155.397);
+      }
+      a { text-decoration-thickness: max(2px, 0.1em); text-decoration-color: currentColor; }
+      a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
+      .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline-width: 3px; }
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: light;
+        --surface:     oklch(0.990 0.006 106.545);
+        --surface-alt: oklch(0.940 0.006 106.545);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.960 0.010 277.509);
+        --label:       oklch(0.470 0.054 275.492);
+        --muted:       oklch(0.530 0.055 275);
+        --rule-light:  oklch(0.600 0.032 277.832);
+        --link:        oklch(0.520 0.064 216.782);
+        --orange:      oklch(0.535 0.092 61.444);
+        --red:         oklch(0.545 0.142 21.457);
+        --purple:      oklch(0.535 0.107 300.909);
+        --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
+        --pink:        oklch(0.545 0.120 349.392);
+        --green:       oklch(0.515 0.100 155.397);
+        --ring:        oklch(0 0 0 / 0.1);
+      }
+      pre.mermaid, .mermaid-overlay {
+        --surface:     oklch(0.288 0.022 277.509);
+        --surface-alt: oklch(0.243 0.019 280.395);
+        --on-surface:  oklch(0.977 0.008 106.545);
+        --code-bg:     oklch(0.340 0.027 276.046);
+        --label:       oklch(0.810 0.054 275.492);
+        --muted:       oklch(0.71 0.055 275);
+        --rule:        var(--muted);
+        --rule-light:  oklch(0.56 0.032 277.832);
+        --link:        oklch(0.802 0.064 216.782);
+        --purple:      oklch(0.698 0.107 300.909);
+      }
+      pre.mermaid { background: var(--code-bg); padding: var(--space-3); border-radius: var(--radius); }
+      .mermaid-overlay { background: oklch(from var(--surface-alt) l c h / 0.96); }
+    }
     @media (forced-colors: active) {
       code, kbd, .verdict, .badge { border: 1px solid currentColor; }
       table, th, td { border: 1px solid currentColor; }
@@ -374,5 +427,6 @@
       .verdict-partial { color: var(--orange); }
       .verdict-failed { color: var(--red); }
       .verdict-neutral { color: var(--muted); }
+    }
     }
   </style>

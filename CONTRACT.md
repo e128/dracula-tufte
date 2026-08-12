@@ -51,6 +51,8 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.24.0 | drop any specificity hack or `!important` you added to override the template — the sheet is in `@layer tufte-dracula` and your unlayered CSS wins on its own |
+| v1.24.0 | nothing for light or high-contrast mode; both are media queries over the same markup |
 | v1.22.0 | emit `<nav>` with sibling `<a>` children to get link separators; nothing to change if you already do |
 | v1.22.0 | supply `tabindex="0"`, `role="region"` and a label on any `<math display="block">` |
 | v1.22.0 | keep the `markdown-alert` and `markdown-alert-<type>` class pair on GFM alerts |

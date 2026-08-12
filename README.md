@@ -23,7 +23,7 @@ GitHub Pages renders these from main, no build step:
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.23.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.24.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches. No CDN, no build step, no comments. Inline only when the page has a filter box. |
 | `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
@@ -36,7 +36,7 @@ GitHub Pages renders these from main, no build step:
 
 ## Consumers
 
-The current release is **`v1.23.0`**. Consumers reach it through a git submodule. To refresh: bump
+The current release is **`v1.24.0`**. Consumers reach it through a git submodule. To refresh: bump
 the pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
 
 **Three pin modes are in use, and they are not equal.** A tag is the only pin that makes a
@@ -54,6 +54,20 @@ place is a much harder problem than running the generator again.
 `<style>` tags. A consumer whose generator supplies the wrapper takes the bare body with
 `sed '1d;$d'`. The wrapper is exactly one line at each end, and CI holds it there. `mermaid.js`
 and `filter.js` work the same way with their `<script>` tags.
+
+**Your own CSS now wins without a specificity fight.** The whole sheet sits in
+`@layer tufte-dracula` as of v1.24.0. Unlayered author styles beat layered ones for normal
+declarations, so a plain `h1 { color: … }` in your own `<style>` overrides the template no matter
+how weak the selector looks. Load your CSS in any order. The six `!important` declarations in the
+sheet go the other way — layered `!important` beats unlayered `!important` — so if you have to win
+against one of those, put your rules in a layer declared ahead of `tufte-dracula`. All six exist to
+beat Mermaid's inline styles or to keep a filtered row hidden.
+
+**Three appearance modes ship, and you supply nothing for any of them.** Dark is the default.
+`prefers-contrast: more` raises every accent to 7:1 against the code fill. `prefers-color-scheme:
+light` swaps in a full light palette where every accent clears 4.5:1 on both backgrounds. Mermaid
+diagrams keep the dark palette in light mode and render as dark figures, because `mermaid.js` bakes
+its colors in as hex at init time and a media query cannot reach them.
 
 **The overlay CSS ships unconditionally.** A page with no diagram pays about a dozen inert lines.
 Omit `mermaid.js` and the `<div class="mermaid-overlay" id="mermaid-zoom">` instead. The script

@@ -134,5 +134,25 @@ for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_t
         print(f"DRIFT: mermaid.js hex {found} is not a tufte-dracula.css palette color")
         fail = 1
 
+# 5. The light theme re-declares the dark palette on `pre.mermaid, .mermaid-overlay`,
+#    because mermaid.js bakes the dark hex in and cannot be re-themed by a media
+#    query. That block is a third projection of :root and can drift from it exactly
+#    like mermaid-palette.json could, so every value in it must be the literal
+#    :root value of the same token. Not a hex comparison: two different oklch()
+#    triples can round to the same hex, and what has to hold here is that the
+#    declaration was copied rather than re-derived.
+diagram = re.search(r"pre\.mermaid, \.mermaid-overlay \{(.*?)\n\s*\}", stylesheet, re.S)
+if not diagram:
+    sys.exit("Could not find the `pre.mermaid, .mermaid-overlay` palette block.")
+root_literal = dict(re.findall(r"--([\w-]+):\s*(oklch\([^)]*\))", css))
+overrides = re.findall(r"--([\w-]+):\s*(oklch\([^)]*\))", diagram.group(1))
+if len(overrides) < 9:
+    sys.exit(f"Only parsed {len(overrides)} oklch overrides from the diagram block — expected 9.")
+for name, stated in overrides:
+    want = root_literal.get(name)
+    if stated != want:
+        print(f"DRIFT: diagram block --{name} is {stated}, :root declares {want}")
+        fail = 1
+
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens).")
 sys.exit(fail)

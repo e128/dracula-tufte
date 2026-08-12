@@ -39,6 +39,8 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Interaction states](#interaction-states) | Press, hover, focus rings |
 | [Keyboard and assistive technology](#keyboard-and-assistive-technology) | Zoom button, modal overlay, inert |
 | [Direction, zoom and growth](#direction-zoom-and-growth) | RTL, text-only zoom, safe-area insets |
+| [Cascade layer](#cascade-layer) | `@layer tufte-dracula`, the `!important` inversion, the indent that stayed |
+| [Appearance modes](#appearance-modes) | `prefers-contrast: more`, `prefers-color-scheme: light`, the diagram island |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its three load-bearing decisions |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `figure`, `figcaption`, and the UA defaults they had |
@@ -1115,6 +1117,132 @@ document sits at viewport width and the grid still collapses to one track. At **
 zoom the page still scrolls sideways, from `.sc-note` and from the table at 601px and above. That
 is past what WCAG 1.4.4 asks for, and nobody chases it.
 
+## Cascade layer
+
+**The whole sheet sits in one layer, `@layer tufte-dracula`, as of v1.24.0.** A consumer inlines
+this payload and then writes CSS of their own. Before the layer, that override had to win on
+specificity, and the sheet made that harder than it looks: the syntax-highlight groups are
+`0,2,0`, most component rules are `0,1,1`, and a consumer writing `h1 { color: … }` at `0,0,1`
+lost. The usual answers are to raise the consumer's selector or to reach for `!important`, and both
+are worse than the problem. A layer settles it by origin instead of by weight. **Unlayered author
+styles beat every layered author style for normal declarations, whatever the specificity.** So
+`h1 { color: … }` in a consumer's own `<style>` now wins, and nothing in this sheet has to move.
+
+Verified against `sample.html`: a bare `h1 { color: rgb(0, 255, 0) }` added after the payload
+paints the heading green, and no `--pink` pixel survives in the heading box.
+
+**The `!important` declarations became harder to override, not easier, and that is the trade.** In
+the important half of the cascade the layer order reverses: unlayered `!important` has the *lowest*
+priority, so the six `!important` rules in this sheet now beat a consumer's unlayered `!important`.
+Six is the whole list, and each one exists to beat something a consumer cannot reach either.
+Five fight Mermaid's inline `style` attributes on a generated SVG, which nothing but `!important`
+can reach. The sixth is `.filter-hidden { display: none !important }`, where a consumer overriding
+it means a filtered row stays on the page. A consumer who genuinely needs to win declares their own
+layer ahead of this one. Leaving those rules outside the layer was the alternative, and it was
+rejected: three of the six sit inside a media query, so lifting them out means duplicating
+`@media (max-width: 600px)` and `@media (prefers-reduced-motion: reduce)` outside the wrapper to
+preserve six declarations that no consumer should be overriding.
+
+**One layer, not the four that every 2026 article recommends.** `@layer reset, base, components,
+utilities` is advice for a stylesheet a consumer composes from parts and can reorder. This is one
+file, inlined verbatim, in a fixed order. Four names would buy internal conflict resolution the
+sheet does not need: there was exactly one internal specificity conflict, and it is fixed below by
+selector rather than by layer.
+
+**The body was not re-indented.** The wrapper opens on line 3 and closes before `</style>`, and the
+376 lines between it keep their four-space indent instead of moving to six. Re-indenting is the
+correct-looking change and it rewrites every line in the file, which puts `git blame` on the whole
+stylesheet at the layer commit. This repo's discipline depends on being able to trace a declaration
+back to the change that made it look that way. NOTES.md is the primary record, but blame is the
+index into it. `build-sample.nu` also slices `:root` with a hard-coded `^    ` de-indent for
+`tokens.css`, so the indent that stayed is the indent that needs no second edit.
+
+**`:where(ul, ol, menu):where(:not(.nav-list))` replaced the `:is()` form, and it fixed an inert
+rule.** `:is()` and `:not()` both take the highest specificity of their arguments, so
+`:is(ul, ol, menu):not(.nav-list)` measured `0,1,1` — the class weight came from the `.nav-list`
+inside the negation, which is not a class the rule ever matches. The very next line,
+`li > :is(ul, ol, menu) { margin-block: 0 }`, measured `0,0,2` and therefore **never applied**: a
+nested list took the outer `var(--space-3)` margin the whole time. `:where()` scores zero on both
+sides, which drops the rule to `0,0,0` and lets the nested-list rule win. Visible in the light
+fixture as *nested item* closing up under *Bullet two*.
+
+The other twenty-four `:is()` groups stayed. The layer already gives consumers the override, so
+converting them buys nothing outward, and two of them would break: the syntax-highlight groups at
+`0,2,0` have to beat a highlight.js or Pygments theme stylesheet that a consumer may also load,
+and `:is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor)` has to beat the plain `a` rule at
+`0,0,1` or every permalink grows an underline. Lowering specificity is not free when something real
+is on the other side of it.
+
+## Appearance modes
+
+**`@media (prefers-contrast: more)` reassigns eleven tokens and touches two rules.** The floor the
+default palette holds is 4.23:1, which is `--purple` against `--code-bg` and recorded under *Color
+and the contrast budget*. The high-contrast block raises every accent to **7:1 or better against
+`--code-bg`**, the harder of the two backgrounds, which lands them at 8.49 to 9.41:1 against
+`--surface`: `--label` 7.79 on code and 9.41 on surface, `--muted` 7.06, `--link` 7.12, `--orange`
+7.09, `--red` 7.03, `--purple` 7.06, `--pink` 7.03, `--green` 7.03. `--on-surface` goes to
+`oklch(1 0 0)` for 11.80 on code and 14.25 on surface. `--rule-light` goes to `oklch(0.700 …)`,
+which is 4.40 on code where 1.4.11 asks for 3. `--surface-alt` *darkens* to `oklch(0.200 …)`,
+because it is the row-hover and tinted-root fill and its job here is to be unmistakable: 1.27:1
+against `--surface`, up from 1.18.
+
+Two rules move as well. `a` takes `text-decoration-thickness: max(2px, 0.1em)` and
+`text-decoration-color: currentColor`, so the underline stops sitting at `--muted` and reads at the
+link's own ratio. The focus ring goes to `outline-width: 3px`. Nothing else changes, because the
+palette carries the meaning in this sheet and a reassignment reaches every element at once — the
+same reason the print block reassigns tokens rather than elements.
+
+`mark` measures 6.17:1 rather than 7. `--highlight` is `--orange` at 0.35 alpha, and the alpha caps
+what the composite can reach. Lowering the alpha to buy the last 0.83 would make the highlight
+itself harder to see, which is the one thing the element exists to do.
+
+**`@media (prefers-color-scheme: light)` is a full second screen palette, and it is not the print
+palette.** Reusing print was the first attempt and it fails on screen for three reasons.
+`--surface` and `--surface-alt` are both pure white there, which is correct on paper and kills
+`tbody tr:hover td` and the overlay backdrop on a display. `--code-bg` at `oklch(0.970 …)` is a
+paper compromise. And the accents are tuned against white, not against a light code fill.
+
+The screen values, measured against `--surface` at `oklch(0.990 0.006 106.545)` and `--code-bg` at
+`oklch(0.960 0.010 277.509)`: `--on-surface` `oklch(0.200 0 0)` at 16.10 on code and 17.61 on
+surface, `--label` 6.13 and 6.70, `--muted` 4.74 and 5.18, `--link` 4.78 and 5.23, `--purple` 4.80
+and 5.25, `--green` 4.76 and 5.21, `--red` 4.74 and 5.18, `--orange` 4.72 and 5.16, `--pink` 4.71
+and 5.15. Every accent clears 4.5:1 on **both** backgrounds, which the default dark palette does
+not — its 4.23 floor is the thing this palette improves on. `--rule-light` is 3.53 on code for
+1.4.11. `--surface-alt` at `oklch(0.940 …)` is 1.16:1 against `--surface` and *darker* than it, so
+row hover reads the way it does in dark mode. `.verdict` keeps its filled form: near-white on the
+light accents measures 5.16 to 5.21:1, so the print block's outlined variant is not needed here.
+`::selection` is 5.25. `mark` is 10.83. `--purple-bright` inverts its rule to `calc(l - 0.06)`,
+because brighter is *less* contrast on a light ground.
+
+**Mermaid cannot follow the media query, so the diagrams became islands.** `mermaid.js` bakes the
+dark palette in as hex at init time, because khroma throws on `oklch()` and because there is no
+build step to generate a second set. A media query cannot reach it, and re-initialising on a
+scheme change means the script grows a listener and a re-render. So light mode gives
+`pre.mermaid, .mermaid-overlay` the **dark palette back** as a custom-property declaration, and
+`pre.mermaid` a `--code-bg` card with padding and a radius. Custom properties inherit, so every
+existing rule inside a diagram resolves to the dark value with no second selector: the zoom button
+(`mermaid.js` appends it inside the `pre`, which is what makes the inheritance work), the packet
+`!important` fills, the overlay scrim, the `::after` close mark. A dark figure on a light page is a
+deliberate object rather than a broken one, and the reading is the same one Tufte's plates take.
+
+`--rule` is declared there as `var(--muted)`, not as a copied literal. Custom-property substitution
+happens on the element, so it picks up the dark `--muted` from the same block.
+
+**That block is a third projection of `:root`, so check 5 of `.github/palette-check.py` gates it.**
+Nine `oklch()` literals duplicate `:root` values, and a duplicate with no gate is the failure this
+repo keeps finding. The check compares the **declaration text**, not the computed hex: two
+different triples can round to the same `#rrggbb`, and what has to hold is that the value was
+copied rather than re-derived. Verified by tampering — `--purple` moved to `oklch(0.699 …)` and the
+check reported drift and exited 1.
+
+**High contrast and light mode do not compose.** `prefers-contrast: more` is declared *before* the
+light block, so a reader who asks for both gets the light palette at its own 4.71:1 floor rather
+than a high-contrast light palette. That is a deliberate ordering. The alternative is a fourth
+palette in a `(prefers-color-scheme: light) and (prefers-contrast: more)` block, which is ten more
+measured values for a combination this sheet has never been asked for. The failure mode of getting
+the order wrong is much worse: dark high-contrast accents on a white surface, at ratios near 1:1.
+Take the fourth palette when a reader asks. Do not reorder the two blocks.
+
 ## Print
 
 **The print block overrides the palette tokens, not the elements.** It used to set `background`
@@ -1731,3 +1859,17 @@ deliberately not a palette color, because white at 10% over an arbitrary image i
 veil, not a hue, and `.github/palette-check.py` never sees it. The alpha-slash form does not match
 its `oklch(L C h)` regex, so the parsed token count stays at 17 and the "expected 17" guard still
 means what it says.
+
+**The W3C CSS validator reports two errors on `sample.html`, and both are the validator, not the
+stylesheet.** It flags `container-type` as a property that "doesn't exist" and `@container` as an
+"unrecognized at-rule". Both come from CSS Containment Module Level 3, which the Jigsaw
+validator's `css3` profile predates. Container queries have shipped in every major engine since
+February 2023, and the two declarations it names are the load-bearing fix for `.scorecard`
+overflow under text-only zoom, recorded above under *Direction, zoom and growth*. Do not delete
+them to make the validator quiet. That trades a real rendering bug for a green badge.
+
+The nine warnings are noise of the same kind. Seven read "CSS variables are currently not
+statically checked", which is a statement about the tool. One flags `font-size` inside a `clamp()`
+as an unqualified dynamic value. One calls `pointer-events: auto` unofficial while admitting it is
+"supported in multiple browsers"; it is the initial value of the property, and the overlay needs
+it to re-enable hit testing after `pointer-events: none`.
