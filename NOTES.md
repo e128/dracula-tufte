@@ -1264,11 +1264,25 @@ and cannot see what a browser paints. **Headless Chrome cannot be told which med
 it reads `prefers-color-scheme` from the host, so the same command paints dark on a
 dark-appearance mac and light on a bare runner, which is no basis for a gate. Confirmed locally:
 `--force-dark-mode`, `--force-prefers-color-scheme=dark` and `--enable-features=WebContentsForceDark`
-all left the result exactly as the OS had it. So the script rewrites the mode's `@media` condition
-to `@media all` in a scratch copy, which is deterministic everywhere, and asserts the mode's
-condition exists verbatim in the real fixture so a deleted or misspelled query still fails. It then
-asserts the top-left pixel is that mode's `--surface`. Both failure modes were forced and both
-reported.
+all left the result exactly as the OS had it. So each render rewrites **every** mode condition in a
+scratch copy: the target one becomes `@media all` and the rest become `@media not all`, which never
+matches. It asserts each condition exists verbatim in the real fixture, so a deleted or misspelled
+query still fails, and then asserts the top-left pixel is that mode's `--surface`. Both failure
+modes were forced and both reported.
+
+**Neutralising the other conditions is the load-bearing half, and leaving it out failed CI on the
+first attempt.** Rewriting only the target looked sufficient on a dark-appearance mac, where the
+untouched fixture paints dark and the "dark" case passes. The ubuntu runner reports
+`prefers-color-scheme: light`, so there the untouched fixture painted `#fcfcf8` and the dark and
+contrast cases both measured the light palette. That is the same host-dependence the paragraph
+above describes, arriving through the door it was supposed to close. The check now passes on a dark
+host and on a light one, which is two real data points rather than one.
+
+The pixel does **not** distinguish contrast mode from dark, because the high-contrast block leaves
+`--surface` alone by design — it raises the accents and darkens `--surface-alt`. Sampling a text
+pixel instead means fighting antialiasing for nothing: the condition check already fails on a
+deleted query and check 6 already fails on a weakened value. What the contrast render adds is that
+the mode paints without error, plus an image to look at.
 
 That pixel read needs no image library. **For the first pixel of PNG row 0 every filter type
 predicts from a left byte and an above byte that are both zero, so the filtered bytes are the raw

@@ -8,13 +8,17 @@ invisible until a reader's OS asks for them. That left both without coverage.
 Headless Chrome cannot be told which media query to match. It reads
 prefers-color-scheme from the host, so the same command paints dark on a
 dark-appearance mac and light on a bare CI runner, which is no basis for a gate.
-This script rewrites the mode's `@media` condition to `@media all` in a scratch
-copy instead, which is deterministic everywhere. The condition itself is checked
-as a string in the real fixture, so a deleted or misspelled query still fails.
+So each render rewrites EVERY mode condition in a scratch copy: the target one
+becomes `@media all` and the rest become `@media not all`, which never matches.
+Neutralising the others is the half that makes it host-independent, and leaving
+it out is what failed CI on the first attempt — the runner reports
+prefers-color-scheme: light, so the untouched fixture painted light and the
+"dark" case measured the light palette. The conditions are checked as strings in
+the real fixture, so a deleted or misspelled query still fails.
 
 What each mode asserts:
 
-  1. the fixture contains the mode's `@media` condition verbatim
+  1. the fixture contains every mode `@media` condition verbatim
   2. Chrome renders the rewritten copy without error
   3. the top-left pixel is the mode's `--surface`, within a tolerance
 
@@ -23,6 +27,13 @@ the first PNG scanline, which needs no image library: for the first pixel of row
 0 every PNG filter predicts from a left and an above byte that are both zero, so
 the filtered bytes are the raw bytes. `.github/palette-check.py` check 6 gates
 the contrast inside each palette; this gates that the palette arrives at all.
+
+Check 3 does not distinguish contrast mode from dark, because the high-contrast
+block deliberately leaves `--surface` alone — it raises the accents and darkens
+`--surface-alt`. Sampling a text pixel instead would mean fighting antialiasing
+for no gain: check 1 already fails on a deleted or misspelled query, and check 6
+already fails on a weakened value. What the contrast render adds is that the mode
+paints without error, and an image a person can look at.
 
 The PNGs are written for a human to look at. CI uploads them as artifacts.
 
@@ -43,11 +54,15 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 FIXTURES = ["sample.html", "sample-conn-map.html"]
 
 # surface is the expected top-left pixel: `body { background: var(--surface) }`.
-# dark rewrites nothing, so its condition is None.
+# dark is the default palette, so no condition of its own — it is what shows when
+# every mode condition is switched off.
+CONTRAST = "@media (prefers-contrast: more)"
+LIGHT = "@media (prefers-color-scheme: light)"
+CONDITIONS = [CONTRAST, LIGHT]
 MODES = {
     "dark": (None, "#2a2b3c"),
-    "light": ("@media (prefers-color-scheme: light)", "#fcfcf8"),
-    "contrast": ("@media (prefers-contrast: more)", "#2a2b3c"),
+    "light": (LIGHT, "#fcfcf8"),
+    "contrast": (CONTRAST, "#2a2b3c"),
 }
 
 # Chrome renders the oklch() surface through its own conversion, which lands a
@@ -116,16 +131,20 @@ def main():
     for name in FIXTURES:
         fixture = ROOT / name
         html = fixture.read_text()
+        missing = [c for c in CONDITIONS if f"{c} {{" not in html]
+        for c in missing:
+            print(f"MISSING: {name} has no `{c} {{` — that palette is unreachable")
+            fail = 1
+        if missing:
+            continue
         for mode, (condition, want_hex) in MODES.items():
-            if condition is None:
-                source = fixture
-            else:
-                if f"{condition} {{" not in html:
-                    print(f"MISSING: {name} has no `{condition} {{` — the {mode} palette is unreachable")
-                    fail = 1
-                    continue
-                source = outdir / f"{fixture.stem}-{mode}.html"
-                source.write_text(html.replace(condition, "@media all", 1))
+            # Switch every mode off, then switch the target one on. `@media not all`
+            # never matches, so what the host prefers stops mattering.
+            body = html
+            for c in CONDITIONS:
+                body = body.replace(c, "@media all" if c == condition else "@media not all", 1)
+            source = outdir / f"{fixture.stem}-{mode}.html"
+            source.write_text(body)
             png = outdir / f"{fixture.stem}-{mode}.png"
             render(chrome, source, png)
             got = first_pixel(png.read_bytes())
