@@ -216,7 +216,7 @@
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
-    dl.timeline { display: grid; grid-template-columns: max-content 1fr;
+    dl.timeline { display: grid; grid-template-columns: var(--timeline-date, max-content) 1fr;
       align-items: baseline; gap: var(--space-3) var(--space-6); }
     dl.timeline > dt { margin-top: 0; text-align: end; font-weight: 500;
       font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--on-surface); }

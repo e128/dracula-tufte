@@ -333,6 +333,25 @@ dimmest thing on the page. A `h3` date line was the alternative and it failed on
 `h3` is `--label` at weight 500, so the date read fainter than the event title that `strong`
 painted orange beneath it, and the two never aligned into a column.
 
+**`--timeline-date` exists because era groups are separate lists.** A document that splits its
+timeline into eras emits one `dl.timeline` per era, and `max-content` sizes each track against
+only its own rows. Measured on a 20-entry page split into four eras, the spine sat at 240px, then
+203px, then 160px, then 143px: an axis that walks left as the reader scrolls, which is the one
+thing a timeline axis may not do. `grid-template-columns: var(--timeline-date, max-content) 1fr`
+lets a wrapper pin the width once, in `ch` against the widest label in the whole document. The
+default stays `max-content`, so a single-list timeline needs no number and nothing to maintain.
+Sizing every list to the document was not possible in CSS: no selector reaches a sibling list's
+content, and `subgrid` does not apply, because the lists are not tracks of a shared parent grid.
+
+**Measure the widest label before setting `--timeline-date`, because it is rarely the one that
+looks longest.** A first pass at the four-era page guessed `13ch` from `c. 1182-1201`, and the
+label overflowed its own track and ate the column gap, so the date sat 4px off the rule instead of
+24px. Measured against the `0` advance at the rendered weight, `c. 1182-1201` is **10.57ch** and
+`c. 6th century CE` is **15.12ch**: a spelled-out century beats a numeric range, because
+`tabular-nums` makes every digit exactly `1ch` while letters are proportional. The page carries
+`16ch`. Too narrow fails quietly, since `white-space: nowrap` means the label bleeds rather than
+wraps, and too wide only wastes a little space, so round up.
+
 **The date column is `max-content`, and that is what makes mixed date formats align.** Real
 timelines carry `c. 802`, `928-944`, `c. 1182-1201` and `1431` in one list. `text-align: end` plus
 `font-variant-numeric: tabular-nums` right-aligns them on the last digit, so the years form a

@@ -266,6 +266,22 @@ def body [] {
     "        <dt><time datetime=\"1431\">1431</time></dt>"
     "        <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>"
     "      </dl>"
+    # Two lists under one axis is the case max-content cannot serve, because each
+    # list sizes its own track and the spine then steps left down the page. Both
+    # groups below carry `--timeline-date`, and the shorter labels in the second
+    # one are the proof: it holds the wide column instead of shrinking to fit.
+    "      <p>Era groups are separate lists, so <code>max-content</code> would give each one its own date width and step the spine left down the page. Setting <code>--timeline-date</code> on an ancestor pins one axis across all of them.</p>"
+    "      <div style=\"--timeline-date: 11ch\">"
+    "        <h3>First era</h3>"
+    "        <dl class=\"timeline\">"
+    "          <dt>c. 1182-1201</dt><dd>The widest label in the document. It fits the pinned width exactly.</dd>"
+    "        </dl>"
+    "        <h3>Second era</h3>"
+    "        <dl class=\"timeline\">"
+    "          <dt>1431</dt><dd>Short labels, same axis. Without the pin this rule would sit further left than the one above it.</dd>"
+    "          <dt>1992</dt><dd>Second row, to show the spine is continuous within a group.</dd>"
+    "        </dl>"
+    "      </div>"
     "    </section>"
     ""
     "    <section>"

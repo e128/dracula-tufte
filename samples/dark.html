@@ -216,7 +216,7 @@
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
-    dl.timeline { display: grid; grid-template-columns: max-content 1fr;
+    dl.timeline { display: grid; grid-template-columns: var(--timeline-date, max-content) 1fr;
       align-items: baseline; gap: var(--space-3) var(--space-6); }
     dl.timeline > dt { margin-top: 0; text-align: end; font-weight: 500;
       font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--on-surface); }
@@ -713,6 +713,18 @@
         <dt><time datetime="1431">1431</time></dt>
         <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>
       </dl>
+      <p>Era groups are separate lists, so <code>max-content</code> would give each one its own date width and step the spine left down the page. Setting <code>--timeline-date</code> on an ancestor pins one axis across all of them.</p>
+      <div style="--timeline-date: 11ch">
+        <h3>First era</h3>
+        <dl class="timeline">
+          <dt>c. 1182-1201</dt><dd>The widest label in the document. It fits the pinned width exactly.</dd>
+        </dl>
+        <h3>Second era</h3>
+        <dl class="timeline">
+          <dt>1431</dt><dd>Short labels, same axis. Without the pin this rule would sit further left than the one above it.</dd>
+          <dt>1992</dt><dd>Second row, to show the spine is continuous within a group.</dd>
+        </dl>
+      </div>
     </section>
 
     <section>
