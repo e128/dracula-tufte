@@ -827,13 +827,58 @@ that lets the `.verdict-*` chips survive forced colors. Do not try to widen thes
 The hue separations are 40 degrees and more already; what compressed is chroma, and the gamut is
 what compressed it.
 
-**`--red` is the most saturated token in the sheet, at 87% of maximum chroma, and that was never a
-decision.** The others sit at 45% (`--link`) to 63% (`--pink`), with `--green` at 53%. So
-`.correction` renders close to twice as colorful as the `.verified` beside it, and the status trio
-does not read as one family. It follows from the L 0.735 move made for contrast on `--code-bg`,
-recorded above, which never revisited chroma. Arguably right, since a correction should carry more
-alarm than a pass, but it is recorded rather than fixed because equalizing it means recomputing
-`--red` and re-measuring four ratios to change something no one has complained about.
+**`--red` is the loudest accent in the sheet on purpose, at 87% of maximum chroma in every mode,
+and the fix went the opposite way from the obvious one.** The others sit at 45% (`--link`) to 63%
+(`--pink`) in dark, so red was the outlier, and the reflex is to bring it down into the family. That
+was measured and it is wrong. Red's chroma is what separates `.correction` from `h1` pink and from
+`.unverified` orange, and lowering dark red to 63% takes those pairs from 3.8 and 5.0 JND down to
+3.2 and 3.9. An alarm color that reads like the heading beside it is worse than an alarm color that
+is louder than its peers.
+
+**The real defect was that one absolute chroma meant three different reds.** `--red` wrote `0.142`
+in dark, light and print, and the sRGB ceiling at hue 21.457 moves from 0.162 at L 0.735 to 0.219 at
+L 0.545 and 0.225 at L 0.560, so the same number landed at **87%, 65% and 63%** of what the gamut
+holds. The token was vivid on screen and muted on paper for no stated reason. Light and print now
+carry `0.191` and `0.196`, which is 87% in all four modes, and every measured pair improved rather
+than merely holding:
+
+```
+              was                       now                       surface  code-bg  alt   chip
+light   oklch(0.545 0.142)  #b4474a   oklch(0.545 0.191)  #c72b3b   5.33     4.87   4.60  5.33
+print   oklch(0.560 0.142)  #b94c4e   oklch(0.560 0.196)  #ce2d3d   5.15     4.72   5.15  5.15
+```
+
+Light went 5.18 / 4.74 / 4.47 and print 5.00 / 4.58 / 5.00 before, so the row-hover ground gained
+the most: light `--red` on `--surface-alt` was one of the two sub-4.5 pairs this file recorded and it
+now clears at 4.60. The chip column is `--surface` text on the `.verdict-failed` fill, which is the
+same pair inverted. Separation from `--pink` went 3.8 to **5.5** JND in light and 3.8 to **5.7** in
+print, and from `--orange` 4.7 to 6.7 and 7.0. Dark and high contrast did not move; they were already
+at 87%.
+
+**Check 8 in `.github/palette-check.py` pins vividness for the five tokens where it is policy.**
+`--red` at 85 to 89% and the `--data-*` ramp at its four stated fractions, asserted in every mode.
+The band exists because chroma alone does not say how colorful a token looks, so an editor who moves
+`L` without recomputing `C` changes the token's character while every contrast check still passes.
+The failure message names the chroma that would sit mid-band, so the fix is a copy and paste rather
+than a re-derivation. Verified to fail: restoring light `--red` to `0.142` prints `VIVIDNESS:
+prefers-color-scheme: light --red is 64.7% of the sRGB ceiling ... Chroma 0.191 would sit mid-band`.
+
+**The other five accents are deliberately outside that table, and a future reader will want to add
+them.** `--link`, `--orange`, `--purple`, `--pink` and `--green` each write one absolute chroma
+across all four modes, so their fractions float: `--purple` is 57% in dark and 37% in print,
+`--green` 53% and 77%. That is the same class of inconsistency `--red` had. The difference is scale.
+Pinning five more tokens to a fraction means new absolute chromas in three mode blocks each, then
+re-measuring every ratio in this section, every `/* was */` hex, and the two Mermaid projections.
+`--red` was worth it because a status color that changes intensity between screen and paper is a
+semantic problem. `h2` being calmer on paper is not. A table of five that is true beats a table of
+ten that is aspirational.
+
+**What is gated now, so nothing here needs re-litigating.** Eight checks: hex projections in both
+Mermaid palettes (1), `classdef` fills (2), the `/* was */` provenance comments (3), stray hex in
+`mermaid.js` (4), the contrast floor for text, rules and the data ramp in all four modes (5),
+`--mermaid-scheme` in both directions (6), sRGB gamut for every parsed token in every mode (7), and
+the vividness bands (8). The palette cannot drift without one of them saying so by name. Adding a
+token means adding it to the roles in check 5 and deciding whether it belongs in check 8's table.
 
 **`--orange` carries eight roles, and the arrival cue made it eight.** `strong`, the `mark` wash
 through `--highlight`, syntax numerals and constants, the `aside` and alert accent bar,

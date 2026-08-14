@@ -333,5 +333,46 @@ for mode, triples_for_mode in resolved.items():
             )
             fail = 1
 
+# 8. Vividness is policy for some tokens, so it is pinned here rather than left in
+#    prose. Chroma alone does not say how colorful a token looks: the sRGB ceiling
+#    moves with lightness, so one absolute chroma reads as two different intensities
+#    at two lightnesses. --red carried `0.142` in three modes and landed at 87% of the
+#    ceiling in dark, 65% in light and 63% in print, which is one number producing
+#    three different reds. It now holds 87% in all four, which keeps it the loudest
+#    accent on purpose, and the light and print values that came out of that were also
+#    strictly better on every measured pair. The --data-* ramp already held its
+#    fractions exactly across modes; NOTES.md stated them and nothing enforced it.
+#
+#    The band is the fraction of maximum in-gamut chroma, checked in every mode. It is
+#    wide enough for the third decimal a token is written to and narrow enough that a
+#    lightness edit made without recomputing chroma trips it, which is the whole point:
+#    L and C have to move together or the token changes character.
+#
+#    The other accents are deliberately absent. --link, --orange, --purple, --pink and
+#    --green each write one absolute chroma across all four modes, so their fractions
+#    float by design: --purple is 57% in dark and 37% in print, --green 53% and 77%.
+#    Pinning those means rewriting the whole palette and re-measuring every ratio in
+#    this file, which is a much larger change than the drift it would prevent. A table
+#    of five tokens that is true beats a table of ten that is aspirational.
+VIVIDNESS = {
+    "red": (0.85, 0.89),
+    "data-1": (0.69, 0.73),
+    "data-2": (0.54, 0.58),
+    "data-3": (0.59, 0.63),
+    "data-4": (0.55, 0.59),
+}
+for mode, triples_for_mode in resolved.items():
+    for name, (low, high) in VIVIDNESS.items():
+        L, C, h = triples_for_mode[name]
+        ceiling = max_chroma(L, h)
+        got = C / ceiling
+        if not low <= got <= high:
+            print(
+                f"VIVIDNESS: {mode} --{name} is {got * 100:.1f}% of the sRGB ceiling at "
+                f"L {L:.3f} hue {h:g}, outside the {low * 100:.0f} to {high * 100:.0f}% band. "
+                f"Chroma {(low + high) / 2 * ceiling:.3f} would sit mid-band."
+            )
+            fail = 1
+
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)
