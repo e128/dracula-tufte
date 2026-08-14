@@ -95,6 +95,9 @@
     :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    :target { scroll-margin-block-start: var(--space-6); }
+    li:target, dl.timeline > dt:target + dd { outline: 2px solid var(--orange);
+      outline-offset: 3px; border-radius: var(--radius-sm); }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -240,6 +243,7 @@
     :is(.footnotes, .footnote) p { margin-block: 0.2rem; }
     :is(.footnotes, .footnote) > hr:first-child { display: none; }
     .footnote-backref { text-decoration: none; }
+    :is(.footnote-ref, sup) a { padding-block: 0.6em; }
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
     .correction { color: var(--red); }

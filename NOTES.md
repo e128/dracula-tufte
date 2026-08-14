@@ -377,6 +377,35 @@ nowrap becomes the one declaration in the component that can push the page wider
 viewport, since a label like `c. 3rd century BCE to 1st century CE` cannot be broken. The mobile
 rule sets it back to `normal`.
 
+**A deep link needs an arrival cue, and it is an `outline`, not the `--highlight` wash.** A page
+whose citations are `sup` links into a numbered source list makes the anchor jump its primary
+interaction, and a jump that changes nothing visible leaves the reader hunting for the row they
+asked for. The `mark` wash was the obvious cue and it was measured and rejected: `--highlight` is
+`--orange` at 0.35 alpha, and composited over `--surface` it lands text-over-wash at **6.49:1**
+for `--on-surface` but only **3.81:1** for `--link` in dark and **3.22:1** in print. A source list
+item is mostly link text, so the wash would have shipped a sub-AA link. `outline: 2px solid
+var(--orange)` with `outline-offset: 3px` costs nothing in contrast, shifts no layout (which
+matters inside the `.col-2` multicol source list, where a border or padding would reflow the
+columns), and reads as distinct from the link-blue `:focus-visible` ring by hue. It is static, so
+it survives `prefers-reduced-motion` intact, where a flash animation would have left the reduced
+motion reader with no cue at all.
+
+**`:target` also carries `scroll-margin-block-start`, because a flush landing hides the context.**
+Measured without it, `#angkor`, `#e-koh-ker` and `#post-angkor` all landed at `top: 0.0px`, so a
+`dt` deep link put the date against the viewport edge with its era heading scrolled off above.
+`var(--space-6)` puts it 24px down. Applied to `:target` rather than to the headings, so it covers
+whatever a document actually links to. Smooth scrolling was considered and rejected: on a
+20-entry page a jump from a late citation to the source list is a long animated scroll, and the
+outline already answers "where did I land".
+
+**The citation marker's hit area grows with `padding-block` alone.** `sup` is `0.75em` with
+`line-height: 0`, so a marker's box measured **7.6 x 20px**. Vertical padding on a non-replaced
+inline element extends the hit and paint region without touching the line box: `padding-block:
+0.6em` measured **7.6 x 38px** with the body's width and height both unchanged to 0.00px. The
+width stays 7.6px on purpose. `padding-inline` would widen it, but inline padding *does* affect
+inline layout, and it drags the underline out past the digit. The rule is `:is(.footnote-ref, sup) a`,
+so a converter that emits a bare `sup` gets it too.
+
 **Print gets `break-inside: avoid` on the entry, never on the list.** `dl.timeline > dd` joins the
 existing avoid list in the `@media print` block, so an entry does not split across a page break.
 The container is deliberately absent from that list: a 20-entry timeline forced onto one page is

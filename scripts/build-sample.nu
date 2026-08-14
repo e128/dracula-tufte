@@ -258,12 +258,16 @@ def body [] {
     "    <section>"
     "      <h2>Timeline</h2>"
     "      <p>A <code>dl</code> carrying <code>class=\"timeline\"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code>max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>"
+    # `:target` cannot be captured by a static fixture or by mode-renders, since
+    # it needs a URL fragment. The ids and the two links below are the only way a
+    # human can walk that state, so they are load-bearing, not decoration.
+    "      <p>Deep links carry an arrival cue: jump to <a href=\"#e-802\">the 802 entry</a> or to <a href=\"#fn-1\">footnote 1</a> and the destination takes an orange outline, distinct from the link-blue focus ring, and lands clear of the viewport edge.</p>"
     "      <dl class=\"timeline\">"
-    "        <dt><time datetime=\"0802\">c. 802</time></dt>"
+    "        <dt id=\"e-802\"><time datetime=\"0802\">c. 802</time></dt>"
     "        <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code>dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class=\"footnote-ref\"><a href=\"#fn-1\">1</a></sup></dd>"
-    "        <dt>928-944</dt>"
+    "        <dt id=\"e-928\">928-944</dt>"
     "        <dd><strong>A range.</strong> The widest label in the column, so it sets the date width. Its digits still align with the rows above and below.</dd>"
-    "        <dt><time datetime=\"1431\">1431</time></dt>"
+    "        <dt id=\"e-1431\"><time datetime=\"1431\">1431</time></dt>"
     "        <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>"
     "      </dl>"
     # Two lists under one axis is the case max-content cannot serve, because each
