@@ -212,11 +212,19 @@ for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_t
 #
 #    A mode block only restates what it changes, so each palette is the default
 #    overlaid with that block's overrides, which is also how the cascade resolves
-#    it. Text tokens are checked against BOTH backgrounds a reader meets, since
-#    --code-bg is the harder one and is where the default palette's floor lives.
+#    it. Text tokens are checked against all THREE backgrounds a reader meets:
+#    --code-bg carries the default palette's floor, and --surface-alt is the
+#    row-hover fill, which NOTES.md names as one of the grounds a token has to
+#    clear and which this check did not look at for two releases. It is the
+#    hardest of the three in light mode, where --muted, --orange and --pink all
+#    measured 4.44 to 4.47 on it while passing on the other two, so a `strong` or
+#    an outbound arrow inside a hovered row was under 4.5 with nothing saying so.
 #    Rule tokens are checked against --surface only: --rule-light is a hairline on
 #    the page background, and 1.4.11 asks 3:1 of a non-text boundary, not of a
 #    border drawn inside a code fill.
+#
+#    DATA stays on --surface and --code-bg. A diagram is not drawn inside a table
+#    row, so the hover fill is not a ground a category fill ever lands on.
 #
 #    DATA is the diagram-category ramp, and it is a non-text boundary like a rule
 #    rather than text: a pie slice or a classDef fill has to be tellable from the
@@ -269,7 +277,12 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
     for role, floor in ((TEXT, text_floor), (RULES, rule_floor), (DATA, rule_floor)):
         for name in role:
             fg = triples_for_mode[name]
-            grounds = ["surface"] if role is RULES else ["surface", "code-bg"]
+            if role is RULES:
+                grounds = ["surface"]
+            elif role is DATA:
+                grounds = ["surface", "code-bg"]
+            else:
+                grounds = ["surface", "code-bg", "surface-alt"]
             for ground in grounds:
                 got = contrast(fg, triples_for_mode[ground])
                 if got + 0.005 < floor:

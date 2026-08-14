@@ -873,12 +873,46 @@ re-measuring every ratio in this section, every `/* was */` hex, and the two Mer
 semantic problem. `h2` being calmer on paper is not. A table of five that is true beats a table of
 ten that is aspirational.
 
+**The row-hover fill was named as a ground in this section and was never in the gate.** The four
+surfaces are enumerated above, and check 5 only ever looked at two of them. `--surface-alt` is the
+harder ground in light mode, and three tokens sat under 4.5 on it while passing on both of the
+grounds that were checked: `--muted` 4.47, `--orange` 4.45, `--pink` 4.44. Two of those pairs are
+real rather than derived. `--orange` is `strong`, and a bold run inside a hovered table row is
+ordinary markup. `--muted` colors the outbound-link arrow, and the connections-map Links column is
+nothing but external links. `--pink` is `h1` alone and never lands in a cell, so that one was
+theoretical.
+
+Light `--surface-alt` went from `oklch(0.940 …)` to `oklch(0.950 …)`, which puts every accent at 4.58
+or better on the hover band. The band itself measures **1.124:1** against light `--surface`, against
+**1.148** for the dark band this file already accepted as "the same order as the striping it
+replaced", so the affordance is unchanged in kind. `0.945` was the first value that clears and it
+clears by 0.01, which is no margin at all; `0.950` was taken for the same reason `--red` took 0.735
+over 0.725.
+
+**That one token change cost two hex projections, and the gate is what said so.** Light
+`--surface-alt` is `initLight.secondaryColor` in `mermaid-palette.json` and an inline hex in
+`mermaid.js`, both `#ebebe7`, now `#efefea`. Checks 1 and 4 named both files before anything shipped.
+This is the mechanism working as designed: a token in the light palette cannot move without the
+Mermaid side moving with it.
+
+`--surface-alt` is now the third ground for every text token in every mode. `RULES` stays on
+`--surface` alone, and `DATA` stays on `--surface` and `--code-bg`, because a diagram is not drawn
+inside a table row.
+
 **What is gated now, so nothing here needs re-litigating.** Eight checks: hex projections in both
 Mermaid palettes (1), `classdef` fills (2), the `/* was */` provenance comments (3), stray hex in
-`mermaid.js` (4), the contrast floor for text, rules and the data ramp in all four modes (5),
-`--mermaid-scheme` in both directions (6), sRGB gamut for every parsed token in every mode (7), and
-the vividness bands (8). The palette cannot drift without one of them saying so by name. Adding a
-token means adding it to the roles in check 5 and deciding whether it belongs in check 8's table.
+`mermaid.js` (4), the contrast floor in all four modes, for text against three grounds and for rules
+and the data ramp against their own (5), `--mermaid-scheme` in both directions (6), sRGB gamut for
+every parsed token in every mode (7), and the vividness bands (8). The palette cannot drift without
+one of them saying so by name. Adding a token means adding it to the roles in check 5 and deciding
+whether it belongs in check 8's table.
+
+**What is still open, and none of it is a measurement.** `--orange` carries eight roles. Five accents
+let their chroma fraction float across modes. The high-contrast accent set is compressed by the gamut
+and is mitigated by text rather than by color. Two items predate this work and live in `backlog.md`:
+the `classdef` fills have no light twin, and a dark-mode pie slice label composites to 2.86 to 3.47:1
+under Mermaid's own 0.7 opacity. Every one of those is recorded with its numbers. There is no
+remaining pair in the four palettes that measures below its mode's floor on a ground a reader meets.
 
 **`--orange` carries eight roles, and the arrival cue made it eight.** `strong`, the `mark` wash
 through `--highlight`, syntax numerals and constants, the `aside` and alert accent bar,

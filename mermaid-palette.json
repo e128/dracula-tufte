@@ -31,7 +31,7 @@
     "primaryBorderColor":  { "hex": "#785da1", "from": "--purple" },
     "lineColor":           { "hex": "#626a8c", "from": "--muted" },
     "textColor":           { "hex": "#161616", "from": "--on-surface" },
-    "secondaryColor":      { "hex": "#ebebe7", "from": "--surface-alt" },
+    "secondaryColor":      { "hex": "#efefea", "from": "--surface-alt" },
     "clusterBkg":          { "hex": "#f0f1f9", "from": "--code-bg" },
     "clusterBorder":       { "hex": "#7b7f94", "from": "--rule-light" },
     "nodeBorder":          { "hex": "#785da1", "from": "--purple" },
