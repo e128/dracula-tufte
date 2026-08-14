@@ -37,7 +37,7 @@ system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-
 
 ## 2. Emit this markup
 
-Seven requirements. No stylesheet change can supply any of them.
+Nine requirements. No stylesheet change can supply any of them.
 
 - [ ] `<main>` around the content, with `<article>` inside it.
 - [ ] A real `<label for>` on every `input.filter-box`. A placeholder is not a label.
@@ -47,6 +47,15 @@ Seven requirements. No stylesheet change can supply any of them.
 - [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order.
 - [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`,
       a table below 1000px, a `<math display="block">`, and any `.table-scroll` wrapper.
+- [ ] `--timeline-date` on an ancestor when a page carries **more than one** `dl.timeline`, set in
+      `ch` against the widest date label in the whole document. Each list otherwise sizes its own
+      date track and the axis steps left down the page. Measure the label: `tabular-nums` pins
+      digits to exactly `1ch` while letters stay proportional, so a spelled-out
+      `c. 6th century CE` is wider than a numeric `c. 1182-1201`. One list needs nothing.
+- [ ] Citations inside a `dl.timeline` entry as `sup` links into a numbered source list, never a
+      `.sidenote`. A float cannot escape a grid item, so the note lands inside the entry column
+      instead of the page margin. Give each `dt` an `id` to make an entry deep-linkable; the
+      arrival outline is automatic once it has one.
 
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
