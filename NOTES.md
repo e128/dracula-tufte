@@ -398,6 +398,15 @@ whatever a document actually links to. Smooth scrolling was considered and rejec
 20-entry page a jump from a late citation to the source list is a long animated scroll, and the
 outline already answers "where did I land".
 
+**A multi-source citation group is one unbreakable unit, so `.footnote-ref` is `nowrap`.** An entry
+citing four sources emits one `sup` holding `<a>2</a>, <a>5</a>, <a>6</a>, <a>7</a>`, and the
+commas are ordinary break opportunities. On the timeline fixture that broke a group across a line
+end and left `9, 10` alone on the next line, reading as a rendering fault rather than a citation.
+`white-space: nowrap` moves the whole group down instead of splitting it. Scoped to
+`.footnote-ref` rather than to `sup`, because a converter may put arbitrary content in a bare `sup`
+and the widest real group here is four markers at `0.75em`, around 30px, so there is nothing to
+overflow.
+
 **The citation marker's hit area grows with `padding-block` alone.** `sup` is `0.75em` with
 `line-height: 0`, so a marker's box measured **7.6 x 20px**. Vertical padding on a non-replaced
 inline element extends the hit and paint region without touching the line box: `padding-block:
@@ -2169,9 +2178,27 @@ reconstructing it costs more than the bytes do.
 
 ## Fixtures are coverage
 
-A fixture demonstrates states. It does not simulate them. Several details in `samples/dark.html` and
-`samples/dark-conn-map.html` look like filler and are regression checks. **Shortening any of these
-retires the check it exists to be.**
+A fixture demonstrates states. It does not simulate them. Several details in `samples/dark.html`,
+`samples/dark-conn-map.html` and `samples/dark-timeline.html` look like filler and are regression
+checks. **Shortening any of these retires the check it exists to be.**
+
+**`samples/dark-timeline.html` is the one fixture built from real content, and the length is the
+point.** `dark.html` carries a three-row `dl.timeline` that shows the component. It cannot show the
+two things that only appear at length. Four era groups are four separate lists, which is the case
+`max-content` cannot serve and `--timeline-date` exists for, and a three-row demo would have let
+that defect ship. Fifty-four citation markers against fifteen sources is the density at which the
+floated sidenote form fails, and it is the density the `:target` outline and the enlarged marker hit
+area were measured against. Every `dt` carries an id, so the arrival cue is walkable rather than
+merely declared. Content is the `e128.info` research scroll
+`lode/research/timelines/khmer-civilization.md`, which is also the page that motivated the component.
+
+Adding a page means **five hardcoded fixture lists**, not one: the page list in
+`scripts/build-sample.nu`, and then the presence list, the style-and-script count list, the
+light-preview list and the staleness list in `scripts/maintain.nu`, plus `FIXTURES` in
+`.github/render-modes.py`. Miss the `render-modes.py` one and the new page renders in no appearance
+mode while the check still prints `Contract OK`, because that list drives the image count rather
+than being derived from the directory. The count is the tell: three fixtures times three modes is
+**9 images**.
 
 - **The sequence diagram and quadrant chart** in `samples/dark.html`, alongside the flowchart. Both
   label-measurement bugs above shipped and survived because a flowchart is the one diagram type

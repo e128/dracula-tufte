@@ -28,12 +28,12 @@ Two supported modes. Pick one and hold it:
 `mermaid.js` needs `<div class="mermaid-overlay" id="mermaid-zoom"></div>` as the first child of
 `<body>`. It throws a named error when the div is absent.
 
-**Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html` and
-`samples/light-conn-map.html` exist so a reader can see the light palette on a dark-mode machine.
-They carry a stylesheet whose `@media` conditions were rewritten to force that, so a copy taken
-from one of them is locked to light and can never follow a reader's system appearance. Each says so
-in a banner. `samples/dark.html` and `samples/dark-conn-map.html` do carry the payload verbatim, but the file
-is still the source.
+**Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html`,
+`samples/light-conn-map.html` and `samples/light-timeline.html` exist so a reader can see the light
+palette on a dark-mode machine. They carry a stylesheet whose `@media` conditions were rewritten to
+force that, so a copy taken from one of them is locked to light and can never follow a reader's
+system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-conn-map.html` and
+`samples/dark-timeline.html` do carry the payload verbatim, but the file is still the source.
 
 ## 2. Emit this markup
 
