@@ -98,6 +98,7 @@
     :target { scroll-margin-block-start: var(--space-6); }
     li:target, dl.timeline > dt:target + dd { outline: 2px solid var(--orange);
       outline-offset: 3px; border-radius: var(--radius-sm); }
+    dl.timeline > dt:target { color: var(--orange); }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -340,6 +341,12 @@
       .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
       table { display: block; overflow-x: auto; width: fit-content; }
     }
+    @media (max-width: 760px) {
+      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
+      dl.timeline > dt { text-align: start; white-space: normal; }
+      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
+        margin-block-end: var(--space-4); }
+    }
     @media (max-width: 600px) {
       :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
       body { padding-block: var(--space-6); }
@@ -347,10 +354,6 @@
       aside, blockquote { padding: 0.4rem 0.85rem; }
       details, details.nav-group { padding: 0.3rem 0.6rem; }
       .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
-      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
-      dl.timeline > dt { text-align: start; white-space: normal; }
-      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
-        margin-block-end: var(--space-4); }
       .col-2 > ol, .col-2 > ul { columns: 1; }
       .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
       .scorecard .sc-note { grid-column: 1 / -1; }
@@ -712,7 +715,7 @@
       <p>A <code>dl</code> carrying <code>class="timeline"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code>max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>
       <p>Deep links carry an arrival cue: jump to <a href="#e-802">the 802 entry</a> or to <a href="#fn-1">footnote 1</a> and the destination takes an orange outline, distinct from the link-blue focus ring, and lands clear of the viewport edge.</p>
       <dl class="timeline">
-        <dt id="e-802"><time datetime="0802">c. 802</time></dt>
+        <dt id="e-802">c. 802</dt>
         <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code>dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class="footnote-ref"><a href="#fn-1">1</a></sup></dd>
         <dt id="e-928">928-944</dt>
         <dd><strong>A range.</strong> The widest label in the column, so it sets the date width. Its digits still align with the rows above and below.</dd>

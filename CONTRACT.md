@@ -51,7 +51,12 @@ Nine requirements. No stylesheet change can supply any of them.
       `ch` against the widest date label in the whole document. Each list otherwise sizes its own
       date track and the axis steps left down the page. Measure the label: `tabular-nums` pins
       digits to exactly `1ch` while letters stay proportional, so a spelled-out
-      `c. 6th century CE` is wider than a numeric `c. 1182-1201`. One list needs nothing.
+      `c. 6th century CE` is wider than a numeric `c. 1182-1201`. **Measure at weight 500**, the
+      weight `dt` renders at, and **round up to the next whole `ch`.** `ch` resolves against the
+      element the variable is set on, which is weight 400, and 400 is about 1.7% narrower per
+      character, so a value measured at 400 is short by a quarter character at 16ch. Too small a
+      value has no CSS backstop: the label overflows into the column gap and touches the rule.
+      One list needs nothing.
 - [ ] Citations inside a `dl.timeline` entry as `sup` links into a numbered source list, never a
       `.sidenote`. A float cannot escape a grid item, so the note lands inside the entry column
       instead of the page margin. Give each `dt` an `id` to make an entry deep-linkable; the

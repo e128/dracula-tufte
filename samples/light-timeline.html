@@ -98,6 +98,7 @@
     :target { scroll-margin-block-start: var(--space-6); }
     li:target, dl.timeline > dt:target + dd { outline: 2px solid var(--orange);
       outline-offset: 3px; border-radius: var(--radius-sm); }
+    dl.timeline > dt:target { color: var(--orange); }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -340,6 +341,12 @@
       .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
       table { display: block; overflow-x: auto; width: fit-content; }
     }
+    @media (max-width: 760px) {
+      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
+      dl.timeline > dt { text-align: start; white-space: normal; }
+      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
+        margin-block-end: var(--space-4); }
+    }
     @media (max-width: 600px) {
       :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
       body { padding-block: var(--space-6); }
@@ -347,10 +354,6 @@
       aside, blockquote { padding: 0.4rem 0.85rem; }
       details, details.nav-group { padding: 0.3rem 0.6rem; }
       .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
-      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
-      dl.timeline > dt { text-align: start; white-space: normal; }
-      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
-        margin-block-end: var(--space-4); }
       .col-2 > ol, .col-2 > ul { columns: 1; }
       .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
       .scorecard .sc-note { grid-column: 1 / -1; }
@@ -644,13 +647,13 @@
       <h2 id="angkor">Angkor period</h2>
       <p class="byline">802 to 1431, capital on the Angkor plain</p>
       <dl class="timeline">
-        <dt id="e-802"><time datetime="0802">c. 802</time></dt>
+        <dt id="e-802">c. 802</dt>
         <dd><strong>Jayavarman II declares himself universal king on Mount Kulen, founds Mahendraparvata.</strong> Traditional founding of the Khmer Empire and start of the Angkor period. Lidar rediscovered Mahendraparvata in 2012. <em>Contested:</em> Coe's lecture conflates the 802 founding with Yasovarman's later Yasodharapura.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-5">5</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a></sup></dd>
-        <dt id="e-889"><time datetime="0889">c. 889</time></dt>
+        <dt id="e-889">c. 889</dt>
         <dd><strong>Royal capital moves south to Angkor; Yasovarman I founds Yasodharapura.</strong> The capital relocates from the Kulen hills to the Angkor plain. <em>Contested:</em> The founding date and founder are contested across sources.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-7">7</a></sup></dd>
         <dt id="e-koh-ker">928-944</dt>
         <dd><strong>Koh Ker interregnum: Jayavarman IV rules from a new capital.</strong> A 17-year interval when power left Angkor. Prasat Thom pyramid built in 942. The reservoir embankment failed within a decade, possibly driving the court back.<sup class="footnote-ref"><a href="#src-4">4</a></sup></dd>
-        <dt id="e-1000"><time datetime="1000">c. 1000</time></dt>
+        <dt id="e-1000">c. 1000</dt>
         <dd><strong>Angkor becomes one of the largest cities in the world.</strong> Estimates run from ~500,000 (Ancient Code) to ~900,000 (Evans) people in a low-density sprawl of ~1,000 sq km.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a></sup></dd>
         <dt id="e-angkor-wat">1113-1150</dt>
         <dd><strong>Suryavarman II reigns; Angkor Wat is built.</strong> The largest religious structure on Earth, dedicated to Vishnu.<sup class="footnote-ref"><a href="#src-1">1</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a>, <a href="#src-11">11</a></sup></dd>
@@ -664,7 +667,7 @@
         <dd><strong>Ta Prohm is founded.</strong> Mahayana monastery (Rajavihara) dedicated to Jayavarman VII's mother. Its stele records ~12,500 attached people. Now the &ldquo;Tomb Raider&rdquo; temple left in its jungle state.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-12">12</a></sup></dd>
         <dt id="e-preah-khan"><time datetime="1191">1191</time></dt>
         <dd><strong>Preah Khan is dedicated.</strong> Temple honoring Jayavarman VII's father. BBC reports it held 60 tons of gold, worth about &pound;2bn today.<sup class="footnote-ref"><a href="#src-7">7</a>, <a href="#src-12">12</a></sup></dd>
-        <dt id="e-zhou-daguan"><time datetime="1296">c. 1296</time></dt>
+        <dt id="e-zhou-daguan">c. 1296</dt>
         <dd><strong>Zhou Daguan visits Angkor.</strong> The Chinese Yuan-dynasty diplomat writes &ldquo;Customs of Cambodia,&rdquo; the main eyewitness account of late-13th-century Angkor.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-5">5</a></sup></dd>
         <dt id="e-decline">c. 1300-1431</dt>
         <dd><strong>Gradual decline begins a century before the fall.</strong> Land use in central Angkor declined ~100 years before the traditional 1431 abandonment (Penny's moat cores). Water infrastructure failed; tree rings record extreme dry and wet swings. <em>Contested:</em> The &ldquo;collapse&rdquo; narrative against the century-in-the-making view.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-3">3</a>, <a href="#src-7">7</a></sup></dd>
@@ -700,21 +703,21 @@
     <section class="col-2">
       <h2 id="sources">Sources</h2>
       <ol>
-        <li id="src-1"><a href="https://e128.info/content/history/ancient/anthropologists-at-angkor-wat-reveal-new-clues-about-the-ancient-temple-thought/anthropologists-at-angkor-wat-reveal-new-clues-about-the-ancient-temple-thought.md"><strong>Anthropologists at Angkor Wat reveal new clues about the ancient temple thought abandoned (Ancient Code)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-2"><a href="https://e128.info/content/history/geography/how-early-megacities-emerged-from-the-jungles-of-cambodia-atlas-obscura/how-early-megacities-emerged-from-the-jungles-of-cambodia-atlas-obscura.md"><strong>How Early Megacities Emerged From the Jungles of Cambodia (Atlas Obscura)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-3"><a href="https://e128.info/content/history/geography/the-fall-of-angkor-was-more-than-a-century-in-the-making/the-fall-of-angkor-was-more-than-a-century-in-the-making.md"><strong>The Fall of Angkor Was More Than a Century in The Making</strong></a>, scraped 2026-08-13</li>
-        <li id="src-4"><a href="https://e128.info/content/history/geography/how-bad-karma-and-bad-engineering-doomed-an-ancient-cambodian-capital/how-bad-karma-and-bad-engineering-doomed-an-ancient-cambodian-capital.md"><strong>How Bad Karma and Bad Engineering Doomed an Ancient Cambodian Capital</strong></a>, scraped 2026-08-13</li>
-        <li id="src-5"><a href="https://e128.info/content/history/ancient/parallel-civilizations-ancient-angkor-and-the-anci/parallel-civilizations-ancient-angkor-and-the-anci.md"><strong>Parallel Civilizations: Ancient Angkor and the Ancient Maya (Michael Coe lecture, UC Berkeley)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-6"><a href="https://e128.info/content/history/ancient/angkor-an-ancient-mega-city-hidden-deep-withing-the-jungle-ancient-code/angkor-an-ancient-mega-city-hidden-deep-withing-the-jungle-ancient-code.md"><strong>Angkor: An Ancient Mega City Hidden Deep Withing the Jungle (Ancient Code)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-7"><a href="https://e128.info/content/history/blinds-gossip/bbc-news-beyond-angkor-how-lasers-revealed-a-lost-city/bbc-news-beyond-angkor-how-lasers-revealed-a-lost-city.md"><strong>BBC News - Beyond Angkor: How lasers revealed a lost city</strong></a>, scraped 2026-08-13</li>
-        <li id="src-8"><a href="https://e128.info/content/history/geography/the-mystery-of-the-dinosaur-of-angkor-ilbonito-blog-2007/the-mystery-of-the-dinosaur-of-angkor-ilbonito-blog-2007.md"><strong>The mystery of the dinosaur of Angkor (ilbonito blog 2007)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-9"><a href="https://www.britannica.com/place/Funan"><strong>Funan | Cambodia, Map, &amp; Facts (Britannica)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-10"><a href="http://michaelvickery.org/vickery2003funan-rev.pdf"><strong>Funan Reviewed: Deconstructing the Ancients (Michael Vickery)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-11"><a href="https://www.britannica.com/topic/Angkor-Wat"><strong>Angkor Wat | Description, Location, History, Restoration (Britannica)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-12"><a href="https://penelope.uchicago.edu/Thayer/E/Gazetteer/Places/Asia/Cambodia/Siem_Reap/Siem_Reap/Angkor_Wat/_Texts/DICANG/Chronology*.html"><strong>Wondrous Angkor - Kings of Angkor chronology (LacusCurtius, University of Chicago)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-13"><a href="https://doi.org/10.1073/pnas.1306539110"><strong>Uncovering archaeological landscapes at Angkor using lidar (Evans et al., PNAS 2013)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-14"><a href="https://www.cambridge.org/core/journals/antiquity/article/landscape-of-angkor-wat-redefined/F3F0731A514E338A76DA8A906458A890"><strong>The landscape of Angkor Wat redefined (Evans &amp; Fletcher, Antiquity 2015)</strong></a>, scraped 2026-08-13</li>
-        <li id="src-15"><a href="https://hdl.handle.net/2292/72578"><strong>Discovering Angkor: Henri Mouhot and the European Rediscovery of Angkor Wat (Rui Patel Kerr, Univ. of Auckland)</strong></a>, scraped 2026-08-13</li>
+        <li id="src-1"><a href="https://e128.info/content/history/ancient/anthropologists-at-angkor-wat-reveal-new-clues-about-the-ancient-temple-thought/anthropologists-at-angkor-wat-reveal-new-clues-about-the-ancient-temple-thought.md">Anthropologists at Angkor Wat reveal new clues about the ancient temple thought abandoned (Ancient Code)</a>, scraped 2026-08-13</li>
+        <li id="src-2"><a href="https://e128.info/content/history/geography/how-early-megacities-emerged-from-the-jungles-of-cambodia-atlas-obscura/how-early-megacities-emerged-from-the-jungles-of-cambodia-atlas-obscura.md">How Early Megacities Emerged From the Jungles of Cambodia (Atlas Obscura)</a>, scraped 2026-08-13</li>
+        <li id="src-3"><a href="https://e128.info/content/history/geography/the-fall-of-angkor-was-more-than-a-century-in-the-making/the-fall-of-angkor-was-more-than-a-century-in-the-making.md">The Fall of Angkor Was More Than a Century in The Making</a>, scraped 2026-08-13</li>
+        <li id="src-4"><a href="https://e128.info/content/history/geography/how-bad-karma-and-bad-engineering-doomed-an-ancient-cambodian-capital/how-bad-karma-and-bad-engineering-doomed-an-ancient-cambodian-capital.md">How Bad Karma and Bad Engineering Doomed an Ancient Cambodian Capital</a>, scraped 2026-08-13</li>
+        <li id="src-5"><a href="https://e128.info/content/history/ancient/parallel-civilizations-ancient-angkor-and-the-anci/parallel-civilizations-ancient-angkor-and-the-anci.md">Parallel Civilizations: Ancient Angkor and the Ancient Maya (Michael Coe lecture, UC Berkeley)</a>, scraped 2026-08-13</li>
+        <li id="src-6"><a href="https://e128.info/content/history/ancient/angkor-an-ancient-mega-city-hidden-deep-withing-the-jungle-ancient-code/angkor-an-ancient-mega-city-hidden-deep-withing-the-jungle-ancient-code.md">Angkor: An Ancient Mega City Hidden Deep Withing the Jungle (Ancient Code)</a>, scraped 2026-08-13</li>
+        <li id="src-7"><a href="https://e128.info/content/history/blinds-gossip/bbc-news-beyond-angkor-how-lasers-revealed-a-lost-city/bbc-news-beyond-angkor-how-lasers-revealed-a-lost-city.md">BBC News - Beyond Angkor: How lasers revealed a lost city</a>, scraped 2026-08-13</li>
+        <li id="src-8"><a href="https://e128.info/content/history/geography/the-mystery-of-the-dinosaur-of-angkor-ilbonito-blog-2007/the-mystery-of-the-dinosaur-of-angkor-ilbonito-blog-2007.md">The mystery of the dinosaur of Angkor (ilbonito blog 2007)</a>, scraped 2026-08-13</li>
+        <li id="src-9"><a href="https://www.britannica.com/place/Funan">Funan | Cambodia, Map, &amp; Facts (Britannica)</a>, scraped 2026-08-13</li>
+        <li id="src-10"><a href="http://michaelvickery.org/vickery2003funan-rev.pdf">Funan Reviewed: Deconstructing the Ancients (Michael Vickery)</a>, scraped 2026-08-13</li>
+        <li id="src-11"><a href="https://www.britannica.com/topic/Angkor-Wat">Angkor Wat | Description, Location, History, Restoration (Britannica)</a>, scraped 2026-08-13</li>
+        <li id="src-12"><a href="https://penelope.uchicago.edu/Thayer/E/Gazetteer/Places/Asia/Cambodia/Siem_Reap/Siem_Reap/Angkor_Wat/_Texts/DICANG/Chronology*.html">Wondrous Angkor - Kings of Angkor chronology (LacusCurtius, University of Chicago)</a>, scraped 2026-08-13</li>
+        <li id="src-13"><a href="https://doi.org/10.1073/pnas.1306539110">Uncovering archaeological landscapes at Angkor using lidar (Evans et al., PNAS 2013)</a>, scraped 2026-08-13</li>
+        <li id="src-14"><a href="https://www.cambridge.org/core/journals/antiquity/article/landscape-of-angkor-wat-redefined/F3F0731A514E338A76DA8A906458A890">The landscape of Angkor Wat redefined (Evans &amp; Fletcher, Antiquity 2015)</a>, scraped 2026-08-13</li>
+        <li id="src-15"><a href="https://hdl.handle.net/2292/72578">Discovering Angkor: Henri Mouhot and the European Rediscovery of Angkor Wat (Rui Patel Kerr, Univ. of Auckland)</a>, scraped 2026-08-13</li>
       </ol>
     </section>
 

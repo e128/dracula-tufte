@@ -355,7 +355,15 @@ wraps, and too wide only wastes a little space, so round up.
 **The date column is `max-content`, and that is what makes mixed date formats align.** Real
 timelines carry `c. 802`, `928-944`, `c. 1182-1201` and `1431` in one list. `text-align: end` plus
 `font-variant-numeric: tabular-nums` right-aligns them on the last digit, so the years form a
-column and the `c.` prefixes hang off the left of it. A fixed `ch` width was not tried, because
+column and the `c.` prefixes hang off the left of it. **That last claim holds only while every
+label ends in a digit, and the fixture proves it does not.** `c. 1st century CE`, `c. 6th century
+CE` and `c. 1600s` end in letters, so they align their `CE` and their `s` where the other rows
+align a year, and no numeral column forms down the page. `tabular-nums` still stays, because it is
+what makes the `ch` measurement for `--timeline-date` predictable, but it is not buying the
+alignment a reader sees. Do not go looking for the missing column and add the property somewhere
+new. `text-align: start` would give the labels a clean left edge and was rejected: it opens up to
+60px between a short date and the rule it labels, and the date belongs against the entry it names.
+A fixed `ch` width was not tried, because
 `max-content` needs no number to maintain and the longest label is the correct width by
 definition. There is no `.approx` class for the `c.` prefix. Muting it would read well, but no
 generator emits a span for it yet, and a class with no emitter is a guess about markup this repo
@@ -419,6 +427,72 @@ so a converter that emits a bare `sup` gets it too.
 existing avoid list in the `@media print` block, so an entry does not split across a page break.
 The container is deliberately absent from that list: a 20-entry timeline forced onto one page is
 the worse failure.
+
+**`break-after: avoid` on the `dt` is not needed, and this was measured rather than reasoned.** The
+worry is real on paper: a grid row is a break opportunity, `break-inside: avoid` on the `dd` pushes
+a tall entry to the next page, and nothing says the small `dt` has to follow it, so a page could
+end on a bare date. Chrome does not do that. Nine print layouts were rendered by injecting a spacer
+of 0px to 480px in 60px steps ahead of the fixture's first list, walking every entry across a page
+boundary, and across all 4 to 5 pages of each run no page ended on a line holding only a date. The
+row travels as a unit. Adding the property would be a declaration nobody can observe.
+
+**The collapse to one column happens at 760px, not at the 600px the rest of the mobile block
+uses.** The two-column layout will hold far past the point where it should. Measured prose column
+against client width on the four-era fixture at `--timeline-date: 16ch`: 1265px gives 98.9
+characters, 985px gives 76.7, 885px gives 68.4, 805px gives 61.6, 745px gives 56.0, 685px gives
+50.0, 625px gives 43.9, and the last two-column state before the old 600px breakpoint gives
+**39.9 characters and a 10-line first entry**. The date track does not shrink out of the way: it
+still held 143px of a 537px content width at 625px, because `16ch` only tracks the body clamp. A
+40-character measure in a narrow ribbon beside a wide empty date column is the same failure this
+repo already documented for the measure cap, so the timeline rules moved into their own
+`@media (max-width: 760px)` block, which holds a 56-character floor. The collapsed layout itself
+was never the problem and did not change. A container query was rejected: `container-type:
+inline-size` on `<article>` applies layout containment to every consumer's whole document to fix
+one component's breakpoint.
+
+**A short `--timeline-date` has no CSS backstop, and `minmax()` was measured before being
+rejected.** `grid-template-columns: minmax(var(--timeline-date, max-content), max-content) 1fr`
+reads like the fix that turns the author's number into a floor and lets the track grow when the
+guess is short. It does not work. At the fixture's correct `16ch` it is identical to today, 157.094px.
+Given a deliberately short `10ch` floor against a label that needs 149.80px, it produced a
+**104.75px** track, so the label still overflowed. The `1fr` sibling consumes the free space before
+the `max-content` growth limit can be reached. The measurement in CONTRACT.md is the only defense
+there is.
+
+**`ch` resolves at the wrong weight, so the contract says to measure at 500 and round up.** The
+variable is set on an ancestor, which is body weight 400, while `dl.timeline > dt` renders at
+weight 500. Measured `0` advance on the fixture: **9.7338px at 400** and **9.9036px at 500**, 1.74%
+apart, which is 2.7px of systematic under-measure across 16ch. The fixture survives on 7.30px of
+slack, three quarters of one character: the widest label is 149.80px in a 157.09px track, and it
+needs 15.13ch measured at the weight it actually renders at. It holds only because that label is
+mostly proportional letters. A document whose widest label is all digits would not.
+
+**`dt:target` takes the orange text color, because the outline cannot reach the date.** The arrival
+cue is `dl.timeline > dt:target + dd`, so following `#e-bayon` outlined the entry and left the date
+sitting outside the box, which is the half of the row the reader followed the link to find.
+Outlining both was tried on paper and abandoned: two boxes with the 24px column gap between them
+read as two results, not one. A background wash across the row cannot work either, since a grid
+gap takes no background and would leave a 24px hole. `dl.timeline > dt:target { color:
+var(--orange) }` shifts no layout, matches the outline by hue, and measures 6.81:1 in dark and
+5.16:1 in light.
+
+**A `strong` inside an `<a>` repaints the link, and the timeline fixture shipped that for a
+while.** The source list emitted `<li><a href><strong>Title</strong></a>`, and `strong { color:
+var(--orange) }` wins on the inner element, so the 15 real full-text links on the page rendered
+orange at 6.81:1 while the 54 `sup` citation markers rendered link-cyan at 7.81:1. One page, two
+link colors, and the orange was already carrying the entry ledes and the `:target` outline. The
+`strong` came out of the anchor rather than the color coming out of the stylesheet: a source title
+still has its list number and its underline, which is enough title weight, and `strong` keeps
+meaning emphasis everywhere else. Worth checking in any consumer that wraps a link title in
+`strong`.
+
+**Nothing in `dl.timeline` encodes elapsed time, and that is the design, not an omission.** The 500
+years from `c. 1st century CE` to `c. 6th century CE` get the same 12px row gap as the five years
+from 1181 to 1186. A proportional axis was never attempted: 1,900 years with a dense 1181 to 1201
+cluster puts most of the page in whitespace and most of the content in an unreadable pile, and the
+era grouping already does the coarse chunking a reader needs. The component is a chronological list
+with a date spine, not a time axis. Anyone who wants a real axis wants a chart, and a chart is not
+a thing a no-build stylesheet should grow.
 
 ## Tables
 
