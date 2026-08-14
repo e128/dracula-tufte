@@ -216,6 +216,12 @@
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
+    dl.timeline { display: grid; grid-template-columns: max-content 1fr;
+      align-items: baseline; gap: var(--space-3) var(--space-6); }
+    dl.timeline > dt { margin-top: 0; text-align: end; font-weight: 500;
+      font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--on-surface); }
+    dl.timeline > dd { margin-inline-start: 0; margin-bottom: 0; color: var(--on-surface);
+      border-inline-start: 1px solid var(--rule-light); padding-inline-start: var(--space-4); }
     ul, ol, menu { padding-inline-start: 1.5rem; }
     :where(ul, ol, menu):where(:not(.nav-list)) { margin-block: var(--space-3); }
     li > :is(ul, ol, menu) { margin-block: 0; }
@@ -336,6 +342,10 @@
       aside, blockquote { padding: 0.4rem 0.85rem; }
       details, details.nav-group { padding: 0.3rem 0.6rem; }
       .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
+      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
+      dl.timeline > dt { text-align: start; white-space: normal; }
+      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
+        margin-block-end: var(--space-4); }
       .col-2 > ol, .col-2 > ul { columns: 1; }
       .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
       .scorecard .sc-note { grid-column: 1 / -1; }
@@ -428,7 +438,7 @@
       p { orphans: 2; widows: 2; }
       thead { display: table-header-group; }
       tr, blockquote, aside, details, .scorecard, .verdict, img, .markdown-alert, pre,
-      math[display="block"] { break-inside: avoid; }
+      dl.timeline > dd, math[display="block"] { break-inside: avoid; }
       .verdict { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       .verdict-pass { color: var(--green); }
       .verdict-partial { color: var(--orange); }
@@ -690,6 +700,19 @@
         <li class="task-list-item"><input type="checkbox" disabled> open item</li>
         <li class="task-list-item"><input type="checkbox" checked disabled> done item</li>
       </ul>
+    </section>
+
+    <section>
+      <h2>Timeline</h2>
+      <p>A <code>dl</code> carrying <code>class="timeline"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code>max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>
+      <dl class="timeline">
+        <dt><time datetime="0802">c. 802</time></dt>
+        <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code>dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class="footnote-ref"><a href="#fn-1">1</a></sup></dd>
+        <dt>928-944</dt>
+        <dd><strong>A range.</strong> The widest label in the column, so it sets the date width. Its digits still align with the rows above and below.</dd>
+        <dt><time datetime="1431">1431</time></dt>
+        <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>
+      </dl>
     </section>
 
     <section>

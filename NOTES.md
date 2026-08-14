@@ -28,7 +28,7 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Italics](#italics) | Which eight rules slant, and why h3 does not |
 | [Width and measure](#width-and-measure) | `--page-width`, the long measure, three failed caps |
 | [Paragraphs and section rhythm](#paragraphs-and-section-rhythm) | Section gaps, `.indented` |
-| [Lists](#lists) | Markers, and the VoiceOver half of it |
+| [Lists](#lists) | Markers, the VoiceOver half of it, `dl.timeline` |
 | [Tables](#tables) | `table.tree`, widths, no zebra, `.num`, sticky `th` |
 | [Links](#links) | Underline floor, the outbound arrow's alt text |
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Four surfaces, every ratio, the data ramp, forced colors |
@@ -323,6 +323,45 @@ prose lists keep their semantics natively, and only `.nav-list` needs `role="lis
 which is now a documented consumer obligation. The real accessibility tree verified it (CDP
 `Accessibility.getFullAXTree`): eight `list` nodes in `samples/dark.html`, four nav lists by explicit
 role and the prose lists by having markers again.
+
+**`dl.timeline` inverts the `dd` tier, because a timeline entry is content and not an
+annotation.** A plain `dd` is `--label`, the caption tier, which is right for a glossary
+definition sitting under its term. It is wrong for a dated event, where the entry text *is* the
+document. `dl.timeline > dd` takes `--on-surface`, and `dl.timeline > dt` takes `--on-surface`
+too, at weight 500 with `tabular-nums`. The date is the axis a reader scans, so it may not be the
+dimmest thing on the page. A `h3` date line was the alternative and it failed on exactly that:
+`h3` is `--label` at weight 500, so the date read fainter than the event title that `strong`
+painted orange beneath it, and the two never aligned into a column.
+
+**The date column is `max-content`, and that is what makes mixed date formats align.** Real
+timelines carry `c. 802`, `928-944`, `c. 1182-1201` and `1431` in one list. `text-align: end` plus
+`font-variant-numeric: tabular-nums` right-aligns them on the last digit, so the years form a
+column and the `c.` prefixes hang off the left of it. A fixed `ch` width was not tried, because
+`max-content` needs no number to maintain and the longest label is the correct width by
+definition. There is no `.approx` class for the `c.` prefix. Muting it would read well, but no
+generator emits a span for it yet, and a class with no emitter is a guess about markup this repo
+does not control.
+
+**A floated `.sidenote` cannot escape a `dl.timeline` entry, and this is the trap worth knowing.**
+`.sidenote` is `float: inline-end; width: 28%`, which resolves against its containing block. Inside
+a grid item that containing block is the `dd`, not the page, so the note floats into the right
+28% of the entry column and the page margin stays empty. Cite a timeline entry with a `sup` link
+into a numbered sources list instead. That is also the better answer at density: the page that
+prompted this component carried 54 sidenotes against 14 unique sources, and the margin column
+desynced from its anchors by roughly 1200px by mid-document, so the number beside a paragraph was
+not that paragraph's note.
+
+**`white-space: nowrap` on the date is released below 600px.** It exists to stop a range breaking
+at its own hyphen, `928-944` across two lines, which only matters while the date sits in a narrow
+`max-content` track. In the collapsed single-column layout there is no track to protect, and
+nowrap becomes the one declaration in the component that can push the page wider than the
+viewport, since a label like `c. 3rd century BCE to 1st century CE` cannot be broken. The mobile
+rule sets it back to `normal`.
+
+**Print gets `break-inside: avoid` on the entry, never on the list.** `dl.timeline > dd` joins the
+existing avoid list in the `@media print` block, so an entry does not split across a page break.
+The container is deliberately absent from that list: a 20-entry timeline forced onto one page is
+the worse failure.
 
 ## Tables
 

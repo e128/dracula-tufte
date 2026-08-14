@@ -250,6 +250,24 @@ def body [] {
     "      </ul>"
     "    </section>"
     ""
+    # Timeline entries deliberately mix a `c.` prefix, a range and a bare year,
+    # because right-aligned tabular figures are the only reason those three line
+    # up. A fixture with three bare years would pass while the alignment was
+    # broken. The third entry states the sidenote-in-a-grid-item trap in copy, so
+    # a consumer reading the fixture hits it before their generator does.
+    "    <section>"
+    "      <h2>Timeline</h2>"
+    "      <p>A <code>dl</code> carrying <code>class=\"timeline\"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code>max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>"
+    "      <dl class=\"timeline\">"
+    "        <dt><time datetime=\"0802\">c. 802</time></dt>"
+    "        <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code>dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class=\"footnote-ref\"><a href=\"#fn-1\">1</a></sup></dd>"
+    "        <dt>928-944</dt>"
+    "        <dd><strong>A range.</strong> The widest label in the column, so it sets the date width. Its digits still align with the rows above and below.</dd>"
+    "        <dt><time datetime=\"1431\">1431</time></dt>"
+    "        <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>"
+    "      </dl>"
+    "    </section>"
+    ""
     "    <section>"
     "      <h2>Markdown callouts, math &amp; footnotes</h2>"
     "      <p>GitHub alert blocks share the <code>aside</code> form (one accent bar, no fill) and carry the hue on the title line only.<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\">1</a></sup></p>"
