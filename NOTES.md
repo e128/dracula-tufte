@@ -783,6 +783,88 @@ are separated in name more than in appearance, and they are left that way delibe
 in a diagram puts a category fill beside body copy, so the collision costs less than `--data-1`'s
 did, and a move means a recomputation of two more hex projections.
 
+**Three high-contrast tokens declared a chroma sRGB cannot hold, and nothing caught it for two
+releases.** `prefers-contrast: more` carried `--red: oklch(0.895 0.142 21.457)`, where the ceiling
+at that lightness and hue is **0.055**. The declared chroma was 259% of what the gamut holds, so
+Chrome clipped per channel and painted `oklch(0.842 0.087 20.795)`: 0.053 of lightness and 0.055 of
+chroma gone, ΔE_ok 0.077 from the value the stylesheet stated. `--pink` was 133% of its ceiling and
+drifted **4.9 degrees of hue**, the only token in the sheet whose painted hue was not its declared
+hue. `--purple` was 117%, mildly, at ΔE_ok 0.012.
+
+Every existing check passed the whole time, and that is the point. `oklch_to_linear` clips before it
+measures, so checks 1 through 6 were all reading the clipped result. They were accurate about what
+ships and blind to the gap between that and the source. The three now read `oklch(0.845 0.074
+21.457)`, `oklch(0.845 0.051 300.909)` and `oklch(0.860 0.057 349.392)`, each at the fraction of
+maximum in-gamut chroma its dark counterpart holds, which is the method the `--data-*` ramp already
+documents. Ratios against `--surface` and `--code-bg`: 8.62 and 7.14, 8.75 and 7.24, 9.09 and 7.53,
+all clear of the mode's 7.0 floor with more headroom than the clipped values had.
+
+**Two of the three are a visible change, and pretending otherwise would be wrong.** Per-channel
+clipping pins one channel at 255, which pushes a mildly out-of-gamut color *outward* in a lopsided
+way, so the honest in-gamut value is less saturated than what was shipping. `--red` lands 0.7 JND
+from the old painted pixel, under the threshold, but `--purple` is 2.3 JND and `--pink` is 2.6 JND
+away: both read slightly softer in high contrast now. The alternative was to hold chroma at 100% of
+the ceiling to minimize the delta, and it was rejected, because a token sitting exactly on the
+gamut boundary tips back out on any later lightness nudge.
+
+**Check 7 in `.github/palette-check.py` gates it.** `max_chroma(L, h)` bisects the sRGB boundary in
+Oklab, and every token the triple regex parses is checked in all four modes, not only the ones with
+a contrast floor. Verified to fail: restoring the old `--red` prints `GAMUT: prefers-contrast: more
+--red declares chroma 0.142 at L 0.895 hue 21.457, where sRGB holds 0.055 (259% of the ceiling)`.
+The trap it closes is directional, which is why the comment says so at the call site: an editor
+reading `C 0.142` sees chroma to spare and raises `L` for more contrast, but the ceiling *shrinks*
+as `L` climbs, 0.159 at L 0.74 against 0.052 at L 0.90 on that hue, so the color washes out faster
+than the numbers in front of them predict.
+
+**High contrast compresses the accent set, and no token edit can fix that.** The chroma ceiling
+collapses above L 0.80, so a mode that pushes every accent to L 0.82 to 0.90 for a 7:1 floor
+necessarily converges them. Painted separations in that mode against the same pairs in dark:
+`.correction` to `.unverified` **3.1 JND against 5.0**, `.correction` to `h1` **3.2 against 3.8**,
+`h2` to `h1` **3.6 against 5.2**. The mode that exists for low-vision readers is the one where the
+status colors sit closest together. It is mitigated already and not by color: the status spans carry
+the words `verified`, `unverified` and `correction`, so hue is redundant there, the same reasoning
+that lets the `.verdict-*` chips survive forced colors. Do not try to widen these by moving hues.
+The hue separations are 40 degrees and more already; what compressed is chroma, and the gamut is
+what compressed it.
+
+**`--red` is the most saturated token in the sheet, at 87% of maximum chroma, and that was never a
+decision.** The others sit at 45% (`--link`) to 63% (`--pink`), with `--green` at 53%. So
+`.correction` renders close to twice as colorful as the `.verified` beside it, and the status trio
+does not read as one family. It follows from the L 0.735 move made for contrast on `--code-bg`,
+recorded above, which never revisited chroma. Arguably right, since a correction should carry more
+alarm than a pass, but it is recorded rather than fixed because equalizing it means recomputing
+`--red` and re-measuring four ratios to change something no one has complained about.
+
+**`--orange` carries eight roles, and the arrival cue made it eight.** `strong`, the `mark` wash
+through `--highlight`, syntax numerals and constants, the `aside` and alert accent bar,
+`.markdown-alert-title`, `.unverified`, `.verdict-partial`, and `:target`. A transient interface
+state sharing a hue with the most common colored ink in body copy is the textbook violation of one
+color one meaning, and on the timeline fixture the cue lands on a row that already holds orange.
+Recorded rather than moved. Every alternative trades one collision for another: `--pink` is the
+least subscribed accent but it is `h1`, `--purple` is `h2` and `::selection`, `--link` is the focus
+ring, and `--green` and `--red` are status. Moving off orange also breaks the recorded reason the
+cue is orange, that it reads as distinct from the link-blue focus ring. The outline is a shape as
+well as a hue, so the state stays unambiguous, and a ninth accent token is a larger change than the
+problem.
+
+**An APCA reading of the same pairs inverts the WCAG 2 story, and no token moved because of it.**
+Measured with 0.98G-4g across all four modes: dark mode runs 10 to 17 Lc *below* light mode on
+identical roles while WCAG 2 says the opposite. `--label` is 7.84:1 and Lc 65 in dark against 6.70:1
+and Lc 82 in light; `--link` is 7.83 and Lc 65 against 5.23 and Lc 75. That is the known WCAG 2
+overstatement of light text on a dark ground, not a defect in these tokens, and treating flat Lc 75
+as the bar would misapply the metric: APCA's threshold falls with size and weight, body copy here is
+16 to 20px at weight 450, and `--on-surface` measures Lc 99. The one pair thin by both readings is
+dark `--muted`, Lc 47 on `--surface` and 44 on `--code-bg` at 5.50 and 4.55, which is the tier this
+file already pins at the WCAG floor deliberately. Recorded so that a later reader who runs APCA
+finds the answer instead of re-deriving the panic.
+
+**Percent of maximum chroma is the wrong yardstick across lightness, only across hue.** `--label`
+sits at 56% of max in dark and **18%** in light, because the ceiling at L 0.47 is far larger than at
+L 0.81, and the token holds one absolute chroma in both. Matching the fraction would put light
+`--label` near C 0.16, a violently violet gray. Constant absolute chroma is correct for a
+near-neutral. The `--data-*` ramp applies the fraction rule at one lightness across four hues, which
+is where it belongs. Do not carry it to the grays.
+
 **Forced colors suppresses shadows, so anything whose only boundary was a shadow needs a border.**
 That is the general rule behind both fixes below, and it is the reason the print block's
 `inset 0 0 0 1px currentColor` could not simply be reused.

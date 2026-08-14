@@ -26,21 +26,41 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
-def oklch_to_linear(L, C, h):
-    """oklch() -> clamped linear sRGB. Clamping here is the gamut clip a browser does."""
+def oklch_to_linear_raw(L, C, h):
+    """oklch() -> linear sRGB, unclamped, so a channel outside 0..1 stays visible."""
     a = C * math.cos(math.radians(h))
     b = C * math.sin(math.radians(h))
     l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
     m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
     s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3
-    return tuple(
-        min(1.0, max(0.0, v))
-        for v in (
-            4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
-        )
+    return (
+        4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+        -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+        -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
     )
+
+
+def oklch_to_linear(L, C, h):
+    """oklch() -> clamped linear sRGB. Clamping here is the gamut clip a browser does."""
+    return tuple(min(1.0, max(0.0, v)) for v in oklch_to_linear_raw(L, C, h))
+
+
+def max_chroma(L, h, eps=1e-4):
+    """The largest chroma at this lightness and hue that still lands inside sRGB.
+
+    Bisection, because there is no closed form: the sRGB boundary in Oklab is the
+    surface where one of the three channels hits 0 or 1, and which channel that is
+    depends on the hue. 40 halvings of 0..0.5 resolve it far finer than the three
+    decimals a token is written to.
+    """
+    lo, hi = 0.0, 0.5
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if all(-eps <= v <= 1 + eps for v in oklch_to_linear_raw(L, mid, h)):
+            lo = mid
+        else:
+            hi = mid
+    return lo
 
 
 def oklch_to_hex(L, C, h):
@@ -219,6 +239,7 @@ MODES = {
     "prefers-color-scheme: light": ("@media (prefers-color-scheme: light)", 4.5, 3.0),
     "print": ("@media print", 4.5, 3.0),
 }
+resolved = {}
 for mode, (condition, text_floor, rule_floor) in MODES.items():
     triples_for_mode = dict(triples)
     if condition is not None:
@@ -240,6 +261,7 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
             fail = 1
             continue
         triples_for_mode.update(overrides)
+    resolved[mode] = triples_for_mode
     # --on-surface goes to `oklch(1 0 0)` in high contrast, which the triple regex
     # reads fine, and print writes `oklch(0.200 0 0)`. Both parse. A token that
     # stops parsing drops back to its default value rather than vanishing, so a
@@ -278,6 +300,38 @@ if "matchMedia" in mermaid_js:
     print("DRIFT: mermaid.js reads matchMedia, which reports the host, not the cascade, "
           "so the forced-light sample pages would render a dark diagram")
     fail = 1
+
+# 7. Every declared chroma has to be reachable in sRGB, in every mode. A value above
+#    the ceiling is not an error the browser reports: it clips per channel and paints
+#    something else, so the stylesheet documents a color it never renders and every
+#    check above still passes, because they all measure the clipped result. The
+#    high-contrast block shipped three of these. --red was `oklch(0.895 0.142 21.457)`
+#    where the ceiling at that lightness and hue is 0.055, so the declared chroma was
+#    259% of what sRGB can hold, and Chrome painted `oklch(0.842 0.087 20.795)`: 0.053
+#    of lightness and 0.055 of chroma gone, ΔE_ok 0.077 from the stated value. --pink
+#    also drifted 4.9 degrees of hue, which is the part that makes this more than
+#    bookkeeping.
+#
+#    The trap this closes is directional. An editor reading C 0.142 sees chroma to
+#    spare and raises L for more contrast, but the ceiling *shrinks* as L climbs
+#    (0.159 at L 0.74 against 0.052 at L 0.90 on that hue), so the color washes out
+#    faster than the numbers in front of them predict. Checked in all four modes, on
+#    every token the triple regex parses, not just the ones with a contrast floor.
+#
+#    The 0.0005 slack is one unit in the third decimal a token is written to. Sitting
+#    exactly on the boundary passes, and it is still a bad place to sit: a later
+#    lightness nudge tips it out. Aim for the fraction of maximum chroma the dark
+#    token holds, which is the method the --data-* ramp already documents.
+for mode, triples_for_mode in resolved.items():
+    for name, (L, C, h) in sorted(triples_for_mode.items()):
+        ceiling = max_chroma(L, h)
+        if C > ceiling + 0.0005:
+            print(
+                f"GAMUT: {mode} --{name} declares chroma {C:.3f} at L {L:.3f} hue {h:g}, "
+                f"where sRGB holds {ceiling:.3f} ({C / ceiling * 100:.0f}% of the ceiling). "
+                f"The browser clips it to {oklch_to_hex(L, C, h)} instead."
+            )
+            fail = 1
 
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)
