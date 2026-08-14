@@ -381,6 +381,11 @@ def body [] {
 # density that made the sidenote form fail. Every `dt` carries an id, so the
 # `:target` outline is walkable here.
 #
+# Entries run chronologically by START date, which is why Bayon `c. 1182-1201`
+# precedes Ta Prohm `1186` here and follows Preah Khan `1191` in the source
+# scroll. Do not restore the source order: once the dates form a scannable
+# column, a row out of sequence reads as a bug in the component.
+#
 # Source content: e128.info research scroll `lode/research/timelines/khmer-civilization.md`.
 def timeline-body [] {
   [
@@ -427,12 +432,12 @@ def timeline-body [] {
     "        <dd><strong>Chams sack Angkor.</strong> The hereditary enemies conquered the city before Jayavarman VII took the throne. The battles appear in Bayon reliefs.<sup class=\"footnote-ref\"><a href=\"#src-5\">5</a>, <a href=\"#src-12\">12</a></sup></dd>"
     "        <dt id=\"e-jayavarman-vii\"><time datetime=\"1181\">1181</time></dt>"
     "        <dd><strong>Jayavarman VII is crowned king.</strong> First Khmer king devoted to Mahayana Buddhism. Proclaimed the &ldquo;Living Buddha.&rdquo; Ousted the Chams and launched a massive building program.<sup class=\"footnote-ref\"><a href=\"#src-5\">5</a>, <a href=\"#src-6\">6</a>, <a href=\"#src-12\">12</a></sup></dd>"
+    "        <dt id=\"e-bayon\">c. 1182-1201</dt>"
+    "        <dd><strong>Bayon built as the state temple of the new capital Angkor Thom.</strong> The Bayon has 54 towers and ~200 smiling faces (Lokesvara or Jayavarman VII). Its reliefs show daily life and the Cham wars.<sup class=\"footnote-ref\"><a href=\"#src-5\">5</a>, <a href=\"#src-6\">6</a>, <a href=\"#src-12\">12</a></sup></dd>"
     "        <dt id=\"e-ta-prohm\"><time datetime=\"1186\">1186</time></dt>"
     "        <dd><strong>Ta Prohm is founded.</strong> Mahayana monastery (Rajavihara) dedicated to Jayavarman VII's mother. Its stele records ~12,500 attached people. Now the &ldquo;Tomb Raider&rdquo; temple left in its jungle state.<sup class=\"footnote-ref\"><a href=\"#src-5\">5</a>, <a href=\"#src-12\">12</a></sup></dd>"
     "        <dt id=\"e-preah-khan\"><time datetime=\"1191\">1191</time></dt>"
     "        <dd><strong>Preah Khan is dedicated.</strong> Temple honoring Jayavarman VII's father. BBC reports it held 60 tons of gold, worth about &pound;2bn today.<sup class=\"footnote-ref\"><a href=\"#src-7\">7</a>, <a href=\"#src-12\">12</a></sup></dd>"
-    "        <dt id=\"e-bayon\">c. 1182-1201</dt>"
-    "        <dd><strong>Bayon built as the state temple of the new capital Angkor Thom.</strong> The Bayon has 54 towers and ~200 smiling faces (Lokesvara or Jayavarman VII). Its reliefs show daily life and the Cham wars.<sup class=\"footnote-ref\"><a href=\"#src-5\">5</a>, <a href=\"#src-6\">6</a>, <a href=\"#src-12\">12</a></sup></dd>"
     "        <dt id=\"e-zhou-daguan\"><time datetime=\"1296\">c. 1296</time></dt>"
     "        <dd><strong>Zhou Daguan visits Angkor.</strong> The Chinese Yuan-dynasty diplomat writes &ldquo;Customs of Cambodia,&rdquo; the main eyewitness account of late-13th-century Angkor.<sup class=\"footnote-ref\"><a href=\"#src-2\">2</a>, <a href=\"#src-5\">5</a></sup></dd>"
     "        <dt id=\"e-decline\">c. 1300-1431</dt>"
