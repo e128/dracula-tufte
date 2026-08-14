@@ -72,6 +72,8 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.26.0 | nothing, unless you emit dated events. `dl.timeline` is opt-in: a `dl` with no class keeps the glossary register it always had. Emit the class and the two requirements in § 2 apply, `--timeline-date` and `sup` citations. Everything else is self-contained: the timeline collapses to one column below 760px rather than 600px, a `:target` entry outlines and its date turns orange, a multi-source `sup` no longer breaks across a line end, and a citation marker's hit area is taller |
+| v1.26.0 | nothing for the palette, but expect a visible shift in three places if you diff screenshots. Light and print `--red` are more saturated, the light row-hover fill is one step lighter, and the three high-contrast accents that were declaring a chroma sRGB cannot hold now declare the color they actually paint. All are `:root` values; no markup reads them |
 | v1.25.0 | nothing. The stylesheet changes are self-contained: `--data-1..4` gained light and print values, `h5` and `h6` dropped to weight 500, and the conn-map Links column is height-bounded. `filter.js` now writes `No entries match. Clear the filter to see all entries.` into a `.filter-empty` it creates, and still leaves your own copy untouched when you emit one |
 | v1.24.0 | drop any specificity hack or `!important` you added to override the template. The sheet is in `@layer tufte-dracula` and your unlayered CSS wins on its own |
 | v1.24.0 | nothing for light or high-contrast mode; both are media queries over the same markup |

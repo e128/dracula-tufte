@@ -35,7 +35,7 @@ each pull request instead.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.25.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.26.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches, and writes default copy into one it had to create. No CDN, no build step, no comments. Inline only when the page has a filter box. |
 | `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, in two sections (`init` for dark and `initLight` for light) plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
@@ -63,7 +63,7 @@ anywhere in the tree.
 
 ## Consumers
 
-The current release is **`v1.25.0`**. Consumers reach it through a git submodule. To refresh: bump
+The current release is **`v1.26.0`**. Consumers reach it through a git submodule. To refresh: bump
 the pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
 
 **Three pin modes are in use, and they are not equal.** A tag is the only pin that makes a
