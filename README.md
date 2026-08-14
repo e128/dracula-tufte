@@ -35,7 +35,7 @@ each pull request instead.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.25.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.26.0, oklch palette). The complete `<style>…</style>` block, including the wrapping tags and the 2-space leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script. The complete `<script type="module">…</script>` block: the `mermaid@11` CDN import, the init call (`theme: 'base'`, `darkMode`, hex `themeVariables`), and the zoom overlay handler. The handler injects one `<button class="mermaid-zoom">` per diagram. The overlay is a focus-managed `role="dialog"`. Inline only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script. Wires each `input.filter-box` to the sibling span that follows it, stopping at the next filter box. Inside that span it toggles `.filter-hidden` on non-matching `tbody tr` rows and `.nav-list > li` items, hides a `details.nav-group` whose items all fail, and opens one that still matches. Reveals a `.filter-empty` line when nothing matches, and writes default copy into one it had to create. No CDN, no build step, no comments. Inline only when the page has a filter box. |
 | `mermaid-palette.json` | Mermaid's hex palette, per `themeVariables` key, in two sections (`init` for dark and `initLight` for light) plus `classDef` node roles. Mermaid cannot read `oklch()` or `var()`: khroma throws `Unsupported color format` and no diagram renders. Each entry names its `:root` source in `from`. CI recomputes every hex, and `mermaid.js` carries the same values inline, with CI failing when the two disagree. |
@@ -43,6 +43,7 @@ each pull request instead.
 | `scripts/build-sample.nu` | The regenerator. `nu scripts/build-sample.nu` rebuilds `tokens.css` and both fixtures. Run it after any stylesheet or Mermaid change. |
 | `samples/dark.html` | Living style fixture. Headings, sidenotes, tables, scorecard, verdict chips, nav, badges, Mermaid with zoom, and the markdown-converter set: highlighted code, a task list, all five GFM alerts, an aligned pipe table, MathML, footnotes. Generated. Do not edit by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. A `<body class="conn-map">` two-section layout: Links, then Graph. That DOM order is required. Past 900px, Links moves left and sticks. |
+| `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Twenty entries across four era groups on one pinned `--timeline-date` axis, with 54 `sup` citation markers into 15 sources and an `id` on every `dt`. The length is the point: a three-row demo shows the component but not the multi-group axis or the citation density. Generated. Do not edit by hand. |
 | `CONTRACT.md` | The consumer checklist. What to inline, the markup a generator owes, what changed in each release, how to spot a stale artifact, and what each pin mode costs. Imperative and short, because a consumer's agent reads it on every bump. It carries no reasoning: `NOTES.md` holds that. |
 | `README.md` | This file. |
 
@@ -62,7 +63,7 @@ anywhere in the tree.
 
 ## Consumers
 
-The current release is **`v1.25.0`**. Consumers reach it through a git submodule. To refresh: bump
+The current release is **`v1.26.0`**. Consumers reach it through a git submodule. To refresh: bump
 the pointer, run `git submodule update --remote external/dracula-tufte`, then commit the pointer.
 
 **Three pin modes are in use, and they are not equal.** A tag is the only pin that makes a
@@ -163,6 +164,15 @@ table wrapper.** Nothing here is required. The stylesheet does nothing until the
   Serif 4 is tabular and lining by construction, so the digits already share a width. Alignment
   is the missing half; `font-variant-numeric` is not needed. Put the class on the header too, or
   the header floats away from its own column.
+- **`dl.timeline` on a `dl`** sets a dated list as a two-column spine: the `dt` right-aligned on
+  tabular figures in its own track, the `dd` beside it behind a hairline. Both sit at body tier,
+  because a dated event is content rather than annotation, which is the one thing an `h3` date line
+  cannot express. Below 600px it collapses to one column and drops the rule. A page with more than
+  one of these lists, era groups being the usual reason, must set `--timeline-date` on an ancestor
+  in `ch`, or each list sizes its own date track and the axis steps left as the reader scrolls.
+  Cite an entry with a `sup` link into a numbered source list: a floated `.sidenote` cannot escape
+  a grid item. An `id` on the `dt` makes the entry deep-linkable, and the destination then takes an
+  orange arrival outline, distinct from the link-blue focus ring.
 - **`.indented` on a container** switches its paragraphs from spaced to indented. Every `p` takes
   `margin-block: 0`; every `p` after the first takes `text-indent: 1.5em`. Book setting rather
   than web setting. The default stays spaced.

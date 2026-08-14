@@ -28,7 +28,7 @@
       primaryBorderColor:  '#785da1',
       lineColor:           '#626a8c',
       textColor:           '#161616',
-      secondaryColor:      '#ebebe7',
+      secondaryColor:      '#efefea',
       clusterBkg:          '#f0f1f9',
       clusterBorder:       '#7b7f94',
       nodeBorder:          '#785da1',

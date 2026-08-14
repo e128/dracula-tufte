@@ -28,16 +28,16 @@ Two supported modes. Pick one and hold it:
 `mermaid.js` needs `<div class="mermaid-overlay" id="mermaid-zoom"></div>` as the first child of
 `<body>`. It throws a named error when the div is absent.
 
-**Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html` and
-`samples/light-conn-map.html` exist so a reader can see the light palette on a dark-mode machine.
-They carry a stylesheet whose `@media` conditions were rewritten to force that, so a copy taken
-from one of them is locked to light and can never follow a reader's system appearance. Each says so
-in a banner. `samples/dark.html` and `samples/dark-conn-map.html` do carry the payload verbatim, but the file
-is still the source.
+**Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html`,
+`samples/light-conn-map.html` and `samples/light-timeline.html` exist so a reader can see the light
+palette on a dark-mode machine. They carry a stylesheet whose `@media` conditions were rewritten to
+force that, so a copy taken from one of them is locked to light and can never follow a reader's
+system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-conn-map.html` and
+`samples/dark-timeline.html` do carry the payload verbatim, but the file is still the source.
 
 ## 2. Emit this markup
 
-Seven requirements. No stylesheet change can supply any of them.
+Nine requirements. No stylesheet change can supply any of them.
 
 - [ ] `<main>` around the content, with `<article>` inside it.
 - [ ] A real `<label for>` on every `input.filter-box`. A placeholder is not a label.
@@ -47,6 +47,20 @@ Seven requirements. No stylesheet change can supply any of them.
 - [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order.
 - [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`,
       a table below 1000px, a `<math display="block">`, and any `.table-scroll` wrapper.
+- [ ] `--timeline-date` on an ancestor when a page carries **more than one** `dl.timeline`, set in
+      `ch` against the widest date label in the whole document. Each list otherwise sizes its own
+      date track and the axis steps left down the page. Measure the label: `tabular-nums` pins
+      digits to exactly `1ch` while letters stay proportional, so a spelled-out
+      `c. 6th century CE` is wider than a numeric `c. 1182-1201`. **Measure at weight 500**, the
+      weight `dt` renders at, and **round up to the next whole `ch`.** `ch` resolves against the
+      element the variable is set on, which is weight 400, and 400 is about 1.7% narrower per
+      character, so a value measured at 400 is short by a quarter character at 16ch. Too small a
+      value has no CSS backstop: the label overflows into the column gap and touches the rule.
+      One list needs nothing.
+- [ ] Citations inside a `dl.timeline` entry as `sup` links into a numbered source list, never a
+      `.sidenote`. A float cannot escape a grid item, so the note lands inside the entry column
+      instead of the page margin. Give each `dt` an `id` to make an entry deep-linkable; the
+      arrival outline is automatic once it has one.
 
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
@@ -58,6 +72,8 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.26.0 | nothing, unless you emit dated events. `dl.timeline` is opt-in: a `dl` with no class keeps the glossary register it always had. Emit the class and the two requirements in § 2 apply, `--timeline-date` and `sup` citations. Everything else is self-contained: the timeline collapses to one column below 760px rather than 600px, a `:target` entry outlines and its date turns orange, a multi-source `sup` no longer breaks across a line end, and a citation marker's hit area is taller |
+| v1.26.0 | nothing for the palette, but expect a visible shift in three places if you diff screenshots. Light and print `--red` are more saturated, the light row-hover fill is one step lighter, and the three high-contrast accents that were declaring a chroma sRGB cannot hold now declare the color they actually paint. All are `:root` values; no markup reads them |
 | v1.25.0 | nothing. The stylesheet changes are self-contained: `--data-1..4` gained light and print values, `h5` and `h6` dropped to weight 500, and the conn-map Links column is height-bounded. `filter.js` now writes `No entries match. Clear the filter to see all entries.` into a `.filter-empty` it creates, and still leaves your own copy untouched when you emit one |
 | v1.24.0 | drop any specificity hack or `!important` you added to override the template. The sheet is in `@layer tufte-dracula` and your unlayered CSS wins on its own |
 | v1.24.0 | nothing for light or high-contrast mode; both are media queries over the same markup |

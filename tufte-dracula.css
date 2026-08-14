@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.25.0 */
+    /* Dracula-Tufte (muted) v1.26.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -88,6 +88,10 @@
     :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    :target { scroll-margin-block-start: var(--space-6); }
+    li:target, dl.timeline > dt:target + dd { outline: 2px solid var(--orange);
+      outline-offset: 3px; border-radius: var(--radius-sm); }
+    dl.timeline > dt:target { color: var(--orange); }
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
@@ -209,6 +213,12 @@
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
     dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
+    dl.timeline { display: grid; grid-template-columns: var(--timeline-date, max-content) 1fr;
+      align-items: baseline; gap: var(--space-3) var(--space-6); }
+    dl.timeline > dt { margin-top: 0; text-align: end; font-weight: 500;
+      font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--on-surface); }
+    dl.timeline > dd { margin-inline-start: 0; margin-bottom: 0; color: var(--on-surface);
+      border-inline-start: 1px solid var(--rule-light); padding-inline-start: var(--space-4); }
     ul, ol, menu { padding-inline-start: 1.5rem; }
     :where(ul, ol, menu):where(:not(.nav-list)) { margin-block: var(--space-3); }
     li > :is(ul, ol, menu) { margin-block: 0; }
@@ -227,6 +237,8 @@
     :is(.footnotes, .footnote) p { margin-block: 0.2rem; }
     :is(.footnotes, .footnote) > hr:first-child { display: none; }
     .footnote-backref { text-decoration: none; }
+    .footnote-ref { white-space: nowrap; }
+    :is(.footnote-ref, sup) a { padding-block: 0.6em; }
     .verified { color: var(--green); }
     .unverified { color: var(--orange); }
     .correction { color: var(--red); }
@@ -322,6 +334,12 @@
       .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
       table { display: block; overflow-x: auto; width: fit-content; }
     }
+    @media (max-width: 760px) {
+      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
+      dl.timeline > dt { text-align: start; white-space: normal; }
+      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
+        margin-block-end: var(--space-4); }
+    }
     @media (max-width: 600px) {
       :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
       body { padding-block: var(--space-6); }
@@ -347,9 +365,9 @@
         --rule-light:  oklch(0.700 0.032 277.832);
         --link:        oklch(0.830 0.064 216.782);
         --orange:      oklch(0.840 0.092 61.444);
-        --red:         oklch(0.895 0.142 21.457);
-        --purple:      oklch(0.845 0.107 300.909);
-        --pink:        oklch(0.860 0.120 349.392);
+        --red:         oklch(0.845 0.074 21.457);
+        --purple:      oklch(0.845 0.051 300.909);
+        --pink:        oklch(0.860 0.057 349.392);
         --green:       oklch(0.820 0.100 155.397);
       }
       a { text-decoration-thickness: max(2px, 0.1em); text-decoration-color: currentColor; }
@@ -361,7 +379,7 @@
       :root {
         color-scheme: light;
         --surface:     oklch(0.990 0.006 106.545);
-        --surface-alt: oklch(0.940 0.006 106.545);
+        --surface-alt: oklch(0.950 0.006 106.545);
         --on-surface:  oklch(0.200 0 0);
         --code-bg:     oklch(0.960 0.010 277.509);
         --label:       oklch(0.470 0.054 275.492);
@@ -369,7 +387,7 @@
         --rule-light:  oklch(0.600 0.032 277.832);
         --link:        oklch(0.520 0.064 216.782);
         --orange:      oklch(0.535 0.092 61.444);
-        --red:         oklch(0.545 0.142 21.457);
+        --red:         oklch(0.545 0.191 21.457);
         --purple:      oklch(0.535 0.107 300.909);
         --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
         --pink:        oklch(0.545 0.120 349.392);
@@ -405,7 +423,7 @@
         --purple-bright: oklch(0.550 0.107 300.909);
         --green:       oklch(0.530 0.100 155.397);
         --orange:      oklch(0.550 0.092 61.444);
-        --red:         oklch(0.560 0.142 21.457);
+        --red:         oklch(0.560 0.196 21.457);
         --data-1:      oklch(0.624 0.146 255.000);
         --data-2:      oklch(0.643 0.156 340.000);
         --data-3:      oklch(0.613 0.079 165.000);
@@ -421,7 +439,7 @@
       p { orphans: 2; widows: 2; }
       thead { display: table-header-group; }
       tr, blockquote, aside, details, .scorecard, .verdict, img, .markdown-alert, pre,
-      math[display="block"] { break-inside: avoid; }
+      dl.timeline > dd, math[display="block"] { break-inside: avoid; }
       .verdict { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       .verdict-pass { color: var(--green); }
       .verdict-partial { color: var(--orange); }

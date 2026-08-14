@@ -28,7 +28,7 @@ differences across 160 elements and 4 viewports. The CSS went 35192 to 13399 byt
 | [Italics](#italics) | Which eight rules slant, and why h3 does not |
 | [Width and measure](#width-and-measure) | `--page-width`, the long measure, three failed caps |
 | [Paragraphs and section rhythm](#paragraphs-and-section-rhythm) | Section gaps, `.indented` |
-| [Lists](#lists) | Markers, and the VoiceOver half of it |
+| [Lists](#lists) | Markers, the VoiceOver half of it, `dl.timeline` |
 | [Tables](#tables) | `table.tree`, widths, no zebra, `.num`, sticky `th` |
 | [Links](#links) | Underline floor, the outbound arrow's alt text |
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Four surfaces, every ratio, the data ramp, forced colors |
@@ -324,6 +324,176 @@ which is now a documented consumer obligation. The real accessibility tree verif
 `Accessibility.getFullAXTree`): eight `list` nodes in `samples/dark.html`, four nav lists by explicit
 role and the prose lists by having markers again.
 
+**`dl.timeline` inverts the `dd` tier, because a timeline entry is content and not an
+annotation.** A plain `dd` is `--label`, the caption tier, which is right for a glossary
+definition sitting under its term. It is wrong for a dated event, where the entry text *is* the
+document. `dl.timeline > dd` takes `--on-surface`, and `dl.timeline > dt` takes `--on-surface`
+too, at weight 500 with `tabular-nums`. The date is the axis a reader scans, so it may not be the
+dimmest thing on the page. A `h3` date line was the alternative and it failed on exactly that:
+`h3` is `--label` at weight 500, so the date read fainter than the event title that `strong`
+painted orange beneath it, and the two never aligned into a column.
+
+**`--timeline-date` exists because era groups are separate lists.** A document that splits its
+timeline into eras emits one `dl.timeline` per era, and `max-content` sizes each track against
+only its own rows. Measured on a 20-entry page split into four eras, the spine sat at 240px, then
+203px, then 160px, then 143px: an axis that walks left as the reader scrolls, which is the one
+thing a timeline axis may not do. `grid-template-columns: var(--timeline-date, max-content) 1fr`
+lets a wrapper pin the width once, in `ch` against the widest label in the whole document. The
+default stays `max-content`, so a single-list timeline needs no number and nothing to maintain.
+Sizing every list to the document was not possible in CSS: no selector reaches a sibling list's
+content, and `subgrid` does not apply, because the lists are not tracks of a shared parent grid.
+
+**Measure the widest label before setting `--timeline-date`, because it is rarely the one that
+looks longest.** A first pass at the four-era page guessed `13ch` from `c. 1182-1201`, and the
+label overflowed its own track and ate the column gap, so the date sat 4px off the rule instead of
+24px. Measured against the `0` advance at the rendered weight, `c. 1182-1201` is **10.57ch** and
+`c. 6th century CE` is **15.12ch**: a spelled-out century beats a numeric range, because
+`tabular-nums` makes every digit exactly `1ch` while letters are proportional. The page carries
+`16ch`. Too narrow fails quietly, since `white-space: nowrap` means the label bleeds rather than
+wraps, and too wide only wastes a little space, so round up.
+
+**The date column is `max-content`, and that is what makes mixed date formats align.** Real
+timelines carry `c. 802`, `928-944`, `c. 1182-1201` and `1431` in one list. `text-align: end` plus
+`font-variant-numeric: tabular-nums` right-aligns them on the last digit, so the years form a
+column and the `c.` prefixes hang off the left of it. **That last claim holds only while every
+label ends in a digit, and the fixture proves it does not.** `c. 1st century CE`, `c. 6th century
+CE` and `c. 1600s` end in letters, so they align their `CE` and their `s` where the other rows
+align a year, and no numeral column forms down the page. `tabular-nums` still stays, because it is
+what makes the `ch` measurement for `--timeline-date` predictable, but it is not buying the
+alignment a reader sees. Do not go looking for the missing column and add the property somewhere
+new. `text-align: start` would give the labels a clean left edge and was rejected: it opens up to
+60px between a short date and the rule it labels, and the date belongs against the entry it names.
+A fixed `ch` width was not tried, because
+`max-content` needs no number to maintain and the longest label is the correct width by
+definition. There is no `.approx` class for the `c.` prefix. Muting it would read well, but no
+generator emits a span for it yet, and a class with no emitter is a guess about markup this repo
+does not control.
+
+**A floated `.sidenote` cannot escape a `dl.timeline` entry, and this is the trap worth knowing.**
+`.sidenote` is `float: inline-end; width: 28%`, which resolves against its containing block. Inside
+a grid item that containing block is the `dd`, not the page, so the note floats into the right
+28% of the entry column and the page margin stays empty. Cite a timeline entry with a `sup` link
+into a numbered sources list instead. That is also the better answer at density: the page that
+prompted this component carried 54 sidenotes against 14 unique sources, and the margin column
+desynced from its anchors by roughly 1200px by mid-document, so the number beside a paragraph was
+not that paragraph's note.
+
+**`white-space: nowrap` on the date is released below 600px.** It exists to stop a range breaking
+at its own hyphen, `928-944` across two lines, which only matters while the date sits in a narrow
+`max-content` track. In the collapsed single-column layout there is no track to protect, and
+nowrap becomes the one declaration in the component that can push the page wider than the
+viewport, since a label like `c. 3rd century BCE to 1st century CE` cannot be broken. The mobile
+rule sets it back to `normal`.
+
+**A deep link needs an arrival cue, and it is an `outline`, not the `--highlight` wash.** A page
+whose citations are `sup` links into a numbered source list makes the anchor jump its primary
+interaction, and a jump that changes nothing visible leaves the reader hunting for the row they
+asked for. The `mark` wash was the obvious cue and it was measured and rejected: `--highlight` is
+`--orange` at 0.35 alpha, and composited over `--surface` it lands text-over-wash at **6.49:1**
+for `--on-surface` but only **3.81:1** for `--link` in dark and **3.22:1** in print. A source list
+item is mostly link text, so the wash would have shipped a sub-AA link. `outline: 2px solid
+var(--orange)` with `outline-offset: 3px` costs nothing in contrast, shifts no layout (which
+matters inside the `.col-2` multicol source list, where a border or padding would reflow the
+columns), and reads as distinct from the link-blue `:focus-visible` ring by hue. It is static, so
+it survives `prefers-reduced-motion` intact, where a flash animation would have left the reduced
+motion reader with no cue at all.
+
+**`:target` also carries `scroll-margin-block-start`, because a flush landing hides the context.**
+Measured without it, `#angkor`, `#e-koh-ker` and `#post-angkor` all landed at `top: 0.0px`, so a
+`dt` deep link put the date against the viewport edge with its era heading scrolled off above.
+`var(--space-6)` puts it 24px down. Applied to `:target` rather than to the headings, so it covers
+whatever a document actually links to. Smooth scrolling was considered and rejected: on a
+20-entry page a jump from a late citation to the source list is a long animated scroll, and the
+outline already answers "where did I land".
+
+**A multi-source citation group is one unbreakable unit, so `.footnote-ref` is `nowrap`.** An entry
+citing four sources emits one `sup` holding `<a>2</a>, <a>5</a>, <a>6</a>, <a>7</a>`, and the
+commas are ordinary break opportunities. On the timeline fixture that broke a group across a line
+end and left `9, 10` alone on the next line, reading as a rendering fault rather than a citation.
+`white-space: nowrap` moves the whole group down instead of splitting it. Scoped to
+`.footnote-ref` rather than to `sup`, because a converter may put arbitrary content in a bare `sup`
+and the widest real group here is four markers at `0.75em`, around 30px, so there is nothing to
+overflow.
+
+**The citation marker's hit area grows with `padding-block` alone.** `sup` is `0.75em` with
+`line-height: 0`, so a marker's box measured **7.6 x 20px**. Vertical padding on a non-replaced
+inline element extends the hit and paint region without touching the line box: `padding-block:
+0.6em` measured **7.6 x 38px** with the body's width and height both unchanged to 0.00px. The
+width stays 7.6px on purpose. `padding-inline` would widen it, but inline padding *does* affect
+inline layout, and it drags the underline out past the digit. The rule is `:is(.footnote-ref, sup) a`,
+so a converter that emits a bare `sup` gets it too.
+
+**Print gets `break-inside: avoid` on the entry, never on the list.** `dl.timeline > dd` joins the
+existing avoid list in the `@media print` block, so an entry does not split across a page break.
+The container is deliberately absent from that list: a 20-entry timeline forced onto one page is
+the worse failure.
+
+**`break-after: avoid` on the `dt` is not needed, and this was measured rather than reasoned.** The
+worry is real on paper: a grid row is a break opportunity, `break-inside: avoid` on the `dd` pushes
+a tall entry to the next page, and nothing says the small `dt` has to follow it, so a page could
+end on a bare date. Chrome does not do that. Nine print layouts were rendered by injecting a spacer
+of 0px to 480px in 60px steps ahead of the fixture's first list, walking every entry across a page
+boundary, and across all 4 to 5 pages of each run no page ended on a line holding only a date. The
+row travels as a unit. Adding the property would be a declaration nobody can observe.
+
+**The collapse to one column happens at 760px, not at the 600px the rest of the mobile block
+uses.** The two-column layout will hold far past the point where it should. Measured prose column
+against client width on the four-era fixture at `--timeline-date: 16ch`: 1265px gives 98.9
+characters, 985px gives 76.7, 885px gives 68.4, 805px gives 61.6, 745px gives 56.0, 685px gives
+50.0, 625px gives 43.9, and the last two-column state before the old 600px breakpoint gives
+**39.9 characters and a 10-line first entry**. The date track does not shrink out of the way: it
+still held 143px of a 537px content width at 625px, because `16ch` only tracks the body clamp. A
+40-character measure in a narrow ribbon beside a wide empty date column is the same failure this
+repo already documented for the measure cap, so the timeline rules moved into their own
+`@media (max-width: 760px)` block, which holds a 56-character floor. The collapsed layout itself
+was never the problem and did not change. A container query was rejected: `container-type:
+inline-size` on `<article>` applies layout containment to every consumer's whole document to fix
+one component's breakpoint.
+
+**A short `--timeline-date` has no CSS backstop, and `minmax()` was measured before being
+rejected.** `grid-template-columns: minmax(var(--timeline-date, max-content), max-content) 1fr`
+reads like the fix that turns the author's number into a floor and lets the track grow when the
+guess is short. It does not work. At the fixture's correct `16ch` it is identical to today, 157.094px.
+Given a deliberately short `10ch` floor against a label that needs 149.80px, it produced a
+**104.75px** track, so the label still overflowed. The `1fr` sibling consumes the free space before
+the `max-content` growth limit can be reached. The measurement in CONTRACT.md is the only defense
+there is.
+
+**`ch` resolves at the wrong weight, so the contract says to measure at 500 and round up.** The
+variable is set on an ancestor, which is body weight 400, while `dl.timeline > dt` renders at
+weight 500. Measured `0` advance on the fixture: **9.7338px at 400** and **9.9036px at 500**, 1.74%
+apart, which is 2.7px of systematic under-measure across 16ch. The fixture survives on 7.30px of
+slack, three quarters of one character: the widest label is 149.80px in a 157.09px track, and it
+needs 15.13ch measured at the weight it actually renders at. It holds only because that label is
+mostly proportional letters. A document whose widest label is all digits would not.
+
+**`dt:target` takes the orange text color, because the outline cannot reach the date.** The arrival
+cue is `dl.timeline > dt:target + dd`, so following `#e-bayon` outlined the entry and left the date
+sitting outside the box, which is the half of the row the reader followed the link to find.
+Outlining both was tried on paper and abandoned: two boxes with the 24px column gap between them
+read as two results, not one. A background wash across the row cannot work either, since a grid
+gap takes no background and would leave a 24px hole. `dl.timeline > dt:target { color:
+var(--orange) }` shifts no layout, matches the outline by hue, and measures 6.81:1 in dark and
+5.16:1 in light.
+
+**A `strong` inside an `<a>` repaints the link, and the timeline fixture shipped that for a
+while.** The source list emitted `<li><a href><strong>Title</strong></a>`, and `strong { color:
+var(--orange) }` wins on the inner element, so the 15 real full-text links on the page rendered
+orange at 6.81:1 while the 54 `sup` citation markers rendered link-cyan at 7.81:1. One page, two
+link colors, and the orange was already carrying the entry ledes and the `:target` outline. The
+`strong` came out of the anchor rather than the color coming out of the stylesheet: a source title
+still has its list number and its underline, which is enough title weight, and `strong` keeps
+meaning emphasis everywhere else. Worth checking in any consumer that wraps a link title in
+`strong`.
+
+**Nothing in `dl.timeline` encodes elapsed time, and that is the design, not an omission.** The 500
+years from `c. 1st century CE` to `c. 6th century CE` get the same 12px row gap as the five years
+from 1181 to 1186. A proportional axis was never attempted: 1,900 years with a dense 1181 to 1201
+cluster puts most of the page in whitespace and most of the content in an unreadable pile, and the
+era grouping already does the coarse chunking a reader needs. The component is a chronological list
+with a date spine, not a time axis. Anyone who wants a real axis wants a chart, and a chart is not
+a thing a no-build stylesheet should grow.
+
 ## Tables
 
 **No `font-family` on `table`.** Tables inherit the body serif, which is correct because Source
@@ -612,6 +782,167 @@ larger change than the token work, so it is recorded in `backlog.md` rather than
 are separated in name more than in appearance, and they are left that way deliberately. Nothing
 in a diagram puts a category fill beside body copy, so the collision costs less than `--data-1`'s
 did, and a move means a recomputation of two more hex projections.
+
+**Three high-contrast tokens declared a chroma sRGB cannot hold, and nothing caught it for two
+releases.** `prefers-contrast: more` carried `--red: oklch(0.895 0.142 21.457)`, where the ceiling
+at that lightness and hue is **0.055**. The declared chroma was 259% of what the gamut holds, so
+Chrome clipped per channel and painted `oklch(0.842 0.087 20.795)`: 0.053 of lightness and 0.055 of
+chroma gone, ΔE_ok 0.077 from the value the stylesheet stated. `--pink` was 133% of its ceiling and
+drifted **4.9 degrees of hue**, the only token in the sheet whose painted hue was not its declared
+hue. `--purple` was 117%, mildly, at ΔE_ok 0.012.
+
+Every existing check passed the whole time, and that is the point. `oklch_to_linear` clips before it
+measures, so checks 1 through 6 were all reading the clipped result. They were accurate about what
+ships and blind to the gap between that and the source. The three now read `oklch(0.845 0.074
+21.457)`, `oklch(0.845 0.051 300.909)` and `oklch(0.860 0.057 349.392)`, each at the fraction of
+maximum in-gamut chroma its dark counterpart holds, which is the method the `--data-*` ramp already
+documents. Ratios against `--surface` and `--code-bg`: 8.62 and 7.14, 8.75 and 7.24, 9.09 and 7.53,
+all clear of the mode's 7.0 floor with more headroom than the clipped values had.
+
+**Two of the three are a visible change, and pretending otherwise would be wrong.** Per-channel
+clipping pins one channel at 255, which pushes a mildly out-of-gamut color *outward* in a lopsided
+way, so the honest in-gamut value is less saturated than what was shipping. `--red` lands 0.7 JND
+from the old painted pixel, under the threshold, but `--purple` is 2.3 JND and `--pink` is 2.6 JND
+away: both read slightly softer in high contrast now. The alternative was to hold chroma at 100% of
+the ceiling to minimize the delta, and it was rejected, because a token sitting exactly on the
+gamut boundary tips back out on any later lightness nudge.
+
+**Check 7 in `.github/palette-check.py` gates it.** `max_chroma(L, h)` bisects the sRGB boundary in
+Oklab, and every token the triple regex parses is checked in all four modes, not only the ones with
+a contrast floor. Verified to fail: restoring the old `--red` prints `GAMUT: prefers-contrast: more
+--red declares chroma 0.142 at L 0.895 hue 21.457, where sRGB holds 0.055 (259% of the ceiling)`.
+The trap it closes is directional, which is why the comment says so at the call site: an editor
+reading `C 0.142` sees chroma to spare and raises `L` for more contrast, but the ceiling *shrinks*
+as `L` climbs, 0.159 at L 0.74 against 0.052 at L 0.90 on that hue, so the color washes out faster
+than the numbers in front of them predict.
+
+**High contrast compresses the accent set, and no token edit can fix that.** The chroma ceiling
+collapses above L 0.80, so a mode that pushes every accent to L 0.82 to 0.90 for a 7:1 floor
+necessarily converges them. Painted separations in that mode against the same pairs in dark:
+`.correction` to `.unverified` **3.1 JND against 5.0**, `.correction` to `h1` **3.2 against 3.8**,
+`h2` to `h1` **3.6 against 5.2**. The mode that exists for low-vision readers is the one where the
+status colors sit closest together. It is mitigated already and not by color: the status spans carry
+the words `verified`, `unverified` and `correction`, so hue is redundant there, the same reasoning
+that lets the `.verdict-*` chips survive forced colors. Do not try to widen these by moving hues.
+The hue separations are 40 degrees and more already; what compressed is chroma, and the gamut is
+what compressed it.
+
+**`--red` is the loudest accent in the sheet on purpose, at 87% of maximum chroma in every mode,
+and the fix went the opposite way from the obvious one.** The others sit at 45% (`--link`) to 63%
+(`--pink`) in dark, so red was the outlier, and the reflex is to bring it down into the family. That
+was measured and it is wrong. Red's chroma is what separates `.correction` from `h1` pink and from
+`.unverified` orange, and lowering dark red to 63% takes those pairs from 3.8 and 5.0 JND down to
+3.2 and 3.9. An alarm color that reads like the heading beside it is worse than an alarm color that
+is louder than its peers.
+
+**The real defect was that one absolute chroma meant three different reds.** `--red` wrote `0.142`
+in dark, light and print, and the sRGB ceiling at hue 21.457 moves from 0.162 at L 0.735 to 0.219 at
+L 0.545 and 0.225 at L 0.560, so the same number landed at **87%, 65% and 63%** of what the gamut
+holds. The token was vivid on screen and muted on paper for no stated reason. Light and print now
+carry `0.191` and `0.196`, which is 87% in all four modes, and every measured pair improved rather
+than merely holding:
+
+```
+              was                       now                       surface  code-bg  alt   chip
+light   oklch(0.545 0.142)  #b4474a   oklch(0.545 0.191)  #c72b3b   5.33     4.87   4.60  5.33
+print   oklch(0.560 0.142)  #b94c4e   oklch(0.560 0.196)  #ce2d3d   5.15     4.72   5.15  5.15
+```
+
+Light went 5.18 / 4.74 / 4.47 and print 5.00 / 4.58 / 5.00 before, so the row-hover ground gained
+the most: light `--red` on `--surface-alt` was one of the two sub-4.5 pairs this file recorded and it
+now clears at 4.60. The chip column is `--surface` text on the `.verdict-failed` fill, which is the
+same pair inverted. Separation from `--pink` went 3.8 to **5.5** JND in light and 3.8 to **5.7** in
+print, and from `--orange` 4.7 to 6.7 and 7.0. Dark and high contrast did not move; they were already
+at 87%.
+
+**Check 8 in `.github/palette-check.py` pins vividness for the five tokens where it is policy.**
+`--red` at 85 to 89% and the `--data-*` ramp at its four stated fractions, asserted in every mode.
+The band exists because chroma alone does not say how colorful a token looks, so an editor who moves
+`L` without recomputing `C` changes the token's character while every contrast check still passes.
+The failure message names the chroma that would sit mid-band, so the fix is a copy and paste rather
+than a re-derivation. Verified to fail: restoring light `--red` to `0.142` prints `VIVIDNESS:
+prefers-color-scheme: light --red is 64.7% of the sRGB ceiling ... Chroma 0.191 would sit mid-band`.
+
+**The other five accents are deliberately outside that table, and a future reader will want to add
+them.** `--link`, `--orange`, `--purple`, `--pink` and `--green` each write one absolute chroma
+across all four modes, so their fractions float: `--purple` is 57% in dark and 37% in print,
+`--green` 53% and 77%. That is the same class of inconsistency `--red` had. The difference is scale.
+Pinning five more tokens to a fraction means new absolute chromas in three mode blocks each, then
+re-measuring every ratio in this section, every `/* was */` hex, and the two Mermaid projections.
+`--red` was worth it because a status color that changes intensity between screen and paper is a
+semantic problem. `h2` being calmer on paper is not. A table of five that is true beats a table of
+ten that is aspirational.
+
+**The row-hover fill was named as a ground in this section and was never in the gate.** The four
+surfaces are enumerated above, and check 5 only ever looked at two of them. `--surface-alt` is the
+harder ground in light mode, and three tokens sat under 4.5 on it while passing on both of the
+grounds that were checked: `--muted` 4.47, `--orange` 4.45, `--pink` 4.44. Two of those pairs are
+real rather than derived. `--orange` is `strong`, and a bold run inside a hovered table row is
+ordinary markup. `--muted` colors the outbound-link arrow, and the connections-map Links column is
+nothing but external links. `--pink` is `h1` alone and never lands in a cell, so that one was
+theoretical.
+
+Light `--surface-alt` went from `oklch(0.940 …)` to `oklch(0.950 …)`, which puts every accent at 4.58
+or better on the hover band. The band itself measures **1.124:1** against light `--surface`, against
+**1.148** for the dark band this file already accepted as "the same order as the striping it
+replaced", so the affordance is unchanged in kind. `0.945` was the first value that clears and it
+clears by 0.01, which is no margin at all; `0.950` was taken for the same reason `--red` took 0.735
+over 0.725.
+
+**That one token change cost two hex projections, and the gate is what said so.** Light
+`--surface-alt` is `initLight.secondaryColor` in `mermaid-palette.json` and an inline hex in
+`mermaid.js`, both `#ebebe7`, now `#efefea`. Checks 1 and 4 named both files before anything shipped.
+This is the mechanism working as designed: a token in the light palette cannot move without the
+Mermaid side moving with it.
+
+`--surface-alt` is now the third ground for every text token in every mode. `RULES` stays on
+`--surface` alone, and `DATA` stays on `--surface` and `--code-bg`, because a diagram is not drawn
+inside a table row.
+
+**What is gated now, so nothing here needs re-litigating.** Eight checks: hex projections in both
+Mermaid palettes (1), `classdef` fills (2), the `/* was */` provenance comments (3), stray hex in
+`mermaid.js` (4), the contrast floor in all four modes, for text against three grounds and for rules
+and the data ramp against their own (5), `--mermaid-scheme` in both directions (6), sRGB gamut for
+every parsed token in every mode (7), and the vividness bands (8). The palette cannot drift without
+one of them saying so by name. Adding a token means adding it to the roles in check 5 and deciding
+whether it belongs in check 8's table.
+
+**What is still open, and none of it is a measurement.** `--orange` carries eight roles. Five accents
+let their chroma fraction float across modes. The high-contrast accent set is compressed by the gamut
+and is mitigated by text rather than by color. Two items predate this work and live in `backlog.md`:
+the `classdef` fills have no light twin, and a dark-mode pie slice label composites to 2.86 to 3.47:1
+under Mermaid's own 0.7 opacity. Every one of those is recorded with its numbers. There is no
+remaining pair in the four palettes that measures below its mode's floor on a ground a reader meets.
+
+**`--orange` carries eight roles, and the arrival cue made it eight.** `strong`, the `mark` wash
+through `--highlight`, syntax numerals and constants, the `aside` and alert accent bar,
+`.markdown-alert-title`, `.unverified`, `.verdict-partial`, and `:target`. A transient interface
+state sharing a hue with the most common colored ink in body copy is the textbook violation of one
+color one meaning, and on the timeline fixture the cue lands on a row that already holds orange.
+Recorded rather than moved. Every alternative trades one collision for another: `--pink` is the
+least subscribed accent but it is `h1`, `--purple` is `h2` and `::selection`, `--link` is the focus
+ring, and `--green` and `--red` are status. Moving off orange also breaks the recorded reason the
+cue is orange, that it reads as distinct from the link-blue focus ring. The outline is a shape as
+well as a hue, so the state stays unambiguous, and a ninth accent token is a larger change than the
+problem.
+
+**An APCA reading of the same pairs inverts the WCAG 2 story, and no token moved because of it.**
+Measured with 0.98G-4g across all four modes: dark mode runs 10 to 17 Lc *below* light mode on
+identical roles while WCAG 2 says the opposite. `--label` is 7.84:1 and Lc 65 in dark against 6.70:1
+and Lc 82 in light; `--link` is 7.83 and Lc 65 against 5.23 and Lc 75. That is the known WCAG 2
+overstatement of light text on a dark ground, not a defect in these tokens, and treating flat Lc 75
+as the bar would misapply the metric: APCA's threshold falls with size and weight, body copy here is
+16 to 20px at weight 450, and `--on-surface` measures Lc 99. The one pair thin by both readings is
+dark `--muted`, Lc 47 on `--surface` and 44 on `--code-bg` at 5.50 and 4.55, which is the tier this
+file already pins at the WCAG floor deliberately. Recorded so that a later reader who runs APCA
+finds the answer instead of re-deriving the panic.
+
+**Percent of maximum chroma is the wrong yardstick across lightness, only across hue.** `--label`
+sits at 56% of max in dark and **18%** in light, because the ceiling at L 0.47 is far larger than at
+L 0.81, and the token holds one absolute chroma in both. Matching the fraction would put light
+`--label` near C 0.16, a violently violet gray. Constant absolute chroma is correct for a
+near-neutral. The `--data-*` ramp applies the fraction rule at one lightness across four hues, which
+is where it belongs. Do not carry it to the grays.
 
 **Forced colors suppresses shadows, so anything whose only boundary was a shadow needs a border.**
 That is the general rule behind both fixes below, and it is the reason the print block's
@@ -2082,9 +2413,27 @@ reconstructing it costs more than the bytes do.
 
 ## Fixtures are coverage
 
-A fixture demonstrates states. It does not simulate them. Several details in `samples/dark.html` and
-`samples/dark-conn-map.html` look like filler and are regression checks. **Shortening any of these
-retires the check it exists to be.**
+A fixture demonstrates states. It does not simulate them. Several details in `samples/dark.html`,
+`samples/dark-conn-map.html` and `samples/dark-timeline.html` look like filler and are regression
+checks. **Shortening any of these retires the check it exists to be.**
+
+**`samples/dark-timeline.html` is the one fixture built from real content, and the length is the
+point.** `dark.html` carries a three-row `dl.timeline` that shows the component. It cannot show the
+two things that only appear at length. Four era groups are four separate lists, which is the case
+`max-content` cannot serve and `--timeline-date` exists for, and a three-row demo would have let
+that defect ship. Fifty-four citation markers against fifteen sources is the density at which the
+floated sidenote form fails, and it is the density the `:target` outline and the enlarged marker hit
+area were measured against. Every `dt` carries an id, so the arrival cue is walkable rather than
+merely declared. Content is the `e128.info` research scroll
+`lode/research/timelines/khmer-civilization.md`, which is also the page that motivated the component.
+
+Adding a page means **five hardcoded fixture lists**, not one: the page list in
+`scripts/build-sample.nu`, and then the presence list, the style-and-script count list, the
+light-preview list and the staleness list in `scripts/maintain.nu`, plus `FIXTURES` in
+`.github/render-modes.py`. Miss the `render-modes.py` one and the new page renders in no appearance
+mode while the check still prints `Contract OK`, because that list drives the image count rather
+than being derived from the directory. The count is the tell: three fixtures times three modes is
+**9 images**.
 
 - **The sequence diagram and quadrant chart** in `samples/dark.html`, alongside the flowchart. Both
   label-measurement bugs above shipped and survived because a flowchart is the one diagram type

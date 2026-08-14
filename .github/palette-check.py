@@ -26,21 +26,41 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
-def oklch_to_linear(L, C, h):
-    """oklch() -> clamped linear sRGB. Clamping here is the gamut clip a browser does."""
+def oklch_to_linear_raw(L, C, h):
+    """oklch() -> linear sRGB, unclamped, so a channel outside 0..1 stays visible."""
     a = C * math.cos(math.radians(h))
     b = C * math.sin(math.radians(h))
     l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
     m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
     s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3
-    return tuple(
-        min(1.0, max(0.0, v))
-        for v in (
-            4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
-        )
+    return (
+        4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+        -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+        -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
     )
+
+
+def oklch_to_linear(L, C, h):
+    """oklch() -> clamped linear sRGB. Clamping here is the gamut clip a browser does."""
+    return tuple(min(1.0, max(0.0, v)) for v in oklch_to_linear_raw(L, C, h))
+
+
+def max_chroma(L, h, eps=1e-4):
+    """The largest chroma at this lightness and hue that still lands inside sRGB.
+
+    Bisection, because there is no closed form: the sRGB boundary in Oklab is the
+    surface where one of the three channels hits 0 or 1, and which channel that is
+    depends on the hue. 40 halvings of 0..0.5 resolve it far finer than the three
+    decimals a token is written to.
+    """
+    lo, hi = 0.0, 0.5
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if all(-eps <= v <= 1 + eps for v in oklch_to_linear_raw(L, mid, h)):
+            lo = mid
+        else:
+            hi = mid
+    return lo
 
 
 def oklch_to_hex(L, C, h):
@@ -192,11 +212,19 @@ for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_t
 #
 #    A mode block only restates what it changes, so each palette is the default
 #    overlaid with that block's overrides, which is also how the cascade resolves
-#    it. Text tokens are checked against BOTH backgrounds a reader meets, since
-#    --code-bg is the harder one and is where the default palette's floor lives.
+#    it. Text tokens are checked against all THREE backgrounds a reader meets:
+#    --code-bg carries the default palette's floor, and --surface-alt is the
+#    row-hover fill, which NOTES.md names as one of the grounds a token has to
+#    clear and which this check did not look at for two releases. It is the
+#    hardest of the three in light mode, where --muted, --orange and --pink all
+#    measured 4.44 to 4.47 on it while passing on the other two, so a `strong` or
+#    an outbound arrow inside a hovered row was under 4.5 with nothing saying so.
 #    Rule tokens are checked against --surface only: --rule-light is a hairline on
 #    the page background, and 1.4.11 asks 3:1 of a non-text boundary, not of a
 #    border drawn inside a code fill.
+#
+#    DATA stays on --surface and --code-bg. A diagram is not drawn inside a table
+#    row, so the hover fill is not a ground a category fill ever lands on.
 #
 #    DATA is the diagram-category ramp, and it is a non-text boundary like a rule
 #    rather than text: a pie slice or a classDef fill has to be tellable from the
@@ -219,6 +247,7 @@ MODES = {
     "prefers-color-scheme: light": ("@media (prefers-color-scheme: light)", 4.5, 3.0),
     "print": ("@media print", 4.5, 3.0),
 }
+resolved = {}
 for mode, (condition, text_floor, rule_floor) in MODES.items():
     triples_for_mode = dict(triples)
     if condition is not None:
@@ -240,6 +269,7 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
             fail = 1
             continue
         triples_for_mode.update(overrides)
+    resolved[mode] = triples_for_mode
     # --on-surface goes to `oklch(1 0 0)` in high contrast, which the triple regex
     # reads fine, and print writes `oklch(0.200 0 0)`. Both parse. A token that
     # stops parsing drops back to its default value rather than vanishing, so a
@@ -247,7 +277,12 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
     for role, floor in ((TEXT, text_floor), (RULES, rule_floor), (DATA, rule_floor)):
         for name in role:
             fg = triples_for_mode[name]
-            grounds = ["surface"] if role is RULES else ["surface", "code-bg"]
+            if role is RULES:
+                grounds = ["surface"]
+            elif role is DATA:
+                grounds = ["surface", "code-bg"]
+            else:
+                grounds = ["surface", "code-bg", "surface-alt"]
             for ground in grounds:
                 got = contrast(fg, triples_for_mode[ground])
                 if got + 0.005 < floor:
@@ -278,6 +313,79 @@ if "matchMedia" in mermaid_js:
     print("DRIFT: mermaid.js reads matchMedia, which reports the host, not the cascade, "
           "so the forced-light sample pages would render a dark diagram")
     fail = 1
+
+# 7. Every declared chroma has to be reachable in sRGB, in every mode. A value above
+#    the ceiling is not an error the browser reports: it clips per channel and paints
+#    something else, so the stylesheet documents a color it never renders and every
+#    check above still passes, because they all measure the clipped result. The
+#    high-contrast block shipped three of these. --red was `oklch(0.895 0.142 21.457)`
+#    where the ceiling at that lightness and hue is 0.055, so the declared chroma was
+#    259% of what sRGB can hold, and Chrome painted `oklch(0.842 0.087 20.795)`: 0.053
+#    of lightness and 0.055 of chroma gone, ΔE_ok 0.077 from the stated value. --pink
+#    also drifted 4.9 degrees of hue, which is the part that makes this more than
+#    bookkeeping.
+#
+#    The trap this closes is directional. An editor reading C 0.142 sees chroma to
+#    spare and raises L for more contrast, but the ceiling *shrinks* as L climbs
+#    (0.159 at L 0.74 against 0.052 at L 0.90 on that hue), so the color washes out
+#    faster than the numbers in front of them predict. Checked in all four modes, on
+#    every token the triple regex parses, not just the ones with a contrast floor.
+#
+#    The 0.0005 slack is one unit in the third decimal a token is written to. Sitting
+#    exactly on the boundary passes, and it is still a bad place to sit: a later
+#    lightness nudge tips it out. Aim for the fraction of maximum chroma the dark
+#    token holds, which is the method the --data-* ramp already documents.
+for mode, triples_for_mode in resolved.items():
+    for name, (L, C, h) in sorted(triples_for_mode.items()):
+        ceiling = max_chroma(L, h)
+        if C > ceiling + 0.0005:
+            print(
+                f"GAMUT: {mode} --{name} declares chroma {C:.3f} at L {L:.3f} hue {h:g}, "
+                f"where sRGB holds {ceiling:.3f} ({C / ceiling * 100:.0f}% of the ceiling). "
+                f"The browser clips it to {oklch_to_hex(L, C, h)} instead."
+            )
+            fail = 1
+
+# 8. Vividness is policy for some tokens, so it is pinned here rather than left in
+#    prose. Chroma alone does not say how colorful a token looks: the sRGB ceiling
+#    moves with lightness, so one absolute chroma reads as two different intensities
+#    at two lightnesses. --red carried `0.142` in three modes and landed at 87% of the
+#    ceiling in dark, 65% in light and 63% in print, which is one number producing
+#    three different reds. It now holds 87% in all four, which keeps it the loudest
+#    accent on purpose, and the light and print values that came out of that were also
+#    strictly better on every measured pair. The --data-* ramp already held its
+#    fractions exactly across modes; NOTES.md stated them and nothing enforced it.
+#
+#    The band is the fraction of maximum in-gamut chroma, checked in every mode. It is
+#    wide enough for the third decimal a token is written to and narrow enough that a
+#    lightness edit made without recomputing chroma trips it, which is the whole point:
+#    L and C have to move together or the token changes character.
+#
+#    The other accents are deliberately absent. --link, --orange, --purple, --pink and
+#    --green each write one absolute chroma across all four modes, so their fractions
+#    float by design: --purple is 57% in dark and 37% in print, --green 53% and 77%.
+#    Pinning those means rewriting the whole palette and re-measuring every ratio in
+#    this file, which is a much larger change than the drift it would prevent. A table
+#    of five tokens that is true beats a table of ten that is aspirational.
+VIVIDNESS = {
+    "red": (0.85, 0.89),
+    "data-1": (0.69, 0.73),
+    "data-2": (0.54, 0.58),
+    "data-3": (0.59, 0.63),
+    "data-4": (0.55, 0.59),
+}
+for mode, triples_for_mode in resolved.items():
+    for name, (low, high) in VIVIDNESS.items():
+        L, C, h = triples_for_mode[name]
+        ceiling = max_chroma(L, h)
+        got = C / ceiling
+        if not low <= got <= high:
+            print(
+                f"VIVIDNESS: {mode} --{name} is {got * 100:.1f}% of the sRGB ceiling at "
+                f"L {L:.3f} hue {h:g}, outside the {low * 100:.0f} to {high * 100:.0f}% band. "
+                f"Chroma {(low + high) / 2 * ceiling:.3f} would sit mid-band."
+            )
+            fail = 1
 
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)

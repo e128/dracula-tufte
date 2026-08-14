@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Tufte-Dracula connections-map layout</title>
+  <title>Tufte-Dracula timeline layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
     /* Dracula-Tufte (muted) v1.26.0 */
@@ -363,7 +363,7 @@
       pre.mermaid svg, body.conn-map pre.mermaid svg { width: var(--natural-width, auto) !important; max-width: none !important; }
     }
     @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
-    @media (prefers-contrast: more) {
+    @media not all {
       :root {
         --on-surface:  oklch(1 0 0);
         --surface-alt: oklch(0.200 0.019 280.395);
@@ -382,7 +382,7 @@
       a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
       .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline-width: 3px; }
     }
-    @media (prefers-color-scheme: light) {
+    @media all {
       :root {
         color-scheme: light;
         --surface:     oklch(0.990 0.006 106.545);
@@ -613,31 +613,115 @@
     });
   </script>
 </head>
-<body class="conn-map">
+<body>
+  <div class="markdown-alert markdown-alert-caution">
+    <p class="markdown-alert-title">Preview only, not the payload</p>
+    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href="dark-timeline.html">dark-timeline.html</a> is the same fixture with the stylesheet verbatim.</p>
+  </div>
   <div class="mermaid-overlay" id="mermaid-zoom"></div>
   <main>
-  <article>
-    <h1>Connections-Map Layout Sample</h1>
-    <p class="byline">body.conn-map, Links column left, graph right (wide screens)</p>
+  <article style="--timeline-date: 16ch">
+    <h1>Khmer Civilization Timeline</h1>
+    <p class="byline">Real-content layout sample: dl.timeline across four era groups on one pinned axis</p>
+
+    <nav>
+      <a href="#pre-angkor">Pre-Angkor</a>
+      <a href="#angkor">Angkor period</a>
+      <a href="#post-angkor">Post-Angkor</a>
+      <a href="#survey">Rediscovery and survey</a>
+      <a href="#sources">Sources</a>
+    </nav>
+
     <section>
-      <h2>Links</h2>
-      <h3>Antecedents</h3>
-      <ul class="nav-list" role="list"><li><a href="#">Antecedent A</a></li><li><a href="#">Antecedent B</a></li></ul>
-      <h3>Descendants</h3>
-      <ul class="nav-list" role="list"><li><a href="#">Descendant X</a></li><li><a href="#">Descendant Y</a></li></ul>
+      <h2 id="pre-angkor">Pre-Angkor</h2>
+      <p class="byline">Funan and Chenla, before the Angkor period</p>
+      <dl class="timeline">
+        <dt id="e-funan">c. 1st century CE</dt>
+        <dd><strong>Funan polity emerges in the Mekong Delta.</strong> First Hinduized kingdom of Southeast Asia. Maritime entrepots like Oc Eo traded with India, China, and Rome. Chinese annals record it from the 3rd century. <em>Contested:</em> Vickery argues Funan was a group of coastal polities, not a unified empire.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-9">9</a>, <a href="#src-10">10</a></sup></dd>
+        <dt id="e-chenla">c. 6th century CE</dt>
+        <dd><strong>Chenla emerges and succeeds Funan.</strong> Centered on the middle Mekong and Tonle Sap. Sambor Prei Kuk (Isanapura) was its 7th-century capital and the prototype for Angkor. <em>Contested:</em> The transition was likely gradual, not a conquest.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-9">9</a>, <a href="#src-10">10</a></sup></dd>
+      </dl>
     </section>
+
     <section>
-      <h2>Graph</h2>
-      <pre class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
-flowchart BT
-  accTitle: Connections map for the focus topic
-  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.
-  focus[Focus Topic with a deliberately long label that must fit its own box]
-  a1[Antecedent A] --> focus
-  a2[Antecedent B] --> focus
-  focus --> d1[Descendant X]
-  focus --> d2[Descendant Y]</pre>
+      <h2 id="angkor">Angkor period</h2>
+      <p class="byline">802 to 1431, capital on the Angkor plain</p>
+      <dl class="timeline">
+        <dt id="e-802">c. 802</dt>
+        <dd><strong>Jayavarman II declares himself universal king on Mount Kulen, founds Mahendraparvata.</strong> Traditional founding of the Khmer Empire and start of the Angkor period. Lidar rediscovered Mahendraparvata in 2012. <em>Contested:</em> Coe's lecture conflates the 802 founding with Yasovarman's later Yasodharapura.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-5">5</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a></sup></dd>
+        <dt id="e-889">c. 889</dt>
+        <dd><strong>Royal capital moves south to Angkor; Yasovarman I founds Yasodharapura.</strong> The capital relocates from the Kulen hills to the Angkor plain. <em>Contested:</em> The founding date and founder are contested across sources.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-7">7</a></sup></dd>
+        <dt id="e-koh-ker">928-944</dt>
+        <dd><strong>Koh Ker interregnum: Jayavarman IV rules from a new capital.</strong> A 17-year interval when power left Angkor. Prasat Thom pyramid built in 942. The reservoir embankment failed within a decade, possibly driving the court back.<sup class="footnote-ref"><a href="#src-4">4</a></sup></dd>
+        <dt id="e-1000">c. 1000</dt>
+        <dd><strong>Angkor becomes one of the largest cities in the world.</strong> Estimates run from ~500,000 (Ancient Code) to ~900,000 (Evans) people in a low-density sprawl of ~1,000 sq km.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a></sup></dd>
+        <dt id="e-angkor-wat">1113-1150</dt>
+        <dd><strong>Suryavarman II reigns; Angkor Wat is built.</strong> The largest religious structure on Earth, dedicated to Vishnu.<sup class="footnote-ref"><a href="#src-1">1</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a>, <a href="#src-11">11</a></sup></dd>
+        <dt id="e-cham-sack"><time datetime="1177">1177</time></dt>
+        <dd><strong>Chams sack Angkor.</strong> The hereditary enemies conquered the city before Jayavarman VII took the throne. The battles appear in Bayon reliefs.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-12">12</a></sup></dd>
+        <dt id="e-jayavarman-vii"><time datetime="1181">1181</time></dt>
+        <dd><strong>Jayavarman VII is crowned king.</strong> First Khmer king devoted to Mahayana Buddhism. Proclaimed the &ldquo;Living Buddha.&rdquo; Ousted the Chams and launched a massive building program.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-6">6</a>, <a href="#src-12">12</a></sup></dd>
+        <dt id="e-bayon">c. 1182-1201</dt>
+        <dd><strong>Bayon built as the state temple of the new capital Angkor Thom.</strong> The Bayon has 54 towers and ~200 smiling faces (Lokesvara or Jayavarman VII). Its reliefs show daily life and the Cham wars.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-6">6</a>, <a href="#src-12">12</a></sup></dd>
+        <dt id="e-ta-prohm"><time datetime="1186">1186</time></dt>
+        <dd><strong>Ta Prohm is founded.</strong> Mahayana monastery (Rajavihara) dedicated to Jayavarman VII's mother. Its stele records ~12,500 attached people. Now the &ldquo;Tomb Raider&rdquo; temple left in its jungle state.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-12">12</a></sup></dd>
+        <dt id="e-preah-khan"><time datetime="1191">1191</time></dt>
+        <dd><strong>Preah Khan is dedicated.</strong> Temple honoring Jayavarman VII's father. BBC reports it held 60 tons of gold, worth about &pound;2bn today.<sup class="footnote-ref"><a href="#src-7">7</a>, <a href="#src-12">12</a></sup></dd>
+        <dt id="e-zhou-daguan">c. 1296</dt>
+        <dd><strong>Zhou Daguan visits Angkor.</strong> The Chinese Yuan-dynasty diplomat writes &ldquo;Customs of Cambodia,&rdquo; the main eyewitness account of late-13th-century Angkor.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-5">5</a></sup></dd>
+        <dt id="e-decline">c. 1300-1431</dt>
+        <dd><strong>Gradual decline begins a century before the fall.</strong> Land use in central Angkor declined ~100 years before the traditional 1431 abandonment (Penny's moat cores). Water infrastructure failed; tree rings record extreme dry and wet swings. <em>Contested:</em> The &ldquo;collapse&rdquo; narrative against the century-in-the-making view.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-3">3</a>, <a href="#src-7">7</a></sup></dd>
+      </dl>
     </section>
+
+    <section>
+      <h2 id="post-angkor">Post-Angkor</h2>
+      <p class="byline">The court leaves, the temple does not empty</p>
+      <dl class="timeline">
+        <dt id="e-1431"><time datetime="1431">1431</time></dt>
+        <dd><strong>Ayutthaya (Thai) sack of Angkor; court moves to Phnom Penh.</strong> Traditional date of the fall and start of the post-Angkor era. <em>Contested:</em> Carter's excavations show Angkor Wat was never abandoned. The landscape was reoccupied by the late 14th or early 15th century and used into the 17th-18th.<sup class="footnote-ref"><a href="#src-1">1</a>, <a href="#src-2">2</a>, <a href="#src-3">3</a>, <a href="#src-5">5</a></sup></dd>
+        <dt id="e-japanese-inscriptions">c. 1600s</dt>
+        <dd><strong>Japanese Buddhist inscriptions appear at Angkor Wat.</strong> Fourteen 17th-century inscriptions show Japanese Buddhists traveled to and settled alongside the Khmer. The temple remained in continuous use.<sup class="footnote-ref"><a href="#src-1">1</a></sup></dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2 id="survey">Rediscovery and survey</h2>
+      <p class="byline">Events in the study of Angkor, not in its history</p>
+      <dl class="timeline">
+        <dt id="e-mouhot"><time datetime="1860">1860</time></dt>
+        <dd><strong>Henri Mouhot &ldquo;discovers&rdquo; Angkor.</strong> His posthumous journal (1863-64) introduced Angkor to the West. <em>Contested:</em> Angkor was never lost, local monks kept it. Mouhot arrived in 1858, and pre-Mouhot accounts already described the site.<sup class="footnote-ref"><a href="#src-5">5</a>, <a href="#src-7">7</a>, <a href="#src-15">15</a></sup></dd>
+        <dt id="e-unesco"><time datetime="1992">1992</time></dt>
+        <dd><strong>Angkor inscribed as a UNESCO World Heritage Site.</strong> Also placed on the Danger List, removed in 2004. The Angkor Archaeological Park now draws ~2 million visitors a year.<sup class="footnote-ref"><a href="#src-6">6</a>, <a href="#src-7">7</a></sup></dd>
+        <dt id="e-lidar-1"><time datetime="2012">2012</time></dt>
+        <dd><strong>First lidar survey of Greater Angkor.</strong> The KALC airborne laser survey revealed the full urban grid, waterworks, and the lost city of Mahendraparvata. Results published in PNAS 2013.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-6">6</a>, <a href="#src-7">7</a>, <a href="#src-13">13</a></sup></dd>
+        <dt id="e-lidar-2"><time datetime="2015">2015</time></dt>
+        <dd><strong>Second lidar survey covers ~2,000 sq km.</strong> Five times larger than the first. Redefined the Angkor Wat landscape (Antiquity 2015), revealing occupation mounds and a residential population of up to ~4,500 inside the moated enclosure.<sup class="footnote-ref"><a href="#src-2">2</a>, <a href="#src-6">6</a>, <a href="#src-14">14</a></sup></dd>
+      </dl>
+    </section>
+
+    <section class="col-2">
+      <h2 id="sources">Sources</h2>
+      <ol>
+        <li id="src-1"><a href="https://e128.info/content/history/ancient/anthropologists-at-angkor-wat-reveal-new-clues-about-the-ancient-temple-thought/anthropologists-at-angkor-wat-reveal-new-clues-about-the-ancient-temple-thought.md">Anthropologists at Angkor Wat reveal new clues about the ancient temple thought abandoned (Ancient Code)</a>, scraped 2026-08-13</li>
+        <li id="src-2"><a href="https://e128.info/content/history/geography/how-early-megacities-emerged-from-the-jungles-of-cambodia-atlas-obscura/how-early-megacities-emerged-from-the-jungles-of-cambodia-atlas-obscura.md">How Early Megacities Emerged From the Jungles of Cambodia (Atlas Obscura)</a>, scraped 2026-08-13</li>
+        <li id="src-3"><a href="https://e128.info/content/history/geography/the-fall-of-angkor-was-more-than-a-century-in-the-making/the-fall-of-angkor-was-more-than-a-century-in-the-making.md">The Fall of Angkor Was More Than a Century in The Making</a>, scraped 2026-08-13</li>
+        <li id="src-4"><a href="https://e128.info/content/history/geography/how-bad-karma-and-bad-engineering-doomed-an-ancient-cambodian-capital/how-bad-karma-and-bad-engineering-doomed-an-ancient-cambodian-capital.md">How Bad Karma and Bad Engineering Doomed an Ancient Cambodian Capital</a>, scraped 2026-08-13</li>
+        <li id="src-5"><a href="https://e128.info/content/history/ancient/parallel-civilizations-ancient-angkor-and-the-anci/parallel-civilizations-ancient-angkor-and-the-anci.md">Parallel Civilizations: Ancient Angkor and the Ancient Maya (Michael Coe lecture, UC Berkeley)</a>, scraped 2026-08-13</li>
+        <li id="src-6"><a href="https://e128.info/content/history/ancient/angkor-an-ancient-mega-city-hidden-deep-withing-the-jungle-ancient-code/angkor-an-ancient-mega-city-hidden-deep-withing-the-jungle-ancient-code.md">Angkor: An Ancient Mega City Hidden Deep Withing the Jungle (Ancient Code)</a>, scraped 2026-08-13</li>
+        <li id="src-7"><a href="https://e128.info/content/history/blinds-gossip/bbc-news-beyond-angkor-how-lasers-revealed-a-lost-city/bbc-news-beyond-angkor-how-lasers-revealed-a-lost-city.md">BBC News - Beyond Angkor: How lasers revealed a lost city</a>, scraped 2026-08-13</li>
+        <li id="src-8"><a href="https://e128.info/content/history/geography/the-mystery-of-the-dinosaur-of-angkor-ilbonito-blog-2007/the-mystery-of-the-dinosaur-of-angkor-ilbonito-blog-2007.md">The mystery of the dinosaur of Angkor (ilbonito blog 2007)</a>, scraped 2026-08-13</li>
+        <li id="src-9"><a href="https://www.britannica.com/place/Funan">Funan | Cambodia, Map, &amp; Facts (Britannica)</a>, scraped 2026-08-13</li>
+        <li id="src-10"><a href="http://michaelvickery.org/vickery2003funan-rev.pdf">Funan Reviewed: Deconstructing the Ancients (Michael Vickery)</a>, scraped 2026-08-13</li>
+        <li id="src-11"><a href="https://www.britannica.com/topic/Angkor-Wat">Angkor Wat | Description, Location, History, Restoration (Britannica)</a>, scraped 2026-08-13</li>
+        <li id="src-12"><a href="https://penelope.uchicago.edu/Thayer/E/Gazetteer/Places/Asia/Cambodia/Siem_Reap/Siem_Reap/Angkor_Wat/_Texts/DICANG/Chronology*.html">Wondrous Angkor - Kings of Angkor chronology (LacusCurtius, University of Chicago)</a>, scraped 2026-08-13</li>
+        <li id="src-13"><a href="https://doi.org/10.1073/pnas.1306539110">Uncovering archaeological landscapes at Angkor using lidar (Evans et al., PNAS 2013)</a>, scraped 2026-08-13</li>
+        <li id="src-14"><a href="https://www.cambridge.org/core/journals/antiquity/article/landscape-of-angkor-wat-redefined/F3F0731A514E338A76DA8A906458A890">The landscape of Angkor Wat redefined (Evans &amp; Fletcher, Antiquity 2015)</a>, scraped 2026-08-13</li>
+        <li id="src-15"><a href="https://hdl.handle.net/2292/72578">Discovering Angkor: Henri Mouhot and the European Rediscovery of Angkor Wat (Rui Patel Kerr, Univ. of Auckland)</a>, scraped 2026-08-13</li>
+      </ol>
+    </section>
+
+    <footer>Timeline layout sample. Generated by scripts/build-sample.nu.</footer>
   </article>
   </main>
 </body>
