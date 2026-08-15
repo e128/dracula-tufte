@@ -204,8 +204,8 @@ def body [] {
     ""
     "    <section>"
     "      <h2>Table</h2>"
-    "      <table>"
-    "        <caption>Table caption: annotation register, start-aligned like every other block.</caption>"
+    "      <table tabindex=\"0\">"
+    "        <caption>Table caption: annotation register, start-aligned like every other block. An unwrapped table carries <code>tabindex</code>, because the escape hatch below 1000px hands it a sideways-scroll axis no keyboard could otherwise reach.</caption>"
     "        <thead><tr><th scope=\"col\">Column</th><th scope=\"col\" class=\"num\">Value</th><th scope=\"col\">Note</th></tr></thead>"
     "        <!-- mock: the figures exist to demonstrate tabular-nums alignment, not to state data -->"
     "        <tbody>"
@@ -219,7 +219,8 @@ def body [] {
     "    <section>"
     "      <h2>Tree table</h2>"
     "      <p>Depth comes from <code>data-depth</code> on the row, not from nesting. No <code>role</code>, no script.</p>"
-    "      <table class=\"tree\">"
+    "      <table class=\"tree\" tabindex=\"0\">"
+    "        <caption>Requirement tree: an unwrapped table, so it takes the sideways-scroll escape hatch below 1000px and carries <code>tabindex</code> to be reachable there.</caption>"
     "        <thead><tr><th scope=\"col\">Id</th><th scope=\"col\">Title</th><th scope=\"col\">State</th></tr></thead>"
     "        <tbody>"
     "          <tr data-depth=\"0\"><td>Epic 1</td><td>root row, tinted and bold</td><td>New</td></tr>"
@@ -230,6 +231,32 @@ def body [] {
     "          <tr data-depth=\"0\"><td>Epic 2</td><td>second root</td><td>New</td></tr>"
     "        </tbody>"
     "      </table>"
+    "    </section>"
+    ""
+    # The only `.table-scroll` instance in the repo, and it has to be BOTH wide and
+    # tall or it verifies nothing. Eight columns push it past the body so the
+    # wrapper scrolls sideways instead of the document; twenty-four rows push it
+    # past the 70vh cap so the sticky `th` has something to pin against. A short
+    # wrapped table renders identically to an unwrapped one and proves neither.
+    # `role="region"` sits on the DIV, never on the table: on the table it
+    # overrides `role="table"` and takes the row and column semantics with it.
+    "    <section>"
+    "      <h2>Wide table in a scroll wrapper</h2>"
+    "      <p>A wide table wrapped in <code>.table-scroll</code> scrolls on both axes inside the wrapper, so the document never scrolls sideways, and the header stays pinned because the wrapper is the scrollport. The wrapper carries <code>tabindex=\"0\"</code>, <code>role=\"region\"</code> and a label. The table keeps its own row and column semantics, because the role sits on the wrapper and never on the table.</p>"
+    "      <div class=\"table-scroll\" tabindex=\"0\" role=\"region\" aria-label=\"Quarterly totals by region\">"
+    "        <table>"
+    "          <caption>Twenty-four rows across eight columns: past the 70vh cap and past the body width at once.</caption>"
+    "          <thead><tr><th scope=\"col\">Id</th><th scope=\"col\">Region</th><th scope=\"col\" class=\"num\">Q1</th><th scope=\"col\" class=\"num\">Q2</th><th scope=\"col\" class=\"num\">Q3</th><th scope=\"col\" class=\"num\">Q4</th><th scope=\"col\">Trend</th><th scope=\"col\">Note</th></tr></thead>"
+    "          <!-- mock: the figures exist to give the wrapper something to scroll, not to state data -->"
+    "          <tbody>"
+    ...(1..24 | each {|i|
+      let region = ([Northwest Southeast Midlands Coastal Interior "Upper Bay"] | get (($i - 1) mod 6))
+      let trend = ([rising flat falling] | get (($i - 1) mod 3))
+      $"            <tr><td>R-($i)</td><td>($region)</td><td class=\"num\">($i * 137)</td><td class=\"num\">($i * 211)</td><td class=\"num\">($i * 89)</td><td class=\"num\">($i * 313)</td><td>($trend)</td><td>Row ($i) of twenty-four, long enough that eight columns outrun the body</td></tr>"
+    })
+    "          </tbody>"
+    "        </table>"
+    "      </div>"
     "    </section>"
     ""
     "    <section>"
@@ -297,12 +324,13 @@ def body [] {
     "      <div class=\"markdown-alert markdown-alert-important\"><p class=\"markdown-alert-title\">Important</p><p>Purple bar. Do not skip this.</p></div>"
     "      <div class=\"markdown-alert markdown-alert-warning\"><p class=\"markdown-alert-title\">Warning</p><p>Orange bar, the same hue the plain aside takes.</p></div>"
     "      <div class=\"markdown-alert markdown-alert-caution\"><p class=\"markdown-alert-title\">Caution</p><p>Red bar. Risk of loss or breakage.</p></div>"
-    "      <table>"
+    "      <table tabindex=\"0\">"
+    "        <caption>Pipe-table alignment: a converter emits no caption, so this one is the fixture's own, and it is what names the tab stop the escape hatch requires.</caption>"
     "        <thead><tr><th align=\"left\">Alignment</th><th align=\"center\">from the</th><th align=\"right\">pipe table</th></tr></thead>"
     "        <tbody><tr><td align=\"left\">start</td><td align=\"center\">center</td><td align=\"right\">3.14159</td></tr></tbody>"
     "      </table>"
     "      <p>Math converted to MathML needs no script and no CDN: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> sets inline without opening the line box, and a display block scrolls on its own axis rather than widening the page.</p>"
-    "      <math display=\"block\"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>"
+    "      <math display=\"block\" tabindex=\"0\" role=\"region\" aria-label=\"Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6\"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>"
     "      <section class=\"footnotes\" data-footnotes>"
     "        <ol><li id=\"fn-1\"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href=\"#fnref-1\" class=\"footnote-backref\">&#8617;</a></p></li></ol>"
     "      </section>"
@@ -337,7 +365,7 @@ def body [] {
     "        <li><a href=\"#\">Another entry <span class=\"badge badge-t1\">Tier 1</span></a></li>"
     "        <li><a href=\"#\">Failed audit <span class=\"badge badge-t3\">Tier 3</span></a></li>"
     "      </ul>"
-    "      <p class=\"filter-empty\" hidden>No entries match &ldquo;tier 4&rdquo;. Clear the filter to see all 4.</p>"
+    "      <p class=\"filter-empty\" hidden>No entries match. Clear the filter to see all 4.</p>"
     "      <details class=\"nav-group\" open><summary>Subfolder group <span class=\"count\">1</span></summary>"
     "        <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">grouped item <span class=\"badge badge-t2\">Tier 2</span></a></li></ul>"
     "      </details>"

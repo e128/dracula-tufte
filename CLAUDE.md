@@ -6,21 +6,28 @@ behavior.
 ## Read [NOTES.md](NOTES.md) first
 
 **Before you change `tufte-dracula.css` or `mermaid.js`, read [NOTES.md](NOTES.md).** It holds
-the reasoning that used to live in those files as comments. It records every measured number,
-every rejected alternative, and every decision that this repo already re-litigated.
+the reasoning that used to live in those files as comments. It records every current decision,
+every rejected alternative, and every prohibition this repo already paid for.
+
+**NOTES.md states decisions, not measurements.** Every number behind an entry was measured in
+Chromium, and those measurements live in git history and in the gates. `.github/palette-check.py`
+and `.github/render-modes.py` enforce the color and mode claims, so a number that matters is a
+check rather than a paragraph. **Do not add measurement narration back to NOTES.md**, and do not
+write a version history into it: `CONTRACT.md` § 3 owns per-release deltas and `git blame` owns
+the rest.
 
 This is not optional background. Several changes in this repo's history were correct on paper,
 shipped, and then went back out: the measure cap, two page-width attempts, and a monospace
-table stack. NOTES.md records what the repo tried, what it measured, and why it reverted. The
-file exists so that nobody covers the same ground twice.
+table stack. Every "do not" in NOTES.md is one of those. The file exists so that nobody covers
+the same ground twice.
 
-You may want to fix something that looks wrong: a 178-character measure, a heading heavier than
-its parent, an inert `themeVariable`, or a table that could be narrower. **NOTES.md probably
-records it already, with the measurement that settled it.** Check NOTES.md before you touch the
-CSS. If you still disagree, say so directly. Do not reverse a documented decision in silence.
+You may want to fix something that looks wrong: a long measure, a heading heavier than its
+parent, an inert `themeVariable`, or a table that could be narrower. **NOTES.md probably records
+it already.** Check NOTES.md before you touch the CSS. If you still disagree, re-measure and say
+so directly. Do not reverse a documented decision in silence.
 
-When you make a new decision worth keeping, add it to NOTES.md. Do not add it to the
-stylesheet.
+When you make a new decision worth keeping, add it to NOTES.md as a decision plus its
+prohibition. Do not add it to the stylesheet, and do not append it as a story about what changed.
 
 ## Writing rules
 
@@ -175,7 +182,7 @@ request was explicitly to release.
 ## Style decisions that are already settled
 
 Do not "fix" these decisions. Each one is deliberate, and this repo re-litigated each one at
-least once. [NOTES.md](NOTES.md) holds the measurement and the failed alternatives for each.
+least once. [NOTES.md](NOTES.md) holds the failed alternatives for each.
 
 - **The long measure.** Prose runs well past 60 to 75 characters per line. A cap strands the
   copy in a narrow column inside an empty container. The repo trades width for measure

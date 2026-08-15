@@ -87,6 +87,32 @@ def "main check" [] {
     if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
   }
 
+  # The stylesheet hands every unwrapped table its own sideways-scroll axis below
+  # 1000px, so a table with no tab stop is a scroll container no keyboard can reach.
+  # CONTRACT.md section 2 has required `tabindex="0"` plus a `<caption>` there since
+  # v1.27.0, and two fixture tables still drifted past it, because nothing checked.
+  # A wrapped table is exempt: `.table-scroll` owns the tab stop and the role, which
+  # is why the wrapper case is deleted before the scan rather than special-cased in
+  # the predicate. `role="region"` on the table itself is the separate defect the same
+  # contract line bans: it overrides `role="table"` and takes the row and column
+  # semantics with it.
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+    let body = (open --raw ($ROOT | path join $f))
+    let unwrapped = ($body | str replace --all --regex '(?s)<div class="table-scroll"[^>]*>\s*<table[^>]*>' '')
+    for t in ($unwrapped | parse --regex '<table(?<attrs>[^>]*)>') {
+      if not ($t.attrs =~ 'tabindex="0"') {
+        print $"($f): <table($t.attrs)> is unwrapped with no tabindex=\"0\", so its scroll axis is keyboard-unreachable below 1000px"
+        $ok = false
+      }
+    }
+    for t in ($body | parse --regex '<table(?<attrs>[^>]*)>') {
+      if ($t.attrs =~ 'role="region"') {
+        print $"($f): <table($t.attrs)> carries role=\"region\", which overrides role=\"table\""
+        $ok = false
+      }
+    }
+  }
+
   # samples/light*.html are the dark pages with the light condition forced on and the
   # contrast condition forced off. If the stylesheet renames either one,
   # `str replace` no-ops and the preview ships the default palette while still
