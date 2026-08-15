@@ -2,8 +2,8 @@
 
 This file is for the agent or the script that generates HTML in a **consumer** repository. It
 states what to inline, what markup to emit, and what changed in each release. It carries no
-reasoning. [NOTES.md](NOTES.md) holds the reasoning, and [README.md](README.md) holds the
-narrative.
+reasoning. [NOTES.md](NOTES.md) holds the decisions and the prohibitions behind these rules, and
+[README.md](README.md) orients a person arriving for the first time.
 
 **`samples/dark.html` is the executable specification.** It models every requirement below, and CI
 fails when it drifts from the stylesheet. When this file and the fixture disagree, the fixture is
@@ -45,8 +45,11 @@ Nine requirements. No stylesheet change can supply any of them.
 - [ ] `scope="col"` on table headers, and heading levels that nest with no skips.
 - [ ] `role="list"` on every `<ul class="nav-list">`.
 - [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order.
-- [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`,
-      a table below 1000px, a `<math display="block">`, and any `.table-scroll` wrapper.
+- [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`, a
+      `<math display="block">`, and any `.table-scroll` wrapper. **Never put `role="region"` on the
+      `<table>` itself.** It overrides `role="table"` and takes the row and column semantics with
+      it. An unwrapped table takes `tabindex="0"` alone, named by its own `<caption>`, because the
+      stylesheet hands it a sideways-scroll axis of its own below 1000px.
 - [ ] `--timeline-date` on an ancestor when a page carries **more than one** `dl.timeline`, set in
       `ch` against the widest date label in the whole document. Each list otherwise sizes its own
       date track and the axis steps left down the page. Measure the label: `tabular-nums` pins
@@ -72,6 +75,10 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.27.0 | **drop `role="region"` from any bare `<table>` you put it on**, and emit `tabindex="0"` plus a `<caption>` there instead. § 2 used to fold a table into the same sentence as `pre` and `math`, so it asked for a role that overrides `role="table"` and takes the row and column semantics with it. The tab stop is still required, because the stylesheet gives a table its own sideways-scroll axis below 1000px, and the `<caption>` is what names it. A table inside `.table-scroll` needs no edit: the role belongs on the wrapper and always did |
+| v1.27.0 | nothing, and a filtered `details.nav-group` now counts what it shows. `filter.js` used to leave `summary .count` at its authored number while the query hid items underneath it, so a group could read `5` over two visible rows, and the `[role="status"]` line beside it reported the real figure. Two counts on one screen disagreed and the wrong one was the larger. The script restores your number when the query clears, so an authored count is still yours |
+| v1.27.0 | nothing, and the filter's live count now sits in the annotation register. The sheet claimed `.filter-label`, `.filter-empty` and `.count` but never `[role="status"]`, so the count § 6 asks you to emit rendered at body weight on `--on-surface` and read as content above the list. `.filter-box ~ [role="status"]` puts it at `--label` and `0.95em` beside its own label. Override it in your own layer if you had styled it yourself |
+| v1.27.0 | nothing, and a wrapped table now prints in full. `.table-scroll` held its `70vh` cap and `overflow: auto` on paper, so a table taller than one screen lost the overflow with nothing marking the loss. The print block releases both. `samples/dark.html` carries the first `.table-scroll` instance in the repo, twenty-four rows by eight columns, which is the size it takes to make both scroll axes and the pinned header real rather than declared |
 | v1.26.0 | nothing, unless you emit dated events. `dl.timeline` is opt-in: a `dl` with no class keeps the glossary register it always had. Emit the class and the two requirements in § 2 apply, `--timeline-date` and `sup` citations. Everything else is self-contained: the timeline collapses to one column below 760px rather than 600px, a `:target` entry outlines and its date turns orange, a multi-source `sup` no longer breaks across a line end, and a citation marker's hit area is taller |
 | v1.26.0 | nothing for the palette, but expect a visible shift in three places if you diff screenshots. Light and print `--red` are more saturated, the light row-hover fill is one step lighter, and the three high-contrast accents that were declaring a chroma sRGB cannot hold now declare the color they actually paint. All are `:root` values; no markup reads them |
 | v1.25.0 | nothing. The stylesheet changes are self-contained: `--data-1..4` gained light and print values, `h5` and `h6` dropped to weight 500, and the conn-map Links column is height-bounded. `filter.js` now writes `No entries match. Clear the filter to see all entries.` into a `.filter-empty` it creates, and still leaves your own copy untouched when you emit one |
@@ -116,6 +123,10 @@ than running the generator again.
 The script wires each `input.filter-box` to the siblings that follow it, stopping at the next
 filter box. Within that span it filters `tbody tr` rows and `.nav-list > li` items, and it hides
 or opens a `details.nav-group` by whether anything inside it still matches.
+
+A group's `summary .count` follows the filter as of v1.27.0. It reads the matched count while a
+query is live and returns to the number you authored when the query clears. Emit the span if you
+want the behavior; a group without one filters exactly as before.
 
 It does not read your ids and it does not use `closest()`. The input-to-content pairing is the
 only relationship your markup states, so state it by putting the content after the input.

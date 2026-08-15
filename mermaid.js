@@ -107,5 +107,7 @@
       }).observe(pre, { childList: true });
     });
     overlay.addEventListener('click', dismiss);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') dismiss(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) dismiss();
+    });
   </script>

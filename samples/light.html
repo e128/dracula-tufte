@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.26.0 */
+    /* Dracula-Tufte (muted) v1.27.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -273,6 +273,7 @@
       border: 1px solid var(--rule); border-radius: var(--radius);
     }
     .filter-box::placeholder { color: var(--muted); font-style: italic; }
+    .filter-box ~ [role="status"] { color: var(--label); font-size: 0.95em; }
     .filter-hidden { display: none !important; }
     .filter-empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; }
     details.nav-group { border: 1px solid var(--rule-light); border-radius: var(--radius); margin: 0.6rem 0; padding: 0.2rem 0.85rem; }
@@ -439,6 +440,7 @@
       }
       mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       body { width: auto; max-width: none; padding: 1rem; }
+      .table-scroll { max-height: none; overflow: visible; }
       .mermaid-zoom { display: none; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
@@ -564,7 +566,9 @@
       }).observe(pre, { childList: true });
     });
     overlay.addEventListener('click', dismiss);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') dismiss(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) dismiss();
+    });
   </script>
   <script type="module">
     document.querySelectorAll('input.filter-box').forEach(input => {
@@ -585,6 +589,8 @@
       });
       if (!rows.length) return;
       const wasOpen = groups.map(group => group.open);
+      const counts = groups.map(group => group.querySelector('summary .count'));
+      const wasCount = counts.map(count => count && count.textContent);
       const status = input.parentElement.querySelector('[role="status"]');
       let empty = input.parentElement.querySelector('.filter-empty');
       if (!empty) {
@@ -606,6 +612,7 @@
           const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
           group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
           group.open = q ? shown > 0 : wasOpen[i];
+          if (counts[i]) counts[i].textContent = q ? shown : wasCount[i];
         });
         empty.hidden = visible !== 0;
         if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
@@ -667,8 +674,8 @@
 
     <section>
       <h2>Table</h2>
-      <table>
-        <caption>Table caption: annotation register, start-aligned like every other block.</caption>
+      <table tabindex="0">
+        <caption>Table caption: annotation register, start-aligned like every other block. An unwrapped table carries <code>tabindex</code>, because the escape hatch below 1000px hands it a sideways-scroll axis no keyboard could otherwise reach.</caption>
         <thead><tr><th scope="col">Column</th><th scope="col" class="num">Value</th><th scope="col">Note</th></tr></thead>
         <!-- mock: the figures exist to demonstrate tabular-nums alignment, not to state data -->
         <tbody>
@@ -682,7 +689,8 @@
     <section>
       <h2>Tree table</h2>
       <p>Depth comes from <code>data-depth</code> on the row, not from nesting. No <code>role</code>, no script.</p>
-      <table class="tree">
+      <table class="tree" tabindex="0">
+        <caption>Requirement tree: an unwrapped table, so it takes the sideways-scroll escape hatch below 1000px and carries <code>tabindex</code> to be reachable there.</caption>
         <thead><tr><th scope="col">Id</th><th scope="col">Title</th><th scope="col">State</th></tr></thead>
         <tbody>
           <tr data-depth="0"><td>Epic 1</td><td>root row, tinted and bold</td><td>New</td></tr>
@@ -693,6 +701,44 @@
           <tr data-depth="0"><td>Epic 2</td><td>second root</td><td>New</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section>
+      <h2>Wide table in a scroll wrapper</h2>
+      <p>A wide table wrapped in <code>.table-scroll</code> scrolls on both axes inside the wrapper, so the document never scrolls sideways, and the header stays pinned because the wrapper is the scrollport. The wrapper carries <code>tabindex="0"</code>, <code>role="region"</code> and a label. The table keeps its own row and column semantics, because the role sits on the wrapper and never on the table.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Quarterly totals by region">
+        <table>
+          <caption>Twenty-four rows across eight columns: past the 70vh cap and past the body width at once.</caption>
+          <thead><tr><th scope="col">Id</th><th scope="col">Region</th><th scope="col" class="num">Q1</th><th scope="col" class="num">Q2</th><th scope="col" class="num">Q3</th><th scope="col" class="num">Q4</th><th scope="col">Trend</th><th scope="col">Note</th></tr></thead>
+          <!-- mock: the figures exist to give the wrapper something to scroll, not to state data -->
+          <tbody>
+            <tr><td>R-1</td><td>Northwest</td><td class="num">137</td><td class="num">211</td><td class="num">89</td><td class="num">313</td><td>rising</td><td>Row 1 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-2</td><td>Southeast</td><td class="num">274</td><td class="num">422</td><td class="num">178</td><td class="num">626</td><td>flat</td><td>Row 2 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-3</td><td>Midlands</td><td class="num">411</td><td class="num">633</td><td class="num">267</td><td class="num">939</td><td>falling</td><td>Row 3 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-4</td><td>Coastal</td><td class="num">548</td><td class="num">844</td><td class="num">356</td><td class="num">1252</td><td>rising</td><td>Row 4 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-5</td><td>Interior</td><td class="num">685</td><td class="num">1055</td><td class="num">445</td><td class="num">1565</td><td>flat</td><td>Row 5 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-6</td><td>Upper Bay</td><td class="num">822</td><td class="num">1266</td><td class="num">534</td><td class="num">1878</td><td>falling</td><td>Row 6 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-7</td><td>Northwest</td><td class="num">959</td><td class="num">1477</td><td class="num">623</td><td class="num">2191</td><td>rising</td><td>Row 7 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-8</td><td>Southeast</td><td class="num">1096</td><td class="num">1688</td><td class="num">712</td><td class="num">2504</td><td>flat</td><td>Row 8 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-9</td><td>Midlands</td><td class="num">1233</td><td class="num">1899</td><td class="num">801</td><td class="num">2817</td><td>falling</td><td>Row 9 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-10</td><td>Coastal</td><td class="num">1370</td><td class="num">2110</td><td class="num">890</td><td class="num">3130</td><td>rising</td><td>Row 10 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-11</td><td>Interior</td><td class="num">1507</td><td class="num">2321</td><td class="num">979</td><td class="num">3443</td><td>flat</td><td>Row 11 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-12</td><td>Upper Bay</td><td class="num">1644</td><td class="num">2532</td><td class="num">1068</td><td class="num">3756</td><td>falling</td><td>Row 12 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-13</td><td>Northwest</td><td class="num">1781</td><td class="num">2743</td><td class="num">1157</td><td class="num">4069</td><td>rising</td><td>Row 13 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-14</td><td>Southeast</td><td class="num">1918</td><td class="num">2954</td><td class="num">1246</td><td class="num">4382</td><td>flat</td><td>Row 14 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-15</td><td>Midlands</td><td class="num">2055</td><td class="num">3165</td><td class="num">1335</td><td class="num">4695</td><td>falling</td><td>Row 15 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-16</td><td>Coastal</td><td class="num">2192</td><td class="num">3376</td><td class="num">1424</td><td class="num">5008</td><td>rising</td><td>Row 16 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-17</td><td>Interior</td><td class="num">2329</td><td class="num">3587</td><td class="num">1513</td><td class="num">5321</td><td>flat</td><td>Row 17 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-18</td><td>Upper Bay</td><td class="num">2466</td><td class="num">3798</td><td class="num">1602</td><td class="num">5634</td><td>falling</td><td>Row 18 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-19</td><td>Northwest</td><td class="num">2603</td><td class="num">4009</td><td class="num">1691</td><td class="num">5947</td><td>rising</td><td>Row 19 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-20</td><td>Southeast</td><td class="num">2740</td><td class="num">4220</td><td class="num">1780</td><td class="num">6260</td><td>flat</td><td>Row 20 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-21</td><td>Midlands</td><td class="num">2877</td><td class="num">4431</td><td class="num">1869</td><td class="num">6573</td><td>falling</td><td>Row 21 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-22</td><td>Coastal</td><td class="num">3014</td><td class="num">4642</td><td class="num">1958</td><td class="num">6886</td><td>rising</td><td>Row 22 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-23</td><td>Interior</td><td class="num">3151</td><td class="num">4853</td><td class="num">2047</td><td class="num">7199</td><td>flat</td><td>Row 23 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-24</td><td>Upper Bay</td><td class="num">3288</td><td class="num">5064</td><td class="num">2136</td><td class="num">7512</td><td>falling</td><td>Row 24 of twenty-four, long enough that eight columns outrun the body</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section>
@@ -748,12 +794,13 @@
       <div class="markdown-alert markdown-alert-important"><p class="markdown-alert-title">Important</p><p>Purple bar. Do not skip this.</p></div>
       <div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">Warning</p><p>Orange bar, the same hue the plain aside takes.</p></div>
       <div class="markdown-alert markdown-alert-caution"><p class="markdown-alert-title">Caution</p><p>Red bar. Risk of loss or breakage.</p></div>
-      <table>
+      <table tabindex="0">
+        <caption>Pipe-table alignment: a converter emits no caption, so this one is the fixture's own, and it is what names the tab stop the escape hatch requires.</caption>
         <thead><tr><th align="left">Alignment</th><th align="center">from the</th><th align="right">pipe table</th></tr></thead>
         <tbody><tr><td align="left">start</td><td align="center">center</td><td align="right">3.14159</td></tr></tbody>
       </table>
       <p>Math converted to MathML needs no script and no CDN: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> sets inline without opening the line box, and a display block scrolls on its own axis rather than widening the page.</p>
-      <math display="block"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>
+      <math display="block" tabindex="0" role="region" aria-label="Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>
       <section class="footnotes" data-footnotes>
         <ol><li id="fn-1"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href="#fnref-1" class="footnote-backref">&#8617;</a></p></li></ol>
       </section>
@@ -788,7 +835,7 @@
         <li><a href="#">Another entry <span class="badge badge-t1">Tier 1</span></a></li>
         <li><a href="#">Failed audit <span class="badge badge-t3">Tier 3</span></a></li>
       </ul>
-      <p class="filter-empty" hidden>No entries match &ldquo;tier 4&rdquo;. Clear the filter to see all 4.</p>
+      <p class="filter-empty" hidden>No entries match. Clear the filter to see all 4.</p>
       <details class="nav-group" open><summary>Subfolder group <span class="count">1</span></summary>
         <ul class="nav-list" role="list"><li><a href="#">grouped item <span class="badge badge-t2">Tier 2</span></a></li></ul>
       </details>

@@ -6,7 +6,7 @@
   <title>Tufte-Dracula timeline layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.26.0 */
+    /* Dracula-Tufte (muted) v1.27.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -273,6 +273,7 @@
       border: 1px solid var(--rule); border-radius: var(--radius);
     }
     .filter-box::placeholder { color: var(--muted); font-style: italic; }
+    .filter-box ~ [role="status"] { color: var(--label); font-size: 0.95em; }
     .filter-hidden { display: none !important; }
     .filter-empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; }
     details.nav-group { border: 1px solid var(--rule-light); border-radius: var(--radius); margin: 0.6rem 0; padding: 0.2rem 0.85rem; }
@@ -439,6 +440,7 @@
       }
       mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       body { width: auto; max-width: none; padding: 1rem; }
+      .table-scroll { max-height: none; overflow: visible; }
       .mermaid-zoom { display: none; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
@@ -564,7 +566,9 @@
       }).observe(pre, { childList: true });
     });
     overlay.addEventListener('click', dismiss);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') dismiss(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) dismiss();
+    });
   </script>
   <script type="module">
     document.querySelectorAll('input.filter-box').forEach(input => {
@@ -585,6 +589,8 @@
       });
       if (!rows.length) return;
       const wasOpen = groups.map(group => group.open);
+      const counts = groups.map(group => group.querySelector('summary .count'));
+      const wasCount = counts.map(count => count && count.textContent);
       const status = input.parentElement.querySelector('[role="status"]');
       let empty = input.parentElement.querySelector('.filter-empty');
       if (!empty) {
@@ -606,6 +612,7 @@
           const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
           group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
           group.open = q ? shown > 0 : wasOpen[i];
+          if (counts[i]) counts[i].textContent = q ? shown : wasCount[i];
         });
         empty.hidden = visible !== 0;
         if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;

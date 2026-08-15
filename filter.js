@@ -17,6 +17,8 @@
       });
       if (!rows.length) return;
       const wasOpen = groups.map(group => group.open);
+      const counts = groups.map(group => group.querySelector('summary .count'));
+      const wasCount = counts.map(count => count && count.textContent);
       const status = input.parentElement.querySelector('[role="status"]');
       let empty = input.parentElement.querySelector('.filter-empty');
       if (!empty) {
@@ -38,6 +40,7 @@
           const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
           group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
           group.open = q ? shown > 0 : wasOpen[i];
+          if (counts[i]) counts[i].textContent = q ? shown : wasCount[i];
         });
         empty.hidden = visible !== 0;
         if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
