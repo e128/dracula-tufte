@@ -63,12 +63,60 @@ def max_chroma(L, h, eps=1e-4):
     return lo
 
 
+def oklch_to_linear_raw_p3(L, C, h):
+    """oklch() -> linear Display P3, unclamped. Same Oklab step as sRGB, different matrix.
+
+    The matrix is an OKLab-to-XYZ matrix composed with an XYZ-to-linear-Display-P3
+    matrix (both from color.js, the reference implementation CSS Color 4 cites).
+    Composing the same OKLab-to-XYZ matrix with an XYZ-to-linear-sRGB matrix instead
+    reproduces the sRGB matrix above to 9 significant figures, which is what confirms
+    this composition method rather than trusting it.
+    """
+    a = C * math.cos(math.radians(h))
+    b = C * math.sin(math.radians(h))
+    l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
+    m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
+    s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3
+    return (
+        3.1277689714 * l - 2.2571357626 * m + 0.1293667912 * s,
+        -1.0910090184 * l + 2.4133317103 * m - 0.3223226919 * s,
+        -0.0260108019 * l - 0.5080413317 * m + 1.5340521336 * s,
+    )
+
+
+def max_chroma_p3(L, h, eps=1e-4):
+    """The largest chroma at this lightness and hue that still lands inside Display P3.
+
+    Same bisection as max_chroma, against the wider P3 boundary. Only P3_WIDENED
+    tokens in P3_MODES are ever checked against this instead of max_chroma.
+    """
+    lo, hi = 0.0, 0.5
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if all(-eps <= v <= 1 + eps for v in oklch_to_linear_raw_p3(L, mid, h)):
+            lo = mid
+        else:
+            hi = mid
+    return lo
+
+
 def oklch_to_hex(L, C, h):
-    """oklch() -> #rrggbb, gamut-clipped, matching how a browser renders it."""
+    """oklch() -> #rrggbb, gamut-mapped, matching how a browser renders it.
+
+    Chroma is reduced to the sRGB ceiling before conversion, rather than clipped
+    per-channel afterward, because that is what a browser's own CSS Color 4 gamut
+    mapping does: hold L and h, pull C in to the boundary. A P3-reaching token (see
+    P3_WIDENED) has no exact sRGB hex, but every hex-only consumer (Mermaid, the
+    editor themes `--dump` feeds) is sRGB regardless, so this is the nearest
+    same-hue-and-lightness color they can actually show, not a hue-shifted guess.
+    Every token that already fits in sRGB is untouched: this only ever pulls
+    chroma in, never out.
+    """
 
     def encode(x):
         return 12.92 * x if x <= 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
 
+    C = min(C, max_chroma(L, h))
     return "#%02x%02x%02x" % tuple(round(encode(v) * 255) for v in oklch_to_linear(L, C, h))
 
 
@@ -335,13 +383,24 @@ if "matchMedia" in mermaid_js:
 #    exactly on the boundary passes, and it is still a bad place to sit: a later
 #    lightness nudge tips it out. Aim for the fraction of maximum chroma the dark
 #    token holds, which is the method the --data-* ramp already documents.
+#
+#    Six vivid accents (--red, --orange, --purple, --pink, --green, --data-1..4) hold
+#    a P3-reaching chroma in dark and light mode, gated by P3_WIDENED and P3_MODES.
+#    High-contrast and print keep these same tokens at their original sRGB values, so
+#    they still gate against the sRGB ceiling: a real sRGB clip in either untouched
+#    mode still fails loudly rather than passing under a relaxation meant for two
+#    modes it never applies to.
+P3_WIDENED = {"red", "orange", "purple", "pink", "green", "data-1", "data-2", "data-3", "data-4"}
+P3_MODES = {"default", "prefers-color-scheme: light"}
 for mode, triples_for_mode in resolved.items():
     for name, (L, C, h) in sorted(triples_for_mode.items()):
-        ceiling = max_chroma(L, h)
+        wide = name in P3_WIDENED and mode in P3_MODES
+        ceiling = max_chroma_p3(L, h) if wide else max_chroma(L, h)
         if C > ceiling + 0.0005:
+            gamut = "P3" if wide else "sRGB"
             print(
                 f"GAMUT: {mode} --{name} declares chroma {C:.3f} at L {L:.3f} hue {h:g}, "
-                f"where sRGB holds {ceiling:.3f} ({C / ceiling * 100:.0f}% of the ceiling). "
+                f"where {gamut} holds {ceiling:.3f} ({C / ceiling * 100:.0f}% of the ceiling). "
                 f"The browser clips it to {oklch_to_hex(L, C, h)} instead."
             )
             fail = 1
@@ -361,12 +420,17 @@ for mode, triples_for_mode in resolved.items():
 #    lightness edit made without recomputing chroma trips it, which is the whole point:
 #    L and C have to move together or the token changes character.
 #
-#    The other accents are deliberately absent. --link, --orange, --purple, --pink and
-#    --green each write one absolute chroma across all four modes, so their fractions
-#    float by design: --purple is 57% in dark and 37% in print, --green 53% and 77%.
-#    Pinning those means rewriting the whole palette and re-measuring every ratio in
-#    this file, which is a much larger change than the drift it would prevent. A table
-#    of five tokens that is true beats a table of ten that is aspirational.
+#    --link, --orange, --purple, --pink and --green are still deliberately absent from
+#    this table. --orange, --purple, --pink and --green each hold one absolute chroma in
+#    dark and a second one in light (see NOTES.md), so their fraction still floats
+#    independently per mode rather than being pinned to an invariant. Pinning those
+#    means rewriting the whole palette and re-measuring every ratio in this file,
+#    which is a much larger change than the drift it would prevent. A table of five
+#    tokens that is true beats a table of ten that is aspirational.
+#
+#    The five tokens below are pinned, and in dark and light mode the ceiling they are
+#    measured against is now the P3 one (P3_WIDENED / P3_MODES, same as check 7). The
+#    band numbers are unchanged; only the ruler is wider, in the two modes that widened.
 VIVIDNESS = {
     "red": (0.85, 0.89),
     "data-1": (0.69, 0.73),
@@ -377,7 +441,7 @@ VIVIDNESS = {
 for mode, triples_for_mode in resolved.items():
     for name, (low, high) in VIVIDNESS.items():
         L, C, h = triples_for_mode[name]
-        ceiling = max_chroma(L, h)
+        ceiling = max_chroma_p3(L, h) if mode in P3_MODES else max_chroma(L, h)
         got = C / ceiling
         if not low <= got <= high:
             print(

@@ -226,6 +226,11 @@ component-internal padding tuned by measurement. A snap to the scale would move 
 satisfy an abstraction. The list indent stays literal for the same reason, because it pairs with
 `--tree-step` rather than with the vertical scale.
 
+**`text-wrap: pretty` sits on `p`, `.sidenote`/`.marginnote`, and `figcaption`/`caption`.** It
+avoids a lone short word stranded on the last line, the same defect `balance` fixes on headings,
+but for blocks too long for `balance`'s cost. Chrome and Safari ship it; Firefox falls back to
+normal wrapping with no breakage, so the rule costs nothing where it is not read.
+
 ## Lists
 
 **A prose `ul` keeps its markers.** A global `list-style: none` reset rendered bulleted lists as a
@@ -439,6 +444,14 @@ other off `visible`, so the wrapper becomes the scrollport and the header still 
 **The wrapper stays opt-in, and `overflow-x` stays on `table`.** A move of the hatch off `table`
 would break every consumer that had not wrapped yet, so both paths run at once.
 
+**`.table-scroll` carries `scroll-padding-top: 3em`, matched against the sticky `th`'s own
+height.** A focusable cell in an early row lands under the pinned header otherwise, which is a
+WCAG 2.4.11 failure. A headless-Chrome repro confirmed both halves: with no `scroll-padding-top`,
+a focused link's rect sat fully inside the sticky header's bounding box; with it set, the
+browser's native focus-triggered scroll went far enough that the link cleared the header by
+roughly 46px. The fixture's wide table carries one link (row 2's trend cell) for exactly this
+reason, so a future regression here fails the same way it was caught.
+
 ## Links
 
 **Underline thickness has a 1px floor.** A sub-pixel underline paints as a faint partial-coverage
@@ -570,12 +583,72 @@ heading beside it is worse than one louder than its peers.
 **One absolute chroma across modes means different vividness in each**, because the ceiling moves
 with lightness. `--red` therefore writes a different chroma per mode to hold one fraction.
 
-**The other five accents deliberately let their fraction float.** `--link`, `--orange`, `--purple`,
-`--pink` and `--green` each write one absolute chroma across all four modes. A pin means new
-chromas in three mode blocks each. It then means a re-measure of every ratio, every `/* was */` hex
-and both Mermaid projections. `--red` was worth it, because a status color that changes intensity
-between screen and paper is a semantic problem. `h2` calmer on paper is not. **A table of five that
-is true beats a table of ten that is aspirational.**
+**`--link` and the four other accents deliberately let their fraction float.** `--orange`,
+`--purple`, `--pink` and `--green` do not hold one absolute chroma across all four modes anymore
+(see "P3 gamut for six vivid accents" below); `--link` still does, and none of the five are pinned
+to an invariant fraction the way `--red` and the data ramp are. A pin means new chromas in three
+mode blocks each. It then means a re-measure of every ratio, every `/* was */` hex and both Mermaid
+projections. `--red` was worth it, because a status color that changes intensity between screen and
+paper is a semantic problem. `h2` calmer on paper is not. **A table of five that is true beats a
+table of ten that is aspirational.**
+
+### P3 gamut for six vivid accents
+
+**`--red`, `--orange`, `--purple`, `--pink`, `--green` and the `--data-*` ramp hold a wider,
+Display-P3-reaching chroma in dark and light mode.** High contrast and print keep these same six
+tokens at their original sRGB values. High contrast is already gamut-compressed by design (the
+paragraph above this one), and a screen's P3 gamut has no correspondence to reproducible ink, so
+neither mode had anything to gain from the wider ceiling. `.github/palette-check.py` gates this
+with `P3_WIDENED` and `P3_MODES`: only these nine tokens, only in `default` and
+`prefers-color-scheme: light`, get checked against a Display P3 ceiling instead of the sRGB one.
+Everywhere else, including these same tokens in high contrast and print, the sRGB gate is unchanged,
+so a real sRGB clip in an untouched mode still fails loudly rather than passing under a relaxation
+that was never meant to reach it.
+
+**`--red` and the data ramp keep the exact fraction they already held, now measured against the
+wider ceiling.** Same design, wider ruler: no re-litigation of how loud `--red` should read relative
+to its neighbors, because the fraction that answers that question did not change, only the ceiling
+it is a fraction of.
+
+**`--orange`, `--purple`, `--pink` and `--green` do not get a pinned fraction.** Their current
+fraction of the sRGB ceiling swings wildly between dark and light, by measurement: orange 55.5%
+dark vs. 74.3% light, purple 56.5% vs. 37.6%, pink 63.3% vs. 52.6%, green 52.6% vs. 79.1%, purely
+from where one hard-coded chroma happened to land against two different per-mode ceilings. Porting
+one of those numbers as a "target fraction" would state a precision that was never designed, only
+landed on by accident. The rule instead: **+25% chroma, independently in dark and light**, capped
+at whatever value keeps every existing check 5 contrast floor passing. Only one pair needed the
+cap: `--purple` dark against `--code-bg` was already the closest accent/ground pair to its floor in
+the sheet (4.227:1 against a 4.2 floor, recorded above as "the repo left it alone"), and a flat +25%
+would have dropped it to 4.180:1, crossing the line. Capping purple's dark bump at +9.3% instead of
++25% (chroma 0.107 to 0.117, not 0.134) holds it at 4.21:1. Every other token, mode and ground
+clears its floor with margin at the full +25%. This still leaves `--orange`, `--purple`, `--pink`
+and `--green` floating rather than pinned: dark and light now each hold their own bumped value, and
+high contrast and print hold the original one, which is one more split than these four had before,
+not a step toward the invariant-fraction model `--red` and the ramp use.
+
+**High contrast has to state the data ramp explicitly now, and it never had to before.** Its
+`:root` block redeclares `--red`, `--orange`, `--purple`, `--pink` and `--green` but had never
+redeclared `--data-1..4`, since inheriting the base block's values was always correct there. Once
+the base block's data ramp held a P3-reaching chroma, an unstated high-contrast override silently
+inherited it too, and check 8 caught the drift: the ramp's vividness fraction, measured against
+the sRGB ceiling as high contrast requires, moved outside its band. High contrast now restates the
+ramp at its original sRGB values explicitly, for the same reason the other five accents already do.
+
+**Every hex-only consumer, Mermaid and the three editor themes alike, is still sRGB, and now
+needs gamut mapping rather than a straight conversion.** `mermaid.js`, `mermaid-palette.json` and
+`scripts/create-themes.nu` (Zed, Rider, Ghostty, via `.github/palette-check.py --dump`) all read a
+`#rrggbb` projection of these tokens, never the `oklch()` itself. Before this change, no token's
+`C` ever exceeded the sRGB ceiling, so `oklch_to_hex`'s per-channel clip never actually engaged: it
+was dead code, exercised only by the reverted three-token bug check 7 was built to catch. Once
+`--purple` and the data ramp legitimately exceed sRGB in dark and light, per-channel clipping would
+have hue- and lightness-shifted them, the same drift check 7's own history describes. `oklch_to_hex`
+now reduces chroma to the sRGB ceiling before converting, holding `L` and `h`, which is what a
+browser's own CSS Color 4 gamut mapping does and matches the function's stated purpose. The
+practical result: Zed, Rider, Ghostty and every Mermaid diagram render the nearest in-gamut sRGB
+approximation of the new vivid colors, not the full P3 vividness (hex cannot carry that) and not a
+distorted guess either. `mermaid-palette.json`'s stated hex and `mermaid.js`'s inline literals for
+`primaryBorderColor`/`nodeBorder` (from `--purple`) and `pie1..4` (from the data ramp) were
+recomputed and updated to match; every other Mermaid hex was already within sRGB and unaffected.
 
 **Percent of maximum chroma is the wrong yardstick across lightness. It works only across hue.** A
 near-neutral like `--label` holds one absolute chroma in every mode. A match on the fraction would
@@ -902,6 +975,11 @@ is the inner radius plus the padding. The `calc` keeps them concentric when eith
 diagram was clickable, and a cursor does not exist on touch. The ring is instant and not
 transitioned. Hover is high-frequency, and it does not want motion.
 
+**The View Transitions API was considered for the mermaid overlay open/close, and passed over.**
+Cross-document support is not Baseline yet, and the overlay's existing `opacity` transition already
+covers the same need. A new browser API earns its place by doing something the current transition
+cannot, not by replacing it with an equivalent.
+
 **The overlay's way out is a `✕` glyph on `.mermaid-overlay::after`.** Click-anywhere and Escape
 both dismissed it before and still do. Nothing advertised either one, and `cursor: zoom-out` is
 invisible on touch. It is a glyph rather than a word, because consumers inline this stylesheet
@@ -934,26 +1012,35 @@ a recreation. The observer now re-adds the button whenever one is missing. It al
 rather than the `pre` for the click listener. The button append is therefore a no-op on the next
 tick rather than a loop.
 
-**The overlay is a modal, and it says so.** It carries `role="dialog"`, `aria-modal="true"`, an
-`aria-label` and `tabindex="-1"`. It takes focus on open. It sets `inert` on every other `body`
-child. It restores focus to the button that opened it. `overscroll-behavior: contain` keeps the page
-underneath from a scroll.
+**The overlay is a native `<dialog>`, opened with `showModal()`.** An earlier version was a `<div>`
+that hand-rolled every part of modality: `role="dialog"`, `aria-modal="true"`, a `tabindex="-1"` plus
+a manual `.focus()` call, an `inert` toggle across every other `body` child on open and close, and a
+guarded `document`-level Escape listener that had to check `.active` before it ran, because an
+unguarded one reached into a consumer's page on every Escape press and cleared `inert` off whatever
+the consumer's own dialog had set. `showModal()` does all of it natively: the dialog carries an
+implicit `role="dialog"` and an implicit `aria-modal="true"` while shown, the rest of the page is
+excluded from focus and the accessibility tree without this file touching a single sibling, focus
+moves to the dialog automatically (there is nothing focusable in a cloned diagram to move to
+instead), and Escape closes it through a `cancel` event the browser fires on its own. `aria-label`
+still needs setting by hand, same as before, since a `<dialog>` has no accessible name of its own.
 
-**The Escape handler is guarded on `.active`, and the guard is not a tidy-up.** `dismiss()` clears
-`inert` on every `body` child. Unguarded, one Escape press with the overlay never opened therefore
-reached into a consumer's page and set `inert` back to `false` on whatever they had set it on. The
-inert-siblings pattern this file uses is the same one a consumer's own dialog uses, so the payload
-broke the focus containment of any modal on the page it was inlined into. **A `document`-level
-keydown listener in an inlined payload owes a state check.** The listener is on `document` rather
-than the overlay, because a closed overlay holds no focus and would never see the key.
+**Close still runs through one function, `hide()`, called from a `click` listener on the overlay
+and from a `cancel` listener that first calls `preventDefault()`.** The `preventDefault()` stops the
+browser's own auto-close so `hide()` can run the same cleanup either way: drop the `active` class,
+call `overlay.close()`, empty `overlay.innerHTML`. `close()` is called synchronously in `hide()`
+rather than deferred to the fade's `transitionend`, because a `transitionend` that never fires (a
+missing frame, a stalled compositor, anything that stops the opacity transition from completing)
+would otherwise leave the dialog open forever with no cleanup and no focus restored, which is worse
+than the fragility this replaced. **The trade is that the overlay's entrance still fades in but its
+exit does not.** `showModal()` puts the dialog in the top layer and removing it with `close()` takes
+it back out synchronously, and a property that no longer applies cannot transition. An exit fade is
+possible with `@starting-style` and `transition-behavior: allow-discrete`, and was not pursued here,
+because closing this dialog is a dismissal a user asked for, not a state a user is meant to watch
+happen.
 
-**It is `inert` while closed, and that is what keeps it out of the page.** The overlay is only
-`opacity: 0; pointer-events: none`, and it is never hidden. `role="dialog"` alone therefore left
-every generated page with a permanently open empty modal, and `aria-modal="true"` is a page-wide
-instruction to disregard everything outside it. One property drops the node from the accessibility
-tree **and** blocks hit testing, and it does not interfere with the opacity transition.
-**`aria-hidden` was rejected.** It hides from assistive technology and leaves the element focusable,
-which is the defect it would paper over.
+**Focus returns to the button that opened it for free.** `close()` restores focus to whatever had it
+when `showModal()` was called, which is the trigger button for any focus-driven activation. The
+manual `opener` variable and its `.focus()` call are gone with the code that made them necessary.
 
 **The zoom button is named from the diagram, not from a constant.** A hard-coded label gives a page
 with several diagrams several identically named buttons. Mermaid writes each fence's `accTitle:`
@@ -1159,6 +1246,11 @@ raw bytes.
 
 The renders are **advisory on purpose**. They are not in `REQUIRED_CHECKS`. The assertions are the
 gate, and the images are for a person to look at.
+
+**`light-dark()` was considered for the mode swap and passed over.** Each mode redeclares roughly
+fifteen tokens as one `:root` block under one media condition. `light-dark()` sets one declaration
+at a time from two values, so the same swap would mean fifteen inline calls instead of one block,
+which is more to read and more to keep in step, not less.
 
 **High contrast and light mode do not compose. The ordering is deliberate.**
 `prefers-contrast: more` is declared *before* the light block. A reader who asks for both therefore
