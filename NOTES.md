@@ -236,6 +236,29 @@ share one indent, and `ul` keeps the UA marker progression, muted.
 `list-style: none`. A prose list with markers therefore keeps its semantics natively. Only
 `.nav-list` needs `role="list"` in the markup, which is a consumer obligation in `CONTRACT.md`.
 
+### `.recent-groups`
+
+**A landing index with several "recently updated, by category" lists is `auto-fit`, not a fixed
+column count.** `.edge-list` is always two columns, because an antecedent list and a descendant
+list are always a pair. A category index has no such fixed arity. A generator may emit two
+categories or eight, and a fixed `1fr 1fr` would either strand empty columns or overflow them.
+`repeat(auto-fit, minmax(18rem, 1fr))` sizes itself to whatever count the client emits, with no
+per-category selector and no count read from markup.
+
+**That is also why `.recent-groups` carries no breakpoint override, where `.edge-list` needs
+one.** At any width narrow enough to matter, two 18rem tracks no longer fit side by side, and
+`auto-fit` collapses to one column on its own. A fixed-column grid cannot do that, which is why
+`.edge-list` and `dl.timeline` each carry an explicit breakpoint. Adding one here would duplicate
+what the track-sizing function already does, against a number nobody measured for this component.
+
+**Item count per category and the "view all" link are a generator concern, not a stylesheet
+one.** The CSS lays out whatever `.recent-group` sections arrive. It does not cap a list's length
+and does not style the overflow link beyond the plain `a` rules every link already carries.
+
+**A `.recent-group` for uncategorized items is styled identically to a named category.** It is
+one class, not two. A muted or demoted "Other" bucket would need a second class family for a
+distinction only the heading text needs to carry.
+
 ### `dl.timeline`
 
 **A timeline entry is content, not annotation.** `dl.timeline > dd` and `> dt` both take
