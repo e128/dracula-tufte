@@ -264,13 +264,16 @@ and does not style the overflow link beyond the plain `a` rules every link alrea
 one class, not two. A muted or demoted "Other" bucket would need a second class family for a
 distinction only the heading text needs to carry.
 
-**A `.recent-group .nav-list li` puts its trailing `<span class="count">` on the same line as the
-link, not below it.** `a { display: block }` made the anchor claim the full row, so the date sat
-on a line of its own beneath the title, at the same size and color as the link itself. The date
-outranked the title it was annotating. `.recent-group .nav-list li` is now `display: flex` with
-the anchor at `flex: 1 1 10rem` and `.count` pushed to the trailing edge at `--muted` and `0.82em`
-so it reads as metadata, matching every other annotation register in the sheet. Do not revert the
-anchor to `display: block` inside a `.recent-group`.
+**A `.recent-group .nav-list li` is one line: title leading, its trailing `<span class="count">`
+on the same row, never below it.** `a { display: block }` made the anchor claim the full row, so
+the date sat on a line of its own beneath the title, at the same size and color as the link
+itself. The date outranked the title it was annotating. `.recent-group .nav-list li` is now
+`display: flex`. The anchor takes `flex: 1 1 auto` with `min-width: 0` plus `overflow: hidden;
+text-overflow: ellipsis; white-space: nowrap`, so a long title truncates instead of wrapping to a
+second line and pushing the date off the row. `.count` takes `flex: none` at `--muted` and
+`0.82em`, so it reads as metadata, matching every other annotation register in the sheet, and it
+never shrinks to make room for the title. Do not revert the anchor to `display: block` inside a
+`.recent-group`, and do not let the title wrap: a second line is what this rule exists to prevent.
 
 **`.recent-group` and its `.nav-list` stretch to fill the grid row.** `.recent-groups` already
 sizes its tracks with `auto-fit`; without `.recent-group { display: flex; flex-direction: column }`

@@ -289,9 +289,9 @@
     .recent-group { display: flex; flex-direction: column; }
     .recent-group h3 { margin-top: 0; }
     .recent-group .nav-list { flex: 1; }
-    .recent-group .nav-list li { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.5rem; }
-    .recent-group .nav-list li a { flex: 1 1 10rem; }
-    .recent-group .nav-list li .count { color: var(--muted); font-size: 0.82em; margin-inline-start: auto; padding-inline-end: 0.5rem; }
+    .recent-group .nav-list li { display: flex; align-items: baseline; column-gap: 0.5rem; }
+    .recent-group .nav-list li a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.82em; padding-inline-end: 0.5rem; }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
