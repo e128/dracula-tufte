@@ -25,8 +25,8 @@ Two supported modes. Pick one and hold it:
 - **Sliced.** Take the body with `sed '1d;$d'` and supply your own wrapper. The wrapper is exactly
   one line at each end, and CI holds it there, so the slice cannot rot.
 
-`mermaid.js` needs `<div class="mermaid-overlay" id="mermaid-zoom"></div>` as the first child of
-`<body>`. It throws a named error when the div is absent.
+`mermaid.js` needs `<dialog class="mermaid-overlay" id="mermaid-zoom"></dialog>` as the first
+child of `<body>`. It throws a named error when the dialog is absent.
 
 **Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html`,
 `samples/light-conn-map.html` and `samples/light-timeline.html` exist so a reader can see the light

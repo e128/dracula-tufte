@@ -135,7 +135,7 @@ def tokens [css: string] {
 # this stylesheet. See NOTES.md.
 def conn-map-body [] {
   [
-    "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <dialog class=\"mermaid-overlay\" id=\"mermaid-zoom\"></dialog>"
     "  <main>"
     "  <article>"
     "    <h1>Connections-Map Layout Sample</h1>"
@@ -159,7 +159,7 @@ def conn-map-body [] {
 def body [] {
   [
     # Mermaid click-to-zoom overlay target (id referenced by mermaid.js).
-    "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <dialog class=\"mermaid-overlay\" id=\"mermaid-zoom\"></dialog>"
     "  <main>"
     "  <article>"
     "    <h1>Tufte-Dracula Component Sample</h1>"
@@ -252,7 +252,11 @@ def body [] {
     ...(1..24 | each {|i|
       let region = ([Northwest Southeast Midlands Coastal Interior "Upper Bay"] | get (($i - 1) mod 6))
       let trend = ([rising flat falling] | get (($i - 1) mod 3))
-      $"            <tr><td>R-($i)</td><td>($region)</td><td class=\"num\">($i * 137)</td><td class=\"num\">($i * 211)</td><td class=\"num\">($i * 89)</td><td class=\"num\">($i * 313)</td><td>($trend)</td><td>Row ($i) of twenty-four, long enough that eight columns outrun the body</td></tr>"
+      # Row 2 carries the only focusable cell in any .table-scroll table, so a
+      # keyboard user tabbing into it is what proves the sticky thead's
+      # scroll-padding-top actually clears the focus ring, not just the math.
+      let trend_cell = if $i == 2 { $"<a href=\"#\">($trend)</a>" } else { $trend }
+      $"            <tr><td>R-($i)</td><td>($region)</td><td class=\"num\">($i * 137)</td><td class=\"num\">($i * 211)</td><td class=\"num\">($i * 89)</td><td class=\"num\">($i * 313)</td><td>($trend_cell)</td><td>Row ($i) of twenty-four, long enough that eight columns outrun the body</td></tr>"
     })
     "          </tbody>"
     "        </table>"
@@ -427,7 +431,7 @@ def body [] {
 # Source content: e128.info research scroll `lode/research/timelines/khmer-civilization.md`.
 def timeline-body [] {
   [
-    "  <div class=\"mermaid-overlay\" id=\"mermaid-zoom\"></div>"
+    "  <dialog class=\"mermaid-overlay\" id=\"mermaid-zoom\"></dialog>"
     "  <main>"
     "  <article style=\"--timeline-date: 16ch\">"
     "    <h1>Khmer Civilization Timeline</h1>"

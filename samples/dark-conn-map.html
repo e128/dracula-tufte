@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.28.0 */
+    /* Dracula-Tufte (muted) v1.29.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -29,16 +29,16 @@
       --rule-light:  oklch(0.56 0.032 277.832);
       --link:        oklch(0.802 0.064 216.782);  /* was #8fc9d9 */
       --code-bg:     oklch(0.340 0.027 276.046);  /* was #343746 */
-      --orange:      oklch(0.773 0.092 61.444);   /* was #e0a878 */
-      --red:         oklch(0.735 0.142 21.457);
-      --purple:      oklch(0.698 0.107 300.909);  /* was #a98ed6 */
+      --orange:      oklch(0.773 0.115 61.444);
+      --red:         oklch(0.735 0.182 21.457);
+      --purple:      oklch(0.698 0.117 300.909);
       --purple-bright: oklch(from var(--purple) calc(l + 0.07) c h);
-      --pink:        oklch(0.742 0.120 349.392);  /* was #e48bb7 */
-      --green:       oklch(0.775 0.100 155.397);  /* was #7fc99a */
-      --data-1:      oklch(0.790 0.077 255.000);
-      --data-2:      oklch(0.742 0.120 340.000);
-      --data-3:      oklch(0.775 0.100 165.000);
-      --data-4:      oklch(0.790 0.100 112.500);
+      --pink:        oklch(0.742 0.150 349.392);
+      --green:       oklch(0.775 0.125 155.397);
+      --data-1:      oklch(0.790 0.084 255.000);
+      --data-2:      oklch(0.742 0.158 340.000);
+      --data-3:      oklch(0.775 0.137 165.000);
+      --data-4:      oklch(0.790 0.116 112.500);
       --body-font:   'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
       --mono-font:   ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
       --page-width:  min(90vw, 160rem);
@@ -165,7 +165,7 @@
       box-shadow: inset 0 -1px 0 var(--rule-light);
     }
     thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
-    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; overscroll-behavior: contain; }
+    .table-scroll { overflow: auto; max-height: 70vh; margin: 0.5rem 0; overscroll-behavior: contain; scroll-padding-top: 3em; }
     .table-scroll > table { display: table; margin-block: 0; }
     td {
       border: none; padding: .35rem .6rem; text-align: start;
@@ -296,8 +296,10 @@
     .recent-group h3 { margin-top: 0; }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
-    .mermaid-overlay {
+    .mermaid-overlay[open] {
       position: fixed; inset: 0; z-index: 1000;
+      width: 100%; height: 100%; margin: 0; border: none; padding: 0;
+      max-width: none; max-height: none;
       background: oklch(from var(--surface-alt) l c h / 0.92);
       display: flex; align-items: center; justify-content: center;
       cursor: zoom-out; opacity: 0; transition: opacity 0.2s ease-out;
@@ -379,6 +381,10 @@
         --purple:      oklch(0.845 0.051 300.909);
         --pink:        oklch(0.860 0.057 349.392);
         --green:       oklch(0.820 0.100 155.397);
+        --data-1:      oklch(0.790 0.077 255.000);
+        --data-2:      oklch(0.742 0.120 340.000);
+        --data-3:      oklch(0.775 0.100 165.000);
+        --data-4:      oklch(0.790 0.100 112.500);
       }
       a { text-decoration-thickness: max(2px, 0.1em); text-decoration-color: currentColor; }
       .nav-list li a { text-decoration-color: currentColor; }
@@ -396,16 +402,16 @@
         --muted:       oklch(0.530 0.055 275);
         --rule-light:  oklch(0.600 0.032 277.832);
         --link:        oklch(0.520 0.064 216.782);
-        --orange:      oklch(0.535 0.092 61.444);
-        --red:         oklch(0.545 0.191 21.457);
-        --purple:      oklch(0.535 0.107 300.909);
+        --orange:      oklch(0.535 0.115 61.444);
+        --red:         oklch(0.545 0.216 21.457);
+        --purple:      oklch(0.535 0.134 300.909);
         --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
-        --pink:        oklch(0.545 0.120 349.392);
-        --green:       oklch(0.515 0.100 155.397);
-        --data-1:      oklch(0.624 0.146 255.000);
-        --data-2:      oklch(0.643 0.156 340.000);
-        --data-3:      oklch(0.613 0.079 165.000);
-        --data-4:      oklch(0.619 0.078 112.500);
+        --pink:        oklch(0.545 0.150 349.392);
+        --green:       oklch(0.515 0.125 155.397);
+        --data-1:      oklch(0.624 0.158 255.000);
+        --data-2:      oklch(0.643 0.173 340.000);
+        --data-3:      oklch(0.613 0.109 165.000);
+        --data-4:      oklch(0.619 0.091 112.500);
         --ring:        oklch(0 0 0 / 0.1);
         --mermaid-scheme: light;
       }
@@ -468,36 +474,36 @@
       mainBkg:             '#343746',
       primaryColor:        '#343746',
       primaryTextColor:    '#f8f8f2',
-      primaryBorderColor:  '#a98ed6',
+      primaryBorderColor:  '#aa8cdb',
       lineColor:           '#979fc4',
       textColor:           '#f8f8f2',
       secondaryColor:      '#1e1f29',
       clusterBkg:          '#343746',
       clusterBorder:       '#707388',
-      nodeBorder:          '#a98ed6',
+      nodeBorder:          '#aa8cdb',
       edgeLabelBackground: '#343746',
       noteBkgColor:        '#343746',
       noteTextColor:       '#f8f8f2',
       noteBorderColor:     '#707388',
-      pie1: '#99bdec', pie2: '#de8dc3', pie3: '#74caa6', pie4: '#bbc175',
+      pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
       mainBkg:             '#f0f1f9',
       primaryColor:        '#f0f1f9',
       primaryTextColor:    '#161616',
-      primaryBorderColor:  '#785da1',
+      primaryBorderColor:  '#7b58ae',
       lineColor:           '#626a8c',
       textColor:           '#161616',
       secondaryColor:      '#efefea',
       clusterBkg:          '#f0f1f9',
       clusterBorder:       '#7b7f94',
-      nodeBorder:          '#785da1',
+      nodeBorder:          '#7b58ae',
       edgeLabelBackground: '#f0f1f9',
       noteBkgColor:        '#f0f1f9',
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
-      pie1: '#4488dd', pie2: '#c962ab', pie3: '#539378', pie4: '#868b53',
+      pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
@@ -511,46 +517,35 @@
       },
     });
     const overlay = document.getElementById('mermaid-zoom');
-    if (!overlay) throw new Error('mermaid.js requires <div class="mermaid-overlay" id="mermaid-zoom"></div> as the first child of <body>');
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.tabIndex = -1;
-    overlay.inert = true;
+    if (!overlay) throw new Error('mermaid.js requires <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog> as the first child of <body>');
     const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
     const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
     const named = (svg, label) => {
       const title = titleOf(svg);
       return title ? label + ': ' + title : label;
     };
-    const siblings = () => [...document.body.children].filter(el => el !== overlay);
-    let opener = null;
-    const dismiss = () => {
+    const hide = () => {
       overlay.classList.remove('active');
-      overlay.inert = true;
-      siblings().forEach(el => { el.inert = false; });
-      if (opener) { opener.focus(); opener = null; }
+      overlay.close();
+      overlay.innerHTML = '';
     };
-    const zoom = (svg, trigger) => {
+    const zoom = svg => {
       const zoomed = svg.cloneNode(true);
       zoomed.removeAttribute('width');
       zoomed.removeAttribute('height');
       zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
       overlay.setAttribute('aria-label', named(svg, zoomLabel));
       overlay.replaceChildren(zoomed);
-      overlay.classList.add('active');
-      overlay.inert = false;
-      siblings().forEach(el => { el.inert = true; });
-      opener = trigger;
-      overlay.focus();
+      overlay.showModal();
+      requestAnimationFrame(() => overlay.classList.add('active'));
     };
-    overlay.addEventListener('transitionend', () => { if (!overlay.classList.contains('active')) overlay.innerHTML = ''; });
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
         if (!svg) return;
         if (!svg.dataset.zoomable) {
           svg.dataset.zoomable = 'true';
-          svg.addEventListener('click', () => zoom(svg, pre.querySelector('.mermaid-zoom')));
+          svg.addEventListener('click', () => zoom(svg));
         }
         if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
         pre.tabIndex = 0;
@@ -562,15 +557,13 @@
           button.className = 'mermaid-zoom';
           button.textContent = zoomLabel;
           button.setAttribute('aria-label', named(svg, zoomLabel));
-          button.addEventListener('click', () => zoom(svg, button));
+          button.addEventListener('click', () => zoom(svg));
           pre.append(button);
         }
       }).observe(pre, { childList: true });
     });
-    overlay.addEventListener('click', dismiss);
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && overlay.classList.contains('active')) dismiss();
-    });
+    overlay.addEventListener('click', hide);
+    overlay.addEventListener('cancel', e => { e.preventDefault(); hide(); });
   </script>
   <script type="module">
     document.querySelectorAll('input.filter-box').forEach(input => {
@@ -623,7 +616,7 @@
   </script>
 </head>
 <body class="conn-map">
-  <div class="mermaid-overlay" id="mermaid-zoom"></div>
+  <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog>
   <main>
   <article>
     <h1>Connections-Map Layout Sample</h1>
