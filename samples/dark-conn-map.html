@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.29.0 */
+    /* Dracula-Tufte (muted) v1.30.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -293,7 +293,12 @@
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: var(--space-6) 0; }
     .edge-list h3 { margin-top: 0; }
     .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
+    .recent-group { display: flex; flex-direction: column; }
     .recent-group h3 { margin-top: 0; }
+    .recent-group .nav-list { flex: 1; }
+    .recent-group .nav-list li { display: flex; align-items: baseline; column-gap: 0.5rem; }
+    .recent-group .nav-list li a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.82em; padding-inline-end: 0.5rem; }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
