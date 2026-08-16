@@ -264,6 +264,20 @@ and does not style the overflow link beyond the plain `a` rules every link alrea
 one class, not two. A muted or demoted "Other" bucket would need a second class family for a
 distinction only the heading text needs to carry.
 
+**A `.recent-group .nav-list li` puts its trailing `<span class="count">` on the same line as the
+link, not below it.** `a { display: block }` made the anchor claim the full row, so the date sat
+on a line of its own beneath the title, at the same size and color as the link itself. The date
+outranked the title it was annotating. `.recent-group .nav-list li` is now `display: flex` with
+the anchor at `flex: 1 1 10rem` and `.count` pushed to the trailing edge at `--muted` and `0.82em`
+so it reads as metadata, matching every other annotation register in the sheet. Do not revert the
+anchor to `display: block` inside a `.recent-group`.
+
+**`.recent-group` and its `.nav-list` stretch to fill the grid row.** `.recent-groups` already
+sizes its tracks with `auto-fit`; without `.recent-group { display: flex; flex-direction: column }`
+plus `.recent-group .nav-list { flex: 1 }`, a category with fewer recent items renders a shorter
+card, and the "view all" links across a row land on different baselines. The list, not the card,
+absorbs the slack, so item rows keep their own height.
+
 ### `dl.timeline`
 
 **A timeline entry is content, not annotation.** `dl.timeline > dd` and `> dt` both take
