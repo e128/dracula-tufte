@@ -94,15 +94,18 @@ Four things are worth knowing before you get there:
 
 ## Editor themes
 
-`themes/` projects the same `:root` palette into three editors. These files are **not** part of the
-consumer contract, because no submodule reads them. The repo generates and gates them from a `.in`
-template beside each output.
+`themes/` projects the same `:root` palette into three editors and Slack. The editor files are
+**not** part of the consumer contract, because no submodule reads them. The repo generates and
+gates them from a `.in` template beside each output. The Slack entry has no file format to
+generate: it is a hand-copied color string, documented in
+[`themes/slack/README.md`](themes/slack/README.md).
 
 | Theme | Files | Install |
 | --- | --- | --- |
 | **Rider** | `dracula-tufte.theme.json` (IDE chrome) and `dracula-tufte.icls` (editor scheme) | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip` |
 | **Zed** | `dracula-tufte.json` | Copy to `~/.config/zed/themes/` |
 | **Ghostty** | `dracula-tufte` | Copy to `~/.config/ghostty/themes/`, then set `theme = dracula-tufte` |
+| **Slack** | `themes/slack/README.md` (color string, no file to install) | Preferences, Themes, Custom Theme, paste string |
 
 ```sh
 nu scripts/create-themes.nu           # write every theme, then package the Rider plugin
