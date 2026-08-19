@@ -64,6 +64,13 @@ Nine requirements. No stylesheet change can supply any of them.
       `.sidenote`. A float cannot escape a grid item, so the note lands inside the entry column
       instead of the page margin. Give each `dt` an `id` to make an entry deep-linkable; the
       arrival outline is automatic once it has one.
+- [ ] `.verdict` plus one of `.verdict-pass`, `.verdict-partial`, `.verdict-failed` or
+      `.verdict-neutral` on a `<span>` around a verdict token, wherever a page grades a claim: a
+      `<table>` cell, a heading, or prose. Bare text carries no pass, partial, failed or N/A
+      distinction; the classes carry all of it. `.scorecard` (a compact `.sc-label` /
+      `.verdict` / `.sc-note` three-column grid) suits a short two-to-six-item summary. A longer
+      graded list wants a real `<table>` instead, `scope="col"` headers per the requirement above,
+      with the same `.verdict` classes inside each Verdict cell.
 
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
@@ -75,6 +82,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.31.0 | opt in to `.verdict` plus `.verdict-pass` / `.verdict-partial` / `.verdict-failed` / `.verdict-neutral` on any page that grades a claim. The classes existed before this row did; nothing in this file told a generator they were there, so a real graded page (a 27-row scorecard, a verdict per row) rendered every verdict as plain text. `.verdict` also gained `display: inline-block`, so its fixed `min-width` now holds wherever you place it, a `<table>` cell, a heading, or prose, not only inside `.scorecard`'s grid, where a grid item's blockified `display` had been carrying it until now |
 | v1.30.0 | nothing. `.recent-group .nav-list li` now lays its `<span class="count">` out beside the link instead of on its own line below it, and equalizes card height within a `.recent-groups` row. Both are self-contained stylesheet changes over markup you already emit |
 | v1.27.0 | **drop `role="region"` from any bare `<table>` you put it on**, and emit `tabindex="0"` plus a `<caption>` there instead. § 2 used to fold a table into the same sentence as `pre` and `math`, so it asked for a role that overrides `role="table"` and takes the row and column semantics with it. The tab stop is still required, because the stylesheet gives a table its own sideways-scroll axis below 1000px, and the `<caption>` is what names it. A table inside `.table-scroll` needs no edit: the role belongs on the wrapper and always did |
 | v1.27.0 | nothing, and a filtered `details.nav-group` now counts what it shows. `filter.js` used to leave `summary .count` at its authored number while the query hid items underneath it, so a group could read `5` over two visible rows, and the `[role="status"]` line beside it reported the real figure. Two counts on one screen disagreed and the wrong one was the larger. The script restores your number when the query clears, so an authored count is still yours |

@@ -133,6 +133,14 @@ def tokens [css: string] {
 # the visual order. The stylesheet no longer reorders; markup order is the layout
 # order. A page emitted with the old (Graph, Links) markup renders reversed under
 # this stylesheet. See NOTES.md.
+#
+# The Graph section holds two diagrams: the small map is the container-CSS
+# fixture (long label, useMaxWidth:false). The large map exercises the "Large
+# maps" NOTES.md section instead: open (never collapsed) subgraphs, the ELK
+# layout engine, a legend in place of per-edge text labels, and a `click`
+# directive on every node, because a connections map must link out to every
+# item it names. Both ship in the one fixture so a CSS or mermaid.js edit
+# shows up against both patterns on the next regenerate.
 def conn-map-body [] {
   [
     "  <dialog class=\"mermaid-overlay\" id=\"mermaid-zoom\"></dialog>"
@@ -149,7 +157,11 @@ def conn-map-body [] {
     "    </section>"
     "    <section>"
     "      <h2>Graph</h2>"
+    "      <h3>Small map</h3>"
     "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  accTitle: Connections map for the focus topic\n  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.\n  focus[Focus Topic with a deliberately long label that must fit its own box]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
+    "      <h3>Large map</h3>"
+    "      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it stays a two-<code>&lt;script&gt;</code> fixture.</p>"
+    "      <pre class=\"mermaid\">---\nconfig:\n  layout: elk\n  flowchart:\n    useMaxWidth: false\n  elk:\n    nodePlacementStrategy: NETWORK_SIMPLEX\n---\nflowchart TD\n  accTitle: Large connections map for the focus topic\n  accDescr: A focus topic with two eras of antecedents and descendants grouped into open subgraphs, every node individually clickable, and a legend explaining that a solid line is a technological connection and a dashed line is a conceptual one.\n  subgraph legend[\"Legend\"]\n    direction LR\n    key1((\" \")) -->|technological| key2((\" \"))\n    key3((\" \")) -.->|conceptual| key4((\" \"))\n  end\n  focus[Focus Topic]\n  subgraph pre2010[\"Antecedents, pre-2010\"]\n    a1[Antecedent A]\n    a2[Antecedent B]\n    a3[Antecedent C]\n    a4[Antecedent D]\n    a5[Antecedent E]\n    a6[Antecedent F]\n  end\n  subgraph post2010[\"Descendants, post-2010\"]\n    d1[Descendant W]\n    d2[Descendant X]\n    d3[Descendant Y]\n    d4[Descendant Z]\n  end\n  a1 --> focus\n  a2 --> focus\n  a3 --> focus\n  a4 -.-> focus\n  a5 -.-> focus\n  a6 --> focus\n  focus --> d1\n  focus --> d2\n  focus -.-> d3\n  focus --> d4</pre>"
     "    </section>"
     "  </article>"
     "  </main>"

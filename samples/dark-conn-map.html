@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.30.0 */
+    /* Dracula-Tufte (muted) v1.31.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -257,7 +257,7 @@
     .scorecard .sc-label { color: var(--on-surface); }
     .scorecard .sc-note { color: var(--muted); font-size: 0.92em; }
     .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
-    .verdict { justify-self: start; font-size: 0.8em; font-weight: 600; font-style: normal;
+    .verdict { display: inline-block; justify-self: start; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
       letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
     .verdict-pass { background: var(--green); }
@@ -330,6 +330,8 @@
     .mermaid-zoom:active { scale: 0.96; }
     pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
     pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
+    pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule-light) !important; }
+    pre.mermaid .cluster-label :is(p, span) { color: var(--on-surface) !important; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
       body.conn-map article {
@@ -471,7 +473,16 @@
     }
   </style>
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.0/dist/mermaid.esm.min.mjs';
+    const elkPres = [...document.querySelectorAll('pre.mermaid')].filter(pre => /layout:\s*elk/.test(pre.textContent));
+    if (elkPres.length) {
+      import('https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.3/dist/mermaid-layout-elk.esm.min.mjs')
+        .then(elkLayouts => {
+          mermaid.registerLayoutLoaders(elkLayouts.default);
+          return mermaid.run({ nodes: elkPres });
+        })
+        .catch(() => {});
+    }
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = 'ui-monospace, "JetBrains Mono", "Fira Code", monospace';
     const mermaidDark = {
@@ -544,13 +555,14 @@
       overlay.showModal();
       requestAnimationFrame(() => overlay.classList.add('active'));
     };
+    const zoomBound = new WeakSet();
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
         if (!svg) return;
-        if (!svg.dataset.zoomable) {
-          svg.dataset.zoomable = 'true';
-          svg.addEventListener('click', () => zoom(svg));
+        if (!zoomBound.has(svg)) {
+          zoomBound.add(svg);
+          svg.addEventListener('click', e => { if (!e.target.closest('a')) zoom(svg); });
         }
         if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
         pre.tabIndex = 0;
@@ -635,6 +647,7 @@
     </section>
     <section>
       <h2>Graph</h2>
+      <h3>Small map</h3>
       <pre class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
 flowchart BT
   accTitle: Connections map for the focus topic
@@ -644,6 +657,49 @@ flowchart BT
   a2[Antecedent B] --> focus
   focus --> d1[Descendant X]
   focus --> d2[Descendant Y]</pre>
+      <h3>Large map</h3>
+      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it stays a two-<code>&lt;script&gt;</code> fixture.</p>
+      <pre class="mermaid">---
+config:
+  layout: elk
+  flowchart:
+    useMaxWidth: false
+  elk:
+    nodePlacementStrategy: NETWORK_SIMPLEX
+---
+flowchart TD
+  accTitle: Large connections map for the focus topic
+  accDescr: A focus topic with two eras of antecedents and descendants grouped into open subgraphs, every node individually clickable, and a legend explaining that a solid line is a technological connection and a dashed line is a conceptual one.
+  subgraph legend["Legend"]
+    direction LR
+    key1((" ")) -->|technological| key2((" "))
+    key3((" ")) -.->|conceptual| key4((" "))
+  end
+  focus[Focus Topic]
+  subgraph pre2010["Antecedents, pre-2010"]
+    a1[Antecedent A]
+    a2[Antecedent B]
+    a3[Antecedent C]
+    a4[Antecedent D]
+    a5[Antecedent E]
+    a6[Antecedent F]
+  end
+  subgraph post2010["Descendants, post-2010"]
+    d1[Descendant W]
+    d2[Descendant X]
+    d3[Descendant Y]
+    d4[Descendant Z]
+  end
+  a1 --> focus
+  a2 --> focus
+  a3 --> focus
+  a4 -.-> focus
+  a5 -.-> focus
+  a6 --> focus
+  focus --> d1
+  focus --> d2
+  focus -.-> d3
+  focus --> d4</pre>
     </section>
   </article>
   </main>

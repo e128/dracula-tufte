@@ -1,5 +1,14 @@
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.0/dist/mermaid.esm.min.mjs';
+    const elkPres = [...document.querySelectorAll('pre.mermaid')].filter(pre => /layout:\s*elk/.test(pre.textContent));
+    if (elkPres.length) {
+      import('https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.3/dist/mermaid-layout-elk.esm.min.mjs')
+        .then(elkLayouts => {
+          mermaid.registerLayoutLoaders(elkLayouts.default);
+          return mermaid.run({ nodes: elkPres });
+        })
+        .catch(() => {});
+    }
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = 'ui-monospace, "JetBrains Mono", "Fira Code", monospace';
     const mermaidDark = {
@@ -72,13 +81,14 @@
       overlay.showModal();
       requestAnimationFrame(() => overlay.classList.add('active'));
     };
+    const zoomBound = new WeakSet();
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
         if (!svg) return;
-        if (!svg.dataset.zoomable) {
-          svg.dataset.zoomable = 'true';
-          svg.addEventListener('click', () => zoom(svg));
+        if (!zoomBound.has(svg)) {
+          zoomBound.add(svg);
+          svg.addEventListener('click', e => { if (!e.target.closest('a')) zoom(svg); });
         }
         if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
         pre.tabIndex = 0;
