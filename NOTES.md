@@ -247,11 +247,11 @@ share one indent, and `ul` keeps the UA marker progression, muted.
 column count.** `.edge-list` is always two columns, because an antecedent list and a descendant
 list are always a pair. A category index has no such fixed arity. A generator may emit two
 categories or eight, and a fixed `1fr 1fr` would either strand empty columns or overflow them.
-`repeat(auto-fit, minmax(18rem, 1fr))` sizes itself to whatever count the client emits, with no
+`repeat(auto-fit, minmax(36rem, 1fr))` sizes itself to whatever count the client emits, with no
 per-category selector and no count read from markup.
 
 **That is also why `.recent-groups` carries no breakpoint override, where `.edge-list` needs
-one.** At any width narrow enough to matter, two 18rem tracks no longer fit side by side, and
+one.** At any width narrow enough to matter, two 36rem tracks no longer fit side by side, and
 `auto-fit` collapses to one column on its own. A fixed-column grid cannot do that, which is why
 `.edge-list` and `dl.timeline` each carry an explicit breakpoint. Adding one here would duplicate
 what the track-sizing function already does, against a number nobody measured for this component.
