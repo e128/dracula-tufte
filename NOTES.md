@@ -910,6 +910,30 @@ trusted source sets `window.mermaidSecurityLevel = 'loose'` in a preceding class
 overlay throws loudly when `#mermaid-zoom` is missing. Without that check the zoom dies on a bare
 `TypeError` that points nowhere near the missing element.
 
+**Clicking a diagram never opened the overlay, on any fixture, until this was found.** A `data-*`
+attribute is not a safe "already wired up" guard, because it is a real DOM attribute and
+`cloneNode` copies it. Mermaid's own render pipeline clones the `<svg>` at least once after the
+initial insert, part of its own layout process, unrelated to anything this repo does. The clone
+carries the `data-zoomable="true"` marker over, so the guard reads "already done" and skips
+re-attaching, but a JS listener added with `addEventListener` does not survive a clone: the click
+handler stays bound to the discarded original, and the live element nobody can click has none.
+Confirmed with a real, driven click (Playwright, not a synthetic `dispatchEvent`, which fires
+listeners but proves nothing about which element they are bound to): a click straight at the
+diagram's own "Zoom diagram" button worked, because that button is recreated fresh on every render
+pass and always closes over the current `svg`, and a click on the diagram itself did nothing, on
+every fixture, small or large, ELK or not. **The fix is a `WeakSet` keyed on the element itself,
+not an attribute copied onto whatever clones it.** A clone is a different object and is not in the
+set, so it correctly gets its own listener; the same object seen again on a later render pass
+correctly does not get a second one.
+
+**A node's own link must win over the diagram's click-to-zoom, and nothing enforced that either.**
+The svg-wide listener that opens the overlay sees every click inside the diagram, including one
+that lands on a node's own `<a xlink:href>`. A connections map's nodes are exactly that kind of
+link. The listener now checks `e.target.closest('a')` and does nothing when the click is inside
+one, letting the node's own navigation proceed instead of racing it. Verified with a real click on
+a node carrying a `click` directive: the page navigates and the overlay never opens, against the
+same real click landing on a node with no directive, which still opens the overlay as before.
+
 ### Diagram types
 
 **`packet` is not themeable through config, so CSS overrides it.**
@@ -963,6 +987,80 @@ The column takes `max-height: calc(100vh - 2rem); overflow-y: auto; overscroll-b
 rule does not apply. That rule exists for a `pre`, a table and a `math[display="block"]`, whose
 overflowed content holds nothing focusable. The Links column holds links. Focus on one scrolls it
 into view, so a tab stop on the container would announce a region the reader is already inside.
+
+### Large maps
+
+The two-node sample above proves the container. It says nothing about a map with dozens of nodes,
+and the default `flowchart BT` fan-out does not scale to one: a 50-node production map measured
+`viewBox="0 0 7435 798"`, five ranks, one of them holding 27 of the 50 nodes because dagre lays a
+flat rank out left to right with nothing to break it up. That is a horizontal-scroll wall, not a
+diagram. **Past roughly 15 to 20 nodes on one rank, restructure rather than widen:**
+
+**1. Cluster nodes into open subgraphs for visual grouping. Never collapse one that a reader must
+click into.** `subgraphId@{ view: collapsed }` (Mermaid 11.17) does not shrink a cluster, it
+deletes it: every node inside is dropped from the render, and with it every one of that node's own
+`click id href "url"` anchors. A connections map exists to link out to every item it names, so
+collapse is disqualified outright for this template, not a tradeoff to weigh. Verified against the
+same reason the zoom overlay depends on `click`: a `click` directive rendered under an open
+subgraph produces a real `<a xlink:href>` per node, identical to a node outside any subgraph, and
+Mermaid's own PR description for the feature confirms internal edges and nodes are dropped rather
+than hidden. Grouping into an open (uncollapsed) subgraph still gives a reader visual structure,
+an era or a topic reads as one region, but it does not reduce the node count on the page. Point 4
+is what does.
+
+**2. Switch a large map to the ELK layout engine, loaded only when a page asks for it.**
+`mermaid.js` imports `@mermaid-js/layout-elk` from the CDN and calls
+`mermaid.registerLayoutLoaders()`, but only when a `pre.mermaid` fence on the page contains
+`layout: elk`. An unconditional import would add a second mandatory CDN dependency to every page
+with a Mermaid diagram, including the ones with five nodes that never needed it. A consumer opts
+in per diagram with a `config: { layout: elk }` frontmatter block in the fence.
+
+**The ELK import must never block `mermaid.initialize()`, and a top-level `await` on it does
+exactly that.** A first attempt awaited the dynamic import before calling `initialize`, so nothing
+on the page rendered, not even diagrams that never asked for ELK, until that import settled. Under
+`--virtual-time-budget`, the flag `.github/render-modes.py` already uses to screenshot every
+fixture, the import never settles at all: virtual time does not let a pending `fetch` resolve, so
+the `await` hangs forever and the page stays unrendered for the full budget. The fix is
+fire-and-forget: `mermaid.initialize` and `startOnLoad` run immediately as before, and the ELK
+import, once it resolves, calls `mermaid.registerLayoutLoaders()` then `mermaid.run({ nodes:
+elkPres })` to re-render only the diagrams that requested `layout: elk`. Every other diagram on
+the page is never blocked on it. If the import never resolves, an ELK diagram shows Mermaid's own
+inline error state indefinitely: the same offline failure this repo already accepts for Mermaid
+itself, now scoped to the one diagram that opted into the extra dependency instead of the whole
+page.
+
+**ELK trades width for height on an unbalanced fan-out, it does not just shrink the diagram.**
+Eighteen leaf nodes into one focus node, the shape of the production map's worst rank, measured
+`3063 x 174` under dagre and `2671 x 324` under ELK: about 13% narrower and roughly twice as tall.
+ELK spreads a flat rank across more than one row instead of extending it sideways. That is the
+fix for the sprawl, and it is a real layout change, not a free win: a map that is already short
+and wide will read taller under ELK, not merely narrower.
+
+**ELK clusters ignore `clusterBkg` and `clusterBorder` outright.** Isolated against dagre with the
+identical subgraph and the identical `theme: 'base'` config: dagre paints the cluster from the
+theme, ELK hardcodes Mermaid's stock `#ffffde` fill and `#aaaa33` stroke, and the label text
+hardcodes to `#333`, regardless of `themeVariables`. This is the same defect class as `packet` and
+`xyChart` above, a diagram surface Mermaid does not theme, so `tufte-dracula.css` overrides it the
+same way: `pre.mermaid .cluster rect` and `pre.mermaid .cluster-label :is(p, span)` carry
+`!important`, because Mermaid's injected rule is ID-scoped and beats a page-level class rule on
+specificity otherwise. Verified by rendered pixels in Chromium in both the dark and forced-light
+palettes, not by reading the exported SVG's own `<style>` block, which does not change even when
+this override is in effect.
+
+**3. Encode relationship type as line style, once, in a legend, not as a text label on every
+edge.** The production map carried 39 edges, each labelled `technological` or `conceptual` in its
+own `foreignObject`, the same two strings repeated forty times, each one adding to the width dagre
+solves for. A `classDef` on two edge classes, solid against `stroke-dasharray`, plus one small
+unconnected subgraph holding two short labelled edges as a key, states the distinction once
+instead of on every edge.
+
+**4. Past that node count, split into multiple maps rather than hide any node.** This is the actual
+answer to a map too large for one page, now that point 1 rules out collapsing: every node stays
+present and clickable, on whichever of the several maps holds it. The production map's edges split
+31 technological against 8 conceptual, and a map that lopsided reads better as two focused maps by
+relationship type than as one map carrying both past the point where either reads clearly. An era
+split works the same way. This is a decision for whatever generates the map's content, not
+something the template enforces, but it is the recommended default past the threshold above.
 
 ## Interaction states
 
@@ -1569,6 +1667,23 @@ component guarantees that no document uses it. **`sidenote` and `marginnote` are
 and they are the reason the layout reserves a right margin at all.** The zero there is a generator
 gap. `conn-map` is the weakest case, and it is also the only worked example of the two-section
 sticky layout.
+
+**`.verdict` and `.scorecard` had the same generator gap, undocumented rather than merely unused.**
+A real proof-test page (a graded scorecard against 27 lens-methods, the exact content this component
+exists for) rendered every verdict as bare text: a plain `<table>` cell, a heading suffix, a bold
+summary word, none of them carrying `.verdict` or a pass/partial/failed/neutral class. `CONTRACT.md`
+had never listed the markup, so the generator had no way to discover it existed. `dl.timeline` got a
+`§ 2` checklist entry when it shipped. `.verdict` and `.scorecard` did not. Fixed by adding one now:
+see `CONTRACT.md` § 2 and the v1.31.0 row of § 3.
+
+**`.verdict` was missing `display: inline-block`, and `min-width` had been silently dead outside
+`.scorecard`'s grid the whole time.** A grid item's computed `display` blockifies regardless of what
+the rule itself declares, so `min-width: 5.2ch` held inside `.scorecard`, where every measurement to
+date happened. `min-width` does not apply to a non-replaced inline box at all, per spec, so the same
+class on a bare `<span>` in a `<table>` cell, a heading, or prose sized to its own text with no floor
+under it. Nothing in this repo's fixtures ever put `.verdict` outside `.scorecard`, so nothing here
+caught it. A short word like `N/A` still happened to clear the floor on its own padding, which is why
+the defect produced no visibly broken badge, only an inconsistent one next to a wider verdict.
 
 ## Fixtures are coverage
 
