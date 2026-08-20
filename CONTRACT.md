@@ -39,7 +39,7 @@ system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-
 
 ## 2. Emit this markup
 
-Ten requirements. No stylesheet change can supply any of them. Most link the line in
+Twelve requirements. No stylesheet change can supply any of them. Most link the line in
 `samples/dark.html` that models it, so you have a working example instead of only a sentence. The
 newest has no fixture yet; it says so.
 
@@ -104,6 +104,19 @@ newest has no fixture yet; it says so.
       and applies the badge to zero of them is the same missing markup as the rollup case above,
       just at the scale that makes it costliest to regenerate afterward.
 
+- [ ] `.tag-dot` on an element that holds **no label text**, never one that wraps the dot and the
+      label together (`samples/dark.html:790`). The class paints its dot with `currentColor`, so a
+      `color` set to recolor the dot recolors any text inside the same element too, and a
+      categorical accent (`--data-1` through `--data-4`) is contrast-checked for a 3:1 graphic, not
+      4.5:1 body text. `<span class="tag-dot" style="color: var(--data-1)"></span>Rust` keeps the
+      color on the dot; the label sits outside the span as plain text.
+- [ ] Every `.step-node` after the first, together with the `.step-arrow` in front of it, wrapped in
+      one `.step-hop` (`samples/dark.html:797-801`). `.step-chain` wraps at a narrow measure, and an
+      arrow and its node are two separate flex items unless paired: a wrap can then land between
+      them, stranding the arrow on the line above with no node after it and leaving the wrapped node
+      with no connector in front of it. `.step-hop` makes the pair one flex item, so a wrap carries
+      the arrow down with the node it points to.
+
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
 
@@ -114,6 +127,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.33.0 | nothing, unless you opt in to one of six new presentational classes: `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list` / `.icon-chip`, `.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`, and `blockquote.pull`. All are self-contained CSS over markup you write yourself, no existing fixture requirement changes. Two carry a real markup requirement if you use them, both new in § 2: keep `.tag-dot` off any element that also holds the label text, and wrap every arrow-plus-node pair after the first in `.step-hop` |
 | v1.31.0 | opt in to `.verdict` plus `.verdict-pass` / `.verdict-partial` / `.verdict-failed` / `.verdict-neutral` on any page that grades a claim. The classes existed before this row did; nothing in this file told a generator they were there, so a real graded page (a 27-row scorecard, a verdict per row) rendered every verdict as plain text. `.verdict` also gained `display: inline-block`, so its fixed `min-width` now holds wherever you place it, a `<table>` cell, a heading, or prose, not only inside `.scorecard`'s grid, where a grid item's blockified `display` had been carrying it until now |
 | v1.30.0 | nothing. `.recent-group .nav-list li` now lays its `<span class="count">` out beside the link instead of on its own line below it, and equalizes card height within a `.recent-groups` row. Both are self-contained stylesheet changes over markup you already emit |
 | v1.27.0 | **drop `role="region"` from any bare `<table>` you put it on**, and emit `tabindex="0"` plus a `<caption>` there instead. § 2 used to fold a table into the same sentence as `pre` and `math`, so it asked for a role that overrides `role="table"` and takes the row and column semantics with it. The tab stop is still required, because the stylesheet gives a table its own sideways-scroll axis below 1000px, and the `<caption>` is what names it. A table inside `.table-scroll` needs no edit: the role belongs on the wrapper and always did |

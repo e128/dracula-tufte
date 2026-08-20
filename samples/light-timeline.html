@@ -6,7 +6,7 @@
   <title>Tufte-Dracula timeline layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.32.0 */
+    /* Dracula-Tufte (muted) v1.33.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -70,6 +70,9 @@
     h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
+    .kicker { display: inline-block; font-size: 0.75em; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--link); padding: 0.25em 0.7em; margin-bottom: 0.5rem;
+      border-radius: 999px; background: oklch(from var(--link) l c h / 0.08); }
     h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
     h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: var(--space-6) 0 0.4rem; }
     h4 { font-weight: 600; line-height: 1.35; font-size: 1em; color: var(--label); margin: var(--space-4) 0 0.3rem; }
@@ -103,6 +106,7 @@
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
       table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
+      blockquote.pull::before { content: "\201C" / ""; }
     }
     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
@@ -208,6 +212,9 @@
       margin: var(--space-6) 0; color: var(--label); font-style: italic;
     }
     blockquote p:last-child { margin-bottom: 0; }
+    blockquote.pull { position: relative; padding-inline-start: 2.2rem; }
+    blockquote.pull::before { content: "\201C"; position: absolute; inset-inline-start: 0.2rem; top: -0.15em;
+      font-family: Georgia, serif; font-size: 2.5em; line-height: 1; color: var(--muted); opacity: 0.4; }
     hr { border: none; border-block-start: 1px solid var(--rule-light); margin: var(--space-10) 0; }
     img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--ring); border-radius: var(--radius-sm); }
     :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }
@@ -283,6 +290,12 @@
     .badge { display: inline-block; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle;
       color: var(--label); box-shadow: inset 0 0 0 1px currentColor; }
+    .tag-dot::before { content: ""; display: inline-block; width: 0.6em; height: 0.6em;
+      border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle;
+      forced-color-adjust: none; }
+    .live-dot { display: inline-block; width: 0.5em; height: 0.5em; border-radius: 50%;
+      background: var(--green); vertical-align: middle; animation: live-pulse 2s ease-in-out infinite; }
+    @keyframes live-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
     .nav-list { list-style: none; padding-inline-start: 0;
       border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
@@ -299,6 +312,20 @@
     .recent-group .nav-list li { display: flex; align-items: baseline; column-gap: 0.5rem; }
     .recent-group .nav-list li a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.82em; padding-inline-end: 0.5rem; }
+    .icon-list { list-style: none; padding-inline-start: 0; display: grid; gap: var(--space-3); margin: var(--space-4) 0; }
+    .icon-list li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4);
+      background: var(--code-bg); border-radius: var(--radius);
+      border-inline-start: var(--accent-bar) solid var(--icon-color, var(--muted)); }
+    .icon-chip { flex: none; width: 2.25em; height: 2.25em; border-radius: var(--radius-sm); display: flex;
+      align-items: center; justify-content: center; font-weight: 700; color: var(--on-surface);
+      background: oklch(from var(--icon-color, var(--muted)) l c h / 0.15); }
+    .step-chain { display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+      gap: var(--space-3); margin: var(--space-6) 0; }
+    .step-hop { display: flex; align-items: center; gap: var(--space-3); }
+    .step-node { flex: none; width: 2.5em; height: 2.5em; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-weight: 700; color: var(--surface);
+      background: var(--icon-color, var(--muted)); }
+    .step-arrow { color: var(--muted); }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
@@ -424,7 +451,7 @@
       }
     }
     @media (forced-colors: active) {
-      code, kbd, .verdict, .badge { border: 1px solid currentColor; }
+      code, kbd, .verdict, .badge, .kicker, .icon-chip { border: 1px solid currentColor; }
       table, th, td { border: 1px solid currentColor; }
     }
     @media (prefers-reduced-motion: reduce) {
