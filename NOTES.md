@@ -772,9 +772,9 @@ third prose role needs a line here that says why the two cannot appear together.
 
 ## Borrowed components
 
-Six components were adapted from factory.strongdm.ai's product pages: structure only, no color.
-Every one reuses an existing token under this section's hue-budget rule. None introduces a new
-color role.
+Six components plus one page-wide texture were adapted from factory.strongdm.ai's product pages:
+structure only, no color. Every component reuses an existing token under this section's hue-budget
+rule. None introduces a new color role.
 
 **`.kicker`** is an eyebrow label: a small tracked pill above a heading. It reuses `--link` and the
 `oklch(from … / alpha)` pattern `--highlight` already established, so no new token exists just for
@@ -829,6 +829,35 @@ carry the extra glyph everywhere. The glyph is decorative, so it takes the sheet
 accessible-alt convention: `blockquote.pull::before { content: "\201C" / ""; }` joins the
 `@supports (content: "x" / "y")` block already used for the outbound-link arrow and the tree-table
 turn.
+
+**`body::before` paints a fixed, full-viewport film grain.** factory.strongdm.ai layers an inline
+SVG `feTurbulence` filter over its dark background at low opacity with `mix-blend-mode: overlay`.
+The technique carries no hue of its own, so it crosses over cleanly: dark ground, light ground and
+print all inherit whatever `--surface` already is, and the grain reads as paper stock rather than
+as a glow. It needs no consumer markup, unlike the six components above, because the pseudo-element
+lives entirely in the stylesheet. `pointer-events: none` keeps it out of the hit-test order, and
+`z-index: -1` is deliberate: a negative index still paints above `body`'s own background (the
+stacking-context step it belongs to comes right after that background, per the CSS stacking order),
+which is what makes it a backdrop rather than an opaque cover. **It is switched off in print and in
+`forced-colors: active`.** Ink has no equivalent of `mix-blend-mode`, and a texture with no
+informational content is exactly what a forced-colors reader should not have to see.
+
+**Four more of factory.strongdm.ai's patterns were measured against this repo's own decisions and
+left out, not missed.**
+
+- **A `.cta-button` diagonal hover sheen plus a `translateY` lift.** That is new hover motion. This
+  repo already decided the opposite for its one real button: `pre.mermaid:hover`'s ring is
+  deliberately instant and untransitioned, because hover is high-frequency and "does not want
+  motion" (Interaction states). A sheen on `.mermaid-zoom` or `.filter-box` would reopen that
+  question for no stated reason.
+- **A `.glass-card` translucent panel with `backdrop-filter: blur`.** Already rejected once here,
+  for the sticky `th` case. It is also moot on this page: there is no busy background behind any
+  card for a blur to soften, so the effect would be a no-op tax on paint cost.
+- **A `.section { min-height: 100vh }` one-idea-per-screen layout.** It is the opposite of the
+  settled long-measure, dense-reference-page decision (Width and measure). A page here is meant to
+  hold a long table beside a diagram, not one thought per viewport.
+- **An absolute-positioned, JS-driven nav dropdown.** `details.nav-group` already does this job with
+  a native disclosure widget and no script. The dropdown is strictly worse for a no-build sheet.
 
 **`.kicker` and `.icon-chip` join the forced-colors border list.** Both carry meaning through a
 tinted background alone, which forced colors suppresses the same way it suppresses a shadow. Without
@@ -1579,6 +1608,12 @@ the wash. Print inverts it to an outline, which is the same move as `.verdict`.
 and the ring is the only thing that separates them. The ring is `--rule` rather than `--rule-light`,
 because it sits on `--code-bg`. `kbd` joins the forced-colors border list, because an inset shadow
 is the only boundary it has.
+
+**A second shadow layer, `0 1px 0 var(--rule)` outside the ring, gives the bottom edge one more
+weight.** Borrowed from factory.strongdm.ai's keycap, this is what reads as a raised edge rather
+than a flat chip. It reuses `--rule`, the same token the ring already uses on `--code-bg`, so no new
+token exists for it. The existing forced-colors border already replaces both shadow layers at once,
+the same way it already replaced the ring alone.
 
 **A `caption` sits above the table's frame, not inside it.** `caption` is a child of `table`, so the
 table's top rule paints above it, and the caption reads as a stray first row. `table:has(caption)`
