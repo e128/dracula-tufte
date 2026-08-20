@@ -39,8 +39,9 @@ system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-
 
 ## 2. Emit this markup
 
-Nine requirements. No stylesheet change can supply any of them. Each links the line in
-`samples/dark.html` that models it, so you have a working example instead of only a sentence.
+Ten requirements. No stylesheet change can supply any of them. Most link the line in
+`samples/dark.html` that models it, so you have a working example instead of only a sentence. The
+newest has no fixture yet; it says so.
 
 - [ ] `<main>` around the content, with `<article>` inside it
       (`samples/dark.html:637-638`).
@@ -74,10 +75,19 @@ Nine requirements. No stylesheet change can supply any of them. Each links the l
       `.sidenote` (`samples/dark.html:779`). A float cannot escape a grid item, so the note lands
       inside the entry column instead of the page margin. Give each `dt` an `id` to make an entry
       deep-linkable (`samples/dark.html:776`); the arrival outline is automatic once it has one.
+- [ ] A second citation of a source already cited earlier in the document does not open a second
+      `.sidenote` carrying the same title, authors and URL again. Link back into a numbered
+      Sources list instead, the same `sup`-into-source-list pattern the requirement above already
+      asks for inside `dl.timeline`, generalized to prose. No fixture demonstrates this yet.
+      `.sidenote` floats into a fixed 28%-wide margin column, the narrowest real estate on the
+      page; three near-identical citations for one fact, stacked in that column because a
+      generator re-emitted the same source three times in one paragraph, spend it three times over
+      for a single piece of corroboration.
 - [ ] `.verdict` plus one of `.verdict-pass`, `.verdict-partial`, `.verdict-failed` or
       `.verdict-neutral` on a `<span>` around a verdict token, wherever a page grades a claim: a
-      `<table>` cell, a heading, or prose. Bare text carries no pass, partial, failed or N/A
-      distinction; the classes carry all of it. `.scorecard` (a compact `.sc-label` /
+      `<table>` cell, a heading, prose, or a bulleted claim summary (a "What You Need to Know"
+      list naming a verdict per item is exactly this). Bare text carries no pass, partial, failed
+      or N/A distinction; the classes carry all of it. `.scorecard` (a compact `.sc-label` /
       `.verdict` / `.sc-note` three-column grid, `samples/dark.html:827-832`) suits a short
       two-to-six-item summary. A longer graded list wants a real `<table>` instead, `scope="col"`
       headers per the requirement above, with the same `.verdict` classes inside each Verdict cell
@@ -85,7 +95,14 @@ Nine requirements. No stylesheet change can supply any of them. Each links the l
       verdict** (a "Five principles" parent row whose sub-rows are what's graded) **still gets a
       `.verdict verdict-neutral` badge**, with a token like `SEE BELOW`, not bare punctuation
       (`samples/dark.html:838`). An ungraded row that skips the badge reads as a rendering gap next
-      to every other row's colored pill, not as a deliberate design choice.
+      to every other row's colored pill, not as a deliberate design choice. **`<strong>` is not
+      `.verdict`, and reaching for it is the failure this bullet most needs to name:** `strong`
+      already carries `color: var(--orange)` for unrelated reasons (see NOTES.md, Form follows
+      role), so `<strong>PASS</strong>` and `<strong>FAILED</strong>` render in the identical
+      color, and a page that bolds every verdict this way looks styled without carrying any of the
+      pass/partial/failed/N/A distinction the classes exist for. A table that grades a dozen rows
+      and applies the badge to zero of them is the same missing markup as the rollup case above,
+      just at the scale that makes it costliest to regenerate afterward.
 
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
