@@ -35,6 +35,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Links](#links) | Underline floor, the outbound arrow's alt text |
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Grounds, floors, the data ramp, gamut, forced colors |
 | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
+| [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
 | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
 | [Mermaid](#mermaid) | Init config, label measurement, sizing, zoom, diagram types |
 | [Connections-map layout](#connections-map-layout) | `body.conn-map`, markup order, no breakouts |
@@ -768,6 +769,81 @@ against a 3px bar and a selection fill.
 means weight, bar, ring or fill. `.verdict` and `.badge` show that separation. A role that lives in
 a diagram takes `--data-1` to `--data-4` instead. A new hue is the last resort. A hue reused for a
 third prose role needs a line here that says why the two cannot appear together.
+
+## Borrowed components
+
+Six components were adapted from factory.strongdm.ai's product pages: structure only, no color.
+Every one reuses an existing token under this section's hue-budget rule. None introduces a new
+color role.
+
+**`.kicker`** is an eyebrow label: a small tracked pill above a heading. It reuses `--link` and the
+`oklch(from … / alpha)` pattern `--highlight` already established, so no new token exists just for
+a tint. Do not give it a hue of its own. A document-status use should pick the color already scoped
+to that state (`--green` verified, `--orange` unverified) rather than add a seventh accent. **The
+tint sits at 8% alpha, not 12%.** Measured: `--link` text against a 12%-alpha `--link` background
+landed at 4.47:1 in light mode, under the 4.5:1 text floor, because the tint moves the background
+toward the text's own hue and lightness. 8% clears it (4.71:1 light, 6.6:1 dark) with margin instead
+of sitting on the line.
+
+**`.tag-dot`** is a `::before` circle, a categorical marker for a table cell or a nav-list entry. It
+paints `currentColor`, so it carries no color of its own and cannot reopen the `.badge-t1/-t2/-t3`
+tier ramp this repo already rejected above. A tier stays text, per that decision. A tag-dot is for a
+value that already has a color elsewhere, a `--data-*` role in a diagram legend, for instance, never
+a rank. **The class belongs on an empty element, never one that also holds the label.** `currentColor`
+recolors whatever text sits inside the same element, and `--data-*` was scoped for diagram marks
+(3:1, non-text), not body text (4.5:1). The first draft of the sample fixture set `color` on a span
+that wrapped the label too and measured 3.45-3.53:1 in light mode, a real failure a reader would have
+copied. `<span class="tag-dot" style="color: var(--data-1)"></span>Rust` keeps the color scoped to
+the dot; the label stays plain text.
+
+**`.live-dot`** is the sheet's first `@keyframes`. It reuses `--green`, the existing "healthy" role
+(`.verified`, `.verdict-pass`, `.markdown-alert-tip`), so a live indicator does not invent an eighth
+hue for the same meaning. `prefers-reduced-motion` at the top of the file already zeroes every
+animation-duration, so the pulse freezes there for free. No print override exists: print has no live
+state to show, and paged media does not run CSS animation regardless.
+
+**`.icon-list` / `.icon-chip`** is a definition-style row: a tinted square carrying an initial, a
+left accent bar in the same hue, then a title and a mono subtitle. It takes its color from an
+`--icon-color` custom property set inline per `<li>`, the convention `--timeline-date` already uses
+on `dl.timeline`. That keeps the component color-free by default and lets an author reuse `--orange`,
+`--purple`, `--green` or a `--data-*` slot rather than a new token. **The glyph itself is fixed
+`--on-surface`, never `--icon-color`.** A same-hue glyph on its own 15%-alpha tint measured as low as
+3.35:1 (dark, `--purple`) and failed outright in light mode for all four demo hues (3.85-4.01:1),
+because foreground and background differ only in alpha, not hue. `--on-surface` on the same tinted
+backgrounds measures 8.06:1 and up in both modes. `--icon-color` still carries the whole component's
+identity through the border and the tint; it is just never the letter.
+
+**`.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`** is a linear process strip: circular
+nodes joined by an arrow glyph. It exists for a flow too trivial to justify a Mermaid diagram, three
+or four stages, no branching. It is not a Mermaid replacement. A graph with a branch or a loop still
+belongs in `pre.mermaid`. Same `--icon-color` convention as `.icon-list`. **Every node but the first
+is wrapped with its leading arrow in one `.step-hop`.** `.step-chain` still wraps at `flex-wrap: wrap`
+for a narrow measure, but an arrow and a bare `.step-node` are separate flex items, so a wrap could
+land between them: the arrow stays on the line above, and the node that follows starts a new line
+with no visible connector. `.step-hop` makes the pair one flex item, so a wrap carries the arrow down
+with the node it points to instead of stranding it.
+
+**`blockquote.pull`** adds a large faint opening quote mark, positioned over the existing accent bar.
+It is opt-in, because the sheet's default `blockquote` is used densely for citations and should not
+carry the extra glyph everywhere. The glyph is decorative, so it takes the sheet's existing
+accessible-alt convention: `blockquote.pull::before { content: "\201C" / ""; }` joins the
+`@supports (content: "x" / "y")` block already used for the outbound-link arrow and the tree-table
+turn.
+
+**`.kicker` and `.icon-chip` join the forced-colors border list.** Both carry meaning through a
+tinted background alone, which forced colors suppresses the same way it suppresses a shadow. Without
+a border, the tint disappears and both read as bare text with no chip shape left. `.tag-dot` and
+`.live-dot` are not added there. Both sit beside text that already carries the same information, so
+a flattened dot loses no meaning, matching how `.verified` / `.unverified` / `.correction` already
+rely on color alone with no forced-colors override.
+
+**A sticky element does not take `backdrop-filter` blur.** factory.strongdm.ai's frosted sticky
+panels were a seventh candidate here, and this repo already has a decision that rules them out: "A
+sticky `th` needs an opaque background. Otherwise the rows that scroll under it show through"
+(Tables). Blur only reads as frosted glass over a translucent layer, and an opaque `background` makes
+`backdrop-filter` a no-op sitting on top of it. Reversing the opacity to get the frosted look would
+reopen the exact defect that rule exists to prevent. Left out rather than diluted into an unrelated
+shadow that would not deliver what was asked.
 
 ## Editor themes
 
