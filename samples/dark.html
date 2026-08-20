@@ -831,6 +831,17 @@
         <span class="sc-label">P4 Coherence</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
         <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
       </div>
+      <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>SEE BELOW</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>
+      <table tabindex="0">
+        <caption>Proof-test scorecard, table form</caption>
+        <thead><tr><th scope="col">#</th><th scope="col">Method</th><th scope="col">Verdict</th><th scope="col">Bearing</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Five principles</td><td><span class="verdict verdict-neutral">SEE BELOW</span></td><td>see P1-P2</td></tr>
+          <tr><td></td><td>&middot; P1 Observability</td><td><span class="verdict verdict-pass">PASS</span></td><td>directly measured</td></tr>
+          <tr><td></td><td>&middot; P2 Mechanism</td><td><span class="verdict verdict-partial">PARTIAL</span></td><td>surrogate endpoint</td></tr>
+          <tr><td>2</td><td>Charge gate</td><td><span class="verdict verdict-neutral">N/A</span></td><td>not assessed</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <section>

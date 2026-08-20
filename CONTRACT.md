@@ -26,7 +26,9 @@ Two supported modes. Pick one and hold it:
   one line at each end, and CI holds it there, so the slice cannot rot.
 
 `mermaid.js` needs `<dialog class="mermaid-overlay" id="mermaid-zoom"></dialog>` as the first
-child of `<body>`. It throws a named error when the dialog is absent.
+child of `<body>`. It throws a named error when the dialog is absent. **Emit the dialog only on a
+page that also inlines `mermaid.js`.** A page with no ` ```mermaid ` fence needs neither; a dialog
+with no script to open it is dead markup.
 
 **Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html`,
 `samples/light-conn-map.html` and `samples/light-timeline.html` exist so a reader can see the light
@@ -37,40 +39,53 @@ system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-
 
 ## 2. Emit this markup
 
-Nine requirements. No stylesheet change can supply any of them.
+Nine requirements. No stylesheet change can supply any of them. Each links the line in
+`samples/dark.html` that models it, so you have a working example instead of only a sentence.
 
-- [ ] `<main>` around the content, with `<article>` inside it.
-- [ ] A real `<label for>` on every `input.filter-box`. A placeholder is not a label.
-- [ ] `accTitle:` and `accDescr:` inside every ` ```mermaid ` fence.
-- [ ] `scope="col"` on table headers, and heading levels that nest with no skips.
-- [ ] `role="list"` on every `<ul class="nav-list">`.
-- [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order.
-- [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`, a
-      `<math display="block">`, and any `.table-scroll` wrapper. **Never put `role="region"` on the
+- [ ] `<main>` around the content, with `<article>` inside it
+      (`samples/dark.html:637-638`).
+- [ ] A real `<label for>` on every `input.filter-box`. A placeholder is not a label
+      (`samples/dark.html:849-850`).
+- [ ] `accTitle:` and `accDescr:` inside every ` ```mermaid ` fence
+      (`samples/dark.html:890-891`).
+- [ ] `scope="col"` on table headers, and heading levels that nest with no skips
+      (`samples/dark.html:687`).
+- [ ] `role="list"` on every `<ul class="nav-list">` (`samples/dark.html:852`).
+- [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order
+      (`samples/dark.html:700-704`).
+- [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`
+      (`samples/dark.html:667`), a `<math display="block">` (`samples/dark.html:811`), and any
+      `.table-scroll` wrapper (`samples/dark.html:717`). **Never put `role="region"` on the
       `<table>` itself.** It overrides `role="table"` and takes the row and column semantics with
-      it. An unwrapped table takes `tabindex="0"` alone, named by its own `<caption>`, because the
-      stylesheet hands it a sideways-scroll axis of its own below 1000px.
+      it. An unwrapped table takes `tabindex="0"` alone, named by its own `<caption>`
+      (`samples/dark.html:685-686`), because the stylesheet hands it a sideways-scroll axis of its
+      own below 1000px.
 - [ ] `--timeline-date` on an ancestor when a page carries **more than one** `dl.timeline`, set in
-      `ch` against the widest date label in the whole document. Each list otherwise sizes its own
-      date track and the axis steps left down the page. Measure the label: `tabular-nums` pins
-      digits to exactly `1ch` while letters stay proportional, so a spelled-out
-      `c. 6th century CE` is wider than a numeric `c. 1182-1201`. **Measure at weight 500**, the
-      weight `dt` renders at, and **round up to the next whole `ch`.** `ch` resolves against the
-      element the variable is set on, which is weight 400, and 400 is about 1.7% narrower per
-      character, so a value measured at 400 is short by a quarter character at 16ch. Too small a
-      value has no CSS backstop: the label overflows into the column gap and touches the rule.
-      One list needs nothing.
+      `ch` against the widest date label in the whole document (`samples/dark.html:784`). Each
+      list otherwise sizes its own date track and the axis steps left down the page. Measure the
+      label: `tabular-nums` pins digits to exactly `1ch` while letters stay proportional, so a
+      spelled-out `c. 6th century CE` is wider than a numeric `c. 1182-1201`. **Measure at weight
+      500**, the weight `dt` renders at, and **round up to the next whole `ch`.** `ch` resolves
+      against the element the variable is set on, which is weight 400, and 400 is about 1.7%
+      narrower per character, so a value measured at 400 is short by a quarter character at 16ch.
+      Too small a value has no CSS backstop: the label overflows into the column gap and touches
+      the rule. One list needs nothing.
 - [ ] Citations inside a `dl.timeline` entry as `sup` links into a numbered source list, never a
-      `.sidenote`. A float cannot escape a grid item, so the note lands inside the entry column
-      instead of the page margin. Give each `dt` an `id` to make an entry deep-linkable; the
-      arrival outline is automatic once it has one.
+      `.sidenote` (`samples/dark.html:779`). A float cannot escape a grid item, so the note lands
+      inside the entry column instead of the page margin. Give each `dt` an `id` to make an entry
+      deep-linkable (`samples/dark.html:776`); the arrival outline is automatic once it has one.
 - [ ] `.verdict` plus one of `.verdict-pass`, `.verdict-partial`, `.verdict-failed` or
       `.verdict-neutral` on a `<span>` around a verdict token, wherever a page grades a claim: a
       `<table>` cell, a heading, or prose. Bare text carries no pass, partial, failed or N/A
       distinction; the classes carry all of it. `.scorecard` (a compact `.sc-label` /
-      `.verdict` / `.sc-note` three-column grid) suits a short two-to-six-item summary. A longer
-      graded list wants a real `<table>` instead, `scope="col"` headers per the requirement above,
-      with the same `.verdict` classes inside each Verdict cell.
+      `.verdict` / `.sc-note` three-column grid, `samples/dark.html:827-832`) suits a short
+      two-to-six-item summary. A longer graded list wants a real `<table>` instead, `scope="col"`
+      headers per the requirement above, with the same `.verdict` classes inside each Verdict cell
+      (`samples/dark.html:835-843`). **A row that rolls up sub-rows instead of carrying its own
+      verdict** (a "Five principles" parent row whose sub-rows are what's graded) **still gets a
+      `.verdict verdict-neutral` badge**, with a token like `SEE BELOW`, not bare punctuation
+      (`samples/dark.html:838`). An ungraded row that skips the badge reads as a rendering gap next
+      to every other row's colored pill, not as a deliberate design choice.
 
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
@@ -110,6 +125,14 @@ current `tufte-dracula.css` body. Regenerate the files that differ.
 
 This is the recommended trigger. It scales to thousands of files and it needs no metadata beyond
 what the artifact already carries.
+
+**Don't keep a second version field that duplicates the one you inlined.** A generated page that
+stamps its own `<meta name="template-version">` or similar, separate from the CSS it actually
+shipped, can drift the same way a version-string staleness check can: the stamp is written once
+and the payload moves on without it. Line 2 of `tufte-dracula.css` is
+`/* Dracula-Tufte (muted) vMAJOR.MINOR.PATCH */`, the version of the bytes you are inlining right
+now. Read it from there at generation time if you need to display or log a version, so the number
+you show a reader can never disagree with the stylesheet you gave them.
 
 ## 5. Pin the payload
 
