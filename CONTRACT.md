@@ -116,6 +116,11 @@ newest has no fixture yet; it says so.
       them, stranding the arrow on the line above with no node after it and leaving the wrapped node
       with no connector in front of it. `.step-hop` makes the pair one flex item, so a wrap carries
       the arrow down with the node it points to.
+- [ ] `title` carrying the full text on every `<a>` inside `.recent-group .nav-list li`
+      (`samples/dark.html:927-930`). The stylesheet clips that link to one line with
+      `text-overflow: ellipsis`, so a title longer than the row has no way back to sighted mouse
+      users once clipped. `title` gives the browser's native tooltip a value to show. The DOM text
+      stays intact either way, so a screen reader already reads the full title regardless.
 
 Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
 lands in a theme register already.
