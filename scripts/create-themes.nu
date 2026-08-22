@@ -16,6 +16,12 @@
 # Ghostty and the Rider theme.json write `#{{green}}` and the .icls writes
 # `{{green}}`. One placeholder vocabulary, no per-file escaping rule.
 #
+# iTerm2's .itermcolors is the one output with no `.in` template. A plist color is
+# three float components, not a hex string, so there is nothing for `{{}}` substitution
+# to land on. `render-itermcolors` below builds it straight from $palette, the same way
+# `package` builds the Rider zip from code, and it is gated the same way too: rendered
+# in memory and compared to the file on disk.
+#
 # ponytail: template + substitution, not a themed-file generator. The colours
 # are the only thing that tracks the stylesheet; 20 KB of XML that never moves
 # has no business being emitted from a script. oklch -> sRGB comes from
@@ -34,11 +40,36 @@ const ROOT = $SCRIPTS | path dirname
 # spelling both keeps the list greppable from either direction.
 const THEMES = [
   "themes/ghostty/dracula-tufte"
+  "themes/opencode/dracula-tufte.json"
   "themes/rider/dracula-tufte.icls"
   "themes/rider/dracula-tufte.theme.json"
   "themes/rider/META-INF/plugin.xml"
   "themes/zed/dracula-tufte.json"
 ]
+
+# iTerm2's ANSI slots, in the same hue-to-slot assignment the Ghostty template already
+# settled on. Kept as one table so a future terminal target reuses it by name instead
+# of re-deriving which token is "yellow".
+const ANSI_SLOTS = [
+  {idx: 0,  key: "surface-alt"}
+  {idx: 1,  key: "red"}
+  {idx: 2,  key: "green"}
+  {idx: 3,  key: "data-4"}
+  {idx: 4,  key: "data-1"}
+  {idx: 5,  key: "purple"}
+  {idx: 6,  key: "link"}
+  {idx: 7,  key: "label"}
+  {idx: 8,  key: "rule-light"}
+  {idx: 9,  key: "red.bright"}
+  {idx: 10, key: "green.bright"}
+  {idx: 11, key: "orange"}
+  {idx: 12, key: "data-1.bright"}
+  {idx: 13, key: "pink"}
+  {idx: 14, key: "link.bright"}
+  {idx: 15, key: "on-surface.bright"}
+]
+
+const ITERM_OUT = "themes/iterm2/dracula-tufte.itermcolors"
 
 def main [
   --check       # render in memory and fail on drift instead of writing
@@ -59,6 +90,17 @@ def main [
       $rendered | save --force --raw $out
       print $"  → ($rel)"
     }
+  }
+
+  let iterm_path = ($ROOT | path join $ITERM_OUT)
+  let iterm_rendered = (render-itermcolors $palette $version)
+  if $check {
+    if (not ($iterm_path | path exists)) or (open --raw $iterm_path) != $iterm_rendered {
+      $drift = ($drift | append $ITERM_OUT)
+    }
+  } else {
+    $iterm_rendered | save --force --raw $iterm_path
+    print $"  → ($ITERM_OUT)"
   }
 
   let plugin = (plugin-path $version)
@@ -168,6 +210,60 @@ def channel [hex: string, i: int]: nothing -> int {
 def byte-hex []: int -> string {
   $in | format number | get lowerhex | str replace "0x" ""
       | fill --alignment right --character "0" --width 2
+}
+
+def iterm-component [hex: string, i: int]: nothing -> string {
+  ((channel $hex $i) | into float) / 255 | into string
+}
+
+def iterm-real-dict [hex: string, alpha: float]: nothing -> string {
+  [
+    "  <dict>"
+    "    <key>Color Space</key>"
+    "    <string>sRGB</string>"
+    "    <key>Red Component</key>"
+    $"    <real>(iterm-component $hex 0)</real>"
+    "    <key>Green Component</key>"
+    $"    <real>(iterm-component $hex 1)</real>"
+    "    <key>Blue Component</key>"
+    $"    <real>(iterm-component $hex 2)</real>"
+    "    <key>Alpha Component</key>"
+    $"    <real>($alpha)</real>"
+    "  </dict>"
+  ] | str join "\n"
+}
+
+def iterm-key [name: string, hex: string, alpha: float]: nothing -> string {
+  [$"  <key>($name)</key>" (iterm-real-dict $hex $alpha)] | str join "\n"
+}
+
+# Same slot map the Ghostty template renders, projected into iTerm2's
+# float-component plist instead of a `theme = ` key file.
+def render-itermcolors [palette: record, version: string]: nothing -> string {
+  mut entries = []
+  for slot in $ANSI_SLOTS {
+    $entries = ($entries | append (iterm-key $"Ansi ($slot.idx) Color" (resolve $slot.key $palette $version) 1.0))
+  }
+  $entries = ($entries | append (iterm-key "Background Color" (resolve "surface" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Foreground Color" (resolve "on-surface" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Bold Color" (resolve "on-surface" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Cursor Color" (resolve "pink" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Cursor Text Color" (resolve "surface" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Cursor Guide Color" (resolve "code-bg.bright" $palette $version) 0.25))
+  $entries = ($entries | append (iterm-key "Selection Color" (resolve "code-bg.bright" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Selected Text Color" (resolve "on-surface" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Link Color" (resolve "link" $palette $version) 1.0))
+
+  [
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+    '<plist version="1.0">'
+    '<dict>'
+    ($entries | str join "\n")
+    '</dict>'
+    '</plist>'
+    ''
+  ] | str join "\n"
 }
 
 # Rider loads a UI theme only from a plugin, so the installable artefact is built

@@ -94,17 +94,20 @@ Four things are worth knowing before you get there:
 
 ## Editor themes
 
-`themes/` projects the same `:root` palette into three editors and Slack. The editor files are
-**not** part of the consumer contract, because no submodule reads them. The repo generates and
-gates them from a `.in` template beside each output. The Slack entry has no file format to
-generate: it is a hand-copied color string, documented in
-[`themes/slack/README.md`](themes/slack/README.md).
+`themes/` projects the same `:root` palette into five editors and terminals, plus Slack. The
+editor and terminal files are **not** part of the consumer contract, because no submodule reads
+them. The repo generates and gates them from a `.in` template beside each output, except iTerm2's
+plist, which `scripts/create-themes.nu` builds straight from the palette because a plist color is
+three float components, not a hex string. The Slack entry has no file format to generate: it is a
+hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/README.md).
 
 | Theme | Files | Install |
 | --- | --- | --- |
 | **Rider** | `dracula-tufte.theme.json` (IDE chrome) and `dracula-tufte.icls` (editor scheme) | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip` |
 | **Zed** | `dracula-tufte.json` | Copy to `~/.config/zed/themes/` |
 | **Ghostty** | `dracula-tufte` | Copy to `~/.config/ghostty/themes/`, then set `theme = dracula-tufte` |
+| **iTerm2** | `dracula-tufte.itermcolors` | Preferences, Profiles, Colors, Color Presets, Import, then select it |
+| **opencode** | `dracula-tufte.json` | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
 | **Slack** | `themes/slack/README.md` (color string, no file to install) | Preferences, Themes, Custom Theme, paste string |
 
 ```sh
