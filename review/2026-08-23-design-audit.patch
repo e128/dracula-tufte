@@ -1,0 +1,16 @@
+diff --git a/NOTES.md b/NOTES.md
+index ff43851..938ce1c 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -113,6 +113,11 @@ scales with a reader who raises the browser default.
+ 0.75em  the outbound arrow
+ ```
+ 
++**`text-wrap: balance` sits on `h1`, `h2` and `h3`, not `h4` through `h6`.** All three are short
++blocks where a stray last-line word is the defect `balance` fixes, the same reasoning
++`text-wrap: pretty` states for paragraph-length blocks elsewhere. `h4` through `h6` render at body
++text size, without the wider measure a headline runs against, so they stay off the list.
++
+ Nested ratios compound. Check the parent before you add a step. The repo already paid for three
+ traps.
+ 
