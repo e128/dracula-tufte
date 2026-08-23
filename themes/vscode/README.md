@@ -1,12 +1,15 @@
 # Dracula-Tufte (muted): VS Code theme
 
-Two files: `package.json` (the extension manifest) and
-`themes/dracula-tufte-color-theme.json` (workbench colors plus TextMate scopes).
+Three files: `package.json` (the extension manifest), `extension.vsixmanifest`
+(the VSIX container manifest), and `themes/dracula-tufte-color-theme.json`
+(workbench colors plus TextMate scopes).
 
 ## Generated, do not hand-edit
 
-`scripts/create-themes.nu` writes both from the `.in` template beside each one.
-Edit the template.
+`scripts/create-themes.nu` writes all three from the `.in` template beside
+each one, then packages `dist/dracula-tufte-vscode-<version>.vsix`, the same
+way it packages the Rider plugin zip. Edit the template, never the rendered
+file or the `.vsix`.
 
 ```sh
 nu scripts/create-themes.nu
@@ -15,12 +18,27 @@ nu scripts/create-themes.nu --check
 
 ## Install
 
-VS Code has no marketplace listing for this theme, so it loads as an unpacked
-extension folder rather than a `.vsix`.
+`dist/dracula-tufte-vscode-<version>.vsix` is tracked in this repo and rebuilt
+on every regeneration, the same way `themes/rider/dist/dracula-tufte-rider-<version>.zip`
+is.
+
+```sh
+code --install-extension themes/vscode/dist/dracula-tufte-vscode-<version>.vsix
+```
+
+Or, from the Extensions view: `...` menu -> **Install from VSIX...** -> pick
+the file. Either way, reload when prompted, then `Ctrl/Cmd+K Ctrl/Cmd+T` and
+pick **Dracula-Tufte (muted)**.
+
+There is still no marketplace listing, so this is the only install path aside
+from the unpacked folder below.
+
+## Unpacked, for editing the theme itself
 
 Extensions view -> `...` menu -> **Install from Location...** -> pick
-`themes/vscode/` -> reload when prompted, then `Ctrl/Cmd+K Ctrl/Cmd+T` and pick
-**Dracula-Tufte (muted)**.
+`themes/vscode/` -> reload when prompted. This is the one install path that
+reflects an edited `.in` template without a rebuild, so it is the faster loop
+while working on the theme itself; the `.vsix` above is what to ship.
 
 To try it without installing anything, run VS Code's Extension Development
 Host instead:

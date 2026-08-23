@@ -14,3 +14,5 @@ themes/rider/dist/.probe.zip
 # The plugin zip (dracula-tufte-rider-*.zip) is tracked. The themes bundle is
 # built at release time and is not.
 themes/rider/dist/dracula-tufte-themes-*.zip
+themes/vscode/dist/stage/
+themes/vscode/dist/.probe.vsix

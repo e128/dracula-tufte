@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a tagged, verified release of the Dracula-Tufte template: bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip plus the themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
+description: Cut a tagged, verified release of the Dracula-Tufte template: bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip, the VS Code vsix, and the themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
 ---
 
 # Release the template
@@ -31,7 +31,7 @@ genuine mix that could read either way.
 
 ```bash
 git switch -c release/vX.Y.Z-<slug>  # never work on main
-nu scripts/maintain.nu bump X.Y.Z    # stamps CSS + README, rebuilds fixtures + themes + plugin
+nu scripts/maintain.nu bump X.Y.Z    # stamps CSS + README, rebuilds fixtures + themes + plugin + vsix
 nu scripts/maintain.nu check         # must print "Contract OK"
 git add -A && git commit -F -        # message from the diff, see below
 git push -u origin release/vX.Y.Z-<slug>
@@ -46,10 +46,12 @@ nu scripts/maintain.nu release X.Y.Z # verifies green on the merged SHA, then ta
 CLAUDE.md bans. It checks before it stamps anything, so nothing has to be unwound. The
 same scan runs in `nu scripts/maintain.nu check` and in the `contract` workflow.
 
-`bump` deletes the old plugin zip and writes a new one. The filename carries the
-version and `META-INF/plugin.xml` reads it off the stylesheet header. Expect
-`themes/rider/dist/dracula-tufte-rider-<old>.zip` to disappear from `git status`
-as a delete. That is correct.
+`bump` deletes the old plugin zip and the old vsix and writes new ones. Each
+filename carries the version, and each manifest (`META-INF/plugin.xml`,
+`extension.vsixmanifest`) reads it off the stylesheet header. Expect
+`themes/rider/dist/dracula-tufte-rider-<old>.zip` and
+`themes/vscode/dist/dracula-tufte-vscode-<old>.vsix` to disappear from
+`git status` as deletes. That is correct.
 
 ## Verify before reporting done
 
@@ -63,17 +65,25 @@ git cat-file -t vX.Y.Z                                   # must be `tag`, not `c
 git ls-tree -r --name-only vX.Y.Z | rg '^themes'         # the tag must contain what it claims
 shasum -a 256 themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip
 unzip -l themes/rider/dist/dracula-tufte-rider-X.Y.Z.zip # Dracula-Tufte/lib/*.jar
+shasum -a 256 themes/vscode/dist/dracula-tufte-vscode-X.Y.Z.vsix
+unzip -l themes/vscode/dist/dracula-tufte-vscode-X.Y.Z.vsix # extension/package.json, extension/themes/*.json
 ```
 
-Both assets must be present: `dracula-tufte-rider-X.Y.Z.zip` and
-`dracula-tufte-themes-X.Y.Z.zip`. Report the plugin zip's sha256 so a second
-machine can compare after downloading.
+Three assets must be present: `dracula-tufte-rider-X.Y.Z.zip`,
+`dracula-tufte-vscode-X.Y.Z.vsix`, and `dracula-tufte-themes-X.Y.Z.zip`. Report
+the plugin zip's and the vsix's sha256 so a second machine can compare after
+downloading.
 
 The plugin zip must contain `Dracula-Tufte/lib/dracula-tufte-rider-X.Y.Z.jar` and
 nothing flatter. A bare jar loads when copied into `plugins/` by hand and is
 **refused by Install Plugin from Disk…**, which is how it actually gets
 installed, so a flat artefact passes every check here and fails the only user
 who matters.
+
+The vsix must contain `extension.vsixmanifest`, `[Content_Types].xml`, and an
+`extension/` directory holding `package.json`, `readme.md`, and
+`themes/dracula-tufte-color-theme.json`. Confirm it installs with
+`code --install-extension themes/vscode/dist/dracula-tufte-vscode-X.Y.Z.vsix`.
 
 ## Commit message
 

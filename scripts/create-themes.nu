@@ -1,7 +1,8 @@
 #!/usr/bin/env nu
 # create-themes.nu regenerates everything under themes/ from tufte-dracula.css,
-# then package the Rider theme as an installable plugin jar.
-# Run: `nu scripts/create-themes.nu` | `… --check` | `… --no-jar`
+# then packages the Rider theme as an installable plugin jar and the VS Code
+# theme as an installable .vsix.
+# Run: `nu scripts/create-themes.nu` | `… --check` | `… --no-jar` | `… --no-vsix`
 #
 # Each theme is a `.in` template beside its output. The template is the real
 # file with every colour replaced by a placeholder, so a diff between the two
@@ -45,6 +46,7 @@ const THEMES = [
   "themes/rider/dracula-tufte.theme.json"
   "themes/rider/META-INF/plugin.xml"
   "themes/tmux/dracula-tufte.conf"
+  "themes/vscode/extension.vsixmanifest"
   "themes/vscode/package.json"
   "themes/vscode/themes/dracula-tufte-color-theme.json"
   "themes/zed/dracula-tufte.json"
@@ -76,7 +78,8 @@ const ITERM_OUT = "themes/iterm2/dracula-tufte.itermcolors"
 
 def main [
   --check       # render in memory and fail on drift instead of writing
-  --no-jar      # skip packaging, just write the theme files
+  --no-jar      # skip Rider packaging, just write the theme files
+  --no-vsix     # skip VS Code packaging, just write the theme files
 ] {
   let palette = (^python3 ($ROOT | path join ".github/palette-check.py") --dump | from json)
   let version = (version-of-css)
@@ -133,6 +136,29 @@ def main [
     }
   }
 
+  let vsix = (vscode-plugin-path $version)
+  if not $no_vsix {
+    if $check {
+      # Same reproducible-bytes probe the Rider jar uses above, for the same reason:
+      # the vsix is tracked, and a drift here ships a stale one to whoever installs it.
+      let probe = ($vsix | path dirname | path join ".probe.vsix")
+      package-vscode $probe $version
+      if (not ($vsix | path exists)) or (open --raw $vsix) != (open --raw $probe) {
+        $drift = ($drift | append ($vsix | path relative-to $ROOT))
+      }
+      rm --force $probe
+      for old in (glob ($vsix | path dirname | path join "dracula-tufte-vscode-*.vsix")) {
+        if $old != $vsix {
+          $drift = ($drift | append $"($old | path relative-to $ROOT) , built for a version no longer stamped")
+        }
+      }
+    } else {
+      package-vscode $vsix $version
+      print $"  → ($vsix | path relative-to $ROOT)"
+      print $"Install: code --install-extension ($vsix | path relative-to $ROOT)"
+    }
+  }
+
   if $check {
     if ($drift | is-empty) {
       print "Themes fresh."
@@ -145,6 +171,10 @@ def main [
 
 def plugin-path [version: string]: nothing -> path {
   $ROOT | path join "themes" "rider" "dist" $"dracula-tufte-rider-($version).zip"
+}
+
+def vscode-plugin-path [version: string]: nothing -> path {
+  $ROOT | path join "themes" "vscode" "dist" $"dracula-tufte-vscode-($version).vsix"
 }
 
 # Line 2 of the stylesheet is machine-read in three places already (build-sample.nu,
@@ -374,4 +404,100 @@ def package [out: path, version: string] {
   if $z.exit_code != 0 {
     error make {msg: $"zip failed: ($z.stderr)"}
   }
+}
+
+# VS Code's unpacked-folder install path (Extensions view → … → Install from
+# Location…) already works with nothing but the source tree, unlike Rider,
+# which cannot load a theme without a plugin at all. A .vsix is still worth
+# building: it is the form every other install path expects (the `code
+# --install-extension` CLI, drag-and-drop onto the Extensions view, the
+# marketplace's own upload format), and it is the one this repo's README no
+# longer has to explain away with "there is no .vsix, use Install from
+# Location instead."
+#
+# `@vscode/vsce` is the tool that normally builds this file, and it was tried
+# first. Two things ruled it out. Its default file-list step shells out to
+# `npm`/`yarn` for dependency detection, and that call failed silently on this
+# tree, packaging a .vsix with only the two container manifests and none of
+# the actual extension, no error, exit code 0. `--no-dependencies --no-yarn`
+# routes around it, but reaching for npm at all, even just to be told there
+# are no dependencies, is a second toolchain this repo does not otherwise
+# need: `nu`, `python3` and `zip` cover every other artefact here, Rider's jar
+# included, and CLAUDE.md's "no build step" already governs the payload this
+# repo ships, not only the two inlined files. A .vsix is, underneath, exactly
+# what the Rider zip already is: a specific directory shape zipped with `-X`.
+# Hand-building it needs the same tool this repo already runs, and nothing
+# else.
+#
+#   dracula-tufte-vscode-<version>.vsix
+#     [Content_Types].xml
+#     extension.vsixmanifest
+#     extension/
+#       package.json
+#       readme.md
+#       themes/
+#         dracula-tufte-color-theme.json
+#
+# That shape, and the manifest and content-types text below, are not a guess
+# at the format: they are what `@vscode/vsce package --no-dependencies
+# --no-yarn` actually produced from this same package.json and README once
+# dependency detection was routed around, trimmed of the empty placeholder
+# `<Property>` rows vsce emits for fields this extension does not use, then
+# verified installable with `code --install-extension` and selectable via
+# Ctrl/Cmd+K Ctrl/Cmd+T. `extension/readme.md` is lowercase because that is
+# the name vsce gave it and the manifest's own `Path` has to agree.
+#
+# `[Content_Types].xml` carries no `{{version}}` and nothing else that ever
+# changes, so it is written here rather than as a same-named `.in` template on
+# disk: git and most shells treat the literal `[` and `]` in a bare filename
+# as glob metacharacters, and a file with nothing to substitute gains nothing
+# from the template mechanism the other themes need. `render-itermcolors`
+# above is the same call: build it from code when there is no `{{}}` to fill.
+#
+# Byte-reproducible for the same reason the Rider jar is, and by the same
+# three measures: every staged entry gets `touch -t 198001010000` (files
+# before the directories that hold them, since writing a file bumps its
+# parent's mtime), `-X` drops uid/gid and extended attributes, and the zip is
+# built from a fixed entry list rather than `-r`, so `--check` can compare
+# bytes instead of trusting that a rebuild came out the same.
+def package-vscode [out: path, version: string] {
+  let dir = ($ROOT | path join "themes" "vscode")
+  let dist = ($dir | path join "dist")
+  let stage = ($dist | path join "stage")
+  let extension = ($stage | path join "extension")
+
+  rm --recursive --force $stage
+  mkdir ($extension | path join "themes")
+  cp ($dir | path join "package.json") ($extension | path join "package.json")
+  cp ($dir | path join "README.md") ($extension | path join "readme.md")
+  cp ($dir | path join "themes" "dracula-tufte-color-theme.json") ($extension | path join "themes" "dracula-tufte-color-theme.json")
+  cp ($dir | path join "extension.vsixmanifest") ($stage | path join "extension.vsixmanifest")
+  content-types | save --force --raw ($stage | path join "[Content_Types].xml")
+
+  for f in [
+    "extension/themes/dracula-tufte-color-theme.json" "extension/themes"
+    "extension/package.json" "extension/readme.md" "extension"
+    "extension.vsixmanifest" "[Content_Types].xml"
+  ] {
+    ^touch -t 198001010000 ($stage | path join $f)
+  }
+
+  rm --force $out
+  cd $stage
+  let z = (^zip -q -X $out "[Content_Types].xml" "extension.vsixmanifest"
+    "extension/" "extension/package.json" "extension/readme.md"
+    "extension/themes/" "extension/themes/dracula-tufte-color-theme.json" | complete)
+  cd $ROOT
+  rm --recursive --force $stage
+  if $z.exit_code != 0 {
+    error make {msg: $"zip failed: ($z.stderr)"}
+  }
+}
+
+def content-types []: nothing -> string {
+  let types = ('<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    + '<Default Extension=".json" ContentType="application/json"/>'
+    + '<Default Extension=".md" ContentType="text/markdown"/>'
+    + '<Default Extension=".vsixmanifest" ContentType="text/xml"/></Types>')
+  ['<?xml version="1.0" encoding="utf-8"?>' $types ''] | str join "\n"
 }
