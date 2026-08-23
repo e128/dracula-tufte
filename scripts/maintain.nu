@@ -257,6 +257,10 @@ def "main bump" [version: string] {
   # exact file that already failed.
   let old = (glob ($ROOT | path join "themes" "rider" "dist" "dracula-tufte-rider-*.{jar,zip}"))
   if ($old | is-not-empty) { rm --force ...$old }
+  # Same reasoning, same shape, for the VS Code .vsix: a stale one is installable
+  # and nothing regenerates or checks it once its own version has moved on.
+  let old_vsix = (glob ($ROOT | path join "themes" "vscode" "dist" "dracula-tufte-vscode-*.vsix"))
+  if ($old_vsix | is-not-empty) { rm --force ...$old_vsix }
   nu ($SCRIPTS | path join "create-themes.nu")
   print $"Bumped. Review the diff, then:"
   print $"  git add -A && git commit -m 'feat: v($version) - <summary>'"
@@ -413,12 +417,15 @@ def "main release" [version: string] {
   publish-plugin $tag $slug $version
 }
 
-# The Rider theme is the one artefact a consumer cannot take from the source
-# tree. Rider loads a UI theme only from a plugin, so `create-themes.nu` packages
-# one, and attaching it to the release is what makes a tag something a person can
+# The Rider theme and the VS Code theme are the two artefacts that most benefit
+# from a packaged asset. Rider cannot load a UI theme without a plugin at all;
+# VS Code can load this one unpacked from the source tree, but `code
+# --install-extension`, drag-and-drop, and a second machine that just wants the
+# theme all want a `.vsix`, not a folder. `create-themes.nu` packages both, and
+# attaching them to the release is what makes a tag something a person can
 # install rather than something they have to build.
 #
-# The other editor themes go up as one themes zip alongside it. They are plain
+# The other editor themes go up as one themes zip alongside them. They are plain
 # files in the tree, so GitHub's own source zip already carries them, but only
 # for someone willing to download the whole template and find themes/. An asset
 # named for the job is what a person on a second machine actually wants, and
@@ -435,23 +442,28 @@ def publish-plugin [tag: string, slug: string, version: string] {
     print $"create-themes.nu produced no ($plugin | path basename). ($tag) is tagged with no plugin attached."
     exit 1
   }
+  let vsix = ($ROOT | path join "themes" "vscode" "dist" $"dracula-tufte-vscode-($version).vsix")
+  if not ($vsix | path exists) {
+    print $"create-themes.nu produced no ($vsix | path basename). ($tag) is tagged with no vsix attached."
+    exit 1
+  }
   let themes = (theme-bundle $version)
 
-  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $plugin $themes | complete)
+  let rel = (^gh release create $tag --repo $slug --title $tag --generate-notes $plugin $vsix $themes | complete)
   if $rel.exit_code != 0 {
     print $"($tag) is tagged and pushed, but publishing the release failed:"
     print ($rel.stderr | str trim)
     print $"  The tag stands. Retry with:"
-    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($plugin) ($themes)"
+    print $"  gh release create ($tag) --repo ($slug) --title ($tag) --generate-notes ($plugin) ($vsix) ($themes)"
     exit 1
   }
-  print $"Released ($tag) with ($plugin | path basename) and ($themes | path basename) attached."
+  print $"Released ($tag) with ($plugin | path basename), ($vsix | path basename) and ($themes | path basename) attached."
 }
 
 # Zip the editor themes for the release. The exclusions are the whole content
 # decision:
-#   - dist/*: the jar is its own asset, and a jar nested inside a zip is a thing
-#     people install by mistake.
+#   - dist/*: the jar and the vsix are each their own asset, and either one
+#     nested inside a zip is a thing people install by mistake.
 #   - *.in: the generation templates. They carry `{{token}}` placeholders, so a
 #     consumer who installs one gets a theme with literal braces for colours.
 #   - .DS_Store: gitignored, so git never sees it, but zip walks the real disk.
@@ -461,7 +473,7 @@ def theme-bundle [version: string]: nothing -> path {
   let out = ($ROOT | path join "themes" "rider" "dist" $"dracula-tufte-themes-($version).zip")
   rm --force $out
   cd $ROOT
-  let z = (^zip -q -r -X $out themes -x 'themes/rider/dist/*' '*.in' '*.DS_Store' | complete)
+  let z = (^zip -q -r -X $out themes -x 'themes/rider/dist/*' 'themes/vscode/dist/*' '*.in' '*.DS_Store' | complete)
   if $z.exit_code != 0 or (not ($out | path exists)) {
     print $"zip failed building ($out | path basename): ($z.stderr | str trim)"
     exit 1
