@@ -2,7 +2,7 @@
   "name": "dracula-tufte",
   "displayName": "Dracula-Tufte (muted)",
   "description": "The muted Dracula-Tufte palette as a VS Code color theme.",
-  "version": "1.37.0",
+  "version": "1.37.1",
   "publisher": "dracula-tufte",
   "engines": {
     "vscode": "^1.75.0"

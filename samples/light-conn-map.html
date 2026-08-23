@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.37.0 */
+    /* Dracula-Tufte (muted) v1.37.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -381,6 +381,9 @@
       body.conn-map article > section:nth-of-type(2) {
         flex: 1 1 0; min-width: 0;
       }
+      body.conn-map article > section:nth-of-type(1) .edge-list {
+        grid-template-columns: 1fr; gap: 0.4rem;
+      }
     }
     ::selection { background: var(--purple); color: var(--surface); }
     @media (max-width: 1000px) {
@@ -681,9 +684,9 @@
     <section>
       <h2>Links</h2>
       <h3>Antecedents</h3>
-      <ul class="nav-list" role="list"><li><a href="#">Antecedent A</a></li><li><a href="#">Antecedent B</a></li></ul>
+      <ul class="nav-list" role="list"><li><a href="#">Antecedent A</a></li><li><a href="#">Antecedent B</a></li><li><a href="#">depollier-bayonet-crown-antecedent</a></li></ul>
       <h3>Descendants</h3>
-      <ul class="nav-list" role="list"><li><a href="#">Descendant X</a></li><li><a href="#">Descendant Y</a></li></ul>
+      <ul class="nav-list" role="list"><li><a href="#">Descendant X</a></li><li><a href="#">Descendant Y</a></li><li><a href="#">perpetual-calendar-watch-descendant</a></li></ul>
     </section>
     <section>
       <h2>Graph</h2>
