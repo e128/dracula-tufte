@@ -6,7 +6,7 @@
   <title>Tufte-Dracula timeline layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.37.0 */
+    /* Dracula-Tufte (muted) v1.37.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -380,6 +380,9 @@
       }
       body.conn-map article > section:nth-of-type(2) {
         flex: 1 1 0; min-width: 0;
+      }
+      body.conn-map article > section:nth-of-type(1) .edge-list {
+        grid-template-columns: 1fr; gap: 0.4rem;
       }
     }
     ::selection { background: var(--purple); color: var(--surface); }

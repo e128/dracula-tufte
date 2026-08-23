@@ -134,6 +134,12 @@ def tokens [css: string] {
 # order. A page emitted with the old (Graph, Links) markup renders reversed under
 # this stylesheet. See NOTES.md.
 #
+# One long, hyphenated link label ships in each list below on purpose: the Links
+# column is a narrow sticky rail (clamp(220px, 22vw, 300px)), and a real slug
+# like "depollier-bayonet-crown" is exactly what overflows a column that isn't
+# forced to one grid track. If this regresses, the rail grows a horizontal
+# scrollbar alongside its intended vertical one.
+#
 # The Graph section holds two diagrams: the small map is the container-CSS
 # fixture (long label, useMaxWidth:false). The large map exercises the "Large
 # maps" NOTES.md section instead: open (never collapsed) subgraphs, the ELK
@@ -151,9 +157,9 @@ def conn-map-body [] {
     "    <section>"
     "      <h2>Links</h2>"
     "      <h3>Antecedents</h3>"
-    "      <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">Antecedent A</a></li><li><a href=\"#\">Antecedent B</a></li></ul>"
+    "      <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">Antecedent A</a></li><li><a href=\"#\">Antecedent B</a></li><li><a href=\"#\">depollier-bayonet-crown-antecedent</a></li></ul>"
     "      <h3>Descendants</h3>"
-    "      <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">Descendant X</a></li><li><a href=\"#\">Descendant Y</a></li></ul>"
+    "      <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">Descendant X</a></li><li><a href=\"#\">Descendant Y</a></li><li><a href=\"#\">perpetual-calendar-watch-descendant</a></li></ul>"
     "    </section>"
     "    <section>"
     "      <h2>Graph</h2>"
