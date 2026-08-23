@@ -239,8 +239,9 @@ run of short paragraphs with invisible nesting. It also made `li::marker` dead c
 share one indent, and `ul` keeps the UA marker progression, muted.
 
 **That is also half of the list-semantics problem.** WebKit drops list semantics from a list with
-`list-style: none`. A prose list with markers therefore keeps its semantics natively. Only
-`.nav-list` needs `role="list"` in the markup, which is a consumer obligation in `CONTRACT.md`.
+`list-style: none`. A prose list with markers therefore keeps its semantics natively. `.nav-list`
+and `.icon-list` both reset `list-style: none` on the `<ul>` itself, so both need `role="list"` in
+the markup, which is a consumer obligation in `CONTRACT.md`.
 
 ### `.recent-groups`
 
@@ -248,14 +249,21 @@ share one indent, and `ul` keeps the UA marker progression, muted.
 column count.** `.edge-list` is always two columns, because an antecedent list and a descendant
 list are always a pair. A category index has no such fixed arity. A generator may emit two
 categories or eight, and a fixed `1fr 1fr` would either strand empty columns or overflow them.
-`repeat(auto-fit, minmax(36rem, 1fr))` sizes itself to whatever count the client emits, with no
-per-category selector and no count read from markup.
+`repeat(auto-fit, minmax(min(36rem, 100%), 1fr))` sizes itself to whatever count the client emits,
+with no per-category selector and no count read from markup.
 
 **That is also why `.recent-groups` carries no breakpoint override, where `.edge-list` needs
 one.** At any width narrow enough to matter, two 36rem tracks no longer fit side by side, and
 `auto-fit` collapses to one column on its own. A fixed-column grid cannot do that, which is why
 `.edge-list` and `dl.timeline` each carry an explicit breakpoint. Adding one here would duplicate
 what the track-sizing function already does, against a number nobody measured for this component.
+
+**The bare `minmax(36rem, 1fr)` only fixed the column count, not the surviving column's own
+width.** `auto-fit` drops to one column below two tracks' width, but that one column still floors
+at 36rem (576px), which overflows the document below that width: a real WCAG 1.4.10 failure on any
+phone, confirmed by rendered layout. **`minmax(min(36rem, 100%), 1fr)` is the fix**, the standard
+guard against this exact `auto-fit` trap. It changes nothing above 576px and costs no new
+breakpoint.
 
 **Item count per category and the "view all" link are a generator concern, not a stylesheet
 one.** The CSS lays out whatever `.recent-group` sections arrive. It does not cap a list's length
@@ -813,6 +821,11 @@ because foreground and background differ only in alpha, not hue. `--on-surface` 
 backgrounds measures 8.06:1 and up in both modes. `--icon-color` still carries the whole component's
 identity through the border and the tint; it is just never the letter.
 
+**The `.icon-chip` glyph is `aria-hidden="true"`, because it always sits beside a visible label.**
+Unhidden, a screen reader announces the initial and then the `<strong>` title right after it, the
+same information twice on every row. `.step-node` is the opposite case and keeps its letter as real
+text: a step chain carries no adjacent label for it to duplicate.
+
 **`.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`** is a linear process strip: circular
 nodes joined by an arrow glyph. It exists for a flow too trivial to justify a Mermaid diagram, three
 or four stages, no branching. It is not a Mermaid replacement. A graph with a branch or a loop still
@@ -859,12 +872,14 @@ left out, not missed.**
 - **An absolute-positioned, JS-driven nav dropdown.** `details.nav-group` already does this job with
   a native disclosure widget and no script. The dropdown is strictly worse for a no-build sheet.
 
-**`.kicker` and `.icon-chip` join the forced-colors border list.** Both carry meaning through a
-tinted background alone, which forced colors suppresses the same way it suppresses a shadow. Without
-a border, the tint disappears and both read as bare text with no chip shape left. `.tag-dot` and
-`.live-dot` are not added there. Both sit beside text that already carries the same information, so
-a flattened dot loses no meaning, matching how `.verified` / `.unverified` / `.correction` already
-rely on color alone with no forced-colors override.
+**`.kicker`, `.icon-chip` and `.step-node` join the forced-colors border list.** All three carry
+their whole shape through a background fill alone, which forced colors suppresses the same way it
+suppresses a shadow. Without a border, the fill disappears: `.kicker` and `.icon-chip` read as bare
+text with no chip shape left, and `.step-node` loses its circle outright, leaving only the letter
+floating with no node and no per-step color. `.tag-dot` and `.live-dot` are not added there. Both sit
+beside text that already carries the same information, so a flattened dot loses no meaning, matching
+how `.verified` / `.unverified` / `.correction` already rely on color alone with no forced-colors
+override.
 
 **A sticky element does not take `backdrop-filter` blur.** factory.strongdm.ai's frosted sticky
 panels were a seventh candidate here, and this repo already has a decision that rules them out: "A
@@ -1688,6 +1703,17 @@ reference does not open the line it sits on. `abbr[title]` gets a dotted rule an
 matches both the `cmark-gfm` and pandoc shape and Python-Markdown's singular class, and it drops the
 duplicate leading `<hr>`. The Tufte `.sidenote` apparatus is separate, and it still needs
 hand-authored markup.
+
+**`.footnote-backref` needs an `aria-label`, and this is the one accessible-name requirement this
+repo asks of converter output rather than only of hand-authored markup.** `cmark-gfm` and pandoc
+both emit the backref as a bare `&#8617;` glyph with no name of its own. A screen reader announces
+the Unicode character or nothing useful, never "back to reference 1", and no CSS rule can attach an
+accessible name to content the stylesheet did not write. This differs from the outbound-link arrow,
+which was silenced (`content: "…" / ""`) because it is decorative and had wrongly reached the
+accessibility tree; a `.footnote-backref` is a real, functional control, so the fix runs the other
+way: give it a name rather than take one away. `CONTRACT.md` § 2 states it as a generator
+obligation, numbered per footnote, because two unlabeled backrefs on one page announce identically
+either way.
 
 **The sheet styles math where it arrives as real HTML. It renders none.** An unstyled
 `<math display="block">` overflows the **page**, not itself. That is the same failure a wide table
