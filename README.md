@@ -42,7 +42,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.35.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.36.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
@@ -59,7 +59,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.35.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.36.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -94,7 +94,7 @@ Four things are worth knowing before you get there:
 
 ## Editor themes
 
-`themes/` projects the same `:root` palette into five editors and terminals, plus Slack. The
+`themes/` projects the same `:root` palette into seven editors and terminals, plus Slack. The
 editor and terminal files are **not** part of the consumer contract, because no submodule reads
 them. The repo generates and gates them from a `.in` template beside each output, except iTerm2's
 plist, which `scripts/create-themes.nu` builds straight from the palette because a plist color is
@@ -108,6 +108,8 @@ hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/
 | **Ghostty** | `dracula-tufte` | Copy to `~/.config/ghostty/themes/`, then set `theme = dracula-tufte` |
 | **iTerm2** | `dracula-tufte.itermcolors` | Preferences, Profiles, Colors, Color Presets, Import, then select it |
 | **opencode** | `dracula-tufte.json` | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
+| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select the theme |
+| **tmux** | `dracula-tufte.conf` | `source-file` it from `~/.tmux.conf` |
 | **Slack** | `themes/slack/README.md` (color string, no file to install) | Preferences, Themes, Custom Theme, paste string |
 
 ```sh

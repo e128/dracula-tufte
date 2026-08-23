@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.35.0 */
+    /* Dracula-Tufte (muted) v1.36.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -296,8 +296,7 @@
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle;
       color: var(--label); box-shadow: inset 0 0 0 1px currentColor; }
     .tag-dot::before { content: ""; display: inline-block; width: 0.6em; height: 0.6em;
-      border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle;
-      forced-color-adjust: none; }
+      border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle; }
     .live-dot { display: inline-block; width: 0.5em; height: 0.5em; border-radius: 50%;
       background: var(--green); vertical-align: middle; animation: live-pulse 2s ease-in-out infinite; }
     @keyframes live-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -305,12 +304,14 @@
       border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
-      transition: text-decoration-color 0.15s ease-out, scale 0.12s ease-out; }
+      transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
     .nav-list li a:active { scale: 0.96; }
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: var(--space-6) 0; }
     .edge-list h3 { margin-top: 0; }
-    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(36rem, 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
+    .edge-list > div { display: flex; flex-direction: column; }
+    .edge-list > div > .nav-list { flex: 1; }
+    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(36rem, 100%), 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
     .recent-group { display: flex; flex-direction: column; }
     .recent-group h3 { margin-top: 0; }
     .recent-group .nav-list { flex: 1; }
@@ -331,6 +332,7 @@
       align-items: center; justify-content: center; font-weight: 700; color: var(--surface);
       background: var(--icon-color, var(--muted)); }
     .step-arrow { color: var(--muted); }
+    [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
@@ -362,7 +364,7 @@
     .mermaid-zoom:active { scale: 0.96; }
     pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
     pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
-    pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule-light) !important; }
+    pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule) !important; }
     pre.mermaid .cluster-label :is(p, span) { color: var(--on-surface) !important; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
@@ -456,7 +458,7 @@
       }
     }
     @media (forced-colors: active) {
-      code, kbd, .verdict, .badge, .kicker, .icon-chip { border: 1px solid currentColor; }
+      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
       table, th, td { border: 1px solid currentColor; }
       body::before { display: none; }
     }

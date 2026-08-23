@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.35.0 */
+    /* Dracula-Tufte (muted) v1.36.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -296,8 +296,7 @@
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle;
       color: var(--label); box-shadow: inset 0 0 0 1px currentColor; }
     .tag-dot::before { content: ""; display: inline-block; width: 0.6em; height: 0.6em;
-      border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle;
-      forced-color-adjust: none; }
+      border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle; }
     .live-dot { display: inline-block; width: 0.5em; height: 0.5em; border-radius: 50%;
       background: var(--green); vertical-align: middle; animation: live-pulse 2s ease-in-out infinite; }
     @keyframes live-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -305,12 +304,14 @@
       border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
-      transition: text-decoration-color 0.15s ease-out, scale 0.12s ease-out; }
+      transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
     .nav-list li a:active { scale: 0.96; }
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: var(--space-6) 0; }
     .edge-list h3 { margin-top: 0; }
-    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(36rem, 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
+    .edge-list > div { display: flex; flex-direction: column; }
+    .edge-list > div > .nav-list { flex: 1; }
+    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(36rem, 100%), 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
     .recent-group { display: flex; flex-direction: column; }
     .recent-group h3 { margin-top: 0; }
     .recent-group .nav-list { flex: 1; }
@@ -331,6 +332,7 @@
       align-items: center; justify-content: center; font-weight: 700; color: var(--surface);
       background: var(--icon-color, var(--muted)); }
     .step-arrow { color: var(--muted); }
+    [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
@@ -362,7 +364,7 @@
     .mermaid-zoom:active { scale: 0.96; }
     pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
     pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
-    pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule-light) !important; }
+    pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule) !important; }
     pre.mermaid .cluster-label :is(p, span) { color: var(--on-surface) !important; }
     body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
     @media (min-width: 900px) {
@@ -456,7 +458,7 @@
       }
     }
     @media (forced-colors: active) {
-      code, kbd, .verdict, .badge, .kicker, .icon-chip { border: 1px solid currentColor; }
+      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
       table, th, td { border: 1px solid currentColor; }
       body::before { display: none; }
     }
@@ -795,10 +797,10 @@
     <section>
       <h2>Icon rows and a step chain</h2>
       <p>A tag-dot marks a categorical value that already has a color elsewhere, never a rank. The class carries only the dot, never the label, because it paints <code>currentColor</code> and would otherwise recolor the text beside it: <span class="tag-dot" style="color: var(--data-1)"></span>Rust, <span class="tag-dot" style="color: var(--data-3)"></span>Go, <span class="tag-dot" style="color: var(--data-2)"></span>Python. A live-dot is the sheet's first animation, frozen for free under reduced motion: <span class="live-dot"></span> streaming.</p>
-      <ul class="icon-list">
-        <li style="--icon-color: var(--orange)"><span class="icon-chip">I</span><div><strong>Implement</strong><br/><code>implement the functionality</code></div></li>
-        <li style="--icon-color: var(--link)"><span class="icon-chip">I</span><div><strong>Identify</strong><br/><code>identify the bottleneck</code></div></li>
-        <li style="--icon-color: var(--green)"><span class="icon-chip">V</span><div><strong>Validate</strong><br/><code>verify behavioral correctness</code></div></li>
+      <ul class="icon-list" role="list">
+        <li style="--icon-color: var(--orange)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Implement</strong><br/><code>implement the functionality</code></div></li>
+        <li style="--icon-color: var(--link)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Identify</strong><br/><code>identify the bottleneck</code></div></li>
+        <li style="--icon-color: var(--green)"><span class="icon-chip" aria-hidden="true">V</span><div><strong>Validate</strong><br/><code>verify behavioral correctness</code></div></li>
       </ul>
       <p>A step chain is for a flow too trivial to justify a Mermaid diagram. A graph with a branch or a loop still belongs in <code>pre.mermaid</code>.</p>
       <div class="step-chain">
@@ -863,7 +865,7 @@
       <p>Math converted to MathML needs no script and no CDN: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> sets inline without opening the line box, and a display block scrolls on its own axis rather than widening the page.</p>
       <math display="block" tabindex="0" role="region" aria-label="Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>
       <section class="footnotes" data-footnotes>
-        <ol><li id="fn-1"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href="#fnref-1" class="footnote-backref">&#8617;</a></p></li></ol>
+        <ol><li id="fn-1"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href="#fnref-1" class="footnote-backref" aria-label="Back to reference 1">&#8617;</a></p></li></ol>
       </section>
     </section>
 

@@ -1,0 +1,28 @@
+# Dracula-Tufte (muted): tmux theme
+#
+# Every value is the sRGB rendering of a tufte-dracula.css :root oklch() token.
+# Style only, no content: status-bar text, window-list format and key bindings
+# stay whatever your own tmux.conf already sets.
+#
+# Install: add to ~/.tmux.conf
+#   source-file ~/.config/tmux/dracula-tufte.conf
+
+set -g status-style "bg=#{{surface-alt}},fg=#{{on-surface}}"
+set -g status-left-style "fg=#{{label}},bg=#{{surface-alt}}"
+set -g status-right-style "fg=#{{muted}},bg=#{{surface-alt}}"
+
+set -g window-status-style "fg=#{{muted}},bg=#{{surface-alt}}"
+set -g window-status-current-style "fg=#{{surface}},bg=#{{link}},bold"
+set -g window-status-activity-style "fg=#{{orange}},bg=#{{surface-alt}}"
+set -g window-status-bell-style "fg=#{{red}},bg=#{{surface-alt}},bold"
+
+set -g pane-border-style "fg=#{{rule-light}}"
+set -g pane-active-border-style "fg=#{{link}}"
+
+set -g message-style "bg=#{{code-bg}},fg=#{{on-surface}}"
+set -g message-command-style "bg=#{{code-bg}},fg=#{{link}}"
+
+set -g mode-style "bg=#{{link}},fg=#{{surface}}"
+
+set -g clock-mode-colour "#{{link}}"
+set -g clock-mode-style 24

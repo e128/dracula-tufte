@@ -44,6 +44,9 @@ const THEMES = [
   "themes/rider/dracula-tufte.icls"
   "themes/rider/dracula-tufte.theme.json"
   "themes/rider/META-INF/plugin.xml"
+  "themes/tmux/dracula-tufte.conf"
+  "themes/vscode/package.json"
+  "themes/vscode/themes/dracula-tufte-color-theme.json"
   "themes/zed/dracula-tufte.json"
 ]
 

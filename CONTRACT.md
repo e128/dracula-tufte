@@ -39,7 +39,7 @@ system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-
 
 ## 2. Emit this markup
 
-Twelve requirements. No stylesheet change can supply any of them. Most link the line in
+Thirteen requirements. No stylesheet change can supply any of them. Most link the line in
 `samples/dark.html` that models it, so you have a working example instead of only a sentence. The
 newest has no fixture yet; it says so.
 
@@ -51,7 +51,9 @@ newest has no fixture yet; it says so.
       (`samples/dark.html:890-891`).
 - [ ] `scope="col"` on table headers, and heading levels that nest with no skips
       (`samples/dark.html:687`).
-- [ ] `role="list"` on every `<ul class="nav-list">` (`samples/dark.html:852`).
+- [ ] `role="list"` on every `<ul class="nav-list">` (`samples/dark.html:852`) and every
+      `<ul class="icon-list">` (`samples/dark.html:800`). Both reset `list-style: none` on the
+      `<ul>` itself, which drops native list semantics in WebKit.
 - [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order
       (`samples/dark.html:700-704`).
 - [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`
@@ -110,6 +112,10 @@ newest has no fixture yet; it says so.
       categorical accent (`--data-1` through `--data-4`) is contrast-checked for a 3:1 graphic, not
       4.5:1 body text. `<span class="tag-dot" style="color: var(--data-1)"></span>Rust` keeps the
       color on the dot; the label sits outside the span as plain text.
+- [ ] `aria-hidden="true"` on every `.icon-chip` span (`samples/dark.html:799`). The glyph always sits
+      beside a visible `<strong>` label that already states what it identifies, so an unhidden glyph
+      is a screen reader announcing the same information twice per row. `.step-node` is the opposite
+      case and stays real text: it carries no adjacent label of its own.
 - [ ] Every `.step-node` after the first, together with the `.step-arrow` in front of it, wrapped in
       one `.step-hop` (`samples/dark.html:797-801`). `.step-chain` wraps at a narrow measure, and an
       arrow and its node are two separate flex items unless paired: a wrap can then land between
@@ -121,9 +127,16 @@ newest has no fixture yet; it says so.
       `text-overflow: ellipsis`, so a title longer than the row has no way back to sighted mouse
       users once clipped. `title` gives the browser's native tooltip a value to show. The DOM text
       stays intact either way, so a screen reader already reads the full title regardless.
+- [ ] `aria-label` on every `.footnote-backref`, naming which reference it returns to
+      (`samples/dark.html:868`). Its only content is `&#8617;`, a bare glyph with no accessible
+      name a reader can act on. Number it: `Back to reference 1`, `Back to reference 2`, and so on,
+      so two backrefs on one page do not announce identically. This holds whether you hand-author
+      the footnote block or pass a document through a Markdown converter. No stylesheet rule can
+      supply an accessible name onto content it did not write, so this is the one exception to the
+      line below: the class arrives from the converter, and the label is still yours to add.
 
-Markdown constructs need **no classes of their own**. Do not invent any. A converter's output
-lands in a theme register already.
+Markdown constructs otherwise need **no classes of their own**. Do not invent any beyond what this
+section already asks for. A converter's output lands in a theme register already.
 
 ## 3. What changed, by release
 
@@ -132,6 +145,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.36.0 | add `aria-label` to every `.footnote-backref` you emit, numbered per footnote (`Back to reference 1`, `Back to reference 2`, ...). This is a real markup gap in what `cmark-gfm` and pandoc emit by default, not a stylesheet oversight: the glyph carries no accessible name on its own, and no CSS rule can add one to content it did not write. `.step-node` also joined the forced-colors border list, a self-contained stylesheet change over markup you already emit |
 | v1.34.0 | nothing. Two self-contained stylesheet additions over markup you already emit: a fixed, full-viewport film-grain texture behind every page (`body::before`, off in print and in `forced-colors: active`), and a second shadow layer on `kbd` for a raised bottom edge. Neither needs new markup or a new class |
 | v1.33.0 | nothing, unless you opt in to one of six new presentational classes: `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list` / `.icon-chip`, `.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`, and `blockquote.pull`. All are self-contained CSS over markup you write yourself, no existing fixture requirement changes. Two carry a real markup requirement if you use them, both new in § 2: keep `.tag-dot` off any element that also holds the label text, and wrap every arrow-plus-node pair after the first in `.step-hop` |
 | v1.31.0 | opt in to `.verdict` plus `.verdict-pass` / `.verdict-partial` / `.verdict-failed` / `.verdict-neutral` on any page that grades a claim. The classes existed before this row did; nothing in this file told a generator they were there, so a real graded page (a 27-row scorecard, a verdict per row) rendered every verdict as plain text. `.verdict` also gained `display: inline-block`, so its fixed `min-width` now holds wherever you place it, a `<table>` cell, a heading, or prose, not only inside `.scorecard`'s grid, where a grid item's blockified `display` had been carrying it until now |
