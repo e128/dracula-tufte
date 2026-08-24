@@ -37,6 +37,15 @@ force that, so a copy taken from one of them is locked to light and can never fo
 system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-conn-map.html` and
 `samples/dark-timeline.html` do carry the payload verbatim, but the file is still the source.
 
+**Do not inline a second `<style>` block that re-declares `:root` inside
+`@media (prefers-color-scheme: light)`.** A generator that adds its own "force dark" block after
+the payload's `<style>` wins the cascade on equal specificity, so the page never shows the light
+palette regardless of the reader's OS setting, and `prefers-color-scheme` still reports correctly
+in devtools while the rendered page stays dark. To force one scheme only, rewrite the payload's own
+`@media` conditions before inlining it (the way `samples/light.html` does), never append an
+overriding block. To respond to the reader's system setting, inline the payload once and add
+nothing after it.
+
 ## 2. Emit this markup
 
 Thirteen requirements. No stylesheet change can supply any of them. Most link the line in
