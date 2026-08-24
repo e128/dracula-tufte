@@ -182,7 +182,7 @@ def body [] {
     "  <article>"
     "    <span class=\"kicker\">Living fixture</span>"
     "    <h1>Tufte-Dracula Component Sample</h1>"
-    "    <p class=\"byline\">Living style fixture: every rule in tufte-dracula.css + mermaid.js</p>"
+    "    <p class=\"byline\">Living style fixture: every rule in tufte-dracula.css, mermaid.js and filter.js</p>"
     ""
     # Enough sibling links to wrap at 390px, because the v1.22.0 `nav > a + a`
     # separator is a border on the link, so a link that starts a wrapped line
