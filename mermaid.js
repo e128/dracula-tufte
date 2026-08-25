@@ -10,7 +10,7 @@
         .catch(() => {});
     }
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
-    const mermaidFont = 'ui-monospace, "JetBrains Mono", "Fira Code", monospace';
+    const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
     const mermaidDark = {
       background:          '#343746',
       mainBkg:             '#343746',

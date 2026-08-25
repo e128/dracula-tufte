@@ -78,6 +78,18 @@ Georgia stays first in the fallback stack. Noto Serif follows it for Android and
 Serif follows for Linux. Charter and Palatino are deliberately absent, because both exist only
 where Georgia already does.
 
+**The code face ships as a webfont too.** `--mono-font` names `'JetBrains Mono'` first, and both
+styles of it load from `@fontsource-variable/jetbrains-mono` on jsDelivr, pinned like the body
+face. The stack used to lead with `ui-monospace`, so the named face rendered only where someone had
+installed it and code blocks differed per machine. The order now matches the Rider theme, which
+already pins JetBrains Mono as its editor font. Offline the stack falls to `ui-monospace`, so the
+degradation path is unchanged. `mermaid.js` repeats this order in both of its literals, because
+the measurement font must stay the render font.
+
+**The `blockquote.pull` glyph takes `var(--body-font)`.** It once hardcoded Georgia, which exists
+on neither Android nor Linux, so the mark already fell through to another face there. The loaded
+body serif renders it identically on every platform.
+
 **Both stacks are tokens, because three rules need the literal.** `.mermaid-zoom` sets
 `font: inherit`, which resolves against `pre.mermaid`. That would put the only button in the sheet
 in the code face, so the rule sets `font-family: var(--body-font)` after the shorthand. `pre` sets
