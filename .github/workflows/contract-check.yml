@@ -10,7 +10,7 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify the ten contract files exist
         run: |
@@ -156,7 +156,7 @@ jobs:
         # uploads whatever it managed to paint, which is the thing you want to
         # see when it fails.
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mode-renders
           path: mode-renders/*.png
