@@ -238,6 +238,14 @@ every paragraph with a note off the page rhythm. `.sidenote-number:after` and `.
 use `position: relative; top: -0.4em; line-height: 0` instead. That lifts the glyph with no part in
 line-box height.
 
+**`.sidenote` and `.marginnote` reset what a surrounding `.newthought` inherits into them.** Small
+caps, weight 600, tracking and the `1.2em` size all inherit, and the natural place for a note is
+inside the sentence it corroborates, so a generator that opens a paragraph with `.newthought` and
+keeps its note markup there produced a margin note in semibold small caps beside every other note
+in its normal register. The reset pins the annotation register: a note renders the same wherever
+its anchor lands. **Do not replace the reset with a markup rule instead.** A rendering invariant is
+the stylesheet's job; a consumer that ignores the contract must still get a correct note.
+
 **`--space-*` covers block rhythm only. Component padding stays literal.** Six tokens replace the
 vertical-rhythm values. The off-scale values stay as they are, deliberately. They are
 component-internal padding tuned by measurement. A snap to the scale would move rendered boxes to

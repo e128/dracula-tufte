@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="dracula-tufte" Version="1.38.0" Publisher="dracula-tufte" />
+    <Identity Language="en-US" Id="dracula-tufte" Version="1.38.1" Publisher="dracula-tufte" />
     <DisplayName>Dracula-Tufte (muted)</DisplayName>
     <Description xml:space="preserve">The muted Dracula-Tufte palette as a VS Code color theme.</Description>
     <Tags>theme,color-theme</Tags>
