@@ -16,8 +16,8 @@ deviating. Everything below is that section made runnable.
 Read the current one, then decide the next:
 
 ```
-sed -n '2p' tufte-dracula.css     # /* Dracula-Tufte (muted) vX.Y.Z */
-git log --oneline "v$(...)"..HEAD # what has landed untagged
+sed -n '2p' tufte-dracula.css          # /* Dracula-Tufte (muted) vX.Y.Z */
+git log --oneline v<X.Y.Z>..HEAD       # what has landed untagged
 ```
 
 - `feat:` commits since the last tag, or any new consumer-visible file → **minor**
@@ -36,15 +36,26 @@ nu scripts/maintain.nu check         # must print "Contract OK"
 git add -A && git commit -F -        # message from the diff, see below
 git push -u origin release/vX.Y.Z-<slug>
 gh pr create --fill
-gh pr checks --watch                 # `contract` must pass HERE, not after
+gh pr checks --watch                 # catch red BEFORE a doomed merge attempt
 gh pr merge --squash
 git switch main && git pull --ff-only
 nu scripts/maintain.nu release X.Y.Z # verifies green on the merged SHA, then tags + publishes
 ```
 
+`gh pr checks --watch` is advisory; the gate is the poll inside `maintain.nu release`,
+which re-reads the check runs on the merged SHA and refuses to tag anything else. Do not
+treat a green `--watch` as the release having happened: the tag and the assets only
+exist after `release` prints it.
+
 `bump` refuses outright when any tracked file carries an em-dash or an en-dash, which
 CLAUDE.md bans. It checks before it stamps anything, so nothing has to be unwound. The
 same scan runs in `nu scripts/maintain.nu check` and in the `contract` workflow.
+
+**Release the version origin/main is stamped with.** `release` reads the stamp off
+`origin/main`'s stylesheet, not off your branch, so a bump committed after the merge
+produces a version with no consumer change. If the merged PR already carried its bump,
+the branch is done; delete it and release from `main`. Never stack a second bump to
+"fix" a hung release.
 
 `bump` deletes the old plugin zip and the old vsix and writes new ones. Each
 filename carries the version, and each manifest (`META-INF/plugin.xml`,
@@ -52,6 +63,20 @@ filename carries the version, and each manifest (`META-INF/plugin.xml`,
 `themes/rider/dist/dracula-tufte-rider-<old>.zip` and
 `themes/vscode/dist/dracula-tufte-vscode-<old>.vsix` to disappear from
 `git status` as deletes. That is correct.
+
+## When the PR is merged but the tag is missing
+
+The most common hangup: the merge landed, CI is green on `main`, but no tag and no
+release exist. The cause is almost always that `release` was attempted from the release
+branch, which refuses anything that is not `origin/main`. It must run from `main`:
+
+```bash
+git switch main && git pull --ff-only
+nu scripts/maintain.nu release X.Y.Z   # X.Y.Z = the version stamped on origin/main
+```
+
+Confirm the version first with `git show origin/main:tufte-dracula.css | sed -n '2p'`.
+A dirty tree blocks `release`, so stash unrelated local edits first.
 
 ## Verify before reporting done
 
