@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.38.0 */
+    /* Dracula-Tufte (muted) v1.38.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -97,7 +97,9 @@
     .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.75em;
       position: relative; top: -0.4em; line-height: 0; color: var(--muted); }
     .sidenote, .marginnote { float: right; float: inline-end; clear: right; clear: inline-end; width: 28%;
-      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto; }
+      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto;
+      font-variant-caps: normal; font-weight: 400; letter-spacing: normal; }
+    .newthought :is(.sidenote, .marginnote) { font-size: 0.75em; }
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
     a:hover { text-decoration-color: var(--link); }
     :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8em;

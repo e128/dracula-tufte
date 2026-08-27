@@ -48,9 +48,9 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Thirteen requirements. No stylesheet change can supply any of them. Most link the line in
+Sixteen requirements. No stylesheet change can supply any of them. Most link the line in
 `samples/dark.html` that models it, so you have a working example instead of only a sentence. The
-newest has no fixture yet; it says so.
+newest three have no fixture yet; they say so.
 
 - [ ] `<main>` around the content, with `<article>` inside it
       (`samples/dark.html:637-638`).
@@ -144,6 +144,23 @@ newest has no fixture yet; it says so.
       supply an accessible name onto content it did not write, so this is the one exception to the
       line below: the class arrives from the converter, and the label is still yours to add.
 
+- [ ] Same-page citation targets emitted as relative fragments (`#src-1`), never absolute
+      self-URLs. The stylesheet paints an outbound-link arrow after every `a[href^="http"]`, so a
+      footnote ref written as `href="https://your.site/page#src-1"` renders `1 ↗` while the click
+      only scrolls within the page. The arrow is a promise the link does not keep. Absolute URLs to
+      other hosts keep the arrow; that is what it is for.
+- [ ] A bracket-style inline citation (`[2, 3]`) is a link into the numbered source list, not bare
+      text. The page's other citations are `sup` links into Sources; a bare `[2, 3]` asks the
+      reader to count an ordered list by hand to learn what corroborates the claim. Emit the same
+      `sup`-into-source-list pattern the timeline requirement above already asks for, one `sup` per
+      source number.
+- [ ] `.newthought` covers the opening few words of a section's first paragraph, never the whole
+      sentence, and never splits a proper name at the span boundary. The class sets small caps at
+      `1.2em` and weight 600, which is display treatment: a four-line paragraph inside it reads as
+      shouting, and `of St.</span> John the Baptist` breaks a name in half. The stylesheet resets
+      variant, weight, letter-spacing and size on a note nested inside the span, so the note renders
+      normally, but the treatment itself is for opening words, not paragraphs. Keep the span short.
+
 Markdown constructs otherwise need **no classes of their own**. Do not invent any beyond what this
 section already asks for. A converter's output lands in a theme register already.
 
@@ -154,6 +171,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.38.1 | nothing. A self-contained stylesheet change over markup you already emit: `.sidenote` and `.marginnote` now reset `font-variant-caps`, `font-weight` and `letter-spacing`, and a note nested inside a `.newthought` span is pinned back to `0.75em`, so a margin note renders in its normal register wherever its anchor lands. Three new requirements joined § 2: same-page citation targets as relative fragments, bracket-style citations linked into the source list, and the scope of `.newthought` |
 | v1.36.0 | add `aria-label` to every `.footnote-backref` you emit, numbered per footnote (`Back to reference 1`, `Back to reference 2`, ...). This is a real markup gap in what `cmark-gfm` and pandoc emit by default, not a stylesheet oversight: the glyph carries no accessible name on its own, and no CSS rule can add one to content it did not write. `.step-node` also joined the forced-colors border list, a self-contained stylesheet change over markup you already emit |
 | v1.34.0 | nothing. Two self-contained stylesheet additions over markup you already emit: a fixed, full-viewport film-grain texture behind every page (`body::before`, off in print and in `forced-colors: active`), and a second shadow layer on `kbd` for a raised bottom edge. Neither needs new markup or a new class |
 | v1.33.0 | nothing, unless you opt in to one of six new presentational classes: `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list` / `.icon-chip`, `.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`, and `blockquote.pull`. All are self-contained CSS over markup you write yourself, no existing fixture requirement changes. Two carry a real markup requirement if you use them, both new in § 2: keep `.tag-dot` off any element that also holds the label text, and wrap every arrow-plus-node pair after the first in `.step-hop` |
@@ -183,8 +201,8 @@ classes are invisible to a version check and both are caught by one byte compare
 Store the inline `<style>` block of each generated file. On regeneration, compare it against the
 current `tufte-dracula.css` body. Regenerate the files that differ.
 
-This is the recommended trigger. It scales to thousands of files and it needs no metadata beyond
-what the artifact already carries.
+This is a requirement, not a recommendation. It scales to thousands of files and it needs no
+metadata beyond what the artifact already carries.
 
 **Don't keep a second version field that duplicates the one you inlined.** A generated page that
 stamps its own `<meta name="template-version">` or similar, separate from the CSS it actually
