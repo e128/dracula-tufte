@@ -878,12 +878,33 @@ reused, because an inset shadow is a shadow.
   currentColor }`. Every `.verdict-*` fill resolves to one appearance under emulation. The **state**
   survives, because the chip's text says `PASS`, `PARTIAL`, `FAILED` or `N/A`. The border restores
   the boundary, not the meaning.
+- **A code BLOCK is not a chip, and treating it as one shipped a visible fault.** `pre > code` is
+  `display: inline`, so the chip border fragmented across every line of a code block: three broken
+  boxes with rules running through the code, reading as a rendering fault rather than a boundary.
+  `pre code { border: none }` undoes it. Nothing is lost, because `pre` keeps a real
+  `border-inline-start` accent bar, which forced colors preserves, so the block stays bounded the
+  same way `blockquote` and `aside` are. **The lesson is the selector, not the rule:** every other
+  name in that list is a short inline chip, and `code` is the one that also appears as a block.
 - **Tables carry a real border.** `table, th, td { border: 1px solid currentColor }`. Without it the
   outer rule, the inset header rule and the header background all vanish. A pixel scan down the
   edge then returns one value: no frame, and a header indistinguishable from the data.
 
 Fills inside a table still flatten, and the repo left that alone. The user's own rendering is the
 point of the mode. The grid is what is restored, not the tint.
+
+**This block had no coverage at all until v1.41.1, which is how the code-block border survived.**
+`render-modes.py` renders dark, light and contrast, and its assertion is that the page paints that
+mode's `--surface`. **That assertion cannot transfer here**, because the whole point of forced
+colors is that the user agent repaints and the sheet's colors stop deciding anything. So the mode is
+gated on its **structure** instead, in `.github/script-probe.py`: the condition is rewritten to
+`@media all` in a scratch copy, the same trick `render-modes.py` uses, and eight assertions read the
+computed styles that an edit here actually breaks. A chip is outlined, a table and a cell are
+outlined, a block `code` is **not**, the `pre` keeps its bar, and the grain is off. The condition is
+checked as a string in the real fixture first, so a rename fails loudly rather than leaving the
+rewrite a no-op and the assertions vacuous.
+
+**A mode whose correctness is not a color needs a structural gate, not a pixel one.** That is the
+general form of it, and it is why the print work needed the same treatment one release earlier.
 
 ## Form follows role
 
@@ -2287,7 +2308,7 @@ intro and in the bullet, which is the only honest way to keep a rule that has on
 `.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives the two inlined
 scripts, and asserts what a reader would see: eighteen assertions over `filter.js` scope, counts,
 group state and its restore path, and over `mermaid.js` rendering, zoom binding and the conditional
-region. Everything else in CI counts blocks, compares bytes or measures colors, and **none of those
+region, plus eight over the forced-colors block, which had no coverage of any kind before. Everything else in CI counts blocks, compares bytes or measures colors, and **none of those
 questions is "does this handler attach to anything".** Two defects prove the gap was real: the
 fixture shipped an inert `input.filter-box` from v1.16.0 to v1.21.0, and a click on a diagram opened
 nothing for several releases (see *Zoom*).
@@ -2300,8 +2321,10 @@ nothing for several releases (see *Zoom*).
 - **The mermaid half is network-dependent and says so out loud.** The pinned CDN is the one input
   here that can be unavailable rather than broken, so reachability is probed first and reported as
   a `SKIP`. A gate that goes quiet when the network does is worse than no gate.
-- **It refuses to pass on fewer than 13 assertions**, for the same reason every other vacuity floor
-  in the repo exists: a driver that throws halfway would otherwise publish a short, green list.
+- **It refuses to pass on fewer than 13 binding assertions and 8 forced-colors ones**, for the same
+  reason every other vacuity floor in the repo exists: a driver that throws halfway would otherwise
+  publish a short, green list. It renders the fixture twice, once as shipped and once with the
+  `forced-colors` condition rewritten on (see *Forced colors*).
 - **Both halves were mutation-tested.** Moving `filter.js`'s scope walk up one level and making the
   mermaid region unconditional each turned the gate red on the exact assertions that name them.
 

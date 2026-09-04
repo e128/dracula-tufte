@@ -147,6 +147,47 @@ DRIVER = """
 CDN = re.search(r"from '(https://[^']+)'", (ROOT / "mermaid.js").read_text()).group(1)
 
 
+# The forced-colors block had no coverage of any kind. render-modes.py renders dark,
+# light and contrast, and its assertion is that the page paints that mode's --surface,
+# which cannot transfer here: the whole point of forced colors is that the user agent
+# repaints and the sheet's own colors stop deciding anything. So this asserts the block's
+# STRUCTURE instead, which is what an edit actually breaks. The condition is forced on in
+# a scratch copy, the same rewrite render-modes.py uses, so the rules apply without the
+# host being in forced-colors mode.
+#
+# It exists because a real defect shipped here: `code` took a chip border, `pre > code` is
+# `display: inline`, and the border therefore fragmented across every line of a code
+# block as three broken boxes. It read as a rendering fault, and nothing rendered the mode
+# to notice.
+FORCED_DRIVER = """
+  <script type="module">
+    const out = [];
+    const t = (name, cond) => out.push(name + '=' + (cond ? 'PASS' : 'FAIL'));
+    const border = (el) => el && getComputedStyle(el).borderTopStyle;
+    // A chip outlines itself, because forced colors drops the fill that bounded it.
+    t('fc-inline-code-outlined', border(document.querySelector('p code')) === 'solid');
+    t('fc-kbd-outlined', border(document.querySelector('kbd')) === 'solid');
+    t('fc-verdict-outlined', border(document.querySelector('.verdict')) === 'solid');
+    t('fc-table-outlined', border(document.querySelector('table')) === 'solid');
+    t('fc-cell-outlined', border(document.querySelector('td')) === 'solid');
+    // A code BLOCK is not a chip. Its `pre` keeps a real border-inline-start, so the
+    // block stays bounded, and a border on the inline `code` inside it only fragments.
+    t('fc-block-code-not-outlined', border(document.querySelector('pre > code')) === 'none');
+    t('fc-pre-keeps-its-bar',
+      getComputedStyle(document.querySelector('pre')).borderInlineStartStyle === 'solid');
+    // The film grain is decorative and forced colors is a legibility mode.
+    t('fc-grain-off',
+      getComputedStyle(document.body, '::before').display === 'none');
+    const el = document.createElement('pre');
+    el.id = 'script-probe';
+    el.textContent = out.join('\\n');
+    document.body.append(el);
+  </script>
+"""
+
+FORCED_CONDITION = "@media (forced-colors: active)"
+
+
 def cdn_reachable():
     try:
         with urllib.request.urlopen(CDN, timeout=10) as r:
@@ -155,17 +196,8 @@ def cdn_reachable():
         return False
 
 
-def main():
-    mermaid = cdn_reachable()
-    if not mermaid:
-        print(f"SKIP: {CDN} is unreachable, so the mermaid.js half cannot run.")
-
-    html = FIXTURE.read_text()
-    if "</body>" not in html:
-        sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
-    flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
-    body = html.replace("</body>", flag + DRIVER + "\n</body>", 1)
-
+def run(body, floor, what):
+    """Render `body` in headless Chrome and read the driver's published results back."""
     with tempfile.TemporaryDirectory() as tmp:
         source = pathlib.Path(tmp) / "probe.html"
         source.write_text(body)
@@ -179,12 +211,33 @@ def main():
     found = re.search(r'<pre id="script-probe">(.*?)</pre>', dump, re.S)
     if not found:
         sys.exit(
-            "The probe never published a result. Either an inlined script threw before "
-            "the driver ran, or the driver itself did not reach `publish()`."
+            f"The {what} probe never published a result. Either an inlined script threw "
+            f"before the driver ran, or the driver itself did not reach its append."
         )
     results = [line.strip() for line in found.group(1).splitlines() if line.strip()]
-    if len(results) < 13:
-        sys.exit(f"Only {len(results)} assertions reported, refusing to pass vacuously.")
+    if len(results) < floor:
+        sys.exit(f"Only {len(results)} {what} assertions reported, refusing to pass vacuously.")
+    return results
+
+
+def main():
+    mermaid = cdn_reachable()
+    if not mermaid:
+        print(f"SKIP: {CDN} is unreachable, so the mermaid.js half cannot run.")
+
+    html = FIXTURE.read_text()
+    if "</body>" not in html:
+        sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
+    flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
+    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 13, "binding")
+
+    # Same page, forced-colors switched on by rewriting the condition. Checked as a
+    # string in the real fixture first, so a renamed or deleted query fails loudly here
+    # instead of leaving the rewrite a silent no-op and the assertions vacuous.
+    if f"{FORCED_CONDITION} {{" not in html:
+        sys.exit(f"{FIXTURE.name} has no `{FORCED_CONDITION} {{`, so that block is unreachable.")
+    forced = html.replace(FORCED_CONDITION, "@media all", 1)
+    results += run(forced.replace("</body>", FORCED_DRIVER + "\n</body>", 1), 8, "forced-colors")
 
     fail = 0
     for line in results:
