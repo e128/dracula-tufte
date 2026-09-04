@@ -71,8 +71,11 @@ run `git submodule update --remote external/dracula-tufte` and then commit the p
 4. How to detect a stale artifact (§ 4).
 5. What each pin mode costs (§ 5).
 
-`samples/dark.html` models every requirement in § 2, and CI fails when the fixture drifts from the
-stylesheet. **When CONTRACT.md and the fixture disagree, the fixture is right.**
+Most of § 2 is modelled in `samples/dark.html`, three requirements only in
+`samples/dark-timeline.html`, and three in no fixture yet, which each of those three says. CI fails
+when a fixture drifts from the stylesheet, so **when CONTRACT.md and a fixture disagree about
+markup, the fixture is right.** The single exception is flagged in § 2 itself: the fixture's
+`quadrantChart` breaks its own requirement on purpose, as a stress case.
 
 Four things are worth knowing before you get there:
 

@@ -125,6 +125,20 @@ jobs:
       - name: Release gate still refuses what it should
         run: nu scripts/maintain.nu selftest
 
+      - name: CONTRACT.md section 2 must hold against the fixtures
+        # Every § 2 obligation this repo can measure against its own fixtures, plus the
+        # claims § 2 makes about itself: each fixture pointer resolves in the file it
+        # names, every requirement either carries a pointer or says it has no fixture,
+        # the spelled-out count matches the bullets in CONTRACT.md and README.md, no
+        # unwrapped table lacks its tab stop or carries role="region", and no .step-node
+        # takes --icon-color from the --data-* ramp.
+        #
+        # The pointers were line numbers into a generated file until v1.40.0, and all 22
+        # were wrong with every check green. The table scan and the pointer gate both
+        # ran only in `nu scripts/maintain.nu check` before this step existed, and a
+        # gate that runs only locally does not hold a merge.
+        run: nu scripts/maintain.nu contract-markup
+
       - name: Generated files must be regenerated (fails if stale vs CSS/JS)
         run: |
           # tokens.css is included here on purpose: it is a verbatim slice of the

@@ -5,9 +5,16 @@ states what to inline, what markup to emit, and what changed in each release. It
 reasoning. [NOTES.md](NOTES.md) holds the decisions and the prohibitions behind these rules, and
 [README.md](README.md) orients a person arriving for the first time.
 
-**`samples/dark.html` is the executable specification.** It models every requirement below, and CI
-fails when it drifts from the stylesheet. When this file and the fixture disagree, the fixture is
-right. Read the fixture before you invent markup.
+**The fixtures are the executable specification.** CI fails when they drift from the stylesheet, so
+when this file and a fixture disagree about markup, the fixture is right. Read it before you invent
+any.
+
+Two limits on that, and both are stated where they apply rather than left for you to discover.
+**Most requirements below are modelled in `samples/dark.html`, a few only in
+`samples/dark-timeline.html`, and three in no fixture at all**, which each of those three says in
+its own bullet. **One requirement the fixture deliberately breaks:** its `quadrantChart` carries
+two overlong point labels on purpose, as the stress case for a stylesheet rule that has to survive
+them. That bullet is the one place to follow this file and not the fixture, and it says so.
 
 ## 1. Inline the payload
 
@@ -146,7 +153,8 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       measures 3.45 to 3.53:1 in light mode and 3.60:1 in print, under the 4.5:1 text floor. This is
       the same trap as the `.tag-dot` case above, one component over. `.tag-dot` and `.icon-chip`
       **may** still take a `--data-*` color, because neither puts text on the fill. No CSS rule can
-      enforce this, because the color arrives in an inline `style` attribute.
+      enforce this, because the color arrives in an inline `style` attribute (in `samples/dark.html`,
+      search `class="step-node" style="--icon-color: var(--orange)"`).
 - [ ] **No `classDef name fill:#hex` line inside a ` ```mermaid ` fence on a page that follows the
       reader's appearance.** A fence is diagram source, so it has no CSS to read and no `var()` it
       can resolve: one literal hex cannot serve both palettes, and the set in
@@ -164,7 +172,9 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       scrollable overflow for any ancestor, and not the zoom overlay, because the overlay scales the
       svg and scales the overrun with it. A chart with realistic labels loses nothing at any width
       from 601px up. `samples/dark.html` carries two deliberately overlong labels as a stress case
-      for `pre.mermaid svg { overflow: visible }`, so do not copy their length.
+      for `pre.mermaid svg { overflow: visible }`, so do not copy their length (in
+      `samples/dark.html`, search `quadrantChart`). **This is the one requirement the fixture
+      deliberately breaks, so follow this bullet and not the fixture.**
 - [ ] Every `.step-node` after the first, together with the `.step-arrow` in front of it, wrapped in
       one `.step-hop` (in `samples/dark.html`, search `class="step-hop"`). `.step-chain` wraps at a narrow measure, and an
       arrow and its node are two separate flex items unless paired: a wrap can then land between
@@ -188,18 +198,20 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       self-URLs. The stylesheet paints an outbound-link arrow after every `a[href^="http"]`, so a
       footnote ref written as `href="https://your.site/page#src-1"` renders `1 ↗` while the click
       only scrolls within the page. The arrow is a promise the link does not keep. Absolute URLs to
-      other hosts keep the arrow; that is what it is for.
+      other hosts keep the arrow; that is what it is for (in `samples/dark-timeline.html`, search
+      `href="#src-1"`).
 - [ ] A bracket-style inline citation (`[2, 3]`) is a link into the numbered source list, not bare
       text. The page's other citations are `sup` links into Sources; a bare `[2, 3]` asks the
       reader to count an ordered list by hand to learn what corroborates the claim. Emit the same
       `sup`-into-source-list pattern the timeline requirement above already asks for, one `sup` per
-      source number.
+      source number. No fixture demonstrates this yet.
 - [ ] `.newthought` covers the opening few words of a section's first paragraph, never the whole
       sentence, and never splits a proper name at the span boundary. The class sets small caps at
       `1.2em` and weight 600, which is display treatment: a four-line paragraph inside it reads as
       shouting, and `of St.</span> John the Baptist` breaks a name in half. The stylesheet resets
       variant, weight, letter-spacing and size on a note nested inside the span, so the note renders
-      normally, but the treatment itself is for opening words, not paragraphs. Keep the span short.
+      normally, but the treatment itself is for opening words, not paragraphs. Keep the span short
+      (in `samples/dark.html`, search `class="newthought"`).
 
 Markdown constructs otherwise need **no classes of their own**. Do not invent any beyond what this
 section already asks for. A converter's output lands in a theme register already.

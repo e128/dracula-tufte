@@ -2178,6 +2178,30 @@ fewer than 20 pointers so a bulk delete cannot make the gate vacuous. Three poin
 `samples/dark-timeline.html` in the rewrite, because the requirements they name were never
 demonstrated in `samples/dark.html` at all.
 
+**§ 2 also made two countable claims about itself, and both had gone false.** It said every
+requirement either points at a fixture or says it has none, and five bullets did neither, so a
+generator was told an example existed and never given its name. And it states the requirement count
+in prose, which read "Sixteen" against 21 bullets before v1.39.0: a spelled-out number in two files
+is drift waiting to happen, and `README.md` carried its own copy. Both are derived from the bullets
+now rather than trusted, and the count check fails loudly on a number outside the spelled-out range
+it knows instead of passing on a word it cannot read. **A prose claim about a countable property is
+a gate waiting to be written.**
+
+**A gate that runs only locally does not hold a merge, and two of them were doing exactly that.**
+`nu scripts/maintain.nu check` mirrors `contract-check.yml` step for step, which is the whole
+reason to trust a local pass. The pointer gate went in as an inline block inside `check` with no CI
+step beside it, and the fixture table-tab-stop scan had been local-only since v1.27.0. Both are one
+function now, `contract-markup-ok`, called from `check` and from a `main contract-markup`
+subcommand that CI runs as its own step. **Anything that reads the fixtures to enforce a § 2
+obligation belongs there**, so the next one is a line in an existing function rather than a second
+place to forget.
+
+**The fixture breaks exactly one § 2 requirement on purpose, and that had to be said out loud.**
+`CONTRACT.md` opens by telling a generator that the fixture wins any disagreement, and
+`samples/dark.html` carries two deliberately overlong `quadrantChart` point labels, which § 2 bans.
+A reader following the top-of-file rule would have copied them. The exception is now named in the
+intro and in the bullet, which is the only honest way to keep a rule that has one.
+
 ### The one check that runs the payload
 
 `.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives the two inlined
