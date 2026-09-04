@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.43.0 */
+    /* Dracula-Tufte (muted) v1.44.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -476,6 +476,7 @@
       code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
       pre code { border: none; }
       table, th, td { border: 1px solid currentColor; }
+      .tag-dot::before, .live-dot { background: CanvasText; }
       body::before { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
