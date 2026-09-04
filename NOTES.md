@@ -36,7 +36,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Grounds, floors, the data ramp, gamut, forced colors |
 | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
 | [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
-| [CSS charts](#css-charts) | `table.bar-chart`, `.pie-chart`, the alpha under the number, print and forced colors |
+| [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the CSS pie went out, print and forced colors |
 | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
 | [Mermaid](#mermaid) | Init config, label measurement, sizing, zoom, diagram types |
 | [Connections-map layout](#connections-map-layout) | `body.conn-map`, markup order, no breakouts |
@@ -1076,19 +1076,20 @@ shadow that would not deliver what was asked.
 
 ## CSS charts
 
-Two components draw a chart from ordinary markup: `table.bar-chart` and `.pie-chart`. Both are
-CSS only, so a page carries them with no script, no CDN and no build step. Mermaid draws a `pie`
-fence too, and that one costs a CDN request and fails hard offline, which is the existing
-exception in *Constraints that shape every decision* rather than a second option to prefer.
+One component draws a chart from ordinary markup: `table.bar-chart`. It is CSS only, so a page
+carries it with no script, no CDN and no build step. A pie is a Mermaid `pie showData` fence,
+which costs a CDN request and fails hard offline, the existing exception in *Constraints that
+shape every decision*. A second CSS pie was tried for one release and taken out again, and the
+subsection below records why.
 
 **Values are text in the markup, always, and that is what makes shipping a pie chart
 defensible.** Tufte's objection stands: a pie asks a reader to compare angles and areas, and
 readers do both badly. The template themes one anyway, because a part-to-whole share of a few
 categories is a real thing to draw and a consumer who wants one is better served by a legible
 themed component than by an invented one. The condition is that the chart is a second reading of
-a number the page already states. `CONTRACT.md` § 2 states it as a consumer obligation for both
-components. A ranking, a comparison of magnitudes, or five categories is `table.bar-chart`, which
-is a table, so the answer is a table twice over.
+a number the page already states. `CONTRACT.md` § 2 states it as a consumer obligation. A
+ranking, a comparison of magnitudes, or five categories is `table.bar-chart`, which is a table,
+so the answer is a table twice over.
 
 **The bar chart is a table with a class on it, and the band paints inside the cell that already
 holds the number.** A band in a cell of its own was rejected: an empty cell announces nothing, so
@@ -1123,52 +1124,58 @@ to prevent.
 - **Direction costs one override.** A gradient takes no logical direction keyword and neither does
   `background-position`, so `[dir="rtl"]` flips `left center` to `right center` and nothing else.
 
-**The pie is one `conic-gradient`, and the rule adds the shares up itself.** Each `--p1` to `--p4`
-is that slice's own percentage. The hard-stop form (`var(--data-2) 0 calc(...)`) restarts every
-stop at `0`, which the browser clamps up to the running maximum, so the sum arrives without a
-generator computing it. A generator that emits cumulative values draws the wrong chart, which is
-why § 2 says so in the requirement rather than here alone.
+**The pie is a Mermaid `pie showData` fence, and the CSS pie that shipped in v1.42.0 was
+removed in v1.43.0.** One release is the whole life of that component. It drew four shares from
+one `conic-gradient`, and rendered beside the Mermaid pie it lost on every count a pie is judged
+by: no percentage inside a slice, no legend of its own, no title, and a disc a reader had to
+measure. Nothing inside the element is text, which is what made the in-slice number unreachable,
+and the same fact forced a `role="img"`, an `aria-label` restating every value, and a legend
+in the caption restating them again. Three restatements of the numbers to draw a shape that still
+could not be read. Mermaid draws the label in the slice, themes every slice from the same
+`--data-*` ramp through `mermaid-palette.json`, and costs a CDN request.
 
-- **Four slices is the ceiling.** The ramp has four members and check 5 measures each one against
-  both grounds. A fifth category has no color left that clears the floor.
-- **Every slice is separated by a `--pie-gap` of `--surface`, and the gap is load-bearing.** It was
-  declined once, on the claim that the hue change carries the boundary on its own. Measured, that
-  claim is false: the ramp holds one lightness by design, so two touching slices have **no
-  luminance step at all**. Adjacent pairs measure 1.00 to 1.02:1 in the light and the print
-  palette, `--data-3` against `--data-4` measures 1.01:1 in the default palette at 52 degrees of
-  hue apart, and under simulated deuteranopia, protanopia and tritanopia every boundary falls to
-  1.00 to 1.14:1. The 15% and the 12% wedge read as one shape. Mermaid's own `pie` has always
-  separated slices with a `pieStrokeColor` of `--surface` for exactly this reason, and the CSS pie
-  now does the same: the shares are stated in `deg` so a gap can be subtracted from each stop, and
-  four gap stops cover four boundaries, including the one at `0deg`. Check 12 pins the count and
-  the `--pie-gap` declaration, and it retires its own reason if the ramp ever separates on its own.
-- **The 1px `--rule` ring stays.** It is the same hairline weight every other boundary in the sheet
-  uses, and it bounds the pale slices against the card. It is not what separates one slice from the
-  next: an outer boundary at 4:1 around inner boundaries at 1.0:1 was the inconsistency the gap
-  fixes.
+- **The removal was decided by rendering the two side by side, not by argument.** At 1000px the
+  Mermaid pie drew a centered disc of about 375px with `72%`, `21%` and `8%` painted in the
+  slices and a legend carrying the raw counts. The CSS pie drew 224px on the left margin with
+  nothing in it. Growing it to 20rem and centering it closed the size gap and none of the rest,
+  which is what settled the question.
+- **The offline case is a `table.bar-chart`, not a CSS pie.** Mermaid fails hard with no CDN, and
+  that is the standing exception in *Constraints that shape every decision*. Keeping a second pie
+  alive to cover it costs a component, a § 2 requirement, a print pin, a forced-colors rule and a
+  check, to draw the one chart shape Tufte objects to, in the one form that cannot carry its own
+  numbers. The bar chart is CSS only, needs no CDN, and is already the first recommendation.
+- **Four slices stays the ceiling.** The ramp has four members and check 5 measures each one
+  against both grounds. A fifth category has no color left that clears the floor, in either pie.
+- **A pie needs a boundary between slices, and this is why Mermaid's `pieStrokeColor` is themed.**
+  The ramp holds one lightness by design, so two touching slices have **no luminance step at
+  all**. Measured on the ramp: adjacent pairs sit at 1.00 to 1.02:1 in the light and the print
+  palette, `--data-3` against `--data-4` at 1.01:1 in the default palette at 52 degrees of hue
+  apart, and under simulated deuteranopia, protanopia and tritanopia every boundary falls to 1.00
+  to 1.14:1. The 15% and the 12% wedge read as one shape without a stroke. The CSS pie answered
+  this with a `--pie-gap` of `--surface` and is gone. Mermaid answers it with a `pieStrokeColor`
+  of `--surface` and a `pieOuterStrokeColor` of `--muted`, both themed per palette since v1.41.0.
+  **Do not drop either stroke to Mermaid's `black` default.**
 
-**Both charts paint their whole content through a background image, which is where the two mode
-traps are, and both were verified by rendering rather than reasoned about.**
+**The bar band paints its whole content through a background image, which is where the mode traps
+are, and both were verified by rendering rather than reasoned about.**
 
 - **Print drops a background graphic by default.** Verified by printing the fixture through
-  Playwright with `print_background=False`: without the pins every band and the whole pie vanish
-  while the numbers stay, and with them both survive. `.pie-chart` and `table.bar-chart td.bar`
-  therefore take `print-color-adjust: exact` in `@media print`, the same pin and the same reason as
+  Playwright with `print_background=False`: without the pin every band vanishes while the numbers
+  stay, and with it the band survives. `table.bar-chart td.bar` therefore takes
+  `print-color-adjust: exact` in `@media print`, the same pin and the same reason as
   `pre.mermaid`. Check 12 holds the rule.
-- **`.tag-dot::before` joined that pin, and the pie is what exposed the gap.** The dot has painted
-  `background: currentColor` since v1.33.0 and had no print pin, so a printed page with background
-  graphics off lost every dot and left the gaps where they had been. On its own that cost a
-  decorative marker. Beside a pie it costs the key: the legend is what maps a slice to its label,
-  and `CONTRACT.md` § 2 asks a consumer to put the values there. Found by reading the printed PDF
-  rather than the rule.
+- **`.tag-dot::before` joined that pin, and a chart legend is what exposed the gap.** The dot has
+  painted `background: currentColor` since v1.33.0 and had no print pin, so a printed page with
+  background graphics off lost every dot and left the gaps where they had been. On its own that
+  costs a decorative marker. In a legend it costs the key: the legend is what maps a color to its
+  label. Found by reading the printed PDF rather than the rule.
 - **`forced-colors: active` computes `background-image` to `none`.** Verified in headless Chrome
-  under `--force-high-contrast`, where `getComputedStyle` reports `none` for both the conic gradient
-  and the band. The bar table needs no rule: it loses the band and keeps every number, which is the
-  graceful case. The pie would be an empty ring, so it is `display: none` there, beside the film
-  grain, and the legend plus the `aria-label` carry every value as text.
-- **Do not answer the forced-colors case with `forced-color-adjust: none` on the pie.** It would
-  keep the gradient by overriding a reader's own accessibility setting, to preserve a chart whose
-  numbers the caption already states.
+  under `--force-high-contrast`, where `getComputedStyle` reports `none` for the band. The bar
+  table needs no rule: it loses the band and keeps every number, which is the graceful case. The
+  CSS pie needed one, because an empty ring states less than nothing, and that rule went out with
+  the component. **Never answer a forced-colors case with `forced-color-adjust: none`.** It
+  overrides a reader's own accessibility setting to preserve a graphic whose numbers the page
+  already states.
 
 **Nothing here draws a line chart.** A trend over time has no component, and a Mermaid
 `xychart-beta` fence cannot be themed (see *Diagram types*). Leaving the gap is deliberate: a line
@@ -2336,13 +2343,12 @@ twelve images.
   hid two real contrast defects for four releases (see *Diagram types*). `showData` is on, so the
   legend renders too, and the legend text is the pair that sits on the card rather than on a slice.
   It is also the only fence whose rendering depends on a non-color `themeVariable`.
-- **`samples/dark-charts.html` carries both bar tables and the pie, because the CSS charts have no
-  other coverage.** Neither component appears in any other fixture, and both draw their whole
-  content through a background image, which is exactly what print and forced colors take away: the
-  print pin and the forced-colors rule were both measured against this page. The pie is also the
-  only place the four ramp members meet each other rather than the card, which is how the missing
-  slice gap was found. The two charts carry the same four numbers, so the guidance in the page is
-  visible rather than asserted (see *CSS charts*).
+- **`samples/dark-charts.html` carries both bar tables, because `table.bar-chart` has no other
+  coverage.** It appears in no other fixture, and it draws its band through a background image,
+  which is exactly what print and forced colors take away: the print pin was measured against this
+  page. The page also carries a Mermaid pie of the same four numbers, so the guidance it states is
+  visible rather than asserted (see *CSS charts*). Those numbers as a bar table beside the same
+  numbers as slices is what makes the recommendation checkable by eye.
 - **The conn-map focus node's long label.** The connections map is the one fixture that renders with
   `useMaxWidth: false`. It is therefore the only place a mis-sized node box lands in a *constrained*
   column rather than on an open page.

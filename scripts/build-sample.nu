@@ -183,10 +183,14 @@ def conn-map-body [] {
 }
 
 # Charts get their own page, not a section in the component sample, because the two
-# forms are only worth anything side by side: both tables and the pie carry the SAME
+# forms are only worth anything side by side: the tables and the pie carry the SAME
 # four numbers, so a reader can see that the 21 and the 15 are ranked at a glance as
 # bars and are a coin toss as slices. That comparison is the guidance CONTRACT.md
 # section 2 states in one line, and a page is where it can be looked at.
+#
+# The pie is a Mermaid fence as of v1.43.0. A CSS conic-gradient held the slot for one
+# release and drew the same numbers with no percentage inside any slice, which is the
+# one thing that makes a pie readable (see NOTES.md, CSS charts).
 #
 # Two bar tables ship on purpose, and the difference is the axis rather than the color:
 # the first is a share of the whole, the second a share of the largest value in the
@@ -201,7 +205,7 @@ def charts-body [] {
     "  <main>"
     "  <article>"
     "    <h1>Chart Components</h1>"
-    "    <p class=\"byline\">table.bar-chart and .pie-chart: CSS over ordinary markup, no script and no CDN</p>"
+    "    <p class=\"byline\">table.bar-chart in CSS over ordinary markup, and a Mermaid pie fence for a part-to-whole share</p>"
     ""
     "    <nav>"
     "      <a href=\"#bars\">Bar chart</a>"
@@ -222,7 +226,7 @@ def charts-body [] {
     "          <tr><td><code>mermaid-palette.json</code></td><td class=\"bar\" style=\"--bar: 12%\">12%</td></tr>"
     "        </tbody>"
     "      </table>"
-    "      <p>Every band is one hue, and the row label carries the category. Coloring each band from the <code>--data-*</code> ramp to key it to the pie legend below was tried and measured out: at the 0.3 alpha that keeps the number on top of the band legible, the four ramp members land within Lc 2 of each other, so a band cannot carry a category at all (see NOTES.md, <em>CSS charts</em>). The table below is the other axis convention: each bar is a share of the largest value rather than of a total, which is what makes an unlabelled axis honest.</p>"
+    "      <p>Every band is one hue, and the row label carries the category. Coloring each band from the <code>--data-*</code> ramp to key it to a legend was tried and measured out: at the 0.3 alpha that keeps the number on top of the band legible, the four ramp members land within Lc 2 of each other, so a band cannot carry a category at all (see NOTES.md, <em>CSS charts</em>). The table below is the other axis convention: each bar is a share of the largest value rather than of a total, which is what makes an unlabelled axis honest.</p>"
     "      <table class=\"bar-chart\" tabindex=\"0\">"
     "        <caption>A synthetic single series, each bar a share of the largest value rather than of a total</caption>"
     "        <thead><tr><th scope=\"col\">Category</th><th scope=\"col\">Count</th></tr></thead>"
@@ -237,20 +241,17 @@ def charts-body [] {
     ""
     "    <section>"
     "      <h2 id=\"pie\">Pie chart</h2>"
-    "      <p>The pie is one <code>conic-gradient</code> over four shares. Each <code>--p1</code> to <code>--p4</code> is that slice's own percentage, never a running total: the rule adds them up, so a generator that emits cumulative values draws the wrong chart. Every slice is separated by a 1.5deg gap of the page ground, because the four ramp members sit at one lightness: without the gap two touching slices differ in hue alone, at 1.00 to 1.02:1 in the light and print palettes and as little as 1.00:1 under simulated color blindness, so the 15% and the 12% wedge read as one. Nothing inside the element is text, so it takes <code>role=\"img\"</code> and an <code>aria-label</code> that states every slice and its value, and the legend repeats them for a sighted reader.</p>"
-    "      <figure>"
-    "        <div class=\"pie-chart\" role=\"img\" style=\"--p1: 52; --p2: 21; --p3: 15; --p4: 12\" aria-label=\"Payload bytes by file: tufte-dracula.css 52 percent, mermaid.js 21 percent, filter.js 15 percent, mermaid-palette.json 12 percent\"></div>"
-    "        <figcaption>The same four numbers as the first table above. Legend: <span class=\"tag-dot\" style=\"color: var(--data-1)\"></span>tufte-dracula.css 52%, <span class=\"tag-dot\" style=\"color: var(--data-2)\"></span>mermaid.js 21%, <span class=\"tag-dot\" style=\"color: var(--data-3)\"></span>filter.js 15%, <span class=\"tag-dot\" style=\"color: var(--data-4)\"></span>mermaid-palette.json 12%.</figcaption>"
-    "      </figure>"
-    "      <p>Four slices is the ceiling, because the ramp has four members and each one is contrast-checked against the card it sits on. A fifth category has no color left that clears the floor, and a page that reaches for one is telling you it wanted a bar chart. A Mermaid <code>pie showData</code> fence is the other way to draw this, themed per palette in <code>mermaid.js</code>; it prints its percentages inside the slices and costs a CDN request (see the component sample page).</p>"
+    "      <p>A pie here is a Mermaid <code>pie showData</code> fence, themed per palette in <code>mermaid.js</code>. It paints each percentage inside its own slice, states the raw value in the legend beside it, and separates one slice from the next with a stroke of the page ground, because the four ramp members sit at one lightness and two touching slices otherwise differ in hue alone. A CSS <code>conic-gradient</code> shipped in v1.42.0 and drew the same four numbers with none of that: no percentage in any slice, no legend of its own, and a disc a reader had to measure. It was taken back out in v1.43.0.</p>"
+    "      <pre class=\"mermaid\">pie showData\n  accTitle: Payload bytes by file\n  accDescr: Four payload files as a share of the template's bytes, each slice carrying its own percentage.\n  title Payload bytes by file\n  \"tufte-dracula.css\" : 52\n  \"mermaid.js\" : 21\n  \"filter.js\" : 15\n  \"mermaid-palette.json\" : 12</pre>"
+    "      <p>The cost is a CDN request, and offline that request fails, so the fence renders as its own source text and every number in it stays readable. Four slices is still the ceiling, because the ramp has four members and each one is contrast-checked against the card it sits on. A fifth category has no color left that clears the floor, and a page that reaches for one is telling you it wanted a bar chart. Give every fence an <code>accTitle</code> and an <code>accDescr</code>, and state the same numbers in the prose or a table, because a reader who cannot see the slices needs them either way.</p>"
     "    </section>"
     ""
     "    <section>"
     "      <h2 id=\"which\">Which one</h2>"
-    "      <p><strong>Reach for the bar chart first, and for a plain table before either.</strong> Tufte's objection to the pie is that it asks a reader to compare angles and areas, which readers do badly: the 21 and the 15 slice above are a coin toss without the legend, while the same two bars are ranked at a glance. This template supports the pie anyway, because a part-to-whole share of a few categories is a real thing to draw and a consumer who wants one should get a themed one rather than invent it. The support comes with the rule that makes it defensible: <strong>every value is in the markup as text</strong>, so no reader depends on measuring a wedge.</p>"
+    "      <p><strong>Reach for the bar chart first, and for a plain table before either.</strong> Tufte's objection to the pie is that it asks a reader to compare angles and areas, which readers do badly: the 21 and the 15 slice above are a coin toss by eye, while the same two bars are ranked at a glance. The template themes a pie anyway, because a part-to-whole share of a few categories is a real thing to draw. It themes one pie, not two: the Mermaid fence prints the number in the slice, which is the rule that makes a pie defensible, and <strong>every value is in the markup as text</strong> either way.</p>"
     "      <ul>"
     "        <li>Ranking or comparing magnitudes: bar chart.</li>"
-    "        <li>One part-to-whole split, four categories or fewer, values stated in text: pie chart.</li>"
+    "        <li>One part-to-whole split, four categories or fewer: a Mermaid <code>pie showData</code> fence.</li>"
     "        <li>Five or more categories, two series, or a value a reader will want to read exactly: a table. The bar chart is a table, so this is the same answer twice.</li>"
     "        <li>A trend over time: neither. Nothing here draws a line chart, and a Mermaid <code>xychart-beta</code> fence is not themeable (see NOTES.md, Diagram types).</li>"
     "      </ul>"
