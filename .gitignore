@@ -1,4 +1,7 @@
 .DS_Store
+# Local Claude Code permission grants. Personal to one machine, never repo policy,
+# which AGENTS.md owns.
+.claude/settings.local.json
 *.swp
 *.swo
 node_modules/
