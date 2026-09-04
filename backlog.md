@@ -93,3 +93,57 @@ all. The shape of a real fix is `pieSectionTextColor` per palette, dark text in 
 where fills are pale and light text in the light scheme where fills are not, plus a decision about
 whether a seventh `!important` against Mermaid's stylesheet is worth the boundary. No fixture has a
 pie chart, which is why this went unmeasured for so long; take this together with adding one.
+
+**The mermaid `pre` region announces its diagram's name twice.** `mermaid.js` sets
+`role="region"` plus an `aria-label` from the SVG's own `<title>`, and the SVG then exposes that
+same string as its `graphics-document` name. A screen reader therefore reads the diagram title, the
+word "region", and the diagram title again on entry. Verified from the accessibility attributes on
+`samples/dark.html`: `pre` label and `svg > title` are byte-identical by construction.
+
+A fix is either a second, distinct string for the region (which `mermaid.js` cannot invent, and
+which consumers cannot translate in a file they inline verbatim) or dropping the region role and
+leaving a focusable generic, which the *Keyboard and assistive technology* section already rejects
+for the button case. Take it if someone reports the duplication from a real screen reader, since
+neither option is clearly better than the noise.
+
+**`pre.mermaid` is a focusable region at widths where it cannot scroll.** The tab stop exists for
+the narrow-viewport `overflow-x: auto` case, and `mermaid.js` sets it unconditionally, so above
+600px each diagram is a tab stop with nothing to scroll and no action. Measured: all four fixture
+diagrams report `scrollWidth == clientWidth` at 1440px. The *Connections-map layout* section
+rejects exactly this shape for the sticky Links column.
+
+Making it conditional needs either a resize listener or a `matchMedia`, and check 6 of
+`palette-check.py` fails on any `matchMedia` in `mermaid.js` for good reasons of its own. A
+resize-stale *missing* tab stop is a 2.1.1 failure, where a resize-stale redundant one costs a
+keystroke, so the unconditional version is the safe default and this stays open rather than fixed.
+
+**Two `CONTRACT.md` § 2 requirements cannot be gated, at all.** Both arrived with the v1.39.0 work.
+`--icon-color` on a `.step-node` reaches the sheet through an inline `style` attribute, and a
+`quadrantChart` point label lives inside a `pre.mermaid` fence as diagram source. No CSS rule and no
+palette check can see either one, so both are prose obligations of the kind this repo distrusts.
+Check 9 gates the permitted `.step-node` token set inside the stylesheet, which catches an editor
+here but never a consumer.
+
+A fixture-level scan in `scripts/maintain.nu` would catch the repo's own regressions, and that is
+worth doing if either requirement is ever violated in `samples/`. It would not help a consumer,
+which is the case that matters, so the honest answer may be that some obligations stay prose.
+
+**Every `samples/dark.html` line reference in `CONTRACT.md` § 2 is wrong.** All 22 of them, and
+they were already wrong at v1.38.1, so this predates the work that found it. The cited range is
+637 to 927 against a 1007-line fixture, and spot checks land on unrelated markup every time: the
+reference for `<main>` points into `mermaid.js`'s tail, the one for `role="list"` on `.icon-list`
+points at a wide-table row, the one for the rollup `.verdict` points at the task list.
+
+This matters more than an ordinary stale link, because § 2 tells a consumer's generator that
+"most link the line in `samples/dark.html` that models it, so you have a working example instead
+of only a sentence". A wrong pointer is worse than no pointer: it sends a reader to markup that
+does not demonstrate the requirement and looks authoritative doing it.
+
+Two ways to fix it, and the choice is the real work. Renumber all 22 and add a gate that fails
+when a cited line stops containing an expected token, which keeps the format but needs a
+machine-readable token per requirement. Or stop citing line numbers into a generated file
+altogether and cite a stable anchor instead, which is more honest about what a generated fixture
+can promise, and costs a rewrite of every reference plus whatever a reader loses in precision.
+
+Do not renumber without also adding the gate. Line numbers into a generated file rot on the next
+regeneration, which is exactly how all 22 got here with every check green.

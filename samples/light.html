@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.38.1 */
+    /* Dracula-Tufte (muted) v1.39.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -91,7 +91,7 @@
     h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
     h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: var(--space-6) 0 0.4rem; text-wrap: balance; }
     h4 { font-weight: 600; line-height: 1.35; font-size: 1em; color: var(--label); margin: var(--space-4) 0 0.3rem; }
-    h5, h6 { font-weight: 500; line-height: 1.4; font-size: 1em; color: var(--muted); margin: var(--space-3) 0 0.3rem; }
+    h5, h6 { font-weight: 500; line-height: 1.4; font-size: 1em; color: var(--label); margin: var(--space-3) 0 0.3rem; }
     h6 { font-style: italic; }
     p { margin: var(--space-2) 0; text-wrap: pretty; }
     .indented p { margin-block: 0; }
@@ -108,10 +108,8 @@
       font-variant-caps: normal; font-weight: 400; letter-spacing: normal; }
     .newthought :is(.sidenote, .marginnote) { font-size: 0.75em; }
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
-    a:hover { text-decoration-color: var(--link); }
     :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8em;
       text-decoration: none; margin-inline-start: 0.35em; transition: opacity 0.15s ease-out; }
-    :is(h1, h2, h3, h4, h5, h6):hover :is(a.headerlink, a.anchor),
     :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
@@ -197,7 +195,6 @@
     :is(th, td)[align="left"] { text-align: start; }
     :is(th, td)[align="center"] { text-align: center; }
     :is(th, td)[align="right"] { text-align: end; }
-    tbody tr:hover td { background: var(--surface-alt); }
     table.tree { --tree-step: 1.6rem; }
     table.tree [data-depth="1"] td:first-child { padding-inline-start: calc(var(--tree-step) + .6rem); }
     table.tree [data-depth="2"] td:first-child { padding-inline-start: calc(2 * var(--tree-step) + .6rem); }
@@ -205,10 +202,8 @@
     table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0"; color: var(--muted); }
     table.tree [data-depth="0"] td { background: var(--code-bg); font-weight: 600; }
     table.tree [data-depth="2"] td, table.tree [data-depth="3"] td { color: var(--label); }
-    table.tree tbody tr:hover td { background: var(--surface-alt); }
     details { margin: var(--space-2) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
     summary { cursor: pointer; font-weight: 450; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
-    summary:hover { color: var(--on-surface); }
     details[open] summary { margin-bottom: 0.5rem; }
     aside, .markdown-alert {
       border-inline-start: var(--accent-bar) solid var(--orange); padding: .5rem 1rem;
@@ -260,8 +255,8 @@
       margin-inline-end: 0.45em; vertical-align: -0.08em; }
     :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
     nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
-    nav > a + a { border-inline-start: 1px solid var(--rule-light);
-      margin-inline-start: 0.7em; padding-inline-start: 0.7em; }
+    nav:has(> a) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.7em; row-gap: 0.2em; }
+    nav > a + a { border-inline-start: 1px solid var(--rule-light); padding-inline-start: 0.7em; }
     footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
     :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
       padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }
@@ -317,7 +312,6 @@
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
       transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
-    .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
     .nav-list li a:active { scale: 0.96; }
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: var(--space-6) 0; }
     .edge-list h3 { margin-top: 0; }
@@ -367,12 +361,10 @@
     .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(from var(--surface-alt) 0.15 c h / 0.5)); }
     pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
     pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
-    pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
     .mermaid-zoom { display: block; margin: var(--space-3) auto 0; min-height: 40px; padding: 0.5rem 0.9rem;
       font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
       border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation;
       transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
-    .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     .mermaid-zoom:active { scale: 0.96; }
     pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
     pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
@@ -396,6 +388,16 @@
       body.conn-map article > section:nth-of-type(1) .edge-list {
         grid-template-columns: 1fr; gap: 0.4rem;
       }
+    }
+    @media (hover: hover) {
+      a:hover { text-decoration-color: var(--link); }
+      :is(h1, h2, h3, h4, h5, h6):hover :is(a.headerlink, a.anchor) { opacity: 1; }
+      tbody tr:hover td { background: var(--surface-alt); }
+      table.tree tbody tr:hover td { background: var(--surface-alt); }
+      summary:hover { color: var(--on-surface); }
+      .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
+      pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
+      .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
     }
     ::selection { background: var(--purple); color: var(--surface); }
     @media (max-width: 1000px) {
@@ -435,6 +437,7 @@
         --orange:      oklch(0.840 0.092 61.444);
         --red:         oklch(0.845 0.074 21.457);
         --purple:      oklch(0.845 0.051 300.909);
+        --purple-bright: oklch(0.885 0.060 300.909);
         --pink:        oklch(0.860 0.057 349.392);
         --green:       oklch(0.820 0.100 155.397);
         --data-1:      oklch(0.790 0.077 255.000);
@@ -821,7 +824,7 @@
         <li style="--icon-color: var(--link)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Identify</strong><br/><code>identify the bottleneck</code></div></li>
         <li style="--icon-color: var(--green)"><span class="icon-chip" aria-hidden="true">V</span><div><strong>Validate</strong><br/><code>verify behavioral correctness</code></div></li>
       </ul>
-      <p>A step chain is for a flow too trivial to justify a Mermaid diagram. A graph with a branch or a loop still belongs in <code>pre.mermaid</code>.</p>
+      <p>A step chain is for a flow too trivial to justify a Mermaid diagram. A graph with a branch or a loop still belongs in <code>pre.mermaid</code>. Its <code>--icon-color</code> takes a prose accent, never a <code>--data-*</code> slot: the node fills at full strength and the letter is <code>--surface</code> on top of it, so a ramp scoped to the 3:1 diagram floor lands that pair at 3.5:1 in light mode. A <code>.tag-dot</code> or an <code>.icon-chip</code> may still carry a <code>--data-*</code> color, because neither puts text on the fill.</p>
       <div class="step-chain">
         <span class="step-node" style="--icon-color: var(--orange)">S</span>
         <span class="step-hop"><span class="step-arrow">&rarr;</span><span class="step-node" style="--icon-color: var(--link)">I</span></span>
@@ -905,14 +908,14 @@
         <span class="sc-label">P4 Coherence</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
         <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
       </div>
-      <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>SEE BELOW</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>
+      <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>See below</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>
       <table tabindex="0">
         <caption>Proof-test scorecard, table form</caption>
         <thead><tr><th scope="col">#</th><th scope="col">Method</th><th scope="col">Verdict</th><th scope="col">Bearing</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td>Five principles</td><td><span class="verdict verdict-neutral">SEE BELOW</span></td><td>see P1-P2</td></tr>
-          <tr><td></td><td>&middot; P1 Observability</td><td><span class="verdict verdict-pass">PASS</span></td><td>directly measured</td></tr>
-          <tr><td></td><td>&middot; P2 Mechanism</td><td><span class="verdict verdict-partial">PARTIAL</span></td><td>surrogate endpoint</td></tr>
+          <tr><td>1</td><td>Five principles</td><td><span class="verdict verdict-neutral">See below</span></td><td>see P1-P2</td></tr>
+          <tr><td></td><td>&middot; P1 Observability</td><td><span class="verdict verdict-pass">Pass</span></td><td>directly measured</td></tr>
+          <tr><td></td><td>&middot; P2 Mechanism</td><td><span class="verdict verdict-partial">Partial</span></td><td>surrogate endpoint</td></tr>
           <tr><td>2</td><td>Charge gate</td><td><span class="verdict verdict-neutral">N/A</span></td><td>not assessed</td></tr>
         </tbody>
       </table>
@@ -928,7 +931,7 @@
         <li><a href="#">Another entry <span class="badge badge-t1">Tier 1</span></a></li>
         <li><a href="#">Failed audit <span class="badge badge-t3">Tier 3</span></a></li>
       </ul>
-      <p class="filter-empty" hidden>No entries match. Clear the filter to see all 4.</p>
+      <p class="filter-empty" hidden>No entries match. Clear the filter to see all entries.</p>
       <details class="nav-group" open><summary>Subfolder group <span class="count">1</span></summary>
         <ul class="nav-list" role="list"><li><a href="#">grouped item <span class="badge badge-t2">Tier 2</span></a></li></ul>
       </details>

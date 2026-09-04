@@ -48,9 +48,9 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Sixteen requirements. No stylesheet change can supply any of them. Most link the line in
+Twenty-one requirements. No stylesheet change can supply any of them. Most link the line in
 `samples/dark.html` that models it, so you have a working example instead of only a sentence. The
-newest three have no fixture yet; they say so.
+few with no fixture yet say so.
 
 - [ ] `<main>` around the content, with `<article>` inside it
       (`samples/dark.html:637-638`).
@@ -125,6 +125,22 @@ newest three have no fixture yet; they say so.
       beside a visible `<strong>` label that already states what it identifies, so an unhidden glyph
       is a screen reader announcing the same information twice per row. `.step-node` is the opposite
       case and stays real text: it carries no adjacent label of its own.
+- [ ] `--icon-color` on a `.step-node` set from a **prose accent** (`--orange`, `--link`,
+      `--purple`, `--green`, `--pink`, `--red`), never from the `--data-1` through `--data-4` ramp.
+      The node fills at full strength and its letter is `--surface` painted on that fill, so the
+      fill is a text ground, and the ramp is contrast-checked for a 3:1 graphic: `--surface` on it
+      measures 3.45 to 3.53:1 in light mode and 3.60:1 in print, under the 4.5:1 text floor. This is
+      the same trap as the `.tag-dot` case above, one component over. `.tag-dot` and `.icon-chip`
+      **may** still take a `--data-*` color, because neither puts text on the fill. No CSS rule can
+      enforce this, because the color arrives in an inline `style` attribute.
+- [ ] Point labels on a `quadrantChart` kept short enough to sit inside the chart. Mermaid writes
+      that diagram a fixed viewBox that does not contain its own point labels, so an overlong label
+      paints outside it, and below roughly 700px the overflow lands past the viewport edge where
+      nothing can reach it: not a scroll container, because SVG ink outside the root `<svg>` is not
+      scrollable overflow for any ancestor, and not the zoom overlay, because the overlay scales the
+      svg and scales the overrun with it. A chart with realistic labels loses nothing at any width
+      from 601px up. `samples/dark.html` carries two deliberately overlong labels as a stress case
+      for `pre.mermaid svg { overflow: visible }`, so do not copy their length.
 - [ ] Every `.step-node` after the first, together with the `.step-arrow` in front of it, wrapped in
       one `.step-hop` (`samples/dark.html:797-801`). `.step-chain` wraps at a narrow measure, and an
       arrow and its node are two separate flex items unless paired: a wrap can then land between
@@ -171,6 +187,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.39.0 | nothing, and check two new § 2 requirements if you emit either component: keep `--icon-color` on a `.step-node` off the `--data-*` ramp, and keep `quadrantChart` point labels short. Everything else is a self-contained stylesheet change over markup you already emit. Page width and the prose measure are unchanged. `h5` and `h6` moved from `--muted` to `--label`, so a heading is no longer dimmer than the paragraph under it. Every hover treatment moved inside `@media (hover: hover)`, so a tap on a touch device no longer leaves a link or a row stuck in its hover state. A pipe-separated `nav` of direct `<a>` children is now a wrapping flex row, so a long destination name no longer breaks across lines away from its separator. `prefers-contrast: more` now states `--purple-bright` explicitly, because the inherited `calc(l + 0.07)` rule pushed it outside sRGB in that mode and Chrome was painting a clipped color |
 | v1.38.1 | nothing. A self-contained stylesheet change over markup you already emit: `.sidenote` and `.marginnote` now reset `font-variant-caps`, `font-weight` and `letter-spacing`, and a note nested inside a `.newthought` span is pinned back to `0.75em`, so a margin note renders in its normal register wherever its anchor lands. Three new requirements joined § 2: same-page citation targets as relative fragments, bracket-style citations linked into the source list, and the scope of `.newthought` |
 | v1.36.0 | add `aria-label` to every `.footnote-backref` you emit, numbered per footnote (`Back to reference 1`, `Back to reference 2`, ...). This is a real markup gap in what `cmark-gfm` and pandoc emit by default, not a stylesheet oversight: the glyph carries no accessible name on its own, and no CSS rule can add one to content it did not write. `.step-node` also joined the forced-colors border list, a self-contained stylesheet change over markup you already emit |
 | v1.34.0 | nothing. Two self-contained stylesheet additions over markup you already emit: a fixed, full-viewport film-grain texture behind every page (`body::before`, off in print and in `forced-colors: active`), and a second shadow layer on `kbd` for a raised bottom edge. Neither needs new markup or a new class |

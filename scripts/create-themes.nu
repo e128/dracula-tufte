@@ -423,7 +423,7 @@ def package [out: path, version: string] {
 # routes around it, but reaching for npm at all, even just to be told there
 # are no dependencies, is a second toolchain this repo does not otherwise
 # need: `nu`, `python3` and `zip` cover every other artefact here, Rider's jar
-# included, and CLAUDE.md's "no build step" already governs the payload this
+# included, and AGENTS.md's "no build step" already governs the payload this
 # repo ships, not only the two inlined files. A .vsix is, underneath, exactly
 # what the Rider zip already is: a specific directory shape zipped with `-X`.
 # Hand-building it needs the same tool this repo already runs, and nothing

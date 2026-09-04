@@ -18,7 +18,7 @@ by real sources rather than a model's unstated priors.
 
 Three reads, in this order, before anything else.
 
-1. **`CLAUDE.md`, whole.** Short, and every constraint the patch must obey lives there.
+1. **`AGENTS.md`, whole.** Short, and every constraint the patch must obey lives there.
 2. **`NOTES.md`, the `## Contents` table only.** That table names all 26 sections and what
    each one covers. Read it whole so nothing in the file is invisible to this run. Read
    individual sections in Step 2, scoped by the topic map, not up front. If a finding
@@ -195,7 +195,7 @@ shifts, WCAG 3 draft movement, and so on).
 
 ### Topic 6 in particular
 
-`CLAUDE.md` mandates an exact pin, never a range, for both CDN dependencies:
+`AGENTS.md` mandates an exact pin, never a range, for both CDN dependencies:
 
 ```
 tufte-dracula.css:7,12   @fontsource-variable/source-serif-4@X.Y.Z
@@ -246,7 +246,7 @@ the unit.
   something to apply automatically. **If there are no such findings, do not write an empty
   patch file.** Say "no patch: nothing to propose" in the report instead.
 
-The patch must obey every constraint in CLAUDE.md: no comments added to
+The patch must obey every constraint in AGENTS.md: no comments added to
 `tufte-dracula.css` or `mermaid.js`, no em-dash or en-dash anywhere, hex-only in
 `mermaid.js`, the `<style>` and `<script>` wrapper contract intact. Step 5 proves that
 mechanically rather than trusting it.
@@ -260,7 +260,7 @@ Create `review/` if it doesn't exist. Don't touch any other file in the working 
 
 ## Step 5: verify the patch mechanically, or say it is unverified
 
-CLAUDE.md: "a gate is the only thing that keeps a prose rule alive in a repo where most
+AGENTS.md: "a gate is the only thing that keeps a prose rule alive in a repo where most
 edits are made by an agent." A patch this skill only *claims* obeys the contract is worth
 less than no patch, because the maintainer pays to discover otherwise.
 
@@ -299,7 +299,7 @@ rg -c -e '\u{2014}' -e '\u{2013}' review/$D-design-audit.*   # must find nothing
 The second covers the rule with no gate behind it. **`maintain.nu check` does not detect a
 comment added to `tufte-dracula.css` or `mermaid.js`.** A patch that adds one passes
 `Contract OK` and ships a comment into every page every consumer ever renders, which is the
-single hardest prohibition in CLAUDE.md. Read every added line of the patch yourself:
+single hardest prohibition in AGENTS.md. Read every added line of the patch yourself:
 
 ```bash
 rg -n '^\+' review/$D-design-audit.patch | rg -e '/\*' -e '\*/' -e '//'   # must find nothing
@@ -326,7 +326,7 @@ a settled decision. Stop there.
 
 Applying the patch, updating NOTES.md, appending to `review/declined.md`, bumping a CDN
 pin, or cutting a release are separate asks with their own flow (see the `release` skill
-and CLAUDE.md's regeneration section). This skill does not chain into any of them.
+and AGENTS.md's regeneration section). This skill does not chain into any of them.
 
 ## Rules with no exception
 
