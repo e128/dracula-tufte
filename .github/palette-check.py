@@ -776,10 +776,8 @@ if "@media print and (prefers-color-scheme: light) {" not in stylesheet:
           "light-themed diagram gets a dark ground it was never themed for")
     fail = 1
 
-# 12. The two CSS charts put a --data-* member somewhere no check above looks. The pie
-#     slice is a full-strength fill on the card, which check 5 already measures at the
-#     3:1 non-text floor, so the slice-against-ground pair needs nothing here. The bar
-#     band does: it is an alpha wash of --data-1 painted UNDER the number in the same
+# 12. The bar chart puts a --data-* member somewhere no check above looks: it is an
+#     alpha wash of --data-1 painted UNDER the number in the same
 #     cell, so the pair is --on-surface over that wash over --surface or over the
 #     row-hover fill, and the alpha decides whether it clears the text floor. That is the
 #     same shape as the .kicker measurement check 10 does for a :root token, except the
@@ -809,57 +807,15 @@ else:
                     )
                     fail = 1
 
-#     A pie slice is separated from the slice beside it by a gap of --surface, and that
-#     gap is load-bearing rather than decorative: the ramp is one lightness by design, so
-#     two touching slices differ in hue alone. Measured before the gap existed: every
-#     adjacent pair sat at 1.00 to 1.02:1 in the light and print palettes, 1.01:1 for
-#     data-3 against data-4 in the default one, and 1.00 to 1.14:1 under simulated
-#     deuteranopia, protanopia and tritanopia, so two wedges read as one shape. Four gap
-#     stops are pinned, one per boundary, including the one at 0deg.
-pie_rule = re.search(r"\.pie-chart \{.*?\n      background: conic-gradient\((.*?)\); \}",
-                     stylesheet, re.S)
-if not pie_rule:
-    print("DRIFT: .pie-chart no longer paints a conic-gradient this file can read, so "
-          "nothing measures its slice boundaries")
+#     The band paints through a background image, which Chrome drops when it prints
+#     (verified by render). The print pin gives it back. Forced colors drops it outright
+#     and cannot get it back, which costs the band and no number, so nothing is pinned
+#     for that mode. `.tag-dot::before` rides the same print pin for the same reason.
+pin = "table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact;"
+if pin not in stylesheet:
+    print(f"DRIFT: tufte-dracula.css no longer carries `{pin}`, so a bar band and a "
+          f"legend dot print blank")
     fail = 1
-else:
-    gaps = len(re.findall(r"var\(--surface\) 0", pie_rule.group(1)))
-    if gaps != 4:
-        print(f"DRIFT: .pie-chart declares {gaps} `var(--surface) 0` gap stops, not 4. A "
-              f"boundary without one is two slices at the same lightness meeting on hue "
-              f"alone, which measures 1.00 to 1.02:1 in light and in print")
-        fail = 1
-    if "--pie-gap:" not in pie_rule.group(0):
-        print("DRIFT: .pie-chart declares no --pie-gap, so the gap width is inlined per "
-              "stop and drifts one boundary at a time")
-        fail = 1
-
-#     The gap's reason is measured rather than asserted, so it retires itself if the ramp
-#     ever separates on its own.
-adjacent = [("data-1", "data-2"), ("data-2", "data-3"), ("data-3", "data-4"), ("data-4", "data-1")]
-if all(
-    contrast(triples_for_mode[a], triples_for_mode[b]) >= 3.0
-    for triples_for_mode in resolved.values()
-    for a, b in adjacent
-):
-    print(
-        "STALE: every adjacent --data-* pair now clears 3:1 against the pair beside it in "
-        "every mode, so a pie slice no longer needs the --surface gap to have a boundary. "
-        "Either drop the gap stops from .pie-chart or delete this check."
-    )
-    fail = 1
-
-#     Both charts paint their whole content through a background image, which Chrome
-#     drops when it prints and which forced colors drops outright (verified by render:
-#     `background-image` computes to `none` under --force-high-contrast). Print gets the
-#     images back; forced colors cannot, so the pie is hidden there rather than left as
-#     an empty ring, and the bar table loses only the band while every number stays.
-for pin in (".pie-chart, table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact;",
-            "body::before, .pie-chart { display: none; }"):
-    if pin not in stylesheet:
-        print(f"DRIFT: tufte-dracula.css no longer carries `{pin}`, so a CSS chart either "
-              f"prints blank or leaves an empty shape in forced colors")
-        fail = 1
 
 if not re.search(r"pieOpacity:\s*'1'", mermaid_js):
     print("DRIFT: mermaid.js does not pin pieOpacity to '1'. Mermaid's 0.7 default "
