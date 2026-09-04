@@ -8,7 +8,7 @@ description: Cut a tagged, verified release of the Dracula-Tufte template: bump 
 `scripts/maintain.nu` does the work. This skill is the order to call it in, and the two
 places where the order is the whole point.
 
-Read [CLAUDE.md](../../../CLAUDE.md) "A tag is a claim the contract held" before
+Read [AGENTS.md](../../../AGENTS.md) "A tag claims that the contract held" before
 deviating. Everything below is that section made runnable.
 
 ## Pick the version
@@ -48,7 +48,7 @@ treat a green `--watch` as the release having happened: the tag and the assets o
 exist after `release` prints it.
 
 `bump` refuses outright when any tracked file carries an em-dash or an en-dash, which
-CLAUDE.md bans. It checks before it stamps anything, so nothing has to be unwound. The
+AGENTS.md bans. It checks before it stamps anything, so nothing has to be unwound. The
 same scan runs in `nu scripts/maintain.nu check` and in the `contract` workflow.
 
 **Release the version origin/main is stamped with.** `release` reads the stamp off

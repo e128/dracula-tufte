@@ -42,7 +42,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.38.1, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.39.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
@@ -59,13 +59,13 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.38.1`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.39.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
 
 1. What to inline (§ 1).
-2. The nine markup requirements a generator owes (§ 2).
+2. The twenty-one markup requirements a generator owes (§ 2).
 3. What changed in each release (§ 3).
 4. How to detect a stale artifact (§ 4).
 5. What each pin mode costs (§ 5).
@@ -147,8 +147,10 @@ reasoning. [`themes/rider/README.md`](themes/rider/README.md) holds the whole ma
 violations`. Consumers pin to tags, so a tag on an ungated commit hands every one of them an
 unverified payload. **When a push reports a bypass, say so and revert. Do not tag on top of it.**
 
-The `release` skill ([`.claude/skills/release/SKILL.md`](.claude/skills/release/SKILL.md)) packages
-this flow. `CLAUDE.md` states the rules that have no exception.
+[`AGENTS.md`](AGENTS.md) states this flow as plain shell, and states the rules that have no
+exception. It is the instruction file for any agent working in this repo, whichever harness runs
+it. [`CLAUDE.md`](CLAUDE.md) adds only Claude Code entry points on top, including a `release` skill
+that packages the same flow.
 
 ## Contract enforcement
 

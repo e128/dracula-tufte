@@ -451,5 +451,192 @@ for mode, triples_for_mode in resolved.items():
             )
             fail = 1
 
+# 9. An accent used as a BACKGROUND is a pair no check above ever looks at. Check 5
+#    only ever puts a token in the foreground, on --surface, --code-bg or
+#    --surface-alt. Three components invert that: `.verdict-*`, `.step-node` and
+#    `::selection` all paint --surface TEXT on an accent fill. Nothing gated any of
+#    them, and the gap is not theoretical. `.step-node` takes its fill from an
+#    --icon-color custom property that NOTES.md invited an author to set from the
+#    --data-* ramp, and --surface on that ramp measures 3.45 to 3.53:1 in light mode
+#    and 3.60:1 in print. Those are the same numbers NOTES.md already records as "a
+#    real failure a reader would have copied" from the first draft of the .tag-dot
+#    fixture, one component over, caught by hand that time.
+#
+#    So the ramp is now out of bounds for .step-node, stated in CONTRACT.md, and the
+#    permitted set is pinned below. A .tag-dot or an .icon-chip may still carry a
+#    --data-* color: the dot paints currentColor on an empty element, and the chip's
+#    glyph is --on-surface on a 15%-alpha tint, which measures 8.06:1 and up. Only a
+#    full-strength fill under real text is the problem.
+#
+#    Print is skipped for `.verdict-*` alone, because the print block replaces the
+#    fill with `background: none` plus a currentColor ring and recolors the text, so
+#    the pair this check describes does not exist on paper. `.step-node` has no print
+#    override, so it is checked there like everywhere else.
+INVERTED = {
+    ".verdict-*": ("surface", ["green", "orange", "red", "muted"], {"print"}),
+    ".step-node": ("surface", ["orange", "link", "purple", "green"], set()),
+    "::selection": ("surface", ["purple"], set()),
+}
+for mode, triples_for_mode in resolved.items():
+    floor = MODES[mode][1]
+    for component, (text, grounds, skip) in INVERTED.items():
+        if mode in skip:
+            continue
+        for ground in grounds:
+            got = contrast(triples_for_mode[text], triples_for_mode[ground])
+            if got + 0.005 < floor:
+                print(
+                    f"CONTRAST: {mode} {component} puts --{text} text on a --{ground} "
+                    f"fill at {got:.2f}:1, below the {floor} floor for this mode"
+                )
+                fail = 1
+
+#    The prohibition above needs a reason that stays true, not a comment. If a later
+#    edit to the ramp made --surface legible on all four members in every mode, the
+#    exclusion would be dead weight and this check says so out loud rather than
+#    leaving a rule nobody can retire.
+ramp_ok = True
+for mode, triples_for_mode in resolved.items():
+    for name in DATA:
+        if contrast(triples_for_mode["surface"], triples_for_mode[name]) + 0.005 < MODES[mode][1]:
+            ramp_ok = False
+if ramp_ok:
+    print(
+        "STALE: --surface now clears the text floor on every --data-* member in every "
+        "mode, so the .step-node exclusion in CONTRACT.md has no reason left. Either "
+        "widen INVERTED['.step-node'] to include the ramp, or delete this check."
+    )
+    fail = 1
+
+# 10. Two tokens are written with relative color syntax, and the triple regex above
+#     cannot see either one. `--purple-bright: oklch(from var(--purple) calc(l + 0.07)
+#     c h)` and `--highlight: oklch(from var(--orange) l c h / 0.35)` therefore sat
+#     outside checks 5 and 7 entirely. That matters most for --purple-bright, because
+#     it is the ONE token that puts purple text on --code-bg: NOTES.md records
+#     --purple itself at 4.21:1 there, the tightest accent-on-ground pair in the
+#     sheet, and accepts it precisely because no purple text renders on that fill.
+#     --purple-bright is the counterexample to that reasoning, it renders on every
+#     highlighted code block as .hljs-type, and nothing measured it. It currently
+#     clears its floor with margin, so this closes a blind spot rather than a failure,
+#     but a later nudge to --purple's lightness moves it silently either way.
+#
+#     Only two forms exist, so this resolves those two rather than implementing
+#     relative color in general. A third form fails loudly below instead of being
+#     silently skipped, which is the failure mode this check exists to remove.
+RELATIVE = re.compile(
+    r"--([\w-]+):\s*oklch\(from var\(--([\w-]+)\) "
+    r"(?:calc\(l ([+-]) ([\d.]+)\)|l) c h(?: / ([\d.]+))?\)"
+)
+
+
+def relative_decls(text):
+    out = {}
+    for name, base, sign, delta, alpha in RELATIVE.findall(text):
+        shift = 0.0 if not delta else (float(delta) if sign == "+" else -float(delta))
+        out[name] = (base, shift, float(alpha) if alpha else 1.0)
+    return out
+
+
+def encode(x):
+    return 12.92 * x if x <= 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
+
+
+def decode(x):
+    return x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4
+
+
+def over(fg, bg, alpha):
+    """Alpha-composite two oklch triples, in the gamma-encoded space a browser uses.
+
+    Compositing the linear values instead reads several tenths of a ratio too bright,
+    which is enough to turn a failing pair into a passing one. Reproducing NOTES.md's
+    own recorded .kicker numbers (6.60:1 dark, 4.71:1 light) is what confirms this is
+    the right space rather than an assumption about it.
+    """
+    f, b = oklch_to_linear(*fg), oklch_to_linear(*bg)
+    return tuple(decode(encode(x) * alpha + encode(y) * (1 - alpha)) for x, y in zip(f, b))
+
+
+def relative_luminance_lin(lin):
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def contrast_lin(one, two):
+    a, b = relative_luminance_lin(one), relative_luminance_lin(two)
+    return (max(a, b) + 0.05) / (min(a, b) + 0.05)
+
+
+base_relative = relative_decls(css)
+declared_relative = set(base_relative)
+for mode, (condition, text_floor, rule_floor) in MODES.items():
+    triples_for_mode = resolved.get(mode)
+    if triples_for_mode is None:
+        continue
+    block = css
+    if condition is not None:
+        found = re.search(
+            re.escape(condition) + r" \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S
+        )
+        block = found.group(1) if found else ""
+    rel = dict(base_relative)
+    rel.update(relative_decls(block))
+    declared_relative |= set(rel)
+    for name, (base, shift, alpha) in rel.items():
+        # A mode may override the relative form with a literal, which print does for
+        # --purple-bright and which prefers-contrast: more now has to do as well. Check
+        # 7 already owns the gamut for a literal, because the triple regex sees it; the
+        # contrast floor is checked here either way, since --purple-bright is in no
+        # role list above and would otherwise be measured in two modes out of four.
+        literal = name in triples_for_mode
+        L, C, h = triples_for_mode[name] if literal else triples_for_mode[base]
+        resolved_lch = (L, C, h) if literal else (L + shift, C, h)
+        origin = f"--{name}" if literal else f"--{name} (from --{base})"
+        if alpha == 1.0:
+            for ground in ("surface", "code-bg", "surface-alt"):
+                got = contrast(resolved_lch, triples_for_mode[ground])
+                if got + 0.005 < text_floor:
+                    print(
+                        f"CONTRAST: {mode} {origin} is {got:.2f}:1 on "
+                        f"--{ground}, below the {text_floor} floor for this mode"
+                    )
+                    fail = 1
+            if not literal:
+                ceiling = (
+                    max_chroma_p3(resolved_lch[0], resolved_lch[2])
+                    if base in P3_WIDENED and mode in P3_MODES
+                    else max_chroma(resolved_lch[0], resolved_lch[2])
+                )
+                if C > ceiling + 0.0005:
+                    print(
+                        f"GAMUT: {mode} {origin} declares chroma {C:.3f} at "
+                        f"L {resolved_lch[0]:.3f}, where the ceiling holds {ceiling:.3f}"
+                    )
+                    fail = 1
+        else:
+            # An alpha wash is a background, and --on-surface is what `mark` pins on
+            # top of it. The floor is 4.5 in every mode, including prefers-contrast:
+            # more, because the alpha caps what the composite can reach and NOTES.md
+            # already records that trade: a lower alpha would make the highlight
+            # harder to see, which is the one thing the element exists to do.
+            for ground in ("surface", "code-bg"):
+                composite = over(resolved_lch, triples_for_mode[ground], alpha)
+                got = contrast_lin(oklch_to_linear(*triples_for_mode["on-surface"]), composite)
+                if got + 0.005 < 4.5:
+                    print(
+                        f"CONTRAST: {mode} --on-surface on --{name} ({alpha:g} alpha of "
+                        f"--{base}) over --{ground} is {got:.2f}:1, below 4.5"
+                    )
+                    fail = 1
+
+#     A token that stops matching RELATIVE stops being checked, and a check that
+#     silently covers nothing is worse than no check. Both names are pinned.
+for name in ("purple-bright", "highlight"):
+    if name not in declared_relative and name not in triples:
+        print(
+            f"DRIFT: --{name} is neither an oklch() triple nor a relative color this "
+            f"file can parse, so nothing measures it in any mode"
+        )
+        fail = 1
+
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)

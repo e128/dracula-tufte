@@ -1,7 +1,7 @@
 # NOTES.md: the decisions behind the stylesheet
 
 Every generated HTML file carries `tufte-dracula.css`, `mermaid.js` and `filter.js` verbatim. Those
-files therefore carry no comments. See `CLAUDE.md`. This file holds what those comments would say.
+files therefore carry no comments. See `AGENTS.md`. This file holds what those comments would say.
 
 **This file states decisions and prohibitions. It does not carry the measurements behind them.**
 Chromium measured every number. Those measurements live in git history and in the gates.
@@ -50,7 +50,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Markdown coverage](#markdown-coverage) | What a converter emits, and how the sheet claims it |
 | [Raw HTML and other generators](#raw-html-and-other-generators) | Intrinsic-width media, unbreakable tokens, permalinks |
 | [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details catch a regression |
-| [Repo layout](#repo-layout) | Why `scripts/` holds the Nushell and `.github/` keeps the Python |
+| [Repo layout](#repo-layout) | Why `scripts/` holds the Nushell, `.github/` keeps the Python, and `AGENTS.md` holds the rules |
 | [Odds and ends](#odds-and-ends) | `hr`, scrollbars, `--ring`, the validator |
 
 ---
@@ -151,6 +151,16 @@ larger, italic and `--purple`.
 **Nothing at text size may go lighter than body copy.** That rule governs h3, h4, h5, h6, `summary`
 and `th`.
 
+**That rule covers weight, and it now covers color too. `h5` and `h6` sit at `--label`, not
+`--muted`.** They render at body size, so weight is the only other axis left to mark them as
+headings, and a 50-unit step is not much. On `--muted` a heading was the dimmest thing in its own
+section, dimmer than the paragraph it introduced. That is the same inversion this file already
+refuses for `dl.timeline > dd`: an entry is content, not annotation, and so is a heading. `--muted`
+is the tier pinned at the contrast floor and `--label` is the tier that moves toward body text, so
+`--label` is where a heading belongs. **h3 and h4 stay at `--label` and do not move to
+`--on-surface`.** Both are larger or heavier than body copy, so size and weight already do the work
+that color has to do alone at h5.
+
 **`code` and `cite` sit at 0.9em**, which is the x-height-matched size against the mono stack.
 
 **`li` carries no `font-size` of its own.** At 0.95em a bulleted list rendered subordinate to the
@@ -191,9 +201,21 @@ attempts failed. The repo records them so that nobody retries them.
 
 **"Unused space" is not the metric to minimize.** A page needs side margins that scale.
 
-**The long measure is a standing decision.** Content flows nearly the full window, well past the
-conventional 60 to 75 characters. This stylesheet serves dense reference pages with tables and
-diagrams. It does not serve book-length prose. Anyone who revisits this owes three facts.
+### NON-NEGOTIABLE: the wide measure stays
+
+**The long measure is not a standing decision any more. It is closed.** `AGENTS.md` carries the rule
+in full. Content flows nearly the full window, well past the conventional 60 to 75 characters, and
+**nothing may narrow the rendered width of running prose**: no `max-width`, no `width`, no
+`inline-size`, no `columns`, no narrower `--page-width`, no grid track, no wrapper, and no
+consumer opt-in either.
+
+**A measurement is not an argument here, and that is the whole point of the rule.** Attempt 4 below
+produced good numbers and was rejected on sight regardless. Do not reopen this with fresh numbers, a
+`better-*` review finding, a typography rule of thumb or a WCAG citation. If a review flags the long
+measure, record that it was flagged and move on.
+
+This stylesheet serves dense reference pages with tables and diagrams. It does not serve
+book-length prose. Anyone who reads this section anyway owes three facts.
 
 - The cap belongs in `em`, **not `ch`**. `ch` is the advance of `0`. In a serif that is far wider
   than the average prose advance, so a `ch` cap runs much longer than its number claims.
@@ -201,6 +223,25 @@ diagrams. It does not serve book-length prose. Anyone who revisits this owes thr
   flex item in the conn-map header. It also hits the `<p>` mermaid emits inside `foreignObject`
   labels.
 - **Smaller type makes the measure worse**, because the container is `vw` and `%` driven.
+
+**Attempt 4 capped the prose only, and it is the one to know about.** It is the obvious next idea
+after the three above, because it appears to dodge their shared failure: `--measure: 40em` on `p`,
+with `dl.timeline > dd` capped to match, while `table`, `pre`, `pre.mermaid`, `.edge-list` and
+`.recent-groups` kept the full `--page-width`. It measured exactly as intended, holding body copy at
+about 70 characters per line flat from 1280px to 3440px against 103 to 144 before it, with no
+overflow at any width in any mode. **It was rendered, compared side by side against the current
+behavior, and rejected on sight.** The arithmetic was never the question. A capped column beside a
+wide container still reads as stranded copy, and the empty band to its side is the same defect the
+first three attempts produced, whatever the tables further down the page are doing.
+
+Two things that attempt did establish, for whoever ignores the rule at the top of this section:
+
+- **A sidenote floats `width: 28%` *inside* its paragraph**, so any cap on `p` also narrows the note
+  and leaves the prose beside it at 72% of the number. A cap wants a paired
+  `p:has(:is(.sidenote, .marginnote))` rule at `cap / 0.72` to hold both, which is a second number
+  to keep in step with `.sidenote`.
+- **A `max-width` can only narrow**, so no value there can reintroduce a sideways scroll. That was
+  the one risk this idea did not carry.
 
 **Sidenotes stack below 1000px, not below 600px.** The float is `width: 28%`. Between 600px and
 about 1280px the note is narrower than any measure worth reading. The body copy beside it keeps the
@@ -538,6 +579,28 @@ grounds are `--surface`, `--code-bg` and `--surface-alt`. `--code-bg` covers `pr
 `.filter-box` and the `table.tree` root row. `--surface-alt` is the row-hover fill. **Do not check
 only the easiest ground.** `--surface-alt` is the harder one in light mode.
 
+**An accent can also be the ground, and for a long time nothing looked at that.** Three components
+invert the usual direction and paint `--surface` *text* on an accent fill: `.verdict-*`,
+`.step-node` and `::selection`. Every check measured accents as foregrounds only, so none of these
+pairs was gated. Check 9 gates all three now. Print is exempt for `.verdict-*` alone, because the
+print block replaces the fill with a `currentColor` ring and recolors the text, so that pair does
+not exist on paper. `.step-node` has no print override and is checked there like everywhere else.
+
+**Two tokens are written in relative color syntax, and the token regex cannot see either one.**
+`--purple-bright` and `--highlight` therefore sat outside every check. That mattered most for
+`--purple-bright`: it is the one token that puts purple *text* on `--code-bg`, which is the pair
+this file accepts at 4.21:1 on the grounds that no purple text renders there. It renders on every
+highlighted code block as `.hljs-type`. Check 10 resolves both forms and gates them.
+
+**`prefers-contrast: more` has to state `--purple-bright` explicitly now, and it never had to
+before.** The base rule is `calc(l + 0.07)` off `--purple`, and high contrast raises `--purple` for
+its 7:1 floor. Adding 0.07 on top of that landed the token past the sRGB ceiling, which shrinks as
+lightness climbs, so Chrome painted a clipped color the sheet never declared. This is the same trap
+check 7 exists for, reached through a token check 7 could not see. The mode declares
+`oklch(0.885 0.060 300.909)` instead: a smaller lift than the base rule, holding 90% of the ceiling
+at that lightness rather than 104% of it, and it keeps more chroma than a full `+0.07` could. **Do
+not replace it with the relative form again**, and do not park it on the boundary.
+
 The floors, by mode: default 4.2:1, `prefers-contrast: more` 7:1, light 4.5:1, print 4.5:1. Rule
 tokens sit at 3:1 against `--surface`, and the data ramp sits at 3.2:1.
 
@@ -714,7 +777,7 @@ APCA finds the answer rather than re-derives the panic.
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs eight checks.
+`.github/palette-check.py` runs ten checks.
 
 1. Hex projections in both Mermaid palettes.
 2. The `classdef` fills.
@@ -725,6 +788,16 @@ APCA finds the answer rather than re-derives the panic.
 6. `--mermaid-scheme` in both directions.
 7. The sRGB gamut for every parsed token in every mode.
 8. The vividness bands.
+9. The inverted pairs, where an accent is the ground and `--surface` is the text.
+10. The two relative-color tokens, resolved per mode, plus the alpha composite `mark` renders.
+
+**Check 9 also gates its own reason for existing.** The `.step-node` role list deliberately omits
+`--data-*`, and a prohibition with no test is a comment. If a later edit to the ramp ever made
+`--surface` legible on all four members in every mode, the exclusion would be dead weight, so the
+check says so out loud instead of leaving a rule nobody can retire.
+
+**Check 10 pins both token names.** A token that stops matching the relative-color pattern stops
+being measured, and a check that silently covers nothing is worse than no check at all.
 
 **A new token joins the roles in check 5.** Decide then whether it also belongs in check 8's table.
 A token in the light palette cannot move without a matching move on the Mermaid side, and the gate
@@ -854,7 +927,18 @@ text: a step chain carries no adjacent label for it to duplicate.
 **`.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`** is a linear process strip: circular
 nodes joined by an arrow glyph. It exists for a flow too trivial to justify a Mermaid diagram, three
 or four stages, no branching. It is not a Mermaid replacement. A graph with a branch or a loop still
-belongs in `pre.mermaid`. Same `--icon-color` convention as `.icon-list`. **Every node but the first
+belongs in `pre.mermaid`. Same `--icon-color` convention as `.icon-list`, **with one exception that
+`.icon-list` does not need: `.step-node`'s `--icon-color` takes a prose accent, never a `--data-*`
+slot.** The node fills at full strength and the letter is `--surface` on top of it, so the fill is a
+text ground. The ramp is scoped to the 3:1 diagram floor, and `--surface` on it measures 3.45 to
+3.53:1 in light mode and 3.60:1 in print. Those are the same numbers this file already records for
+the first draft of the `.tag-dot` fixture, one component over. `.tag-dot` and `.icon-chip` may still
+carry a `--data-*` color, because neither puts text on the fill: the dot paints `currentColor` on an
+empty element, and the chip's glyph is `--on-surface` on a 15%-alpha tint. **Only a full-strength
+fill under real text is the problem**, which is the distinction to check before adding a fifth
+component to this convention. Check 9 gates the permitted set, and `CONTRACT.md` § 2 states it as a
+consumer obligation, because no stylesheet rule can stop an inline `style` attribute. **Every node
+but the first
 is wrapped with its leading arrow in one `.step-hop`.** `.step-chain` still wraps at `flex-wrap: wrap`
 for a narrow measure, but an arrow and a bare `.step-node` are separate flex items, so a wrap could
 land between them: the arrow stays on the line above, and the node that follows starts a new line
@@ -1022,8 +1106,33 @@ viewBox and point labels centered on the point. `pre.mermaid` needs the declarat
 inherited `overflow-x: auto` clips at the same place. `.mermaid-overlay svg` needs it too, or the
 zoom shows the truncation it was opened to escape.
 
-**The cost is that those labels clip below 600px**, where `overflow-x: auto` forces computed
-`overflow-y` to `auto`. The repo accepts that. The zoom overlay shows the whole diagram either way.
+**The cost is that a label outside its own viewBox is unreachable below roughly 700px, and no
+`overflow` value anywhere recovers it.** This entry used to say the labels clip below 600px, where
+`overflow-x: auto` forces computed `overflow-y` to `auto`, and that the zoom overlay shows the whole
+diagram either way. Both halves were wrong, and both were measured wrong-way-round.
+
+- **The band runs to about 690px, not 600px.** Between 601px and 690px `pre.mermaid` is
+  `overflow: visible`, so the reasoning about `overflow-y` does not apply, and the fixture's
+  `quadrantChart` still put 20px of label past the left viewport edge and 49px past the right.
+- **`overflow-x: auto` on `pre.mermaid` at every width was tried and reverted. It is strictly
+  worse.** SVG ink painted outside the root `<svg>`'s box is not scrollable overflow for any CSS
+  ancestor, so the scroller recovers nothing, and it *clips* the part that `overflow: visible` had
+  been painting into the page gutter, where a reader could at least see it. Scrolling such a
+  container fully right only trades a right-side loss for a left-side one.
+- **The zoom overlay does not rescue it either.** `.mermaid-overlay svg` is `95vw` by `95vh`, and
+  the escape is proportional to the svg's width, so it scales with the zoom: at a 640px viewport the
+  overlay lost 69px left and 105px right of the same labels. `overflow: auto` on the overlay
+  recovers nothing, for the same reason it recovers nothing on the `pre`. Only shrinking the svg
+  helps, and shrinking it to fit one diagram type's broken viewBox would make every zoomed diagram
+  smaller, which is the one thing the overlay exists not to do.
+
+**So this is a consumer constraint, not a stylesheet defect, and it is stated in `CONTRACT.md`
+§ 2.** The fixture's two point labels are deliberately overlong, to exercise
+`pre.mermaid svg { overflow: visible }`. The same chart with realistic labels loses nothing at any
+width from 601px up, measured. `quadrantChart` writing a viewBox that excludes its own content is
+the same class of Mermaid defect as `packet` and `xyChart`, and it gets the same answer: keep the
+labels short, and take it when Mermaid ships a fix. **Above 700px nothing is lost on any diagram
+type in the fixture set**, which is why `overflow: visible` stays.
 
 **A JS `refit()` that grows the viewBox to the measured `getBBox()` was tried and reverted.** Run
 from the `MutationObserver`, it fires before the flowchart's `foreignObject` labels lay out. The
@@ -1231,9 +1340,23 @@ removal is therefore what makes the ring follow each surface.
 **`.nav-list` radius is `calc(var(--radius-sm) + 0.3rem)`**, not `var(--radius)`. The outer radius
 is the inner radius plus the padding. The `calc` keeps them concentric when either one changes.
 
-**`pre.mermaid:hover` gets a 1px ring.** Before it, `cursor: zoom-in` was the only signal that a
-diagram was clickable, and a cursor does not exist on touch. The ring is instant and not
-transitioned. Hover is high-frequency, and it does not want motion.
+**Every hover rule sits inside `@media (hover: hover)`.** Eight of them did not, and a hover style
+with no such guard does not fail to apply on touch, it applies at the wrong time: the browser sets
+`:hover` on tap and leaves it set until the reader taps something else. Measured with real touch
+emulation, a tapped `.nav-list` link kept its `--code-bg` fill indefinitely. Every affordance in the
+sheet was affected at once, which is why this is one block rather than eight guards.
+
+**The block sits immediately before `::selection`, and the position is load-bearing.** A media query
+adds no specificity. Placed after the `prefers-contrast: more` block instead, `.nav-list li a:hover`
+would tie that block's `.nav-list li a` rule on specificity and win on source order, which would
+take the mode's `currentColor` underline off every hovered nav link. Before it, the mode keeps it.
+
+**`pre.mermaid:hover` gets a 1px ring, and the ring is for a pointer only.** Before it,
+`cursor: zoom-in` was the only pointer signal that a diagram was clickable. The ring is instant and
+not transitioned. Hover is high-frequency, and it does not want motion. **Do not describe it as the
+touch affordance.** A hover rule fires after the tap, so it can never advertise anything in advance
+on touch. The injected `.mermaid-zoom` button is the touch affordance, which the Keyboard section
+already states correctly.
 
 **The View Transitions API was considered for the mermaid overlay open/close, and passed over.**
 Cross-document support is not Baseline yet, and the overlay's existing `opacity` transition already
@@ -1852,6 +1975,18 @@ the defect produced no visibly broken badge, only an inconsistent one next to a 
 **A fixture demonstrates states. It does not simulate them.** Several details look like filler and
 are regression checks. **A cut to any of these retires the check it exists to be.**
 
+**A fixture is also the copy consumers paste, so its own strings have to be right.** Two were not.
+
+- **`.filter-empty` must not state a count.** The fixture said "Clear the filter to see all 4",
+  which is wrong for every list that is not four items long, and `filter.js` only writes its own
+  copy when the element is absent, so the fixture's version is the one that shipped and the one that
+  got copied. It states no count now, matching the script's string exactly. **Do not add the query
+  to either one**, for the reason the Filter section already gives.
+- **`.verdict` text is written in sentence case.** The class already carries
+  `text-transform: uppercase`, so `PASS` and `SEE BELOW` in the markup were presentation baked into
+  copy, and they read as a second convention beside the scorecard's own `Pass` and `Partial` two
+  sections up. Same rendered pixels, one convention.
+
 **A new page means five hardcoded fixture lists, not one.** The five are:
 
 1. The page list in `scripts/build-sample.nu`.
@@ -1922,6 +2057,24 @@ const ROOT = $SCRIPTS | path dirname
 The payload, the fixtures, `tokens.css` and the docs stay at the root. Pages serves the root, and
 consumers pin paths into it.
 
+**`AGENTS.md` is the instruction file. `CLAUDE.md` is a pointer to it.** The rules were in
+`CLAUDE.md` for as long as one harness edited this repo, which made a filename into a dependency:
+another harness reads `AGENTS.md` and would have found nothing. The split is by *audience*, not by
+content. `AGENTS.md` holds every rule and names no harness, so everything it asks for is a shell
+command, a file path or a decision rule. `CLAUDE.md` records only what Claude Code adds on top,
+which is the two skills in `.claude/skills/`, and states that `AGENTS.md` wins on any conflict.
+
+**A skill may only wrap a flow that `AGENTS.md` already states in full.** That is what keeps a
+harness without skills at full capability: it loses an entry point, never a rule. `release` is the
+order in which to call `scripts/maintain.nu`, and every one of those commands is in `AGENTS.md`.
+**Do not let a rule come to rest only inside a skill**, and do not put repo policy in
+`.claude/settings.json`, which configures a status line.
+
+**Both files are in the presence gate, in `scripts/maintain.nu` and in `contract-check.yml`.** A
+deleted instruction file is the one kind of deletion that leaves every check green while removing
+the reason the checks exist. The CI step's name and its closing count are part of the list: change
+the list, change both numbers.
+
 **Python stays, and the repo measured the alternatives rather than argued them.** Both helpers were
 put up for rewrite, and both stayed.
 
@@ -1947,6 +2100,20 @@ put up for rewrite, and both stayed.
 every width, in print and in forced colors, for as long as the rule existed. It is a
 `border-block-start` now. The same defect does **not** affect `table`, whose box has real height.
 **Shadow-drawn rules are fine. Shadow-drawn rules on a zero-height box are not.**
+
+**A pipe-separated `nav` is a flex row, and the rule goes on the link, not between the links.**
+`nav:has(> a)` takes `display: flex; flex-wrap: wrap`, and `nav > a + a` carries the
+`border-inline-start` with its own `padding-inline-start`. As plain inline anchors with a
+`margin-inline-start`, a long destination name broke *inside* the link across two lines, so at 320px
+the fixture's seven-link row put a bare leading separator at the start of a line and split "Spike
+Results" and "Reuse Candidates" across rows with no separator between the halves. A reader could not
+tell where one destination ended and the next began. A flex item wraps as a unit and carries its own
+leading rule down with it.
+
+**The `:has(> a)` scoping is deliberate.** A bare `nav { display: flex }` would also catch a
+consumer who emits `nav > ul`, and turn that list into a flex item that shrinks. The sheet does not
+control that markup, and a silent layout change to it is the kind of break this repo already paid
+for once on the conn-map column order.
 
 **`scrollbar-color` sits on `body`, not on every scrolling box, because the property inherits.** One
 declaration reaches `.table-scroll`, `pre`, the narrow-viewport `pre.mermaid` scroll and the

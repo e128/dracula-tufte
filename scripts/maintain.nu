@@ -33,7 +33,7 @@ def main [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html scripts/build-sample.nu README.md CONTRACT.md] {
+  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] {
     if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -169,7 +169,7 @@ def "main check" [] {
   print ($themes.stdout | str trim)
   if $themes.exit_code != 0 { $ok = false }
 
-  # CLAUDE.md bans the em-dash and the en-dash outright. A prose rule with no gate
+  # AGENTS.md bans the em-dash and the en-dash outright. A prose rule with no gate
   # decays, and this one governs a repo where most edits arrive from an agent that
   # reaches for the character by default. `git ls-files` rather than a glob, so the
   # scan covers exactly what ships and never a scratch file. rg exits 1 on no match,
@@ -180,7 +180,7 @@ def "main check" [] {
   })
   if ($dashes | is-not-empty) {
     $dashes | each {|d| print $"DASH: ($d.file) carries ($d.count) em-dash or en-dash line\(s\)" }
-    print "CLAUDE.md bans both. Use a period, comma, colon, parentheses or a plain hyphen."
+    print "AGENTS.md bans both. Use a period, comma, colon, parentheses or a plain hyphen."
     $ok = false
   } else {
     print "No em-dash or en-dash."
@@ -219,14 +219,14 @@ const STAMPS = [
 def "main bump" [version: string] {
   # Refuse before stamping, not after. A release stamps four files, rebuilds the
   # fixtures, the themes and the plugin zip, so a dash caught at `check` time means
-  # unwinding all of it. CLAUDE.md bans the character; this is the point in the flow
+  # unwinding all of it. AGENTS.md bans the character; this is the point in the flow
   # where it is cheapest to enforce. Patterns are `\u{...}` escapes because this file
   # is tracked and a literal one would trip the gate it implements.
   let dashes = (^git -C $ROOT ls-files | lines | where {|f|
     (^rg -q --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete).exit_code == 0
   })
   if ($dashes | is-not-empty) {
-    error make { msg: $"bump refuses: ($dashes | str join ', ') carry an em-dash or en-dash, which CLAUDE.md bans. Fix them, then bump." }
+    error make { msg: $"bump refuses: ($dashes | str join ', ') carry an em-dash or en-dash, which AGENTS.md bans. Fix them, then bump." }
   }
 
   let current = (open --raw ($ROOT | path join "tufte-dracula.css")

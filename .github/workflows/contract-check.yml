@@ -12,12 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Verify the ten contract files exist
+      - name: Verify the twelve contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md; do
+          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
-          echo "All 10 contract files present."
+          echo "All 12 contract files present."
 
       - name: Stylesheet wrapper is exactly the first and last line
         run: |
@@ -102,7 +102,7 @@ jobs:
 
       - name: No em-dash and no en-dash in any tracked file
         run: |
-          # CLAUDE.md bans U+2014 and U+2013 outright. This mirrors the same gate in
+          # AGENTS.md bans U+2014 and U+2013 outright. This mirrors the same gate in
           # `nu scripts/maintain.nu check` so a contributor who never runs the local
           # check still cannot land one. `git ls-files -z` scans exactly what ships.
           # rg exits 1 when it matches nothing, which is the passing case here, so the
@@ -112,7 +112,7 @@ jobs:
           hits=$(git ls-files -z | xargs -0 rg -n --no-messages -e '\u{2014}' -e '\u{2013}' || true)
           if [ -n "$hits" ]; then
             printf '%s\n' "$hits"
-            echo "CLAUDE.md bans the em-dash and the en-dash. Use a period, comma, colon, parentheses or a plain hyphen."
+            echo "AGENTS.md bans the em-dash and the en-dash. Use a period, comma, colon, parentheses or a plain hyphen."
             exit 1
           fi
           echo "No em-dash or en-dash."
