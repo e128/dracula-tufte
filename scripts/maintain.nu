@@ -17,7 +17,135 @@ const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
 def main [] {
-  print "usage: nu scripts/maintain.nu <check|selftest|bump <version>|release <version>|mermaid <version>>"
+  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|bump <version>|release <version>|mermaid <version>>"
+}
+
+# CONTRACT.md section 2 points at a fixture for most of its requirements, so a reader
+# gets a working example instead of only a sentence. Those pointers used to be line
+# numbers into a generated file, and all 22 of them were wrong by v1.38.1 with every
+# check green: a fixture is regenerated on every payload edit, so a line number rots on
+# a change that has nothing to do with the requirement it names. They are search strings
+# now, and this keeps them true. A pointer that stops matching sends a consumer's
+# generator to markup which does not demonstrate the requirement, and looks
+# authoritative doing it.
+#
+# It lives in its own definition, not inline in `check`, because CI mirrors `check` step
+# by step and a step that exists only locally is a step that does not gate a merge.
+# `main contract-markup` is the CI entry point and `check` calls the same function. Every
+# check below is one of CONTRACT.md section 2 obligations measured against the repo own
+# fixtures, plus section 2 claims about itself.
+def contract-markup-ok [] {
+  mut ok = true
+  let contract = (open --raw ($ROOT | path join "CONTRACT.md"))
+  # Whitespace-tolerant on purpose: a pointer wraps wherever the 100-column prose puts
+  # it, so `(in`, the filename, `search` and the string can each land on a new line.
+  let pointers = ($contract | parse --regex '\(in\s+`(?<file>samples/[\w.-]+)`,\s+search\s+`(?<needle>[^`]+)`\)')
+  if ($pointers | length) < 20 {
+    print $"CONTRACT.md section 2 has only ($pointers | length) fixture pointers, refusing to pass vacuously"
+    $ok = false
+  }
+  for p in $pointers {
+    let target = ($ROOT | path join $p.file)
+    if not ($target | path exists) {
+      print $"CONTRACT: pointer names ($p.file), which does not exist"
+      $ok = false
+    } else if not ((open --raw $target) | str contains $p.needle) {
+      print $"CONTRACT: ($p.file) no longer contains `($p.needle)`, so that requirement points at nothing"
+      $ok = false
+    }
+  }
+
+  # Section 2 claims two countable things about itself, and both had gone false. It says
+  # every requirement either points at a fixture or says it has no fixture yet: five
+  # bullets did neither, so a generator was told to read an example that was never
+  # named. And it states the requirement count in prose, which read "Sixteen" against
+  # 21 bullets before v1.39.0 and is exactly the drift a spelled-out number invites.
+  # Both are derived from the bullets now rather than trusted.
+  let section2 = ($contract | split row "## 2. Emit this markup" | get 1 | split row "## 3." | get 0)
+  let bullets = ($section2 | split row "\n- [ ] " | skip 1)
+  if ($bullets | length) < 20 {
+    print $"CONTRACT.md section 2 parsed only ($bullets | length) requirement bullets, refusing to pass vacuously"
+    $ok = false
+  }
+  for b in $bullets {
+    let has_pointer = ($b =~ '\(in\s+`samples/[\w.-]+`,\s+search\s+`[^`]+`\)')
+    let says_none = ($b | str contains "No fixture demonstrates this yet")
+    if not ($has_pointer or $says_none) {
+      let first = ($b | str replace --all --regex '\s+' ' ' | str substring 0..70)
+      print $"CONTRACT: this requirement neither points at a fixture nor says it has none: ($first)"
+      $ok = false
+    }
+  }
+
+  # Spelled out, because the house style writes a count in words. The map covers the
+  # plausible range and fails loudly outside it rather than passing on a word it cannot
+  # read, which is the rule every vacuity floor here follows.
+  let words = {15: Fifteen, 16: Sixteen, 17: Seventeen, 18: Eighteen, 19: Nineteen, 20: Twenty,
+               21: "Twenty-one", 22: "Twenty-two", 23: "Twenty-three", 24: "Twenty-four",
+               25: "Twenty-five", 26: "Twenty-six", 27: "Twenty-seven", 28: "Twenty-eight",
+               29: "Twenty-nine", 30: Thirty}
+  let want = ($words | get -o ($bullets | length | into string))
+  if $want == null {
+    print $"CONTRACT: ($bullets | length) requirements is outside the spelled-out range this check knows. Extend the map in scripts/maintain.nu."
+    $ok = false
+  } else if not ($section2 | str starts-with $"\n\n($want) requirements.") {
+    print $"CONTRACT: section 2 has ($bullets | length) bullets, so it must open `($want) requirements.`"
+    $ok = false
+  } else if not ((open --raw ($ROOT | path join "README.md")) | str contains $"The ($want | str lowercase) markup requirements") {
+    print $"CONTRACT: README.md does not say `The ($want | str lowercase) markup requirements`, so the two counts disagree"
+    $ok = false
+  }
+
+  # The stylesheet hands every unwrapped table its own sideways-scroll axis below
+  # 1000px, so a table with no tab stop is a scroll container no keyboard can reach.
+  # CONTRACT.md section 2 has required `tabindex="0"` plus a `<caption>` there since
+  # v1.27.0, and two fixture tables still drifted past it, because nothing checked.
+  # A wrapped table is exempt: `.table-scroll` owns the tab stop and the role, which
+  # is why the wrapper case is deleted before the scan rather than special-cased in
+  # the predicate. `role="region"` on the table itself is the separate defect the same
+  # contract line bans: it overrides `role="table"` and takes the row and column
+  # semantics with it.
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+    let body = (open --raw ($ROOT | path join $f))
+    let unwrapped = ($body | str replace --all --regex '(?s)<div class="table-scroll"[^>]*>\s*<table[^>]*>' '')
+    for t in ($unwrapped | parse --regex '<table(?<attrs>[^>]*)>') {
+      if not ($t.attrs =~ 'tabindex="0"') {
+        print $"($f): <table($t.attrs)> is unwrapped with no tabindex=\"0\", so its scroll axis is keyboard-unreachable below 1000px"
+        $ok = false
+      }
+    }
+    for t in ($body | parse --regex '<table(?<attrs>[^>]*)>') {
+      if ($t.attrs =~ 'role="region"') {
+        print $"($f): <table($t.attrs)> carries role=\"region\", which overrides role=\"table\""
+        $ok = false
+      }
+    }
+  }
+
+  # `--icon-color` on a `.step-node` arrives in an inline style attribute, so no CSS
+  # rule and no palette check can see it. CONTRACT.md section 2 bans the `--data-*`
+  # ramp there: the node fills at full strength and its letter is `--surface` painted
+  # on that fill, which measures 3.45 to 3.53:1 in light mode, under the text floor.
+  # This catches the repo's own fixtures only. It cannot reach a consumer, and that is
+  # stated in CONTRACT.md rather than pretended away here.
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+    let body = (open --raw ($ROOT | path join $f))
+    for n in ($body | parse --regex '<span class="step-node"(?<attrs>[^>]*)>') {
+      if ($n.attrs =~ '--icon-color:\s*var\(--data-') {
+        print $"($f): a .step-node takes --icon-color from the --data-* ramp, which CONTRACT.md section 2 bans"
+        $ok = false
+      }
+    }
+  }
+
+  if $ok { print $"CONTRACT pointers resolve \(($pointers | length) search strings, ($bullets | length) requirements)." }
+  $ok
+}
+
+# The CI entry point for the function above. contract-check.yml runs this as its own
+# step, so the gate holds a merge rather than only a local run.
+def "main contract-markup" [] {
+  if not (contract-markup-ok) { exit 1 }
 }
 
 # Mirrors .github/workflows/contract-check.yml locally, step for step: ten files
@@ -87,75 +215,7 @@ def "main check" [] {
     if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
   }
 
-  # The stylesheet hands every unwrapped table its own sideways-scroll axis below
-  # 1000px, so a table with no tab stop is a scroll container no keyboard can reach.
-  # CONTRACT.md section 2 has required `tabindex="0"` plus a `<caption>` there since
-  # v1.27.0, and two fixture tables still drifted past it, because nothing checked.
-  # A wrapped table is exempt: `.table-scroll` owns the tab stop and the role, which
-  # is why the wrapper case is deleted before the scan rather than special-cased in
-  # the predicate. `role="region"` on the table itself is the separate defect the same
-  # contract line bans: it overrides `role="table"` and takes the row and column
-  # semantics with it.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
-    let body = (open --raw ($ROOT | path join $f))
-    let unwrapped = ($body | str replace --all --regex '(?s)<div class="table-scroll"[^>]*>\s*<table[^>]*>' '')
-    for t in ($unwrapped | parse --regex '<table(?<attrs>[^>]*)>') {
-      if not ($t.attrs =~ 'tabindex="0"') {
-        print $"($f): <table($t.attrs)> is unwrapped with no tabindex=\"0\", so its scroll axis is keyboard-unreachable below 1000px"
-        $ok = false
-      }
-    }
-    for t in ($body | parse --regex '<table(?<attrs>[^>]*)>') {
-      if ($t.attrs =~ 'role="region"') {
-        print $"($f): <table($t.attrs)> carries role=\"region\", which overrides role=\"table\""
-        $ok = false
-      }
-    }
-  }
-
-  # CONTRACT.md section 2 points at a fixture for most of its requirements, so a
-  # reader gets a working example instead of only a sentence. Those pointers used to
-  # be line numbers into a generated file, and all 22 of them were wrong by v1.38.1
-  # with every check green: a fixture is regenerated on every payload edit, so a line
-  # number rots on a change that has nothing to do with the requirement it names. They
-  # are search strings now, and this is the gate that keeps them true. A pointer that
-  # stops matching is a pointer that sends a consumer's generator to markup which does
-  # not demonstrate the requirement, and looks authoritative doing it.
-  let contract = (open --raw ($ROOT | path join "CONTRACT.md"))
-  # Whitespace-tolerant on purpose: a pointer wraps wherever the 100-column prose puts
-  # it, so `(in`, the filename, `search` and the string can each land on a new line.
-  let pointers = ($contract | parse --regex '\(in\s+`(?<file>samples/[\w.-]+)`,\s+search\s+`(?<needle>[^`]+)`\)')
-  if ($pointers | length) < 20 {
-    print $"CONTRACT.md section 2 has only ($pointers | length) fixture pointers, refusing to pass vacuously"
-    $ok = false
-  }
-  for p in $pointers {
-    let target = ($ROOT | path join $p.file)
-    if not ($target | path exists) {
-      print $"CONTRACT: pointer names ($p.file), which does not exist"
-      $ok = false
-    } else if not ((open --raw $target) | str contains $p.needle) {
-      print $"CONTRACT: ($p.file) no longer contains `($p.needle)`, so that requirement points at nothing"
-      $ok = false
-    }
-  }
-  if $ok { print $"CONTRACT pointers resolve \(($pointers | length) search strings)." }
-
-  # `--icon-color` on a `.step-node` arrives in an inline style attribute, so no CSS
-  # rule and no palette check can see it. CONTRACT.md section 2 bans the `--data-*`
-  # ramp there: the node fills at full strength and its letter is `--surface` painted
-  # on that fill, which measures 3.45 to 3.53:1 in light mode, under the text floor.
-  # This catches the repo's own fixtures only. It cannot reach a consumer, and that is
-  # stated in CONTRACT.md rather than pretended away here.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
-    let body = (open --raw ($ROOT | path join $f))
-    for n in ($body | parse --regex '<span class="step-node"(?<attrs>[^>]*)>') {
-      if ($n.attrs =~ '--icon-color:\s*var\(--data-') {
-        print $"($f): a .step-node takes --icon-color from the --data-* ramp, which CONTRACT.md section 2 bans"
-        $ok = false
-      }
-    }
-  }
+  if not (contract-markup-ok) { $ok = false }
 
   # samples/light*.html are the dark pages with the light condition forced on and the
   # contrast condition forced off. If the stylesheet renames either one,
