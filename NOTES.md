@@ -49,7 +49,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `caption`, `figure`, `figcaption` |
 | [Markdown coverage](#markdown-coverage) | What a converter emits, and how the sheet claims it |
 | [Raw HTML and other generators](#raw-html-and-other-generators) | Intrinsic-width media, unbreakable tokens, permalinks |
-| [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details catch a regression |
+| [Fixtures are coverage](#fixtures-are-coverage) | Which fixture details catch a regression, why a pointer is a search string, and the one check that runs the payload |
 | [Repo layout](#repo-layout) | Why `scripts/` holds the Nushell, `.github/` keeps the Python, and `AGENTS.md` holds the rules |
 | [Odds and ends](#odds-and-ends) | `hr`, scrollbars, `--ring`, the validator |
 
@@ -653,20 +653,33 @@ the ground. That argued the boundary does not matter, rather than measured that 
 Each ramp member holds a stated fraction of maximum in-gamut chroma at its lightness and hue. Check
 8 pins those fractions.
 
-**A pie slice does not render the token.** Mermaid's own stylesheet applies `opacity: 0.7` and a 2px
-black stroke. The stroke is therefore what separates a slice from the card, not the fill contrast.
-The gate is honest about that. Check 5 asserts that the **token** clears the non-text floor. That
-floor governs a `classDef` fill, a legend swatch and any consumer that paints with `var(--data-2)`
-directly. Check 5 does not assert what a `pie` fence renders.
+**A pie slice renders the token as of v1.40.0, and it did not before.** Mermaid's own stylesheet
+applies `opacity: pieOpacity` and a 2px black stroke, and the default 0.7 meant the stroke was what
+separated a slice from the card rather than the fill contrast. This entry used to record that and
+accept it: check 5 asserted the **token** cleared the non-text floor, which governs a `classDef`
+fill, a legend swatch and any consumer painting with `var(--data-2)` directly, and it deliberately
+said nothing about what a `pie` fence rendered. `pieOpacity: '1'` closes the gap rather than
+documenting it, so the slice is now the token, and check 11 measures the label that lands on it.
+See *Diagram types* for both halves of the pie fix.
 
 **`--data-2` sits close to `--pink`, and `--data-3` sits close to `--green`.** The repo left both
 that way. Nothing in a diagram puts a category fill beside body copy, and a move means two more hex
 projections to recompute.
 
-**The `classdef` fills have no light twin.** A generator that emits its own `classDef name fill:…`
-still paints dark-ground fills on a light page. A fix needs a second section and a second
-membership check. It also needs a rule for how a generator picks at emit time with no CSS to read.
-It therefore sits in `backlog.md` rather than half-done here.
+**The `classdef` fills have a light twin as of v1.40.0, and the missing half was never the hex.**
+`classdefLight` projects the same four roles through the light block, and check 2 gates both sets
+against their own palette plus the letter each one paints on its own fill. That letter is what
+inverts: the dark ramp is pale so the role's `color` is `--surface`, and the light ramp is mid-tone
+so it is `--on-surface`. Reusing `--surface` in the light set would have landed at 3.45 to 3.53:1,
+the same numbers that put the `--data-*` ramp out of bounds for `.step-node`, and the check measures
+that pair rather than asserting it.
+
+**What actually blocked this was the emit-time rule, and the rule is a prohibition.** A fence is
+diagram source: it has no CSS to read and no `var()` it can resolve, so one literal hex cannot
+follow a reader's appearance and no amount of palette work changes that. So `CONTRACT.md` § 2 now
+bans a `classDef name fill:#hex` line outright on a page that follows the reader's appearance, and
+permits it only on a page **locked** to one palette, which is the only case where a generator can
+know which set to reach for. The light hex exists for exactly that case.
 
 ### Gamut and vividness
 
@@ -777,19 +790,23 @@ APCA finds the answer rather than re-derives the panic.
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs ten checks.
+`.github/palette-check.py` runs eleven checks.
 
 1. Hex projections in both Mermaid palettes.
-2. The `classdef` fills.
+2. The `classdef` fills, in both the dark and the light set, plus the letter each set paints on its
+   own fill.
 3. The `/* was */` provenance comments.
 4. Stray hex in `mermaid.js`.
 5. The contrast floor in all four modes, for text against three grounds, and for rules and the data
    ramp against their own.
-6. `--mermaid-scheme` in both directions.
+6. `--mermaid-scheme` in both directions, no `prefers-color-scheme` in `mermaid.js` at all, and the
+   `(max-width: 600px)` breakpoint pinned in the stylesheet and in `mermaid.js` together.
 7. The sRGB gamut for every parsed token in every mode.
 8. The vividness bands.
 9. The inverted pairs, where an accent is the ground and `--surface` is the text.
 10. The two relative-color tokens, resolved per mode, plus the alpha composite `mark` renders.
+11. The pie slice label against all four slice fills, in both palettes, plus `pieOpacity` pinned
+    to `1`.
 
 **Check 9 also gates its own reason for existing.** The `.step-node` role list deliberately omits
 `--data-*`, and a prohibition with no test is a comment. If a later edit to the ramp ever made
@@ -799,14 +816,49 @@ check says so out loud instead of leaving a rule nobody can retire.
 **Check 10 pins both token names.** A token that stops matching the relative-color pattern stops
 being measured, and a check that silently covers nothing is worse than no check at all.
 
+**Check 11 exists because a pie slice label is the one place a themeVariable lands on another
+one.** Check 5 measures every token against `--surface`, `--code-bg` and `--surface-alt`, and a
+slice is none of the three, so nothing looked at the pair. **`pieOpacity` is pinned in the same
+check even though it is not a color,** because it is what the slice fill's own gated floor depends
+on: at Mermaid's 0.7 default a slice composited to 2.15 to 2.22:1 against the light card after the
+v1.25.0 ramp had cleared 3.2:1 flat. Nothing else in the repo would notice it drifting back, since
+contract-check.yml only maps hex.
+
+**Check 6 gained two pins that are not about color at all, and they sit there because that check
+already owns `mermaid.js`.** The `prefers-color-scheme` ban replaced a blanket `matchMedia` ban: the
+real prohibition is reading the host's appearance instead of the cascade, and a width query is a
+different question with a legitimate answer (see *Keyboard and assistive technology*). The
+breakpoint pin is a cross-file invariant: `mermaid.js` decides whether a diagram is a scrollable
+region from the same width the stylesheet gives it `overflow-x: auto`, and a number moved on one
+side alone is invisible in a render of the other. **Match the `matchMedia(...)` call, not the
+file.** A bare substring check passed on the comment beside the call while the live query said
+700px, which a mutation caught.
+
+**Two `CONTRACT.md` § 2 requirements reach the sheet where no palette check can see them, and only
+one of the two turned out to be gateable at all.** `--icon-color` on a `.step-node` arrives in an
+inline `style` attribute, and a `quadrantChart` point label lives inside a `pre.mermaid` fence as
+diagram source.
+
+- **The `.step-node` half is gated in `scripts/maintain.nu check`,** which scans every fixture's
+  `.step-node` attributes and fails on a `--icon-color: var(--data-*)`. That catches the repo's own
+  regressions and nothing in a consumer, which is the honest scope: check 9 already pins the
+  permitted token set inside the stylesheet, so an editor here was covered from two sides and a
+  generator from neither.
+- **The `quadrantChart` half stays prose, and the reason is that the fixture is the violation.**
+  `samples/dark.html` carries two deliberately overlong point labels to exercise
+  `pre.mermaid svg { overflow: visible }` (see *Diagram sizing*), so a length cap would have to
+  exempt the only instance in the repo and would then assert nothing. **Some obligations stay
+  prose.** Writing a gate that skips its only subject is worse than writing none, because it
+  reports green about a question it never asked.
+
 **A new token joins the roles in check 5.** Decide then whether it also belongs in check 8's table.
 A token in the light palette cannot move without a matching move on the Mermaid side, and the gate
 is what says so.
 
 Three things stay open, and none of them is a measurement. `--orange` carries eight roles. Five
 accents let their chroma fraction float. The high-contrast set is gamut-compressed, and text
-mitigates it. Two more items live in `backlog.md`. The `classdef` fills have no light twin, and a
-dark-mode pie slice label composites thin under Mermaid's own opacity.
+mitigates it. The two that used to sit in `backlog.md` beside them are closed: the `classdef` fills
+have a light twin as of v1.40.0, and the pie slice label carries its own token per palette.
 
 **`--orange` carries eight roles:** `strong`, the `mark` wash through `--highlight`, syntax
 numerals and constants, the `aside` and alert accent bar, `.markdown-alert-title`, `.unverified`,
@@ -1039,9 +1091,11 @@ diagram renders at all. The values mirror `mermaid-palette.json`, and CI enforce
 `base.getThemeVariables()`. A root-level `darkMode` therefore never reaches the theme, and every
 derived color computes light-mode.
 
-**`fontFamily` and `fontSize` are the only non-color `themeVariables`.** They are deliberately not
+**`fontFamily`, `fontSize` and `pieOpacity` are the only non-color `themeVariables`.** None is
 mirrored into `mermaid-palette.json`, which catches hex drift and has no hex here to catch.
-`fontSize: '1rem'` tracks the reader's root size. Mermaid's default is a hard-coded 16px.
+`fontSize: '1rem'` tracks the reader's root size; Mermaid's default is a hard-coded 16px.
+`pieOpacity: '1'` is pinned by check 11 of `palette-check.py` instead, because unlike the other two
+it changes a measured contrast pair rather than only a size.
 
 **`background` is inert.** A sweep across twelve diagram types showed that it never reaches the
 output. It is correct by intent rather than load-bearing.
@@ -1208,6 +1262,27 @@ selector on the shared sheet for it.**
 **`sankey` and `block` render in d3's Tableau10 categorical scheme** rather than in any
 `themeVariable`. There is no config surface in front of it. The repo leaves them alone for the
 reason the contrast budget gives: nothing puts a category fill beside body copy.
+
+**`pie` is the one diagram type that paints text directly onto a `--data-*` fill, and it took two
+coupled fixes.** Mermaid writes `.pieCircle { opacity: pieOpacity }` and `.slice { fill:
+pieSectionTextColor }`, so the slice percentage is a text-on-accent pair and the opacity decides
+what the accent even is. Both were wrong, and both were found by rendering a `pie` fence rather
+than by reading tokens.
+
+- **`pieOpacity` now says `1`.** Mermaid defaults it to 0.7, which composited every slice toward
+  the card and measured 2.15 to 2.22:1 against the light one, after the v1.25.0 ramp had cleared
+  3.2:1 flat. The opacity was undoing the ramp work.
+- **`pieSectionTextColor` is per palette, and it inverts.** The dark ramp is pale and the light
+  ramp is mid-tone, which is the opposite of what Mermaid's single `textColor` assumes, so one
+  value cannot serve both: a dark-mode label at `#f8f8f2` measured 1.81:1 flat. It is `--surface`
+  in the dark set (7.39 to 7.51:1) and `--on-surface` in the light set (4.98 to 5.10:1).
+- **No seventh `!important` was needed.** This was recorded as needing one, on the belief that
+  `.pieCircle`'s opacity had to be fought in CSS. It does not: both values are real
+  `themeVariables` in mermaid 11.17.2, confirmed against the pinned `pieDiagram` chunk before the
+  edit and by a render after it.
+
+`samples/dark.html` carries a `pie showData` fence as of v1.40.0. Its absence is why this went
+unmeasured for four releases, which is the *Fixtures are coverage* rule stated from the other end.
 
 ## Connections-map layout
 
@@ -1429,7 +1504,44 @@ manual `opener` variable and its `.focus()` call are gone with the code that mad
 with several diagrams several identically named buttons. Mermaid writes each fence's `accTitle:`
 into the SVG's root `<title>`. `aria-label` is therefore `label + ': ' + title`, and the visible
 text stays short. The overlay takes the same name on open, and the `pre` region takes the bare
-title.
+title where it exists at all.
+
+**`pre.mermaid` is a labelled region only at the widths where it can scroll, and that one change
+answered two recorded defects at once.** The tab stop exists for the narrow-viewport
+`overflow-x: auto` case, and `mermaid.js` used to set it unconditionally. Above 600px the `pre` is
+`overflow: visible`, measured at `scrollWidth == clientWidth` on all four fixture diagrams at
+1440px, so every diagram was a tab stop with nothing to scroll and no action of its own. Worse, its
+`aria-label` was the SVG's own `<title>` by construction, so the SVG then exposed the identical
+string as its `graphics-document` name and a screen reader read the diagram title, the word
+"region", and the diagram title again on entry.
+
+Both were recorded as declines, and both were declined for the same reason: the alternatives on the
+table were a second invented English string (untranslatable in a file consumers inline verbatim)
+or a focusable generic, which the button case above already rejects. **The third option is to make
+the region conditional, which nobody had costed.** `mermaid.js` matches
+`window.matchMedia('(max-width: 600px)')` and syncs `tabindex`, `role` and `aria-label` from it,
+listening for `change`. Below the breakpoint the region is load-bearing and the repeated name is
+the price of keyboard access. Above it there is no region, no tab stop and no duplication.
+
+- **A media query is not resize-stale, which is what made the earlier estimate wrong.** The
+  rejection assumed a resize listener or a `scrollWidth` probe, both of which go stale between
+  events. `matchMedia` fires `change` on the transition, so the two directions were verified by
+  driving a real resize: absent at 1440px on all five diagrams, present at 400px where all five do
+  scroll, absent again on the way back.
+- **The safety property was swept, not assumed.** Every fence in every fixture, at 1440, 1000, 700,
+  601, 600 and 400px: **no diagram at any width above the breakpoint both scrolls and lacks a
+  region.** That is the failure this change could have introduced, and it does not occur. At exactly
+  600px two small diagrams fit at natural size and still take a region, which is correct rather
+  than a miss: the `pre` is a scroll container in that band whatever one diagram happens to
+  measure, and a container's tab stop cannot depend on its content's width without going stale on
+  the next re-render.
+- **`matchMedia` is now permitted in `mermaid.js`, and `prefers-color-scheme` is not.** Check 6 of
+  `palette-check.py` used to ban the function outright. The real prohibition was always reading the
+  host's appearance instead of the cascade, so the ban moved onto the condition, which is stricter
+  about the thing it cares about and silent about a width query.
+- **The breakpoint is pinned in both files.** The number lives in the stylesheet and in
+  `mermaid.js` separately, and a move on one side alone either puts the tab stop where nothing
+  scrolls or takes it from where something does. Neither shows up in a render of the other side.
 
 `window.mermaidZoomLabel` overrides the label word. It follows the `window.mermaidSecurityLevel`
 convention. Both strings were hard-coded English in a file consumers inline verbatim. That is the
@@ -2010,6 +2122,10 @@ nine images.
   browser measures, and its viewBox comes from the laid-out graph. The sequence fence's `Note over`
   is deliberately wider than its actor box. The quadrant fence carries point labels long enough to
   overrun the canvas.
+- **The `pie` fence is the only one that puts text on a `--data-*` fill**, which is why its absence
+  hid two real contrast defects for four releases (see *Diagram types*). `showData` is on, so the
+  legend renders too, and the legend text is the pair that sits on the card rather than on a slice.
+  It is also the only fence whose rendering depends on a non-color `themeVariable`.
 - **The conn-map focus node's long label.** The connections map is the one fixture that renders with
   `useMaxWidth: false`. It is therefore the only place a mis-sized node box lands in a *constrained*
   column rather than on an open page.
@@ -2037,6 +2153,53 @@ nine images.
   retires the only test that a converter's math does not reintroduce a horizontal page scrollbar.
 - **The `<em>` label says what `em` actually does.** It named a color the sheet no longer paints,
   long after the rule was deleted.
+
+### Never cite a line number into a generated file
+
+`CONTRACT.md` § 2 points a consumer's generator at a fixture for most of its requirements, and for
+twelve releases it did that with line numbers. **All 22 of them were wrong, and they were already
+wrong at v1.38.1.** The cited range was 637 to 927 against a 1007-line file, and every spot check
+landed on unrelated markup: the pointer for `<main>` reached into `mermaid.js`'s tail, the one for
+`role="list"` on `.icon-list` at a wide-table row, the one for the rollup `.verdict` at the task
+list.
+
+**The cause is structural, not clerical.** A fixture is regenerated on every payload edit, so a
+line number rots on a change that has nothing to do with the requirement it names, and no check in
+the repo could see it happen. That is worse than a dead link: § 2 promises "a working example
+instead of only a sentence", so a wrong pointer sends a reader to markup that does not demonstrate
+the requirement and looks authoritative doing it.
+
+Renumbering all 22 was the other option on the table and it was rejected. It keeps the format and
+resets the same clock, and it needs a machine-readable token per requirement to gate at all, which
+is the entire cost of the fix that does not rot. **So each pointer is now a search string:**
+``(in `samples/dark.html`, search `class="tag-dot"`)``. `nu scripts/maintain.nu check` parses every
+pointer out of § 2 and fails when one stops matching the file it names, and it refuses to pass on
+fewer than 20 pointers so a bulk delete cannot make the gate vacuous. Three pointers moved to
+`samples/dark-timeline.html` in the rewrite, because the requirements they name were never
+demonstrated in `samples/dark.html` at all.
+
+### The one check that runs the payload
+
+`.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives the two inlined
+scripts, and asserts what a reader would see: eighteen assertions over `filter.js` scope, counts,
+group state and its restore path, and over `mermaid.js` rendering, zoom binding and the conditional
+region. Everything else in CI counts blocks, compares bytes or measures colors, and **none of those
+questions is "does this handler attach to anything".** Two defects prove the gap was real: the
+fixture shipped an inert `input.filter-box` from v1.16.0 to v1.21.0, and a click on a diagram opened
+nothing for several releases (see *Zoom*).
+
+- **It needs no new dependency, which is what changed the answer.** This sat in `backlog.md` for
+  releases on the stated cost of Node and jsdom. `render-modes.py` already shells out to headless
+  Chrome, so the probe is the same binary with `--dump-dom` instead of `--screenshot`, plus a driver
+  script appended to a scratch copy of the fixture. The driver writes its results into the DOM,
+  so reading them back is one regex.
+- **The mermaid half is network-dependent and says so out loud.** The pinned CDN is the one input
+  here that can be unavailable rather than broken, so reachability is probed first and reported as
+  a `SKIP`. A gate that goes quiet when the network does is worse than no gate.
+- **It refuses to pass on fewer than 13 assertions**, for the same reason every other vacuity floor
+  in the repo exists: a driver that throws halfway would otherwise publish a short, green list.
+- **Both halves were mutation-tested.** Moving `filter.js`'s scope walk up one level and making the
+  mermaid region unconditional each turned the gate red on the exact assertions that name them.
 
 ## Repo layout
 

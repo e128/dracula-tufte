@@ -110,6 +110,17 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
   exactly `  </style>`. Consumers slice the body out with `sed '1d;$d'`. This is a contract.
 - `tufte-dracula.css` carries its own `<style>` wrapper, and `mermaid.js` carries its own
   `<script>` wrapper. Do not add a second wrapper.
+- **Never cite a line number into a generated file.** Any document that points at
+  `samples/`, `tokens.css` or any other generated artifact points at a **string to search for**,
+  never at a line. A fixture is rewritten on every payload edit, so a line number rots on a change
+  that has nothing to do with what it names. `CONTRACT.md` § 2 carried 22 such references and every
+  one of them was wrong, undetected, for twelve releases. The form is
+  ``(in `samples/dark.html`, search `class="tag-dot"`)`` and `nu scripts/maintain.nu check` parses
+  and resolves every one of them.
+- **A gate that cannot reach its subject does not get written.** Say so in `NOTES.md` and leave the
+  obligation in prose. A check that skips the only instance it could test reports green about a
+  question it never asked, which is worse than the honest gap. This is why the `quadrantChart`
+  label length is prose and the `.step-node` accent is gated.
 
 ## A tag claims that the contract held. Verify the claim, never assume it
 
@@ -201,6 +212,18 @@ compositing must be computed in gamma-encoded sRGB, not linear, or a contrast ra
 tenths too bright.
 
 **When a claim rests on a mitigation, test the mitigation too, not just the defect.**
+
+**A behavioural claim about `mermaid.js` or `filter.js` is not verified until the script has run.**
+`.github/script-probe.py` drives both of them in the real fixture through the same headless Chrome.
+Add an assertion there when you change either file, and mutate the change to confirm the assertion
+fails without it. Every other check in this repo reads the payload; this is the only one that runs
+it, and it exists because the fixture shipped an inert `input.filter-box` for six releases and a
+diagram nobody could click for several more, all of it green.
+
+**Re-price a decline before you repeat it.** Three entries sat in `backlog.md` for releases on
+costs that were simply wrong: a jsdom dependency the repo did not need, a resize listener a media
+query replaces, and an `!important` that two real `themeVariables` made unnecessary. A recorded
+decline is a cost estimate with a date on it, not a verdict.
 
 ## Style decisions that are already settled
 
