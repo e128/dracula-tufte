@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.40.0 */
+    /* Dracula-Tufte (muted) v1.40.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -367,6 +367,7 @@
       transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .mermaid-zoom:active { scale: 0.96; }
     pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
+    pre.mermaid :is(.messageText, .pieTitleText, .legend > text, .labels > .label > text) { fill: var(--on-surface) !important; }
     pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
     pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule) !important; }
     pre.mermaid .cluster-label :is(p, span) { color: var(--on-surface) !important; }
