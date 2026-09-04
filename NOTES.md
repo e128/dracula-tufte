@@ -1263,6 +1263,37 @@ selector on the shared sheet for it.**
 `themeVariable`. There is no config surface in front of it. The repo leaves them alone for the
 reason the contrast budget gives: nothing puts a category fill beside body copy.
 
+**Diagram text that lands on the page ground, rather than on a node fill, was invisible in print.**
+Mermaid bakes its hex into the SVG at init, and print is a media query with no re-render, so a
+diagram themed for a dark page keeps painting `textColor` at `#f8f8f2` while `@media print` turns
+`--surface` white. Measured on paper: the pie title and legend, the `quadrantChart` axis labels and
+every `sequenceDiagram` message label were white on white, about 1.0:1. **Nothing in NOTES.md or in
+the print block had ever mentioned diagrams**, and no gate looks at printed output.
+
+The fix is one rule in the shape the `packet` override already uses,
+`fill: var(--on-surface) !important` on `:is(.messageText, .pieTitleText, .legend > text, .labels >
+.label > text)`. It resolves to exactly what Mermaid already paints on screen, `#f8f8f2` in dark
+and `#161616` in light, so **the screen appearance does not change in any mode** and print is
+repaired. High contrast gains a pure white, which is a small improvement.
+
+- **The selector list came from measuring every `text` and `tspan` in every fixture diagram, not
+  from reading Mermaid's class names.** That mattered: the obvious wider selectors are wrong in the
+  opposite direction. `g.quadrant > text` (the quadrant titles) and `g.data-point > text` (the
+  point labels) sit **on** the dark quadrant fill, so pulling them onto `--on-surface` would paint
+  them dark-on-dark in print. A denylist (`text:not(.slice, ...)`) fails the same way the first
+  time Mermaid adds an on-fill class, and that failure direction is invisible.
+- **What still escapes is the documented stress case, not a defect.** In print the overlong
+  `quadrantChart` point labels are faint where they run past the chart onto white paper. They are
+  light because inside the chart they sit on a dark fill, and they only leave it because the
+  fixture's labels are deliberately too long, which `CONTRACT.md` § 2 already bans.
+- **This covers the five diagram types the fixtures carry. It does not cover the fifteen they do
+  not.** A `gantt`, `class`, `state` or `journey` diagram puts text on the page ground too and will
+  print the same way. **The general fix is a dark ground for the diagram in print**, one rule plus a
+  `@media print and (prefers-color-scheme: light)` reset after it, which is correct for every type
+  at once. It was not taken here because it changes how every diagram prints, laying a dark block
+  on paper, and that is an ink decision for the sheet's owner rather than a defect repair. Print
+  already commits the diagram's dark node fills, so the option is live whenever it is wanted.
+
 **`pie` is the one diagram type that paints text directly onto a `--data-*` fill, and it took two
 coupled fixes.** Mermaid writes `.pieCircle { opacity: pieOpacity }` and `.slice { fill:
 pieSectionTextColor }`, so the slice percentage is a text-on-accent pair and the opacity decides
@@ -1610,13 +1641,23 @@ specificity. A consumer's plain `h1 { color: … }` therefore wins now, and noth
 to move.
 
 **The `!important` declarations became harder to override, not easier. That is the trade.** In the
-important half of the cascade the layer order reverses. The six `!important` rules in this sheet
-therefore beat a consumer's unlayered `!important`. Five of them fight Mermaid's inline `style`
-attributes, which nothing else can reach. The sixth is `.filter-hidden { display: none !important }`,
-where a consumer override means a filtered row stays on the page. **A consumer who genuinely needs
-to win declares an own layer ahead of this one.** A lift of those rules outside the layer was
-rejected. Three sit inside a media query, so it means a duplicate of two `@media` blocks outside the
-wrapper.
+important half of the cascade the layer order reverses, so every `!important` rule here beats a
+consumer's unlayered `!important`. **A consumer who genuinely needs to win declares an own layer
+ahead of this one.** A lift of those rules outside the layer was rejected: two of them sit inside a
+media query, so it would mean duplicating those `@media` blocks outside the wrapper.
+
+They fall in three groups, and the grouping is the useful part rather than the total. **This entry
+stated a count instead, and the count went stale by three without anyone noticing**, which is why
+the number is gone from `README.md` and why the list below is a list.
+
+- **Seven fight Mermaid**, which nothing else can reach. Five of those fight its *injected
+  stylesheet*, which is id-scoped and therefore beats any page-level class rule whatever the source
+  order: the `packet` overrides, the `cluster` fill and label, and the page-ground text rule. Two
+  fight its *inline `style` attributes*, both of them the conn-map and narrow-viewport svg sizing.
+- **`.filter-hidden { display: none !important }`**, where a consumer override means a filtered row
+  stays on the page.
+- **The `prefers-reduced-motion` reset**, which has to beat every transition and animation the
+  sheet declares.
 
 **One layer, not four.** `@layer reset, base, components, utilities` is advice for a stylesheet a
 consumer composes from parts and can reorder. This is one file, inlined verbatim, in a fixed order.

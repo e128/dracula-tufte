@@ -730,6 +730,21 @@ for section, source, lch_for in (
                 f"slice (--{slice_from}) is {got:.2f}:1, below 4.5"
             )
             fail = 1
+#     Mermaid bakes its hex at init and print is a media query with no re-render, so
+#     diagram text that lands on the page ground rather than on a node fill keeps
+#     painting `textColor` while --surface goes white. The pie title and legend, the
+#     quadrantChart axis labels and every sequenceDiagram message label measured about
+#     1.0:1 on paper. One rule pulls exactly those onto --on-surface, and it resolves to
+#     what Mermaid already paints on screen, so a delete is invisible in every render
+#     this repo makes. Nothing else here reads printed output, so the rule is pinned by
+#     name. The selector list is deliberately narrow: the quadrant titles and point
+#     labels sit ON a dark fill, and widening this to them paints dark on dark in print.
+PAGE_GROUND_TEXT = ".messageText, .pieTitleText, .legend > text, .labels > .label > text"
+if f"pre.mermaid :is({PAGE_GROUND_TEXT}) {{ fill: var(--on-surface) !important; }}" not in stylesheet:
+    print(f"DRIFT: tufte-dracula.css no longer pulls `{PAGE_GROUND_TEXT}` onto --on-surface. "
+          f"Mermaid paints those on the page ground, so in print they go white on white")
+    fail = 1
+
 if not re.search(r"pieOpacity:\s*'1'", mermaid_js):
     print("DRIFT: mermaid.js does not pin pieOpacity to '1'. Mermaid's 0.7 default "
           "composites every slice toward the card and drops it under the 3:1 floor "
