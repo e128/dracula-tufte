@@ -1000,6 +1000,17 @@ Unhidden, a screen reader announces the initial and then the `<strong>` title ri
 same information twice on every row. `.step-node` is the opposite case and keeps its letter as real
 text: a step chain carries no adjacent label for it to duplicate.
 
+**A step chain therefore names its steps in the sentence that introduces it, and every
+`.step-arrow` takes `aria-hidden="true"`.** The letter in a node is real text by the rule above, but
+one character is not a label. The fixture shipped `S`, `I`, `O`, `V` with nothing anywhere on the
+page expanding them, so the only instance of the component a consumer can copy decoded to nothing
+for any reader, sighted or not. A node is a circle with room for one character, so the words cannot
+go inside it, and no CSS rule can supply copy it did not write. They go in the prose. The arrow is
+the other half of the same defect: unhidden, a screen reader reads the glyph between every pair of
+steps, which is the duplication `.icon-chip` is hidden for. **Do not answer this with a
+visually-hidden label class.** The sheet has none, and adding one makes a payload API out of a
+problem one sentence of fixture copy already closes.
+
 **`.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`** is a linear process strip: circular
 nodes joined by an arrow glyph. It exists for a flow too trivial to justify a Mermaid diagram, three
 or four stages, no branching. It is not a Mermaid replacement. A graph with a branch or a loop still
@@ -1061,10 +1072,22 @@ left out, not missed.**
 their whole shape through a background fill alone, which forced colors suppresses the same way it
 suppresses a shadow. Without a border, the fill disappears: `.kicker` and `.icon-chip` read as bare
 text with no chip shape left, and `.step-node` loses its circle outright, leaving only the letter
-floating with no node and no per-step color. `.tag-dot` and `.live-dot` are not added there. Both sit
-beside text that already carries the same information, so a flattened dot loses no meaning, matching
-how `.verified` / `.unverified` / `.correction` already rely on color alone with no forced-colors
-override.
+floating with no node and no per-step color.
+
+**`.tag-dot` and `.live-dot` take `background: CanvasText` in that same block, and not a border.**
+Both were left out of the list once, on the reasoning that each sits beside text already carrying
+the same information, so a flattened dot loses no meaning. The meaning half of that holds. The
+rendering half was wrong, and a render is what settled it: any author background resolves to Canvas
+under forced colors, whether it came from `currentColor` on an empty `::before` or from a token, so
+the dot does not flatten, it vanishes. The fixture sentence then reads "the text beside it:  Rust,
+ Go,  Python" with an orphan gap where each marker was. A system color keyword is honored in that
+mode, so one declaration paints both dots back at the forced foreground. **Do not give either one a
+border instead.** Both are round and empty, so a border draws a ring around nothing where the
+component wants a disc.
+
+`.verified` / `.unverified` / `.correction` still need no override there, and the reason is the one
+the dots do not have. Those three color a glyph that forced colors keeps drawing, so they lose a
+hue. An empty element painted by its background has nothing left once the background goes.
 
 **A sticky element does not take `backdrop-filter` blur.** factory.strongdm.ai's frosted sticky
 panels were a seventh candidate here, and this repo already has a decision that rules them out: "A
