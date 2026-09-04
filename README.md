@@ -42,7 +42,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.39.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.40.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
@@ -59,13 +59,14 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.39.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.40.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
 
 1. What to inline (§ 1).
-2. The twenty-one markup requirements a generator owes (§ 2).
+2. The twenty-two markup requirements a generator owes (§ 2), each pointing at a string to search
+   for in a fixture rather than at a line number.
 3. What changed in each release (§ 3).
 4. How to detect a stale artifact (§ 4).
 5. What each pin mode costs (§ 5).
@@ -163,19 +164,30 @@ same thing. Together they verify:
 - Both Mermaid hex palettes against `mermaid-palette.json`.
 - The release gate's own refusals, through `nu scripts/maintain.nu selftest`.
 - That every generated file and every theme is freshly regenerated.
+- That every fixture pointer in [CONTRACT.md § 2](CONTRACT.md#2-emit-this-markup) still matches the
+  file it names.
 - That no em-dash and no en-dash appears in any tracked file.
 
+**One check runs the payload instead of reading it.** `.github/script-probe.py` loads
+`samples/dark.html` in headless Chrome, drives `filter.js` and `mermaid.js`, and asserts what a
+reader would see. Everything else counts blocks, compares bytes or measures colors, and none of
+that asks whether a handler attaches to anything: the fixture shipped an inert `input.filter-box`
+for six releases with every other check green.
+
 **One palette feeds several projections.** The `:root` block is the only source of color truth.
-`.github/palette-check.py` runs eight checks over it:
+`.github/palette-check.py` runs eleven checks over it:
 
 1. Hex projections in both Mermaid palettes.
-2. The `classdef` fills.
+2. The `classdef` fills, dark and light, and the letter each set paints on its own fill.
 3. The `/* was */` provenance comments.
 4. Stray hex in `mermaid.js`.
 5. Contrast floors in all four modes.
-6. `--mermaid-scheme` in both directions.
+6. `--mermaid-scheme` in both directions, and the scroll breakpoint pinned across two files.
 7. The sRGB gamut ceiling.
 8. The vividness bands.
+9. The inverted pairs, where an accent is the ground and `--surface` is the text.
+10. The two relative-color tokens.
+11. The pie slice label against every slice fill, and `pieOpacity`.
 
 **A measurement in prose is not a gate.** That is why those checks exist, and why
 [NOTES.md](NOTES.md) carries the decisions rather than the numbers.

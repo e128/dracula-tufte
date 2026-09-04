@@ -64,7 +64,7 @@ def "main check" [] {
   let js = (open --raw ($ROOT | path join "mermaid.js"))
   for section in [init initLight] {
     let entries = ($palette_json | get $section | transpose key entry | where key != "_comment")
-    if ($entries | length) < 19 {
+    if ($entries | length) < 20 {
       print $"mermaid-palette.json .($section) has only ($entries | length) keys, refusing to pass vacuously"
       $ok = false
     }
@@ -113,6 +113,50 @@ def "main check" [] {
     }
   }
 
+  # CONTRACT.md section 2 points at a fixture for most of its requirements, so a
+  # reader gets a working example instead of only a sentence. Those pointers used to
+  # be line numbers into a generated file, and all 22 of them were wrong by v1.38.1
+  # with every check green: a fixture is regenerated on every payload edit, so a line
+  # number rots on a change that has nothing to do with the requirement it names. They
+  # are search strings now, and this is the gate that keeps them true. A pointer that
+  # stops matching is a pointer that sends a consumer's generator to markup which does
+  # not demonstrate the requirement, and looks authoritative doing it.
+  let contract = (open --raw ($ROOT | path join "CONTRACT.md"))
+  # Whitespace-tolerant on purpose: a pointer wraps wherever the 100-column prose puts
+  # it, so `(in`, the filename, `search` and the string can each land on a new line.
+  let pointers = ($contract | parse --regex '\(in\s+`(?<file>samples/[\w.-]+)`,\s+search\s+`(?<needle>[^`]+)`\)')
+  if ($pointers | length) < 20 {
+    print $"CONTRACT.md section 2 has only ($pointers | length) fixture pointers, refusing to pass vacuously"
+    $ok = false
+  }
+  for p in $pointers {
+    let target = ($ROOT | path join $p.file)
+    if not ($target | path exists) {
+      print $"CONTRACT: pointer names ($p.file), which does not exist"
+      $ok = false
+    } else if not ((open --raw $target) | str contains $p.needle) {
+      print $"CONTRACT: ($p.file) no longer contains `($p.needle)`, so that requirement points at nothing"
+      $ok = false
+    }
+  }
+  if $ok { print $"CONTRACT pointers resolve \(($pointers | length) search strings)." }
+
+  # `--icon-color` on a `.step-node` arrives in an inline style attribute, so no CSS
+  # rule and no palette check can see it. CONTRACT.md section 2 bans the `--data-*`
+  # ramp there: the node fills at full strength and its letter is `--surface` painted
+  # on that fill, which measures 3.45 to 3.53:1 in light mode, under the text floor.
+  # This catches the repo's own fixtures only. It cannot reach a consumer, and that is
+  # stated in CONTRACT.md rather than pretended away here.
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+    let body = (open --raw ($ROOT | path join $f))
+    for n in ($body | parse --regex '<span class="step-node"(?<attrs>[^>]*)>') {
+      if ($n.attrs =~ '--icon-color:\s*var\(--data-') {
+        print $"($f): a .step-node takes --icon-color from the --data-* ramp, which CONTRACT.md section 2 bans"
+        $ok = false
+      }
+    }
+  }
+
   # samples/light*.html are the dark pages with the light condition forced on and the
   # contrast condition forced off. If the stylesheet renames either one,
   # `str replace` no-ops and the preview ships the default palette while still
@@ -139,6 +183,21 @@ def "main check" [] {
   print ($modes.stdout | str trim)
   if $modes.exit_code != 0 {
     print ($modes.stderr | str trim)
+    $ok = false
+  }
+
+  # The only check that runs the payload instead of reading it. Everything above
+  # counts blocks, compares bytes and measures colors, and none of that asks whether
+  # an inlined handler attaches to anything: `samples/dark.html` shipped an inert
+  # filter box for six releases, and a click on a diagram opened nothing for several
+  # more. script-probe.py drives both scripts in the real fixture and asserts what a
+  # reader would see. It skips its mermaid half loudly when the pinned CDN is
+  # unreachable, rather than passing quietly.
+  let probe = (^python3 ($ROOT | path join ".github/script-probe.py") | complete)
+  print ($probe.stdout | lines | last)
+  if $probe.exit_code != 0 {
+    print ($probe.stdout | lines | where {|l| $l | str starts-with "BINDING" } | str join "\n")
+    print ($probe.stderr | str trim)
     $ok = false
   }
 

@@ -201,7 +201,7 @@ for section, source in (("init", palette), ("initLight", light_palette)):
         fail = 1
         continue
     keys = [k for k in pal[section] if k != "_comment"]
-    if len(keys) < 19:
+    if len(keys) < 20:
         sys.exit(f"{section} has only {len(keys)} keys, refusing to pass vacuously.")
     for key in keys:
         entry = pal[section][key]
@@ -219,17 +219,57 @@ for section, source in (("init", palette), ("initLight", light_palette)):
 # 2. Each classdef fill is exactly the variable its `from` field names, and that is
 #    what makes `from` load-bearing here too. stroke/color are shared across every
 #    role rather than named, so those get a membership check.
-for role, entry in pal["classdef"].items():
-    if role == "_comment":
-        continue
-    want = palette.get(entry["from"].lstrip("-"))
-    if entry["fill"] != want:
-        print(f"DRIFT: classdef.{role} fill is {entry['fill']}, {entry['from']} computes to {want}")
+#
+#    Both sets are checked, each against its own palette. `classdef` shipped alone and
+#    dark-only for four releases, so a generator that emitted its hex onto a page a
+#    reader could see in light mode painted dark-ramp fills at the 1.69 to 2.15:1 the
+#    --data-* light values were added to fix everywhere else. `classdefLight` is that
+#    projection, and the role sets are pinned equal so a role added to one set cannot
+#    stay missing from the other.
+#    Each set names the token its `color` field projects, because that field is text
+#    painted on the fill and the two sets answer it in opposite directions: the dark
+#    ramp is pale so the letter is --surface, the light ramp is mid-tone so the letter
+#    is --on-surface. That pair is measured, not asserted, which is what caught the
+#    light set at 3.45 to 3.53:1 had it reused --surface.
+CLASSDEF = (
+    ("classdef", palette, triples, "surface"),
+    ("classdefLight", light_palette, light_triples, "on-surface"),
+)
+for section, source, lch_for, text_token in CLASSDEF:
+    if section not in pal:
+        print(f"DRIFT: mermaid-palette.json has no {section} section")
         fail = 1
-    for found in (entry["stroke"], entry["color"]):
-        if found not in palette.values():
-            print(f"DRIFT: classdef.{role} hex {found} is not a tufte-dracula.css palette color")
+        continue
+    for role, entry in pal[section].items():
+        if role == "_comment":
+            continue
+        want = source.get(entry["from"].lstrip("-"))
+        if entry["fill"] != want:
+            print(f"DRIFT: {section}.{role} fill is {entry['fill']}, {entry['from']} computes to {want}")
             fail = 1
+        for found in (entry["stroke"], entry["color"]):
+            if found not in source.values():
+                print(f"DRIFT: {section}.{role} hex {found} is not a tufte-dracula.css palette color")
+                fail = 1
+        if entry["color"] != source[text_token]:
+            print(
+                f"DRIFT: {section}.{role} color is {entry['color']}, but this set paints "
+                f"--{text_token} ({source[text_token]}) on its fill"
+            )
+            fail = 1
+        elif want is not None:
+            got = contrast(lch_for[text_token], lch_for[entry["from"].lstrip("-")])
+            if got + 0.005 < 4.5:
+                print(
+                    f"CONTRAST: {section}.{role} paints --{text_token} on its "
+                    f"{entry['from']} fill at {got:.2f}:1, below 4.5"
+                )
+                fail = 1
+    if {r for r in pal[section] if r != "_comment"} != {
+        r for r in pal["classdef"] if r != "_comment"
+    }:
+        print(f"DRIFT: {section} and classdef cover different node roles")
+        fail = 1
 
 # 3. The `/* was #xxxxxx */` provenance comments are read by whoever hand-edits
 #    the stylesheet, so they have to stay true too. `.get`, not `[name]`: a token
@@ -357,9 +397,28 @@ for where, want, block_text in (
 if "--mermaid-scheme" not in mermaid_js:
     print("DRIFT: mermaid.js never reads --mermaid-scheme, so a diagram cannot follow the palette")
     fail = 1
-if "matchMedia" in mermaid_js:
-    print("DRIFT: mermaid.js reads matchMedia, which reports the host, not the cascade, "
-          "so the forced-light sample pages would render a dark diagram")
+if "prefers-color-scheme" in mermaid_js:
+    print("DRIFT: mermaid.js reads prefers-color-scheme, which reports the host, not the "
+          "cascade, so the forced-light sample pages would render a dark diagram. Read "
+          "--mermaid-scheme off the computed style instead")
+    fail = 1
+
+#    mermaid.js decides whether a `pre` is a scrollable region from the same width the
+#    stylesheet gives it `overflow-x: auto`, and the two carry that number separately.
+#    A breakpoint moved on one side alone puts the tab stop where nothing scrolls, or
+#    takes it away from where something does, and neither shows up in a render of the
+#    other side. So the literal is pinned in both files.
+SCROLL_BREAKPOINT = "(max-width: 600px)"
+if f"@media {SCROLL_BREAKPOINT}" not in stylesheet:
+    print(f"DRIFT: tufte-dracula.css has no `@media {SCROLL_BREAKPOINT}` block, which is "
+          f"where pre.mermaid gets its scroll axis")
+    fail = 1
+#    The match is against the matchMedia call, not the file: mermaid.js names the same
+#    breakpoint in the comment beside it, and a bare substring check passed on that
+#    comment while the live query said 700px. Caught by mutating it.
+if f"matchMedia('{SCROLL_BREAKPOINT}')" not in mermaid_js:
+    print(f"DRIFT: mermaid.js does not call matchMedia('{SCROLL_BREAKPOINT}'), so the "
+          f"diagram region no longer tracks the width at which pre.mermaid can scroll")
     fail = 1
 
 # 7. Every declared chroma has to be reachable in sRGB, in every mode. A value above
@@ -637,6 +696,45 @@ for name in ("purple-bright", "highlight"):
             f"file can parse, so nothing measures it in any mode"
         )
         fail = 1
+
+# 11. A pie slice label is the one place a themeVariable lands ON another
+#     themeVariable, so check 5 cannot see it: it measures every token against
+#     --surface, --code-bg and --surface-alt, and a slice is none of those. Mermaid
+#     draws `.slice { fill: pieSectionTextColor }` over `.pieCircle { fill: pieN }`,
+#     and its stock single `textColor` cannot serve both palettes, because the fills
+#     are pale in dark mode and mid-tone in light. Measured before this check existed:
+#     a dark-mode slice label was #f8f8f2 on a pale fill at 1.81:1 flat.
+#
+#     `pieOpacity` is pinned to '1' in the same breath. Mermaid defaults it to 0.7, and
+#     a slice composited at 0.7 measured 2.15 to 2.22:1 against the light card even
+#     after the --data-* ramp cleared 3.2:1 flat, so the opacity is what the ramp's own
+#     floor depends on. It is not a color, so nothing else in this file or in
+#     contract-check.yml would notice it going back to the default.
+for section, source, lch_for in (
+    ("init", palette, triples),
+    ("initLight", light_palette, light_triples),
+):
+    label = pal.get(section, {}).get("pieSectionTextColor")
+    if label is None:
+        print(f"DRIFT: {section} declares no pieSectionTextColor, so a slice label falls "
+              f"back to mermaid's single textColor, which one palette always fails")
+        fail = 1
+        continue
+    text = lch_for[label["from"].lstrip("-")]
+    for i in (1, 2, 3, 4):
+        slice_from = pal[section][f"pie{i}"]["from"].lstrip("-")
+        got = contrast(text, lch_for[slice_from])
+        if got + 0.005 < 4.5:
+            print(
+                f"CONTRAST: {section} pieSectionTextColor ({label['from']}) on a pie{i} "
+                f"slice (--{slice_from}) is {got:.2f}:1, below 4.5"
+            )
+            fail = 1
+if not re.search(r"pieOpacity:\s*'1'", mermaid_js):
+    print("DRIFT: mermaid.js does not pin pieOpacity to '1'. Mermaid's 0.7 default "
+          "composites every slice toward the card and drops it under the 3:1 floor "
+          "the --data-* ramp is gated to")
+    fail = 1
 
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)

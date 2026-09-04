@@ -149,6 +149,14 @@ jobs:
         # one it uses a temp dir. CI wants the files, so it names a gitignored path.
         run: python3 .github/render-modes.py mode-renders
 
+      - name: The inlined scripts must still bind
+        # Every other step counts blocks, compares bytes or measures colors, and none
+        # of them asks whether a handler attaches to anything. samples/dark.html
+        # shipped an inert input.filter-box from v1.16.0 to v1.21.0 with every check
+        # green. This drives both inlined scripts in the real fixture through the same
+        # headless Chrome the render step uses, and asserts observable behaviour.
+        run: python3 .github/script-probe.py
+
       - name: Upload the mode renders
         # Advisory, and deliberately not in scripts/maintain.nu's REQUIRED_CHECKS: the
         # assertions above are the gate, and these images are for a human to

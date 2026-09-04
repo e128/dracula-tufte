@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.e128.dracula-tufte</id>
   <name>Dracula-Tufte (muted)</name>
-  <version>1.39.0</version>
+  <version>1.40.0</version>
   <vendor>e128</vendor>
 
   <description><![CDATA[

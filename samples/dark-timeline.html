@@ -6,7 +6,7 @@
   <title>Tufte-Dracula timeline layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.39.0 */
+    /* Dracula-Tufte (muted) v1.40.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -556,6 +556,7 @@
       noteTextColor:       '#f8f8f2',
       noteBorderColor:     '#707388',
       pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
+      pieSectionTextColor: '#282a36',
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
@@ -574,6 +575,7 @@
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
       pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
+      pieSectionTextColor: '#161616',
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
@@ -583,6 +585,7 @@
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
+        pieOpacity: '1',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });
@@ -609,6 +612,29 @@
       overlay.showModal();
       requestAnimationFrame(() => overlay.classList.add('active'));
     };
+    // A labelled region is worth a tab stop only where the pre can actually scroll,
+    // which tufte-dracula.css confines to the same (max-width: 600px) block. Above it
+    // the pre is `overflow: visible`, so the stop reached a container with nothing to
+    // scroll and no action of its own, and its label repeated the name the SVG already
+    // exposes as its graphics-document. The media query is the exact condition the CSS
+    // uses, so this cannot go stale against a resize the way a scrollWidth probe would.
+    const scrolls = window.matchMedia('(max-width: 600px)');
+    const syncRegions = () => {
+      document.querySelectorAll('pre.mermaid').forEach(pre => {
+        const svg = pre.querySelector('svg');
+        if (!svg) return;
+        if (scrolls.matches) {
+          pre.tabIndex = 0;
+          pre.setAttribute('role', 'region');
+          pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
+        } else {
+          pre.removeAttribute('tabindex');
+          pre.removeAttribute('role');
+          pre.removeAttribute('aria-label');
+        }
+      });
+    };
+    scrolls.addEventListener('change', syncRegions);
     const zoomBound = new WeakSet();
     document.querySelectorAll('pre.mermaid').forEach(pre => {
       new MutationObserver(() => {
@@ -619,9 +645,7 @@
           svg.addEventListener('click', e => { if (!e.target.closest('a')) zoom(svg); });
         }
         if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
-        pre.tabIndex = 0;
-        pre.setAttribute('role', 'region');
-        pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
+        syncRegions();
         if (!pre.querySelector('.mermaid-zoom')) {
           const button = document.createElement('button');
           button.type = 'button';
