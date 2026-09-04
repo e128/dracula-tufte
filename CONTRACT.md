@@ -11,8 +11,9 @@ any.
 
 Two limits on that, and both are stated where they apply rather than left for you to discover.
 **Most requirements below are modelled in `samples/dark.html`, a few only in
-`samples/dark-timeline.html`, and three in no fixture at all**, which each of those three says in
-its own bullet. **One requirement the fixture deliberately breaks:** its `quadrantChart` carries
+`samples/dark-timeline.html`, two only in `samples/dark-charts.html`, and three in no fixture at
+all**, which each of those three says in its own bullet.
+**One requirement the fixture deliberately breaks:** its `quadrantChart` carries
 two overlong point labels on purpose, as the stress case for a stylesheet rule that has to survive
 them. That bullet is the one place to follow this file and not the fixture, and it says so.
 
@@ -38,11 +39,12 @@ page that also inlines `mermaid.js`.** A page with no ` ```mermaid ` fence needs
 with no script to open it is dead markup.
 
 **Take the CSS from `tufte-dracula.css`, never from a page.** `samples/light.html`,
-`samples/light-conn-map.html` and `samples/light-timeline.html` exist so a reader can see the light
-palette on a dark-mode machine. They carry a stylesheet whose `@media` conditions were rewritten to
-force that, so a copy taken from one of them is locked to light and can never follow a reader's
-system appearance. Each says so in a banner. `samples/dark.html`, `samples/dark-conn-map.html` and
-`samples/dark-timeline.html` do carry the payload verbatim, but the file is still the source.
+`samples/light-conn-map.html`, `samples/light-timeline.html` and `samples/light-charts.html` exist
+so a reader can see the light palette on a dark-mode machine. They carry a stylesheet whose
+`@media` conditions were rewritten to force that, so a copy taken from one of them is locked to
+light and can never follow a reader's system appearance. Each says so in a banner.
+`samples/dark.html`, `samples/dark-conn-map.html`, `samples/dark-timeline.html` and
+`samples/dark-charts.html` do carry the payload verbatim, but the file is still the source.
 
 **Do not inline a second `<style>` block that re-declares `:root` inside
 `@media (prefers-color-scheme: light)`.** A generator that adds its own "force dark" block after
@@ -55,7 +57,7 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Twenty-two requirements. No stylesheet change can supply any of them. Most name a string to search
+Twenty-four requirements. No stylesheet change can supply any of them. Most name a string to search
 for in a fixture, so you have a working example instead of only a sentence. The few with no fixture
 yet say so.
 
@@ -175,6 +177,30 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       for `pre.mermaid svg { overflow: visible }`, so do not copy their length (in
       `samples/dark.html`, search `quadrantChart`). **This is the one requirement the fixture
       deliberately breaks, so follow this bullet and not the fixture.**
+- [ ] `--bar` on every `td.bar` inside a `table.bar-chart`, as a percentage, with the value itself
+      as text in that same cell (in `samples/dark-charts.html`, search
+      `class="bar" style="--bar: 52%`). The band is a background image, so `forced-colors: active`
+      drops it and so does a reader who prints with background graphics off: a cell whose only
+      content is the band then states nothing at all, while a cell that also carries the number
+      loses only the second reading of it. Say in the `<caption>` what the percentage is a share
+      of, because the component draws no axis and a bare band implies one. **The band has no color
+      property, and that is deliberate:** it is a 0.3 alpha wash of `--data-1` in every row, which
+      is the alpha the number sitting on top of it needs (check 12 of `palette-check.py` measures
+      that pair in all four modes). A per-row hue was measured out, because four washes at that
+      alpha land within Lc 2 of each other and cannot carry a category. Put the category in the row
+      label.
+- [ ] `role="img"` plus an `aria-label` naming every slice and its value on every `.pie-chart`,
+      and `--p1` through `--p4` carrying each slice's **own** share as a unitless number, never a
+      running total (in `samples/dark-charts.html`, search `class="pie-chart" role="img"`). The
+      element has no content of its own, so an unlabelled one announces nothing, and the rule adds
+      the shares up itself, so cumulative values draw the wrong chart. Repeat the values in a
+      visible caption or legend as well (the fixture uses `.tag-dot` spans), because a sighted
+      reader cannot measure a wedge either and the pie is hidden outright in
+      `forced-colors: active`, where a conic gradient does not paint. **Four slices is the
+      ceiling**, since `--data-1` through `--data-4` is the whole contrast-checked ramp. A fifth
+      category is a `table.bar-chart`, which is also the better chart for ranking anything: Tufte's
+      objection to the pie holds, and this template themes one so that a consumer who wants a
+      part-to-whole share gets a legible one instead of inventing it.
 - [ ] Every `.step-node` after the first, together with the `.step-arrow` in front of it, wrapped in
       one `.step-hop` (in `samples/dark.html`, search `class="step-hop"`). `.step-chain` wraps at a narrow measure, and an
       arrow and its node are two separate flex items unless paired: a wrap can then land between
@@ -223,6 +249,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.42.0 | nothing, unless you draw a chart, and then two new § 2 requirements apply. **Two chart components ship: `table.bar-chart` and `.pie-chart`.** Both are CSS over markup you write yourself, with no script, no CDN and no build step, so a page keeps them offline. A bar chart is an ordinary table with the class on it: the band paints inside the cell that already holds the number, sized by a `--bar` percentage, at a 0.3 alpha wash of `--data-1` so the number on top of it stays clear of the text floor in all four modes. The band takes no color of its own, because a wash at that alpha cannot carry a category (four of them measure within Lc 2 of each other), so the row label carries it. A pie is one `conic-gradient` over `--p1` to `--p4`, each one that slice's own share and not a running total, capped at the four members of the `--data-*` ramp and separated by a gap of the page ground, because the ramp holds one lightness and two touching slices otherwise meet on hue alone at 1.00 to 1.02:1. Both need `print-color-adjust: exact` to survive a reader printing with background graphics off, which is measured rather than assumed, and **`.tag-dot` joined that pin**: the dot has painted a `currentColor` background since v1.33.0 with no print rule, so a printed legend lost every marker and kept the gaps. Nothing to change in your markup either way. In `forced-colors: active` the bar band goes and every number stays, and the pie is hidden, because a conic gradient does not paint there and an empty ring states less than nothing. `samples/dark-charts.html` and its forced-light twin are the fixture, and they carry the guidance too: reach for the bar chart first |
 | v1.41.1 | nothing. A code block no longer draws broken boxes through itself in Windows High Contrast and any other `forced-colors: active` mode. `code` takes a 1px outline there, because forced colors drops the fill that bounded it, and `pre > code` is `display: inline`, so that border fragmented across every line of a code block as broken boxes with rules through the code. `pre code { border: none }` undoes it; the `pre` keeps its own accent bar, so the block stays bounded. Self-contained over markup you already emit. The forced-colors block also has coverage for the first time: eight structural assertions in `.github/script-probe.py`, because that mode's correctness is not a color and a pixel check cannot see it |
 | v1.41.0 | nothing, and three things print or announce better. **Printed diagrams are readable again in full.** v1.40.1 recolored four text classes onto `--on-surface`, which covered the five diagram types the fixtures carry and left every other type printing light text on white paper. That is replaced: in `@media print` a `pre.mermaid` re-declares the five palette tokens its own rules resolve through and takes its ground from them, so the diagram keeps the palette Mermaid baked into it at init and no rule has to know which class sits on which fill. `print-color-adjust: exact` is what makes it survive Chrome printing with background graphics off. A light-themed diagram is unaffected. **Both pie strokes are themed**, where Mermaid defaulted them to literal `black`: `pieStrokeColor` is `--surface` so slices are separated by a gap, and `pieOuterStrokeColor` is `--muted`, the hairline weight the rest of the sheet uses. **A `pre.mermaid` region below 600px is now named `Scrollable diagram`** rather than the diagram's own title, which the SVG already exposes as its `graphics-document` name, so a screen reader no longer reads that title twice on entry. Override it with `window.mermaidRegionLabel`. All three are self-contained over markup you already emit |
 | v1.40.1 | nothing, and your printed pages get their diagram text back. Mermaid bakes its hex into the SVG at init, and print is a media query with no re-render, so a diagram themed for a dark page kept painting text at `#f8f8f2` while `@media print` turned the page white: the pie title and legend, the `quadrantChart` axis labels and every `sequenceDiagram` message label printed white on white. One rule pulls exactly those onto `--on-surface`, which is what Mermaid already paints on screen in both palettes, so nothing changes on screen. A self-contained stylesheet change over markup you already emit. It covers the five diagram types the fixtures carry; a `gantt`, `class`, `state` or `journey` diagram still prints its page-ground text light, and NOTES.md records the general fix and why it was not taken |

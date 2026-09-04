@@ -52,7 +52,7 @@ import zlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-FIXTURES = ["samples/dark.html", "samples/dark-conn-map.html", "samples/dark-timeline.html"]
+FIXTURES = ["samples/dark.html", "samples/dark-conn-map.html", "samples/dark-timeline.html", "samples/dark-charts.html"]
 
 # surface is the expected top-left pixel: `body { background: var(--surface) }`.
 # dark is the default palette, so no condition of its own, and it is what shows when
