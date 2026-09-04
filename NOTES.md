@@ -1270,29 +1270,44 @@ diagram themed for a dark page keeps painting `textColor` at `#f8f8f2` while `@m
 every `sequenceDiagram` message label were white on white, about 1.0:1. **Nothing in NOTES.md or in
 the print block had ever mentioned diagrams**, and no gate looks at printed output.
 
-The fix is one rule in the shape the `packet` override already uses,
-`fill: var(--on-surface) !important` on `:is(.messageText, .pieTitleText, .legend > text, .labels >
-.label > text)`. It resolves to exactly what Mermaid already paints on screen, `#f8f8f2` in dark
-and `#161616` in light, so **the screen appearance does not change in any mode** and print is
-repaired. High contrast gains a pure white, which is a small improvement.
+**v1.40.1 recolored the text. v1.41.0 replaced that with giving the diagram back its palette, and
+the second answer is the right one.** The first fix pulled four measured classes onto
+`--on-surface`. It worked, and it only ever covered the five diagram types the fixtures carry: a
+`gantt`, `class`, `state` or `journey` diagram puts text on the page ground too and printed exactly
+as badly. Enumerating classes per diagram type is a list that grows with Mermaid and rots quietly.
 
-- **The selector list came from measuring every `text` and `tspan` in every fixture diagram, not
-  from reading Mermaid's class names.** That mattered: the obvious wider selectors are wrong in the
-  opposite direction. `g.quadrant > text` (the quadrant titles) and `g.data-point > text` (the
-  point labels) sit **on** the dark quadrant fill, so pulling them onto `--on-surface` would paint
-  them dark-on-dark in print. A denylist (`text:not(.slice, ...)`) fails the same way the first
-  time Mermaid adds an on-fill class, and that failure direction is invisible.
-- **What still escapes is the documented stress case, not a defect.** In print the overlong
-  `quadrantChart` point labels are faint where they run past the chart onto white paper. They are
-  light because inside the chart they sit on a dark fill, and they only leave it because the
-  fixture's labels are deliberately too long, which `CONTRACT.md` § 2 already bans.
-- **This covers the five diagram types the fixtures carry. It does not cover the fifteen they do
-  not.** A `gantt`, `class`, `state` or `journey` diagram puts text on the page ground too and will
-  print the same way. **The general fix is a dark ground for the diagram in print**, one rule plus a
-  `@media print and (prefers-color-scheme: light)` reset after it, which is correct for every type
-  at once. It was not taken here because it changes how every diagram prints, laying a dark block
-  on paper, and that is an ink decision for the sheet's owner rather than a defect repair. Print
-  already commits the diagram's dark node fills, so the option is live whenever it is wanted.
+**The diagram is a dark object on a white page, so treat it as one.** In `@media print`,
+`pre.mermaid` re-declares the five palette tokens its own rules resolve through, and takes
+`background: var(--surface)` from the frozen value:
+
+```css
+--surface  --on-surface  --code-bg  --purple  --muted
+```
+
+Custom properties inherit, so every `var()` inside the diagram then resolves the way the SVG was
+themed, and nothing has to know which class sits on which fill. That is what makes this correct for
+diagram types with no fixture: it never names a class.
+
+- **Freeze every token any `pre.mermaid` rule reads, or the half you miss goes dark on dark.** The
+  first attempt set only the background. The `packet` overrides then resolved `--on-surface` to the
+  paper palette, so the `packetTitle` and the byte labels printed dark text on the new dark ground:
+  the same defect, one component over, caught by rendering a PDF rather than by reading the rule.
+  `--rule` needs no entry of its own, because it is `var(--muted)` and follows the frozen one.
+- **`print-color-adjust: exact` is load-bearing, and it was verified, not assumed.** Chrome prints
+  no background colors by default. A plain background is dropped and the light text lands on white
+  paper again, which is the original defect wearing a new hat. Checked by rendering a PDF with
+  backgrounds suppressed: the plain block vanishes and the `exact` one survives. Both the standard
+  property and `-webkit-` are pinned by `palette-check.py`, along with all five frozen literals.
+- **A light-themed diagram needs none of it**, because it is already dark-on-light. A trailing
+  `@media print and (prefers-color-scheme: light)` block `unset`s all five and drops the ground.
+  `unset` on an inherited custom property falls back to the inherited value, which is the paper
+  palette, so the light diagram prints as it always did. The block sits after `@media print` on
+  purpose: media queries add no specificity, so source order is what lets it win.
+- **The overlong `quadrantChart` point labels print correctly now too.** They were faint under the
+  first fix, because they are light for the in-chart case and only leave the dark fill when a label
+  is too long, which `CONTRACT.md` § 2 already bans. With the diagram carrying its own ground there
+  is no white paper for them to escape onto, so the stress case stopped being a print defect
+  without the fixture changing.
 
 **`pie` is the one diagram type that paints text directly onto a `--data-*` fill, and it took two
 coupled fixes.** Mermaid writes `.pieCircle { opacity: pieOpacity }` and `.slice { fill:
@@ -1311,6 +1326,14 @@ than by reading tokens.
   `.pieCircle`'s opacity had to be fought in CSS. It does not: both values are real
   `themeVariables` in mermaid 11.17.2, confirmed against the pinned `pieDiagram` chunk before the
   edit and by a render after it.
+- **Both pie strokes are themed as of v1.41.0, and Mermaid defaults both to literal `black`.** That
+  is not a palette color in any of the four modes, and a 2px black keyline around a pale slice on a
+  dark card reads as a foreign object rather than as a boundary. `pieStrokeColor` is `--surface`,
+  so adjacent slices are separated by the ground they sit on and the separator is a gap rather than
+  a line. `pieOuterStrokeColor` is `--muted`, which is `--rule`'s own value, so the outer ring is
+  the same hairline weight every other boundary in the sheet uses. The slice fills already clear
+  the 3:1 non-text floor against both grounds, so neither stroke is carrying a contrast
+  requirement: they are separation, and check 1 pins both hexes to the tokens they name.
 
 `samples/dark.html` carries a `pie showData` fence as of v1.40.0. Its absence is why this went
 unmeasured for four releases, which is the *Fixtures are coverage* rule stated from the other end.
@@ -1534,8 +1557,23 @@ manual `opener` variable and its `.focus()` call are gone with the code that mad
 **The zoom button is named from the diagram, not from a constant.** A hard-coded label gives a page
 with several diagrams several identically named buttons. Mermaid writes each fence's `accTitle:`
 into the SVG's root `<title>`. `aria-label` is therefore `label + ': ' + title`, and the visible
-text stays short. The overlay takes the same name on open, and the `pre` region takes the bare
-title where it exists at all.
+text stays short. The overlay takes the same name on open.
+
+**The `pre` region is named for what the container is, not for the diagram inside it.** It used to
+take the bare title, and the SVG exposes that same string as its own `graphics-document` name by
+construction, so a screen reader read the diagram title, the word "region", and the diagram title
+again on entry. The label is now `window.mermaidRegionLabel || 'Scrollable diagram'`, following the
+same override convention as `mermaidZoomLabel` and `mermaidSecurityLevel`. Identification stays on
+the node that actually is the diagram, which is where a reader can act on it.
+
+**The trade is that several regions on one page now share a name**, where before each was unique.
+That was weighed rather than ignored. The duplication cost is paid on every entry into every
+diagram; the shared-name cost is paid only by a reader browsing a region list, only below 600px
+where the region exists at all, and each of those regions still contains a uniquely named diagram
+one step in. **Do not "fix" this by putting the title back in the label.** That restores the
+duplication this removed. The zoom button keeps its title-derived name for a different reason,
+stated above: buttons are actionable and get listed, so identical names there really do lose
+information.
 
 **`pre.mermaid` is a labelled region only at the widths where it can scroll, and that one change
 answered two recorded defects at once.** The tab stop exists for the narrow-viewport
@@ -1574,9 +1612,10 @@ the price of keyboard access. Above it there is no region, no tab stop and no du
   `mermaid.js` separately, and a move on one side alone either puts the tab stop where nothing
   scrolls or takes it from where something does. Neither shows up in a render of the other side.
 
-`window.mermaidZoomLabel` overrides the label word. It follows the `window.mermaidSecurityLevel`
-convention. Both strings were hard-coded English in a file consumers inline verbatim. That is the
-same constraint that made the overlay's close cue a glyph.
+`window.mermaidZoomLabel` overrides the label word and `window.mermaidRegionLabel` the region's.
+Both follow the `window.mermaidSecurityLevel` convention. All three strings were hard-coded English
+in a file consumers inline verbatim. That is the same constraint that made the overlay's close cue
+a glyph.
 
 **`accTitle` and `accDescr` are consumer obligations.** They are fence directives, so no stylesheet
 change can supply them. Without them the SVG is a `graphics-document` with no accessible name.
@@ -1650,10 +1689,10 @@ They fall in three groups, and the grouping is the useful part rather than the t
 stated a count instead, and the count went stale by three without anyone noticing**, which is why
 the number is gone from `README.md` and why the list below is a list.
 
-- **Seven fight Mermaid**, which nothing else can reach. Five of those fight its *injected
+- **Six fight Mermaid**, which nothing else can reach. Four of those fight its *injected
   stylesheet*, which is id-scoped and therefore beats any page-level class rule whatever the source
-  order: the `packet` overrides, the `cluster` fill and label, and the page-ground text rule. Two
-  fight its *inline `style` attributes*, both of them the conn-map and narrow-viewport svg sizing.
+  order: the `packet` overrides and the `cluster` fill and label. Two fight its *inline `style`
+  attributes*, both of them the conn-map and narrow-viewport svg sizing.
 - **`.filter-hidden { display: none !important }`**, where a consumer override means a filtered row
   stays on the page.
 - **The `prefers-reduced-motion` reset**, which has to beat every transition and animation the

@@ -29,6 +29,7 @@
       noteBorderColor:     '#707388',
       pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
       pieSectionTextColor: '#282a36',
+      pieStrokeColor: '#282a36', pieOuterStrokeColor: '#979fc4',
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
@@ -48,6 +49,7 @@
       noteBorderColor:     '#7b7f94',
       pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
       pieSectionTextColor: '#161616',
+      pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
@@ -64,6 +66,7 @@
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog> as the first child of <body>');
     const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const regionLabel = window.mermaidRegionLabel || 'Scrollable diagram';
     const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
     const named = (svg, label) => {
       const title = titleOf(svg);
@@ -98,7 +101,12 @@
         if (scrolls.matches) {
           pre.tabIndex = 0;
           pre.setAttribute('role', 'region');
-          pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
+          // Named for what the container IS, not for the diagram inside it. The label
+          // used to be the SVG's own <title>, which the SVG already exposes as its
+          // graphics-document name, so a screen reader read the diagram title, the word
+          // region, and the diagram title again on entry. Identification belongs on the
+          // node that is the diagram.
+          pre.setAttribute('aria-label', regionLabel);
         } else {
           pre.removeAttribute('tabindex');
           pre.removeAttribute('role');

@@ -730,19 +730,50 @@ for section, source, lch_for in (
                 f"slice (--{slice_from}) is {got:.2f}:1, below 4.5"
             )
             fail = 1
-#     Mermaid bakes its hex at init and print is a media query with no re-render, so
-#     diagram text that lands on the page ground rather than on a node fill keeps
-#     painting `textColor` while --surface goes white. The pie title and legend, the
-#     quadrantChart axis labels and every sequenceDiagram message label measured about
-#     1.0:1 on paper. One rule pulls exactly those onto --on-surface, and it resolves to
-#     what Mermaid already paints on screen, so a delete is invisible in every render
-#     this repo makes. Nothing else here reads printed output, so the rule is pinned by
-#     name. The selector list is deliberately narrow: the quadrant titles and point
-#     labels sit ON a dark fill, and widening this to them paints dark on dark in print.
-PAGE_GROUND_TEXT = ".messageText, .pieTitleText, .legend > text, .labels > .label > text"
-if f"pre.mermaid :is({PAGE_GROUND_TEXT}) {{ fill: var(--on-surface) !important; }}" not in stylesheet:
-    print(f"DRIFT: tufte-dracula.css no longer pulls `{PAGE_GROUND_TEXT}` onto --on-surface. "
-          f"Mermaid paints those on the page ground, so in print they go white on white")
+#     Mermaid bakes its hex at init and print is a media query with no re-render, so a
+#     diagram themed for a dark page keeps painting its own colours while @media print
+#     turns --surface white. Everything the diagram draws on the page ground rather than
+#     on a node fill then went white on white, about 1.0:1 on paper. The fix is to give
+#     the diagram back the ground it was themed for, so --diagram-ground in the print
+#     block has to BE the default --surface: a drift between them repaints the ground in
+#     a colour the SVG was never themed against, and nothing else here reads printed
+#     output. `print-color-adjust: exact` is what makes it survive Chrome's default
+#     "background graphics off", verified against a PDF rendered with backgrounds
+#     suppressed, so it is pinned too.
+print_ground = relative_decls("")  # placeholder, kept so the shape below reads plainly
+frozen = re.search(r"@media print \{.*?\n      pre\.mermaid \{(.*?)\n      \}", stylesheet, re.S)
+if not frozen:
+    print("DRIFT: the @media print block has no `pre.mermaid` rule, so a dark-themed "
+          "diagram prints its own colors against white paper")
+    fail = 1
+else:
+    got = {
+        name: (float(L), float(C), float(h))
+        for name, L, C, h in re.findall(
+            r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", frozen.group(1)
+        )
+    }
+    # Every token any pre.mermaid or .mermaid-overlay rule resolves through. A token used
+    # there but not frozen resolves to the paper palette instead, which is how the packet
+    # title and the byte labels first came out dark on the dark ground.
+    for name in ("surface", "on-surface", "code-bg", "purple", "muted"):
+        if name not in got:
+            print(f"DRIFT: @media print pre.mermaid does not freeze --{name}, so it resolves "
+                  f"to the paper palette inside a diagram themed against the default one")
+            fail = 1
+        elif got[name] != triples[name]:
+            print(f"DRIFT: @media print pre.mermaid freezes --{name} at {got[name]}, but the "
+                  f"SVG is themed against the default {triples[name]}")
+            fail = 1
+for pin in ("print-color-adjust: exact", "-webkit-print-color-adjust: exact",
+            "background: var(--surface); padding: var(--space-3) 0"):
+    if pin not in stylesheet:
+        print(f"DRIFT: tufte-dracula.css no longer carries `{pin}` on pre.mermaid in print, so the "
+              f"diagram loses its ground in print")
+        fail = 1
+if "@media print and (prefers-color-scheme: light) {" not in stylesheet:
+    print("DRIFT: no `@media print and (prefers-color-scheme: light)` block, so a "
+          "light-themed diagram gets a dark ground it was never themed for")
     fail = 1
 
 if not re.search(r"pieOpacity:\s*'1'", mermaid_js):
