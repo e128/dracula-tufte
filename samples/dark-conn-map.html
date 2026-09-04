@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.40.1 */
+    /* Dracula-Tufte (muted) v1.41.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -367,7 +367,6 @@
       transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .mermaid-zoom:active { scale: 0.96; }
     pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
-    pre.mermaid :is(.messageText, .pieTitleText, .legend > text, .labels > .label > text) { fill: var(--on-surface) !important; }
     pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
     pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule) !important; }
     pre.mermaid .cluster-label :is(p, span) { color: var(--on-surface) !important; }
@@ -512,6 +511,20 @@
       body::before { display: none; }
       .table-scroll { max-height: none; overflow: visible; }
       .mermaid-zoom { display: none; }
+      pre.mermaid {
+        /* Mermaid bakes its hex into the SVG at init and print never re-renders, so the
+           diagram is still painted in the default palette on paper. Freeze that palette
+           inside it: every var() in the rules above then resolves the way the SVG was
+           themed, and the diagram gets back the ground it was drawn against. Each
+           literal must equal its default :root value, and palette-check pins all five. */
+        --surface:     oklch(0.288 0.022 277.509);
+        --on-surface:  oklch(0.977 0.008 106.545);
+        --code-bg:     oklch(0.340 0.027 276.046);
+        --purple:      oklch(0.698 0.117 300.909);
+        --muted:       oklch(0.71 0.055 275);
+        background: var(--surface); padding: var(--space-3) 0; border-radius: var(--radius);
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+      }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
@@ -524,6 +537,10 @@
       .verdict-partial { color: var(--orange); }
       .verdict-failed { color: var(--red); }
       .verdict-neutral { color: var(--muted); }
+    }
+    @media print and (prefers-color-scheme: light) {
+      pre.mermaid { --surface: unset; --on-surface: unset; --code-bg: unset; --purple: unset;
+        --muted: unset; background: none; padding: 0; }
     }
     }
   </style>
@@ -558,6 +575,7 @@
       noteBorderColor:     '#707388',
       pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
       pieSectionTextColor: '#282a36',
+      pieStrokeColor: '#282a36', pieOuterStrokeColor: '#979fc4',
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
@@ -577,6 +595,7 @@
       noteBorderColor:     '#7b7f94',
       pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
       pieSectionTextColor: '#161616',
+      pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base',
@@ -593,6 +612,7 @@
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog> as the first child of <body>');
     const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const regionLabel = window.mermaidRegionLabel || 'Scrollable diagram';
     const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
     const named = (svg, label) => {
       const title = titleOf(svg);
@@ -627,7 +647,12 @@
         if (scrolls.matches) {
           pre.tabIndex = 0;
           pre.setAttribute('role', 'region');
-          pre.setAttribute('aria-label', titleOf(svg) || zoomLabel);
+          // Named for what the container IS, not for the diagram inside it. The label
+          // used to be the SVG's own <title>, which the SVG already exposes as its
+          // graphics-document name, so a screen reader read the diagram title, the word
+          // region, and the diagram title again on entry. Identification belongs on the
+          // node that is the diagram.
+          pre.setAttribute('aria-label', regionLabel);
         } else {
           pre.removeAttribute('tabindex');
           pre.removeAttribute('role');

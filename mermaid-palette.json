@@ -21,7 +21,9 @@
     "pie2":                { "hex": "#ec80cb", "from": "--data-2" },
     "pie3":                { "hex": "#4bd1a0", "from": "--data-3" },
     "pie4":                { "hex": "#bcc267", "from": "--data-4" },
-    "pieSectionTextColor": { "hex": "#282a36", "from": "--surface" }
+    "pieSectionTextColor": { "hex": "#282a36", "from": "--surface" },
+    "pieStrokeColor":      { "hex": "#282a36", "from": "--surface" },
+    "pieOuterStrokeColor": { "hex": "#979fc4", "from": "--muted" }
   },
   "initLight": {
     "_comment": "The same themeVariables projected through the light palette, used when :root resolves --mermaid-scheme to 'light'. mermaid.js reads that CSS token rather than matchMedia, so the forced-light sample pages pick this set up from the same cascade the rest of the sheet follows. Every 'from' names the token in the @media (prefers-color-scheme: light) :root block, falling back to the base :root where light does not override it.",
@@ -44,7 +46,9 @@
     "pie2":                { "hex": "#cf5cae", "from": "--data-2" },
     "pie3":                { "hex": "#349874", "from": "--data-3" },
     "pie4":                { "hex": "#878c48", "from": "--data-4" },
-    "pieSectionTextColor": { "hex": "#161616", "from": "--on-surface" }
+    "pieSectionTextColor": { "hex": "#161616", "from": "--on-surface" },
+    "pieStrokeColor":      { "hex": "#fcfcf8", "from": "--surface" },
+    "pieOuterStrokeColor": { "hex": "#626a8c", "from": "--muted" }
   },
   "classdef": {
     "_comment": "Node-category classDef roles for generators that emit their own 'classDef name fill:...,stroke:...' lines inside a <pre class=\"mermaid\"> block. Not used by mermaid.js itself. Every fill draws from the --data-1..4 ramp, never from the prose accents (--pink, --green, --orange): those already carry a meaning in body copy (h1, inline code, aside bar), and the data ramp exists precisely so a diagram category cannot borrow it. stroke is --purple for every role, and color is the text that lands on the fill: --surface here, because the dark ramp is pale. THIS SET IS DARK ONLY. A page that follows the reader's appearance must not emit classDef hex at all, because a fence has no CSS to read and one hex cannot serve both palettes; emit classdefLight only on a page locked to light.",

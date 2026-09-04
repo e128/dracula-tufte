@@ -77,12 +77,19 @@ def preview [html: string, fixture: string, title: string, name: string] {
   # compared the whole string before and after and passed when only the contrast
   # condition still matched, which is the case that matters least. Renaming the
   # light condition alone would have shipped a dark page called light.
-  for c in ["@media (prefers-color-scheme: light)" "@media (prefers-contrast: more)"] {
+  for c in ["@media (prefers-color-scheme: light)" "@media (prefers-contrast: more)" "@media print and (prefers-color-scheme: light)"] {
     if not ($html | str contains $c) {
       error make {msg: $"preview: ($fixture) has no `($c)`: the stylesheet renamed it, so the preview would ship the default palette under a light name"}
     }
   }
+  # The print-and-light block becomes an unconditional `@media print`, because a page
+  # locked to light renders a light-themed diagram, which needs neither the frozen dark
+  # palette nor the ground that goes with it. Leaving the condition intact would also
+  # leave a live `prefers-color-scheme` in a page that claims to have none, which the
+  # contract check reads as a rewrite that did not happen. This replacement runs first
+  # only for readability: the longer string is not a substring of the shorter one.
   let forced = ($html
+    | str replace "@media print and (prefers-color-scheme: light)" "@media print"
     | str replace "@media (prefers-color-scheme: light)" "@media all"
     | str replace "@media (prefers-contrast: more)" "@media not all")
   let banner = ([
