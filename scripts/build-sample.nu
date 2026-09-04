@@ -28,6 +28,7 @@ def main [] {
     ["dark.html" "<body>" "Tufte-Dracula component sample" (body) "light.html"]
     ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula connections-map layout" (conn-map-body) "light-conn-map.html"]
     ["dark-timeline.html" "<body>" "Tufte-Dracula timeline layout" (timeline-body) "light-timeline.html"]
+    ["dark-charts.html" "<body>" "Tufte-Dracula chart components" (charts-body) "light-charts.html"]
   ] | each {|p|
     let html = ([
       "<!DOCTYPE html>"
@@ -175,6 +176,84 @@ def conn-map-body [] {
     "      <h3>Large map</h3>"
     "      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it stays a two-<code>&lt;script&gt;</code> fixture.</p>"
     "      <pre class=\"mermaid\">---\nconfig:\n  layout: elk\n  flowchart:\n    useMaxWidth: false\n  elk:\n    nodePlacementStrategy: NETWORK_SIMPLEX\n---\nflowchart TD\n  accTitle: Large connections map for the focus topic\n  accDescr: A focus topic with two eras of antecedents and descendants grouped into open subgraphs, every node individually clickable, and a legend explaining that a solid line is a technological connection and a dashed line is a conceptual one.\n  subgraph legend[\"Legend\"]\n    direction LR\n    key1((\" \")) -->|technological| key2((\" \"))\n    key3((\" \")) -.->|conceptual| key4((\" \"))\n  end\n  focus[Focus Topic]\n  subgraph pre2010[\"Antecedents, pre-2010\"]\n    a1[Antecedent A]\n    a2[Antecedent B]\n    a3[Antecedent C]\n    a4[Antecedent D]\n    a5[Antecedent E]\n    a6[Antecedent F]\n  end\n  subgraph post2010[\"Descendants, post-2010\"]\n    d1[Descendant W]\n    d2[Descendant X]\n    d3[Descendant Y]\n    d4[Descendant Z]\n  end\n  a1 --> focus\n  a2 --> focus\n  a3 --> focus\n  a4 -.-> focus\n  a5 -.-> focus\n  a6 --> focus\n  focus --> d1\n  focus --> d2\n  focus -.-> d3\n  focus --> d4</pre>"
+    "    </section>"
+    "  </article>"
+    "  </main>"
+  ] | str join "\n"
+}
+
+# Charts get their own page, not a section in the component sample, because the two
+# forms are only worth anything side by side: both tables and the pie carry the SAME
+# four numbers, so a reader can see that the 21 and the 15 are ranked at a glance as
+# bars and are a coin toss as slices. That comparison is the guidance CONTRACT.md
+# section 2 states in one line, and a page is where it can be looked at.
+#
+# Two bar tables ship on purpose, and the difference is the axis rather than the color:
+# the first is a share of the whole, the second a share of the largest value in the
+# column. Both bands are one hue. A per-row hue was tried and measured out: at the 0.3
+# alpha the number on top of the band requires, the four ramp members land within Lc 2
+# of each other, so a band cannot carry a category (see NOTES.md, CSS charts). The
+# number stays `--on-surface` over the wash, which check 12 of palette-check.py
+# measures in all four modes.
+def charts-body [] {
+  [
+    "  <dialog class=\"mermaid-overlay\" id=\"mermaid-zoom\"></dialog>"
+    "  <main>"
+    "  <article>"
+    "    <h1>Chart Components</h1>"
+    "    <p class=\"byline\">table.bar-chart and .pie-chart: CSS over ordinary markup, no script and no CDN</p>"
+    ""
+    "    <nav>"
+    "      <a href=\"#bars\">Bar chart</a>"
+    "      <a href=\"#pie\">Pie chart</a>"
+    "      <a href=\"#which\">Which one</a>"
+    "    </nav>"
+    ""
+    "    <section>"
+    "      <h2 id=\"bars\">Bar chart</h2>"
+    "      <p>A bar chart here is a real table with a class on it. The bar is a background band inside the cell that already holds the number, sized by a <code>--bar</code> percentage the generator sets, so the value is text in the markup and the bar is a second reading of it. Nothing is added to the accessibility tree and nothing is lost when the band does not paint.</p>"
+    "      <table class=\"bar-chart\" tabindex=\"0\">"
+    "        <caption>Payload bytes by file, as a share of the whole. Every bar starts at the same edge, so length is the comparison.</caption>"
+    "        <thead><tr><th scope=\"col\">File</th><th scope=\"col\">Share</th></tr></thead>"
+    "        <tbody>"
+    "          <tr><td><code>tufte-dracula.css</code></td><td class=\"bar\" style=\"--bar: 52%\">52%</td></tr>"
+    "          <tr><td><code>mermaid.js</code></td><td class=\"bar\" style=\"--bar: 21%\">21%</td></tr>"
+    "          <tr><td><code>filter.js</code></td><td class=\"bar\" style=\"--bar: 15%\">15%</td></tr>"
+    "          <tr><td><code>mermaid-palette.json</code></td><td class=\"bar\" style=\"--bar: 12%\">12%</td></tr>"
+    "        </tbody>"
+    "      </table>"
+    "      <p>Every band is one hue, and the row label carries the category. Coloring each band from the <code>--data-*</code> ramp to key it to the pie legend below was tried and measured out: at the 0.3 alpha that keeps the number on top of the band legible, the four ramp members land within Lc 2 of each other, so a band cannot carry a category at all (see NOTES.md, <em>CSS charts</em>). The table below is the other axis convention: each bar is a share of the largest value rather than of a total, which is what makes an unlabelled axis honest.</p>"
+    "      <table class=\"bar-chart\" tabindex=\"0\">"
+    "        <caption>A synthetic single series, each bar a share of the largest value rather than of a total</caption>"
+    "        <thead><tr><th scope=\"col\">Category</th><th scope=\"col\">Count</th></tr></thead>"
+    "        <tbody>"
+    "          <tr><td>First category</td><td class=\"bar\" style=\"--bar: 100%\">480</td></tr>"
+    "          <tr><td>Second category</td><td class=\"bar\" style=\"--bar: 65%\">312</td></tr>"
+    "          <tr><td>Third category</td><td class=\"bar\" style=\"--bar: 28%\">134</td></tr>"
+    "          <tr><td>Fourth category</td><td class=\"bar\" style=\"--bar: 4%\">19</td></tr>"
+    "        </tbody>"
+    "      </table>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2 id=\"pie\">Pie chart</h2>"
+    "      <p>The pie is one <code>conic-gradient</code> over four shares. Each <code>--p1</code> to <code>--p4</code> is that slice's own percentage, never a running total: the rule adds them up, so a generator that emits cumulative values draws the wrong chart. Every slice is separated by a 1.5deg gap of the page ground, because the four ramp members sit at one lightness: without the gap two touching slices differ in hue alone, at 1.00 to 1.02:1 in the light and print palettes and as little as 1.00:1 under simulated color blindness, so the 15% and the 12% wedge read as one. Nothing inside the element is text, so it takes <code>role=\"img\"</code> and an <code>aria-label</code> that states every slice and its value, and the legend repeats them for a sighted reader.</p>"
+    "      <figure>"
+    "        <div class=\"pie-chart\" role=\"img\" style=\"--p1: 52; --p2: 21; --p3: 15; --p4: 12\" aria-label=\"Payload bytes by file: tufte-dracula.css 52 percent, mermaid.js 21 percent, filter.js 15 percent, mermaid-palette.json 12 percent\"></div>"
+    "        <figcaption>The same four numbers as the first table above. Legend: <span class=\"tag-dot\" style=\"color: var(--data-1)\"></span>tufte-dracula.css 52%, <span class=\"tag-dot\" style=\"color: var(--data-2)\"></span>mermaid.js 21%, <span class=\"tag-dot\" style=\"color: var(--data-3)\"></span>filter.js 15%, <span class=\"tag-dot\" style=\"color: var(--data-4)\"></span>mermaid-palette.json 12%.</figcaption>"
+    "      </figure>"
+    "      <p>Four slices is the ceiling, because the ramp has four members and each one is contrast-checked against the card it sits on. A fifth category has no color left that clears the floor, and a page that reaches for one is telling you it wanted a bar chart. A Mermaid <code>pie showData</code> fence is the other way to draw this, themed per palette in <code>mermaid.js</code>; it prints its percentages inside the slices and costs a CDN request (see the component sample page).</p>"
+    "    </section>"
+    ""
+    "    <section>"
+    "      <h2 id=\"which\">Which one</h2>"
+    "      <p><strong>Reach for the bar chart first, and for a plain table before either.</strong> Tufte's objection to the pie is that it asks a reader to compare angles and areas, which readers do badly: the 21 and the 15 slice above are a coin toss without the legend, while the same two bars are ranked at a glance. This template supports the pie anyway, because a part-to-whole share of a few categories is a real thing to draw and a consumer who wants one should get a themed one rather than invent it. The support comes with the rule that makes it defensible: <strong>every value is in the markup as text</strong>, so no reader depends on measuring a wedge.</p>"
+    "      <ul>"
+    "        <li>Ranking or comparing magnitudes: bar chart.</li>"
+    "        <li>One part-to-whole split, four categories or fewer, values stated in text: pie chart.</li>"
+    "        <li>Five or more categories, two series, or a value a reader will want to read exactly: a table. The bar chart is a table, so this is the same answer twice.</li>"
+    "        <li>A trend over time: neither. Nothing here draws a line chart, and a Mermaid <code>xychart-beta</code> fence is not themeable (see NOTES.md, Diagram types).</li>"
+    "      </ul>"
     "    </section>"
     "  </article>"
     "  </main>"

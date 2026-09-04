@@ -21,58 +21,62 @@ of either one. It rewrites the ideas as one inline stylesheet with no build step
 
 ## Live previews
 
-GitHub Pages renders these three from `main`. There is no build step.
+GitHub Pages renders these four from `main`. There is no build step.
 
 - [samples/dark.html](https://e128.github.io/dracula-tufte/samples/dark.html): component sample
 - [samples/dark-conn-map.html](https://e128.github.io/dracula-tufte/samples/dark-conn-map.html): connections-map layout
 - [samples/dark-timeline.html](https://e128.github.io/dracula-tufte/samples/dark-timeline.html): timeline layout, real content
+- [samples/dark-charts.html](https://e128.github.io/dracula-tufte/samples/dark-charts.html): the bar chart and the pie chart
 
-Those three follow your system appearance. A dark-mode reader therefore never sees the light
-palette. Three more pages force it:
+Those four follow your system appearance. A dark-mode reader therefore never sees the light
+palette. Four more pages force it:
 [light.html](https://e128.github.io/dracula-tufte/samples/light.html),
 [light-conn-map.html](https://e128.github.io/dracula-tufte/samples/light-conn-map.html) and
-[light-timeline.html](https://e128.github.io/dracula-tufte/samples/light-timeline.html).
+[light-timeline.html](https://e128.github.io/dracula-tufte/samples/light-timeline.html) and
+[light-charts.html](https://e128.github.io/dracula-tufte/samples/light-charts.html).
 
 **Do not inline CSS from a light preview.** Its stylesheet carries rewritten `@media` conditions,
 so it is locked to light and it is not the payload. Each light page says so in a banner. High
 contrast has no preview page. CI renders it and attaches the image to each pull request. See
 [Appearance modes](NOTES.md#appearance-modes).
 
-## The ten files
+## The eleven files
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.41.1, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.42.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
 | `tokens.css` | Palette reference. Generated from the `:root` block. Do not edit it by hand. |
-| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css` and all six fixtures. Run it after any payload change. |
+| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css` and all eight fixtures. Run it after any payload change. |
 | `samples/dark.html` | Living style fixture, and the executable specification. Generated. Do not edit it by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. It uses `<body class="conn-map">` with the sections in Links-then-Graph order. Generated. |
 | `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Generated. |
+| `samples/dark-charts.html` | Chart fixture: `table.bar-chart` and `.pie-chart`, both forms of the same four numbers, plus the guidance on which one to draw. Generated. |
 | `CONTRACT.md` | The consumer checklist. It stays imperative and short, because a consumer's agent reads it on every bump. |
 
-The three light previews are deliberately **not** contract files. The rest of the repo splits by
+The four light previews are deliberately **not** contract files. The rest of the repo splits by
 who runs a file. A person types the `scripts/*.nu` commands. CI runs the `.github/*.py` helpers.
 Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#repo-layout).
 
 ## Consumers
 
-The current release is **`v1.41.1`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.42.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
 
 1. What to inline (§ 1).
-2. The twenty-two markup requirements a generator owes (§ 2), each pointing at a string to search
+2. The twenty-four markup requirements a generator owes (§ 2), each pointing at a string to search
    for in a fixture rather than at a line number.
 3. What changed in each release (§ 3).
 4. How to detect a stale artifact (§ 4).
 5. What each pin mode costs (§ 5).
 
 Most of § 2 is modelled in `samples/dark.html`, three requirements only in
-`samples/dark-timeline.html`, and three in no fixture yet, which each of those three says. CI fails
+`samples/dark-timeline.html`, two only in `samples/dark-charts.html`, and three in no fixture yet,
+which each of those three says. CI fails
 when a fixture drifts from the stylesheet, so **when CONTRACT.md and a fixture disagree about
 markup, the fixture is right.** The single exception is flagged in § 2 itself: the fixture's
 `quadrantChart` breaks its own requirement on purpose, as a stress case.
@@ -180,7 +184,7 @@ switched on and asserts that block's structure, which is the only coverage that 
 its correctness is not a color.
 
 **One palette feeds several projections.** The `:root` block is the only source of color truth.
-`.github/palette-check.py` runs eleven checks over it:
+`.github/palette-check.py` runs twelve checks over it:
 
 1. Hex projections in both Mermaid palettes.
 2. The `classdef` fills, dark and light, and the letter each set paints on its own fill.
@@ -193,6 +197,8 @@ its correctness is not a color.
 9. The inverted pairs, where an accent is the ground and `--surface` is the text.
 10. The two relative-color tokens.
 11. The pie slice label against every slice fill, and `pieOpacity`.
+12. The number that sits on a `table.bar-chart` band, and the two pins that keep a CSS chart
+    visible in print and out of the way in forced colors.
 
 **A measurement in prose is not a gate.** That is why those checks exist, and why
 [NOTES.md](NOTES.md) carries the decisions rather than the numbers.

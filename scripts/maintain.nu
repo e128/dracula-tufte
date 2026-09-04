@@ -105,7 +105,7 @@ def contract-markup-ok [] {
   # the predicate. `role="region"` on the table itself is the separate defect the same
   # contract line bans: it overrides `role="table"` and takes the row and column
   # semantics with it.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
     let body = (open --raw ($ROOT | path join $f))
     let unwrapped = ($body | str replace --all --regex '(?s)<div class="table-scroll"[^>]*>\s*<table[^>]*>' '')
     for t in ($unwrapped | parse --regex '<table(?<attrs>[^>]*)>') {
@@ -128,7 +128,7 @@ def contract-markup-ok [] {
   # on that fill, which measures 3.45 to 3.53:1 in light mode, under the text floor.
   # This catches the repo's own fixtures only. It cannot reach a consumer, and that is
   # stated in CONTRACT.md rather than pretended away here.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
     let body = (open --raw ($ROOT | path join $f))
     for n in ($body | parse --regex '<span class="step-node"(?<attrs>[^>]*)>') {
       if ($n.attrs =~ '--icon-color:\s*var\(--data-') {
@@ -161,7 +161,7 @@ def "main contract-markup" [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] {
+  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] {
     if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -207,7 +207,7 @@ def "main check" [] {
 
   # Count occurrences, not matching lines. `grep -c` reports lines, so a second
   # block opened on a line that already has one reads as 1 and passes.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
     let body = (open --raw ($ROOT | path join $f))
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
@@ -225,7 +225,7 @@ def "main check" [] {
   # file, which is what a hand-edit would get past the generator. It matters more now
   # that the filename says `light` instead of `preview-`: nothing but this check and
   # the in-page banner distinguishes it from its dark twin in the same folder.
-  for f in [samples/light.html samples/light-conn-map.html samples/light-timeline.html] {
+  for f in [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
     let body = (open --raw ($ROOT | path join $f))
     if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {`: the light palette is not on"; $ok = false }
     if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {`: the contrast block is still live"; $ok = false }
@@ -265,7 +265,7 @@ def "main check" [] {
   # git: build-sample.nu git-adds what it writes, so `git diff` is always empty
   # (the gate never fires), and `git diff HEAD` would flag work-in-progress edits
   # that are legitimately uncommitted. CI, with a clean tree, uses `git diff HEAD`.
-  let generated = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/light.html samples/light-conn-map.html samples/light-timeline.html tokens.css]
+  let generated = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html tokens.css]
   let before = ($generated | each {|f| open --raw ($ROOT | path join $f) })
   nu ($SCRIPTS | path join "build-sample.nu")
   let after = ($generated | each {|f| open --raw ($ROOT | path join $f) })
