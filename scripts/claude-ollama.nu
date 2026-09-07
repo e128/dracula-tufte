@@ -4,7 +4,7 @@
 # Usage: claude-ollama.nu [--model <model>] [...claude args]
 
 def main [...args: string] {
-    mut model = "qwen3.8:27b-mlx"
+    mut model = "glm-5.3-flash:cloud"
     mut rest = []
     mut i = 0
 
