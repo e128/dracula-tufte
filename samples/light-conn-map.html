@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.44.0 */
+    /* Dracula-Tufte (muted) v1.45.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -548,6 +548,27 @@
     @media print {
       pre.mermaid { --surface: unset; --on-surface: unset; --code-bg: unset; --purple: unset;
         --muted: unset; background: none; padding: 0; }
+    }
+    /* Progressive disclosure (template v1.21.0): on-this-page TOC + deep sections */
+    nav.toc { margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
+      border-left: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
+    nav.toc .toc-label { font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--muted); margin: 0 0 0.45rem; }
+    nav.toc ol { margin: 0; padding-left: 1.3rem; columns: 2; column-gap: 2.4rem; }
+    nav.toc li { margin: 0.18rem 0; font-size: 0.86rem; break-inside: avoid; }
+    nav.toc a { color: var(--on-surface); text-decoration: none;
+      border-bottom: 1px dotted var(--rule-light); }
+    nav.toc a:hover, nav.toc a:focus-visible { color: var(--purple-bright); }
+    details.deep { margin: 0.45rem 0 0; }
+    details.deep > summary { cursor: pointer; user-select: none; list-style: none;
+      font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.04em;
+      color: var(--muted); padding: 0.25rem 0; }
+    details.deep > summary::before { content: "\25B8\00A0"; }
+    details.deep[open] > summary::before { content: "\25BE\00A0"; }
+    details.deep > summary:hover, details.deep > summary:focus-visible { color: var(--purple-bright); }
+    details.deep > summary::-webkit-details-marker { display: none; }
+    @media print {
+      nav.toc { columns: 1; }
     }
     }
   </style>
