@@ -1,0 +1,204 @@
+diff --git a/NOTES.md b/NOTES.md
+index 930dd7b..df34af5 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -37,6 +37,7 @@ Two comments remain in the CSS. A machine reads both.
+ | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
+ | [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
+ | [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the CSS pie went out, print and forced colors |
++| [Progressive disclosure](#progressive-disclosure) | `nav.toc`, `details.deep`, the narrow and print column overrides |
+ | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
+ | [Mermaid](#mermaid) | Init config, label measurement, sizing, zoom, diagram types |
+ | [Connections-map layout](#connections-map-layout) | `body.conn-map`, markup order, no breakouts |
+@@ -1210,6 +1211,61 @@ purpose, and the difference between them is the axis rather than the color: the
+ the whole, the second a share of the largest value in the column, which is the convention that
+ makes an unlabelled axis honest.
+ 
++## Progressive disclosure
++
++Two components arrived with template v1.21.0. `nav.toc` is an on-this-page index. `details.deep` is
++a collapsed tier for detail a reader can skip.
++
++**`nav.toc` marks its links with a dotted `border-block-end`, not with an underline.** The Links
++section states that the underline is the only thing that marks a link. That holds for prose. A
++standalone index is a list of links and nothing else, so the dotted rule is the marker there and the
++dropped `text-decoration` is deliberate. Do not delete the border. `prefers-contrast: more` raises
++the underline on `a` and cannot reach these links, because `nav.toc a` outranks it. The border
++carries the mode instead, through `--rule-light`.
++
++**The index runs two columns above 600px and one column below it.** At 320px a two-column index left
++each entry about 68px of inline space and wrapped every title to five lines. The narrow override
++matches what `.col-2` already does at the same breakpoint. **The print override targets
++`nav.toc ol`, not `nav.toc`.** `columns` on the wrapper does nothing to the list inside it, and the
++first version of that rule was inert on paper for exactly that reason.
++
++**Both components use logical properties only.** `border-left` and `padding-left` shipped in v1.45.0
++and kept the index rule and the list indent on the left in RTL while the prose flipped. Every side
++in this sheet is `inline-start`, `inline-end`, `block-start` or `block-end`.
++
++**Neither component names a font of its own.** The first version set `font-family: var(--sans)` on
++`.toc-label` and on `details.deep > summary`, and `:root` declares no `--sans`, so both rules
++resolved to the inherited serif and rendered that way in every mode. The sheet ships two faces, a
++body serif and a code mono. A third face is a decision this section does not make. Do not
++reintroduce the token without declaring it.
++
++**The summary triangles are decorative, and they reached the accessibility tree.** `<details>`
++already exposes its own open state, so the marker adds a spoken "black right-pointing small
++triangle" and nothing else. `content: "…" / ""` behind `@supports (content: "x" / "y")` gives both
++of them empty alternative text, the same pattern the outbound arrow uses. The base declaration stays
++outside the guard, because a browser that cannot parse the alt-text form discards the whole
++declaration and the marker disappears with it.
++
++**`nav.toc` paints a composited ground that no gate reaches.**
++`color-mix(in oklab, var(--surface-alt) 60%, transparent)` over `--surface` lands between two
++grounds `palette-check.py` already measures. `--muted` and `--purple-bright` clear their floor
++against both, so the mix is bounded rather than measured. Nothing checks it. This is the honest gap
++rather than a check that cannot see the mix.
++
++**Hover on both components sits inside `@media (hover: hover)`.** v1.45.0 shipped both `:hover`
++rules outside that block. Interaction states records what that costs: the browser sets `:hover` on
++tap and leaves it set until the reader taps something else.
++
++**Both components carry a fixture instance.** They shipped styled with no instance for two
++releases, so no mode render, no forced-colors sweep and no structural gate ever drew them.
++
++**Every `var()` in this sheet either resolves to a token this sheet declares, or carries a
++fallback.** Seven references resolve outside `:root` and all seven are deliberate:
++`--tree-step` and `--bar-tint` are declared on the component that reads them, and `--bar`,
++`--icon-color`, `--natural-width` and `--timeline-date` are consumer-supplied and each
++carries its own fallback in the `var()`. `--sans` had neither, which is what made it dead
++rather than optional. A new consumer-supplied token states its fallback in the reference.
++
+ ## Editor themes
+ 
+ `themes/` shares the palette. The **slot map**, which is the question of which token paints which
+diff --git a/mermaid.js b/mermaid.js
+index 104f435..2e77cfa 100644
+--- a/mermaid.js
++++ b/mermaid.js
+@@ -87,12 +87,6 @@
+       overlay.showModal();
+       requestAnimationFrame(() => overlay.classList.add('active'));
+     };
+-    // A labelled region is worth a tab stop only where the pre can actually scroll,
+-    // which tufte-dracula.css confines to the same (max-width: 600px) block. Above it
+-    // the pre is `overflow: visible`, so the stop reached a container with nothing to
+-    // scroll and no action of its own, and its label repeated the name the SVG already
+-    // exposes as its graphics-document. The media query is the exact condition the CSS
+-    // uses, so this cannot go stale against a resize the way a scrollWidth probe would.
+     const scrolls = window.matchMedia('(max-width: 600px)');
+     const syncRegions = () => {
+       document.querySelectorAll('pre.mermaid').forEach(pre => {
+@@ -101,11 +95,6 @@
+         if (scrolls.matches) {
+           pre.tabIndex = 0;
+           pre.setAttribute('role', 'region');
+-          // Named for what the container IS, not for the diagram inside it. The label
+-          // used to be the SVG's own <title>, which the SVG already exposes as its
+-          // graphics-document name, so a screen reader read the diagram title, the word
+-          // region, and the diagram title again on entry. Identification belongs on the
+-          // node that is the diagram.
+           pre.setAttribute('aria-label', regionLabel);
+         } else {
+           pre.removeAttribute('tabindex');
+diff --git a/scripts/build-sample.nu b/scripts/build-sample.nu
+index 27a9cb5..75745e0 100644
+--- a/scripts/build-sample.nu
++++ b/scripts/build-sample.nu
+@@ -286,6 +286,21 @@ def body [] {
+     "      <a href=\"#\">Project Summary</a>"
+     "    </nav>"
+     ""
++    # nav.toc and details.deep shipped styled with no instance in v1.45.0, so no
++    # mode render and no forced-colors sweep ever drew either one. See NOTES.md,
++    # Progressive disclosure.
++    "    <nav class=\"toc\" aria-label=\"On this page\">"
++    "      <p class=\"toc-label\">On this page</p>"
++    "      <ol>"
++    "        <li><a href=\"#\">Headings and text</a></li>"
++    "        <li><a href=\"#\">Lists and definition lists</a></li>"
++    "        <li><a href=\"#\">Tables and the scroll region</a></li>"
++    "        <li><a href=\"#\">Diagrams and the zoom overlay</a></li>"
++    "        <li><a href=\"#\">Borrowed components</a></li>"
++    "        <li><a href=\"#\">Appearance modes</a></li>"
++    "      </ol>"
++    "    </nav>"
++    ""
+     "    <section>"
+     "      <h2>Headings &amp; text</h2>"
+     "      <h3>Third-level heading</h3>"
+@@ -296,6 +311,7 @@ def body [] {
+     "      <p>Status spans: <span class=\"verified\">verified</span>, <span class=\"unverified\">unverified</span>, <span class=\"correction\">correction</span>.</p>"
+     "      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd>, a ringed chip distinct from inline <code>code()</code>.</p>"
+     "      <p>Markdown inline output: <del>struck through</del> drops to the muted tier, <samp>program output</samp> takes the mono face without the code chip, an <abbr title=\"HyperText Markup Language\">HTML</abbr> abbreviation carries a dotted rule, and H<sub>2</sub>O sits beside 10<sup>3</sup> without opening the line.</p>"
++    "      <details class=\"deep\"><summary>Why weight 450 and not 400</summary><p>The webfont exists for the weight axis. A system serif ships 400 and 700 and nothing between, so nothing else renders the 450 that light-on-dark body copy wants.</p></details>"
+     "      <p>A sidenote lives here.<label for=\"sn-1\" class=\"margin-toggle sidenote-number\"></label><input type=\"checkbox\" id=\"sn-1\" class=\"margin-toggle\"/><span class=\"sidenote\">This is a Tufte sidenote. It floats to the right margin and auto-numbers.</span> And a margin note follows.<label for=\"mn-1\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-1\" class=\"margin-toggle\"/><span class=\"marginnote\">A margin note carries no number.</span></p>"
+     "    </section>"
+     ""
+diff --git a/tufte-dracula.css b/tufte-dracula.css
+index 1424c26..2fcf242 100644
+--- a/tufte-dracula.css
++++ b/tufte-dracula.css
+@@ -392,6 +392,8 @@
+       tbody tr:hover td { background: var(--surface-alt); }
+       table.tree tbody tr:hover td { background: var(--surface-alt); }
+       summary:hover { color: var(--on-surface); }
++      nav.toc a:hover { color: var(--purple-bright); }
++      details.deep > summary:hover { color: var(--purple-bright); }
+       .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
+       pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
+       .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
+@@ -511,11 +513,6 @@
+       .table-scroll { max-height: none; overflow: visible; }
+       .mermaid-zoom { display: none; }
+       pre.mermaid {
+-        /* Mermaid bakes its hex into the SVG at init and print never re-renders, so the
+-           diagram is still painted in the default palette on paper. Freeze that palette
+-           inside it: every var() in the rules above then resolves the way the SVG was
+-           themed, and the diagram gets back the ground it was drawn against. Each
+-           literal must equal its default :root value, and palette-check pins all five. */
+         --surface:     oklch(0.288 0.022 277.509);
+         --on-surface:  oklch(0.977 0.008 106.545);
+         --code-bg:     oklch(0.340 0.027 276.046);
+@@ -542,26 +539,32 @@
+       pre.mermaid { --surface: unset; --on-surface: unset; --code-bg: unset; --purple: unset;
+         --muted: unset; background: none; padding: 0; }
+     }
+-    /* Progressive disclosure (template v1.21.0): on-this-page TOC + deep sections */
+     nav.toc { margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
+-      border-left: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
+-    nav.toc .toc-label { font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.09em;
++      border-inline-start: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
++    nav.toc .toc-label { font-size: 0.72rem; letter-spacing: 0.09em;
+       text-transform: uppercase; color: var(--muted); margin: 0 0 0.45rem; }
+-    nav.toc ol { margin: 0; padding-left: 1.3rem; columns: 2; column-gap: 2.4rem; }
++    nav.toc ol { margin: 0; padding-inline-start: 1.3rem; columns: 2; column-gap: 2.4rem; }
+     nav.toc li { margin: 0.18rem 0; font-size: 0.86rem; break-inside: avoid; }
+     nav.toc a { color: var(--on-surface); text-decoration: none;
+-      border-bottom: 1px dotted var(--rule-light); }
+-    nav.toc a:hover, nav.toc a:focus-visible { color: var(--purple-bright); }
++      border-block-end: 1px dotted var(--rule-light); }
++    nav.toc a:focus-visible { color: var(--purple-bright); }
+     details.deep { margin: 0.45rem 0 0; }
+     details.deep > summary { cursor: pointer; user-select: none; list-style: none;
+-      font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.04em;
++      font-size: 0.78rem; letter-spacing: 0.04em;
+       color: var(--muted); padding: 0.25rem 0; }
+     details.deep > summary::before { content: "\25B8\00A0"; }
+     details.deep[open] > summary::before { content: "\25BE\00A0"; }
+-    details.deep > summary:hover, details.deep > summary:focus-visible { color: var(--purple-bright); }
++    @supports (content: "x" / "y") {
++      details.deep > summary::before { content: "\25B8\00A0" / ""; }
++      details.deep[open] > summary::before { content: "\25BE\00A0" / ""; }
++    }
++    details.deep > summary:focus-visible { color: var(--purple-bright); }
+     details.deep > summary::-webkit-details-marker { display: none; }
++    @media (max-width: 600px) {
++      nav.toc ol { columns: 1; }
++    }
+     @media print {
+-      nav.toc { columns: 1; }
++      nav.toc ol { columns: 1; }
+     }
+     }
+   </style>

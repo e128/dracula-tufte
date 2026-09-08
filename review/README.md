@@ -7,8 +7,10 @@ stamped with the date the run started:
 
 - `YYYY-MM-DD-design-audit.md`: the report. Findings against current CSS/color/
   typography/layout/accessibility/CDN-pin practice, checked against the decisions already
-  recorded in `NOTES.md`. The header names the research window it covered and the previous
-  report it read, so a run reports what changed rather than the same list again.
+  recorded in `NOTES.md`. The header names the commit range it covered and the previous
+  report it read, so a run reports what changed rather than the same list again. Two fixed
+  sweeps sit alongside the six research topics: WCAG Level A and AA success criteria, and
+  the repo's own prose rules that no check enforces.
 - `YYYY-MM-DD-design-audit.patch`: a draft diff for the non-controversial findings, against
   `HEAD`, touching source files only. No patch file is written when there is nothing to
   propose. Nothing here is applied automatically. Review it, then apply by hand.
@@ -25,7 +27,13 @@ git worktree, regenerating there, and running `nu scripts/maintain.nu check`:
 records the prohibitions this repo paid for in reverted commits; it does not record a
 proposal that was simply turned down. Without this file the same rejected finding returns
 every run. The skill only appends to it, only when a decline happens in conversation, and
-never removes a row.
+never removes a row. It carries its own rules, and an empty table there is a real state
+rather than a missing file.
+
+A run's report is checkable, and one has been wrong. The 2026-09-07 report attributed a
+defect to a consumer's generator when the defect was already in `tufte-dracula.css`. The
+skill now re-checks the previous report's file-and-selector claims for whatever the current
+commit range touched, and says which report it corrects.
 
 A finding that challenges a decision already settled in `NOTES.md` is called out
 separately in the report and never enters the patch, in any run. It needs explicit
