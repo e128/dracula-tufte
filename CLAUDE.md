@@ -16,7 +16,7 @@ capability.
 | Skill | Wraps | Invoked by |
 | --- | --- | --- |
 | [`release`](.claude/skills/release/SKILL.md) | The full release flow in AGENTS.md, *A tag claims that the contract held*, plus publishing the Rider plugin zip, the VS Code vsix and the themes zip | "make a release", "cut a release", "tag a release", or a named version |
-| [`design-audit`](.claude/skills/design-audit/SKILL.md) | A research-and-report pass over current CSS, color, typography, layout, accessibility and CDN-pin practice against the settled decisions in NOTES.md, plus a WCAG Level A/AA sweep. Writes a dated report and an unapplied patch to `review/`. Never edits the payload | "design audit", "check WCAG compliance", `/design-audit` |
+| [`design-audit`](.claude/skills/design-audit/SKILL.md) | An audit of every payload line landed since the previous audit's commit, then a research-and-report pass over current CSS, color, typography, layout, accessibility and CDN-pin practice against the settled decisions in NOTES.md, plus two fixed sweeps: WCAG Level A/AA, and the repo's own prose rules that no check enforces. Renders new components rather than reasoning about the cascade. Writes a dated report and an unapplied patch to `review/`. Never edits the payload | "design audit", "check WCAG compliance", `/design-audit` |
 
 **Neither skill is required to do the work.** `release` is the order in which to call
 `scripts/maintain.nu`, and every one of those commands is in AGENTS.md. `design-audit` produces a

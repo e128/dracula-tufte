@@ -6,7 +6,7 @@
   <title>Tufte-Dracula chart components</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.45.1 */
+    /* Dracula-Tufte (muted) v1.46.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -399,6 +399,8 @@
       tbody tr:hover td { background: var(--surface-alt); }
       table.tree tbody tr:hover td { background: var(--surface-alt); }
       summary:hover { color: var(--on-surface); }
+      nav.toc a:hover { color: var(--purple-bright); }
+      details.deep > summary:hover { color: var(--purple-bright); }
       .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
       pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
       .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
@@ -518,11 +520,6 @@
       .table-scroll { max-height: none; overflow: visible; }
       .mermaid-zoom { display: none; }
       pre.mermaid {
-        /* Mermaid bakes its hex into the SVG at init and print never re-renders, so the
-           diagram is still painted in the default palette on paper. Freeze that palette
-           inside it: every var() in the rules above then resolves the way the SVG was
-           themed, and the diagram gets back the ground it was drawn against. Each
-           literal must equal its default :root value, and palette-check pins all five. */
         --surface:     oklch(0.288 0.022 277.509);
         --on-surface:  oklch(0.977 0.008 106.545);
         --code-bg:     oklch(0.340 0.027 276.046);
@@ -549,26 +546,32 @@
       pre.mermaid { --surface: unset; --on-surface: unset; --code-bg: unset; --purple: unset;
         --muted: unset; background: none; padding: 0; }
     }
-    /* Progressive disclosure (template v1.21.0): on-this-page TOC + deep sections */
     nav.toc { margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
-      border-left: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
-    nav.toc .toc-label { font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.09em;
+      border-inline-start: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
+    nav.toc .toc-label { font-size: 0.72rem; letter-spacing: 0.09em;
       text-transform: uppercase; color: var(--muted); margin: 0 0 0.45rem; }
-    nav.toc ol { margin: 0; padding-left: 1.3rem; columns: 2; column-gap: 2.4rem; }
+    nav.toc ol { margin: 0; padding-inline-start: 1.3rem; columns: 2; column-gap: 2.4rem; }
     nav.toc li { margin: 0.18rem 0; font-size: 0.86rem; break-inside: avoid; }
     nav.toc a { color: var(--on-surface); text-decoration: none;
-      border-bottom: 1px dotted var(--rule-light); }
-    nav.toc a:hover, nav.toc a:focus-visible { color: var(--purple-bright); }
+      border-block-end: 1px dotted var(--rule-light); }
+    nav.toc a:focus-visible { color: var(--purple-bright); }
     details.deep { margin: 0.45rem 0 0; }
     details.deep > summary { cursor: pointer; user-select: none; list-style: none;
-      font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.04em;
+      font-size: 0.78rem; letter-spacing: 0.04em;
       color: var(--muted); padding: 0.25rem 0; }
     details.deep > summary::before { content: "\25B8\00A0"; }
     details.deep[open] > summary::before { content: "\25BE\00A0"; }
-    details.deep > summary:hover, details.deep > summary:focus-visible { color: var(--purple-bright); }
+    @supports (content: "x" / "y") {
+      details.deep > summary::before { content: "\25B8\00A0" / ""; }
+      details.deep[open] > summary::before { content: "\25BE\00A0" / ""; }
+    }
+    details.deep > summary:focus-visible { color: var(--purple-bright); }
     details.deep > summary::-webkit-details-marker { display: none; }
+    @media (max-width: 600px) {
+      nav.toc ol { columns: 1; }
+    }
     @media print {
-      nav.toc { columns: 1; }
+      nav.toc ol { columns: 1; }
     }
     }
   </style>
@@ -661,12 +664,6 @@
       overlay.showModal();
       requestAnimationFrame(() => overlay.classList.add('active'));
     };
-    // A labelled region is worth a tab stop only where the pre can actually scroll,
-    // which tufte-dracula.css confines to the same (max-width: 600px) block. Above it
-    // the pre is `overflow: visible`, so the stop reached a container with nothing to
-    // scroll and no action of its own, and its label repeated the name the SVG already
-    // exposes as its graphics-document. The media query is the exact condition the CSS
-    // uses, so this cannot go stale against a resize the way a scrollWidth probe would.
     const scrolls = window.matchMedia('(max-width: 600px)');
     const syncRegions = () => {
       document.querySelectorAll('pre.mermaid').forEach(pre => {
@@ -675,11 +672,6 @@
         if (scrolls.matches) {
           pre.tabIndex = 0;
           pre.setAttribute('role', 'region');
-          // Named for what the container IS, not for the diagram inside it. The label
-          // used to be the SVG's own <title>, which the SVG already exposes as its
-          // graphics-document name, so a screen reader read the diagram title, the word
-          // region, and the diagram title again on entry. Identification belongs on the
-          // node that is the diagram.
           pre.setAttribute('aria-label', regionLabel);
         } else {
           pre.removeAttribute('tabindex');

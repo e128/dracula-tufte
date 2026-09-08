@@ -37,6 +37,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
 | [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
 | [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the CSS pie went out, print and forced colors |
+| [Progressive disclosure](#progressive-disclosure) | `nav.toc`, `details.deep`, the narrow and print column overrides |
 | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
 | [Mermaid](#mermaid) | Init config, label measurement, sizing, zoom, diagram types |
 | [Connections-map layout](#connections-map-layout) | `body.conn-map`, markup order, no breakouts |
@@ -1209,6 +1210,61 @@ neither is markup a generator can be asked to emit correctly.
 purpose, and the difference between them is the axis rather than the color: the first is a share of
 the whole, the second a share of the largest value in the column, which is the convention that
 makes an unlabelled axis honest.
+
+## Progressive disclosure
+
+Two components arrived with template v1.21.0. `nav.toc` is an on-this-page index. `details.deep` is
+a collapsed tier for detail a reader can skip.
+
+**`nav.toc` marks its links with a dotted `border-block-end`, not with an underline.** The Links
+section states that the underline is the only thing that marks a link. That holds for prose. A
+standalone index is a list of links and nothing else, so the dotted rule is the marker there and the
+dropped `text-decoration` is deliberate. Do not delete the border. `prefers-contrast: more` raises
+the underline on `a` and cannot reach these links, because `nav.toc a` outranks it. The border
+carries the mode instead, through `--rule-light`.
+
+**The index runs two columns above 600px and one column below it.** At 320px a two-column index left
+each entry about 68px of inline space and wrapped every title to five lines. The narrow override
+matches what `.col-2` already does at the same breakpoint. **The print override targets
+`nav.toc ol`, not `nav.toc`.** `columns` on the wrapper does nothing to the list inside it, and the
+first version of that rule was inert on paper for exactly that reason.
+
+**Both components use logical properties only.** `border-left` and `padding-left` shipped in v1.45.0
+and kept the index rule and the list indent on the left in RTL while the prose flipped. Every side
+in this sheet is `inline-start`, `inline-end`, `block-start` or `block-end`.
+
+**Neither component names a font of its own.** The first version set `font-family: var(--sans)` on
+`.toc-label` and on `details.deep > summary`, and `:root` declares no `--sans`, so both rules
+resolved to the inherited serif and rendered that way in every mode. The sheet ships two faces, a
+body serif and a code mono. A third face is a decision this section does not make. Do not
+reintroduce the token without declaring it.
+
+**The summary triangles are decorative, and they reached the accessibility tree.** `<details>`
+already exposes its own open state, so the marker adds a spoken "black right-pointing small
+triangle" and nothing else. `content: "…" / ""` behind `@supports (content: "x" / "y")` gives both
+of them empty alternative text, the same pattern the outbound arrow uses. The base declaration stays
+outside the guard, because a browser that cannot parse the alt-text form discards the whole
+declaration and the marker disappears with it.
+
+**`nav.toc` paints a composited ground that no gate reaches.**
+`color-mix(in oklab, var(--surface-alt) 60%, transparent)` over `--surface` lands between two
+grounds `palette-check.py` already measures. `--muted` and `--purple-bright` clear their floor
+against both, so the mix is bounded rather than measured. Nothing checks it. This is the honest gap
+rather than a check that cannot see the mix.
+
+**Hover on both components sits inside `@media (hover: hover)`.** v1.45.0 shipped both `:hover`
+rules outside that block. Interaction states records what that costs: the browser sets `:hover` on
+tap and leaves it set until the reader taps something else.
+
+**Both components carry a fixture instance.** They shipped styled with no instance for two
+releases, so no mode render, no forced-colors sweep and no structural gate ever drew them.
+
+**Every `var()` in this sheet either resolves to a token this sheet declares, or carries a
+fallback.** Seven references resolve outside `:root` and all seven are deliberate:
+`--tree-step` and `--bar-tint` are declared on the component that reads them, and `--bar`,
+`--icon-color`, `--natural-width` and `--timeline-date` are consumer-supplied and each
+carries its own fallback in the `var()`. `--sans` had neither, which is what made it dead
+rather than optional. A new consumer-supplied token states its fallback in the reference.
 
 ## Editor themes
 

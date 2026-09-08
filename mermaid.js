@@ -87,12 +87,6 @@
       overlay.showModal();
       requestAnimationFrame(() => overlay.classList.add('active'));
     };
-    // A labelled region is worth a tab stop only where the pre can actually scroll,
-    // which tufte-dracula.css confines to the same (max-width: 600px) block. Above it
-    // the pre is `overflow: visible`, so the stop reached a container with nothing to
-    // scroll and no action of its own, and its label repeated the name the SVG already
-    // exposes as its graphics-document. The media query is the exact condition the CSS
-    // uses, so this cannot go stale against a resize the way a scrollWidth probe would.
     const scrolls = window.matchMedia('(max-width: 600px)');
     const syncRegions = () => {
       document.querySelectorAll('pre.mermaid').forEach(pre => {
@@ -101,11 +95,6 @@
         if (scrolls.matches) {
           pre.tabIndex = 0;
           pre.setAttribute('role', 'region');
-          // Named for what the container IS, not for the diagram inside it. The label
-          // used to be the SVG's own <title>, which the SVG already exposes as its
-          // graphics-document name, so a screen reader read the diagram title, the word
-          // region, and the diagram title again on entry. Identification belongs on the
-          // node that is the diagram.
           pre.setAttribute('aria-label', regionLabel);
         } else {
           pre.removeAttribute('tabindex');
