@@ -1,12 +1,16 @@
 # Dracula-Tufte (muted): VS Code theme
 
-Three files: `package.json` (the extension manifest), `extension.vsixmanifest`
-(the VSIX container manifest), and `themes/dracula-tufte-color-theme.json`
-(workbench colors plus TextMate scopes).
+Four files: `package.json` (the extension manifest), `extension.vsixmanifest`
+(the VSIX container manifest), `themes/dracula-tufte-color-theme.json` (dark,
+workbench colors plus TextMate scopes) and `themes/dracula-tufte-light-color-theme.json`
+(the same, light). `package.json`'s `contributes.themes` lists both, one with
+`uiTheme: vs-dark` and one with `uiTheme: vs`; VS Code's own "Auto Detect Color
+Scheme" setting is what switches between them with the OS, same as any other
+extension shipping both appearances.
 
 ## Generated, do not hand-edit
 
-`scripts/create-themes.nu` writes all three from the `.in` template beside
+`scripts/create-themes.nu` writes all four from the `.in` template beside
 each one, then packages `dist/dracula-tufte-vscode-<version>.vsix`, the same
 way it packages the Rider plugin zip. Edit the template, never the rendered
 file or the `.vsix`.
@@ -28,7 +32,7 @@ code --install-extension themes/vscode/dist/dracula-tufte-vscode-<version>.vsix
 
 Or, from the Extensions view: `...` menu -> **Install from VSIX...** -> pick
 the file. Either way, reload when prompted, then `Ctrl/Cmd+K Ctrl/Cmd+T` and
-pick **Dracula-Tufte (muted)**.
+pick **Dracula-Tufte (muted)** or **Dracula-Tufte (muted) Light**.
 
 There is still no marketplace listing, so this is the only install path aside
 from the unpacked folder below.

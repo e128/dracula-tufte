@@ -5,9 +5,11 @@
   <vendor>e128</vendor>
 
   <description><![CDATA[
-    Dark UI theme and editor colour scheme derived from the Dracula-Tufte (muted)
-    HTML template. Every colour is the sRGB rendering of a
-    <code>tufte-dracula.css</code> <code>:root</code> <code>oklch()</code> token.
+    Dark and light UI themes and editor colour schemes derived from the Dracula-Tufte
+    (muted) HTML template. Every colour is the sRGB rendering of a
+    <code>tufte-dracula.css</code> <code>:root</code> <code>oklch()</code> token, dark
+    from the base palette and light from its <code>prefers-color-scheme: light</code>
+    override.
   ]]></description>
 
   <depends>com.intellij.modules.platform</depends>
@@ -15,5 +17,6 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <themeProvider id="com.e128.dracula-tufte" path="/dracula-tufte.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-light" path="/dracula-tufte-light.theme.json" />
   </extensions>
 </idea-plugin>

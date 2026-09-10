@@ -1,18 +1,34 @@
 # Dracula-Tufte (muted): JetBrains Rider theme
 
-Two artefacts, one palette:
+Four artefacts, one palette, two appearances:
 
-- `dracula-tufte.icls`: editor colour scheme (syntax, gutter, diff, console ANSI).
-- `dracula-tufte.theme.json`: IDE chrome (tool windows, tabs, menus, popups, icons).
+- `dracula-tufte.icls` / `dracula-tufte-light.icls`: editor colour scheme (syntax,
+  gutter, diff, console ANSI).
+- `dracula-tufte.theme.json` / `dracula-tufte-light.theme.json`: IDE chrome (tool
+  windows, tabs, menus, popups, icons).
 
-Every hex here is the sRGB rendering of a `tufte-dracula.css` `:root` `oklch()`
-token. The ANSI slots match `themes/ghostty/dracula-tufte` one-for-one, so the
-Rider console and the terminal agree.
+Every hex here is the sRGB rendering of a `tufte-dracula.css` `:root` `oklch()` token:
+dark from the base palette, light from its `prefers-color-scheme: light` override.
+The ANSI slots match `themes/ghostty/dracula-tufte` one-for-one, so the Rider console
+and the terminal agree.
+
+**IntelliJ Platform themes are one appearance per `theme.json`**, so this ships as two
+complete themes rather than one theme that follows the system setting: `plugin.xml`
+registers both as separate `themeProvider` entries, and each names its own
+`editorScheme`. Pick whichever one you want from Settings → Appearance → Theme; Rider
+does not switch between them on its own. The light `.icls` inherits from IntelliJ's
+built-in `Default` scheme (`parent_scheme="Default"`) where the dark one inherits from
+`Darcula`, and the light `theme.json`'s four `Checkbox.*` icon keys drop the `.Dark`
+suffix the dark theme's copies carry, per JetBrains' own light/dark icon-key
+convention. Neither of those two differences has been verified against a running
+Rider install, only against JetBrains' theme documentation: say so if either turns
+out wrong once installed.
 
 ## These files are generated
 
-`scripts/create-themes.nu` writes all four, plus the installable plugin, from the `.in`
-template beside each one. Edit the template, never the output.
+`scripts/create-themes.nu` writes all five (two `.icls`, two `theme.json`, one
+`plugin.xml`), plus the installable plugin, from the `.in` template beside each one.
+Edit the template, never the output.
 
 ```sh
 nu scripts/create-themes.nu           # write the themes, then package the plugin
@@ -70,8 +86,9 @@ The file keeps its `.icls` name on disk because that is what Import Scheme…
 expects.
 
 **Colour scheme only**, no packaging step: Settings → Editor → Color Scheme →
-gear → Import Scheme… → pick `dracula-tufte.icls`. Unnecessary once the plugin
-is installed, since the theme carries the scheme with it.
+gear → Import Scheme… → pick `dracula-tufte.icls` or `dracula-tufte-light.icls`.
+Unnecessary once the plugin is installed, since each theme carries its own scheme
+with it.
 
 ## Role mapping
 

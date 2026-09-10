@@ -1,6 +1,9 @@
 # Dracula-Tufte (muted): Zed theme
 
-One file, schema `v0.2.0`: 148 style keys, 43 syntax slots, 7 player colours.
+One file, schema `v0.2.0`: 148 style keys, 43 syntax slots, 7 player colours, two
+appearances. Zed's `themes` array already holds more than one theme per file, so dark
+and light are two entries in the same array (`"appearance": "dark"` / `"light"`)
+rather than two separate files: no other target in `themes/` gets this for free.
 
 ## Generated, do not hand-edit
 
@@ -18,7 +21,9 @@ nu scripts/create-themes.nu --check
 cp themes/zed/dracula-tufte.json ~/.config/zed/themes/
 ```
 
-Zed picks it up without a restart. `cmd-k cmd-t`, then **Dracula-Tufte (muted)**.
+Zed picks it up without a restart. `cmd-k cmd-t`, then **Dracula-Tufte (muted)** or
+**Dracula-Tufte (muted) Light**; **Theme: Auto** follows the system appearance and
+picks between them on its own, since both live in the one installed file.
 
 ## Role mapping
 
