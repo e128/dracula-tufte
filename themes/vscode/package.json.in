@@ -16,6 +16,11 @@
         "label": "Dracula-Tufte (muted)",
         "uiTheme": "vs-dark",
         "path": "./themes/dracula-tufte-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Light",
+        "uiTheme": "vs",
+        "path": "./themes/dracula-tufte-light-color-theme.json"
       }
     ]
   },

@@ -59,60 +59,43 @@ Two comments remain in the CSS. A machine reads both.
 
 ## Fonts
 
-**The body face is Source Serif 4.** It is a variable serif, pinned to an exact jsDelivr version,
-in roman and italic.
+**The body face is Source Serif 4.** Variable, pinned to an exact jsDelivr version, roman and italic.
 
-**The webfont exists for the weight axis.** Every system serif ships 400 and 700 and nothing
-between. Nothing else can render the 450 that light-on-dark body copy wants. Nothing else can
-render the real 600 on `.newthought`, `strong` and `dt`.
+**The webfont exists for the weight axis.** Every system serif ships only 400 and 700. Nothing else
+renders the 450 that light-on-dark body copy wants, or the real 600 on `.newthought`, `strong` and `dt`.
 
-**This face won because its figures are tabular and lining by construction.** A table therefore
-aligns in the body serif with no OpenType feature support. Literata, Newsreader, Lora and Petrona
-lost. Lora carries Georgia's exact defect, which is old-style proportional figures. None of the
-five ship `smcp`, so `.newthought` small caps stay synthesized.
+**It also won on tabular, lining figures.** A table aligns with no OpenType feature support.
+Literata, Newsreader, Lora and Petrona were rejected: Lora carries Georgia's old-style proportional
+figures, and none of the five ship `smcp`, so `.newthought` small caps stay synthesized either way.
 
-**The fallback path is a real downgrade, not an equivalence.** Offline the stack falls to Georgia.
-Georgia has no 450, and it has old-style proportional figures, so tables lose alignment. The repo
-accepts that, because the text still renders. `font-display: swap` keeps text visible during the
-load.
+**The fallback path is a real downgrade, not an equivalence, and the repo accepts it.** Offline the
+stack falls to Georgia (no 450, proportional figures, tables lose alignment), then Noto Serif
+(Android/ChromeOS), then DejaVu Serif (Linux). Charter and Palatino are deliberately absent: both
+exist only where Georgia already does. `font-display: swap` keeps text visible during load.
 
-Georgia stays first in the fallback stack. Noto Serif follows it for Android and ChromeOS. DejaVu
-Serif follows for Linux. Charter and Palatino are deliberately absent, because both exist only
-where Georgia already does.
+**The code face is also a webfont, `'JetBrains Mono'` first**, loaded from
+`@fontsource-variable/jetbrains-mono`, pinned like the body face, matching the Rider theme's editor
+font. Offline it falls to `ui-monospace`. `mermaid.js` repeats the same order in both of its literals,
+because the measurement font must stay the render font (see [Mermaid](#mermaid)).
 
-**The code face ships as a webfont too.** `--mono-font` names `'JetBrains Mono'` first, and both
-styles of it load from `@fontsource-variable/jetbrains-mono` on jsDelivr, pinned like the body
-face. The stack used to lead with `ui-monospace`, so the named face rendered only where someone had
-installed it and code blocks differed per machine. The order now matches the Rider theme, which
-already pins JetBrains Mono as its editor font. Offline the stack falls to `ui-monospace`, so the
-degradation path is unchanged. `mermaid.js` repeats this order in both of its literals, because
-the measurement font must stay the render font.
+**`blockquote.pull`'s glyph takes `var(--body-font)`, not a hardcoded Georgia**, which exists on
+neither Android nor Linux.
 
-**The `blockquote.pull` glyph takes `var(--body-font)`.** It once hardcoded Georgia, which exists
-on neither Android nor Linux, so the mark already fell through to another face there. The loaded
-body serif renders it identically on every platform.
+**Both font stacks are tokens because three rules need the literal.** `.mermaid-zoom`'s
+`font: inherit` would otherwise resolve to `pre.mermaid`'s code face, so it re-sets
+`font-family: var(--body-font)` after the shorthand. `pre` sets its own family too, so a code block
+with no inner `<code>` still matches its neighbors. `mermaid.js` writes the mono stack out twice as a
+JS literal, because neither copy can read a custom property, and each is load-bearing for a
+different reason. **That duplication is not drift to fix.**
 
-**Both stacks are tokens, because three rules need the literal.** `.mermaid-zoom` sets
-`font: inherit`, which resolves against `pre.mermaid`. That would put the only button in the sheet
-in the code face, so the rule sets `font-family: var(--body-font)` after the shorthand. `pre` sets
-the family too. Without it, a code block emitted with no inner `<code>` gets a different face than
-the inline spans beside it.
-
-`mermaid.js` writes the mono stack out twice as a JavaScript literal. **That is not drift to fix.**
-Neither copy can read a custom property. Each copy is load-bearing for a different reason. See
-[Mermaid](#mermaid).
-
-**No `-webkit-font-smoothing: antialiased`.** That advice exists for dark text on light. This theme
-is the inverse, and grayscale-only antialiasing thins strokes.
+**No `-webkit-font-smoothing: antialiased`.** That advice is for dark text on light. This theme is
+the inverse, and grayscale-only antialiasing thins strokes.
 
 ## Type scale
 
 The body `font-size` clamp is the **only size lever**. Every other step is em-relative to it,
-headings included.
-
-The floor is `1rem`. That is the long-form minimum. It is also the iOS input-zoom threshold that
-`.filter-box` inherits. The cap is `1.25rem`. Every bound is `rem` and never `px`, so the page
-scales with a reader who raises the browser default.
+headings included. Floor `1rem` (also the iOS input-zoom threshold `.filter-box` inherits), cap
+`1.25rem`, every bound `rem` never `px`, so the page scales with a raised browser default.
 
 **Do not lower the floor past `1rem`** without a separate 16px floor on `.filter-box`.
 
@@ -127,2501 +110,1674 @@ scales with a reader who raises the browser default.
 0.75em  the outbound arrow
 ```
 
-**`text-wrap: balance` sits on `h1`, `h2` and `h3`, not `h4` through `h6`.** All three are short
-blocks where a stray last-line word is the defect `balance` fixes, the same reasoning
-`text-wrap: pretty` states for paragraph-length blocks elsewhere. `h4` through `h6` render at body
-text size, without the wider measure a headline runs against, so they stay off the list.
+**`text-wrap: balance` sits on `h1`, `h2`, `h3` only.** They're short blocks where a stray last-line
+word is the defect; `h4`-`h6` render at body size with no wider measure to justify it.
 
-Nested ratios compound. Check the parent before you add a step. The repo already paid for three
-traps.
+Nested ratios compound. Check the parent before adding a step. Three paid-for traps:
 
-- **Headings are `em`, not `rem`.** Anchored to the root, they diverge from body copy, which grows
-  on a vw clamp. h3 then renders smaller than its own paragraphs.
-- **`.verdict` and `.badge` sit at 0.8em, not 0.75em.** They nest inside a 0.95em parent, and
-  0.75em lands under the 12px floor. This couples to the body floor. Re-check both when that floor
-  moves.
-- **`pre code` is `font-size: 1em`** to halt the compounding. `code` and `pre` each carry 0.9em.
+- **Headings are `em`, not `rem`.** Anchored to the root they'd diverge from body copy, which grows
+  on a vw clamp, and h3 would render smaller than its own paragraphs.
+- **`.verdict`/`.badge` sit at 0.8em, not 0.75em.** They nest inside a 0.95em parent, and 0.75em
+  lands under the 12px floor. Re-check both if the body floor moves.
+- **`pre code` is `font-size: 1em`** to halt the compounding; `code`/`pre` each carry 0.9em.
 
-**Do not write a `pt` or `px` floor.** An earlier scale used `max(Xem, 12pt)`. It pinned nine
-elements to one size. It made body copy the smallest text on a phone. It also ignored the reader's
-own setting.
+**Do not write a `pt` or `px` floor.** An earlier `max(Xem, 12pt)` scale pinned nine elements to one
+size, made body copy the smallest text on a phone, and ignored the reader's own setting.
 
-**`h1` and `h2` sit at weight 400. `h3` is 500.** h3 is the one heading at text size. At 400 it
-renders lighter than the paragraph beneath it. Heavier than h2 is not an inversion, because h2 is
-larger, italic and `--purple`.
+**`h1`/`h2` sit at weight 400. `h3` is 500**, the one heading at text size, since 400 would render
+lighter than the paragraph beneath it. **Nothing at text size may go lighter than body copy**: h3-h6,
+`summary`, `th`.
 
-**Nothing at text size may go lighter than body copy.** That rule governs h3, h4, h5, h6, `summary`
-and `th`.
+**That rule now covers color too: `h5`/`h6` sit at `--label`, not `--muted`.** At body size, weight
+is the only other axis marking them as headings; on `--muted` a heading was the dimmest thing in its
+own section, the same inversion this file refuses for `dl.timeline > dd`. `--muted` is pinned at the
+contrast floor; `--label` moves toward body text, so that's where a heading belongs. **h3/h4 stay at
+`--label`, not `--on-surface`**: both are already larger or heavier, so size and weight do the work
+color alone has to do at h5.
 
-**That rule covers weight, and it now covers color too. `h5` and `h6` sit at `--label`, not
-`--muted`.** They render at body size, so weight is the only other axis left to mark them as
-headings, and a 50-unit step is not much. On `--muted` a heading was the dimmest thing in its own
-section, dimmer than the paragraph it introduced. That is the same inversion this file already
-refuses for `dl.timeline > dd`: an entry is content, not annotation, and so is a heading. `--muted`
-is the tier pinned at the contrast floor and `--label` is the tier that moves toward body text, so
-`--label` is where a heading belongs. **h3 and h4 stay at `--label` and do not move to
-`--on-surface`.** Both are larger or heavier than body copy, so size and weight already do the work
-that color has to do alone at h5.
+**`code`/`cite` sit at 0.9em**, x-height-matched against the mono stack.
 
-**`code` and `cite` sit at 0.9em**, which is the x-height-matched size against the mono stack.
-
-**`li` carries no `font-size` of its own.** At 0.95em a bulleted list rendered subordinate to the
-body copy beside it. `nav > ul > li` also compounded to the smallest text on the page. The two
-contexts that want 0.95em ask for it themselves. `.nav-list li` asks directly, and `nav` asks on
-the container.
+**`li` carries no `font-size` of its own.** At 0.95em a bulleted list read subordinate to body copy,
+and `nav > ul > li` compounded to the smallest text on the page. `.nav-list li` and `nav` ask for
+0.95em themselves instead.
 
 ## Italics
 
-Eight rules slant: `.byline`, `h2`, `th`, `summary`, `blockquote`,
-`details.nav-group > summary`, `.filter-box::placeholder` and `.filter-empty`.
+Eight rules slant: `.byline`, `h2`, `th`, `summary`, `blockquote`, `details.nav-group > summary`,
+`.filter-box::placeholder`, `.filter-empty`.
 
-**`h3` is upright and `h2` is italic, deliberately.** They are adjacent levels. A shared italic
-distinguishes neither, and the hierarchy then rests on size and color alone. An upright h3 gives
-the pair a second axis. It also lands where italic costs most: at text size a slanted stem on a
-dark surface loses definition.
+**`h3` is upright and `h2` is italic, deliberately.** Adjacent levels sharing an italic would
+distinguish neither, resting the hierarchy on size and color alone; upright h3 gives the pair a
+second axis, and italic costs the most legibility at text size on a dark surface anyway.
 
-**`summary` is 450 and `th` is 450.** Both are italic at or near reading size. At 400 each one read
-lighter than the copy around it. `th` cannot simply drop the declaration, because the UA default is
-bold. Italic and `--pink` carry the distinction instead.
+**`summary` and `th` are both 450, italic near reading size.** At 400 each read lighter than the
+copy around it. `th` can't drop its declaration (UA default is bold), so italic plus `--pink` carry
+the distinction instead.
 
 ## Width and measure
 
-**Page width is one number**, `--page-width: min(90vw, 160rem)` in `:root`. `body` and the
-`body.conn-map` article both reference it, so the two layouts cannot drift. `90vw` is the
-proportional side margin, and it is the dial. `160rem` is the ultrawide backstop. It is `rem`, so
-it scales with the reader's root size. `100% - 2 * var(--gutter)` on `body` is the floor. That term
-is what respects the safe-area insets folded into `--gutter`.
+**Page width is one number**, `--page-width: min(90vw, 160rem)` in `:root`, shared by `body` and
+`body.conn-map`'s article so the two layouts cannot drift. `90vw` is the proportional dial, `160rem`
+(scales with root size) is the ultrawide backstop, `100% - 2 * var(--gutter)` on `body` is the floor
+respecting the safe-area insets folded into `--gutter`.
 
 **Do not add a second width convention, a breakpoint override, or a full-bleed breakout.** Three
-attempts failed. The repo records them so that nobody retries them.
-
-1. A `70ch` cap plus a `min-width: 1200px` override to `80vw`. It stranded the copy in a narrow
-   column inside an empty container. It also snapped the width in one step at the breakpoint.
-2. A `100rem` cap. Same failure, one size up.
-3. A gutter and a backstop with no proportional term. That is full-bleed with fixed margins at
-   every size.
-
-**"Unused space" is not the metric to minimize.** A page needs side margins that scale.
+failed attempts, recorded so nobody retries them: (1) a `70ch` cap plus `min-width: 1200px` override
+to `80vw`, stranding copy in a narrow column and snapping width in one step; (2) a `100rem` cap, same
+failure one size up; (3) a gutter-and-backstop with no proportional term, full-bleed with fixed
+margins at every size. **"Unused space" is not the metric to minimize.**
 
 ### NON-NEGOTIABLE: the wide measure stays
 
-**The long measure is not a standing decision any more. It is closed.** `AGENTS.md` carries the rule
-in full. Content flows nearly the full window, well past the conventional 60 to 75 characters, and
-**nothing may narrow the rendered width of running prose**: no `max-width`, no `width`, no
-`inline-size`, no `columns`, no narrower `--page-width`, no grid track, no wrapper, and no
-consumer opt-in either.
+**The long measure is closed, not a standing decision.** `AGENTS.md` carries the rule in full.
+Content flows nearly the full window, well past the conventional 60-75 characters, and **nothing may
+narrow the rendered width of running prose**: no `max-width`, `width`, `inline-size`, `columns`,
+narrower `--page-width`, grid track, wrapper, or consumer opt-in.
 
-**A measurement is not an argument here, and that is the whole point of the rule.** Attempt 4 below
-produced good numbers and was rejected on sight regardless. Do not reopen this with fresh numbers, a
-`better-*` review finding, a typography rule of thumb or a WCAG citation. If a review flags the long
+**A measurement is not an argument here, and that's the whole point.** A fourth attempt (below)
+produced good numbers and was rejected on sight anyway. Do not reopen this with fresh numbers, a
+`better-*` review finding, a typography rule of thumb, or a WCAG citation. If a review flags the long
 measure, record that it was flagged and move on.
 
-This stylesheet serves dense reference pages with tables and diagrams. It does not serve
-book-length prose. Anyone who reads this section anyway owes three facts.
+This stylesheet serves dense reference pages with tables and diagrams, not book-length prose. Three
+facts for anyone who reads on anyway: the cap belongs in `em`, **not `ch`** (a serif's average
+advance is far under `0`'s width, so a `ch` cap runs longer than its number claims); it must be
+scoped to section children, not a bare `p` (which also hits `.byline` and mermaid's `foreignObject`
+paragraphs); and **smaller type makes the measure worse**, because the container is `vw`/`%` driven.
 
-- The cap belongs in `em`, **not `ch`**. `ch` is the advance of `0`. In a serif that is far wider
-  than the average prose advance, so a `ch` cap runs much longer than its number claims.
-- The cap must be scoped to section children. A bare `p` selector also hits `.byline`, which is a
-  flex item in the conn-map header. It also hits the `<p>` mermaid emits inside `foreignObject`
-  labels.
-- **Smaller type makes the measure worse**, because the container is `vw` and `%` driven.
+**Attempt 4 capped prose only and is the one worth knowing.** `--measure: 40em` on `p` (with
+`dl.timeline > dd` matched), leaving `table`, `pre`, `pre.mermaid`, `.edge-list`, `.recent-groups` at
+full width. It measured exactly as intended (about 70 characters per line flat from 1280 to 3440px,
+against 103-144 before, no overflow anywhere) and **was rendered, compared side by side, and
+rejected on sight regardless.** A capped column beside a wide container still reads as stranded copy.
 
-**Attempt 4 capped the prose only, and it is the one to know about.** It is the obvious next idea
-after the three above, because it appears to dodge their shared failure: `--measure: 40em` on `p`,
-with `dl.timeline > dd` capped to match, while `table`, `pre`, `pre.mermaid`, `.edge-list` and
-`.recent-groups` kept the full `--page-width`. It measured exactly as intended, holding body copy at
-about 70 characters per line flat from 1280px to 3440px against 103 to 144 before it, with no
-overflow at any width in any mode. **It was rendered, compared side by side against the current
-behavior, and rejected on sight.** The arithmetic was never the question. A capped column beside a
-wide container still reads as stranded copy, and the empty band to its side is the same defect the
-first three attempts produced, whatever the tables further down the page are doing.
+Two things it did establish: a sidenote floats `width: 28%` *inside* its paragraph, so any future
+cap on `p` needs a paired `p:has(:is(.sidenote, .marginnote))` rule at `cap / 0.72` to hold both; and
+a `max-width` can only narrow, so it can't reintroduce a sideways scroll.
 
-Two things that attempt did establish, for whoever ignores the rule at the top of this section:
+**Sidenotes stack below 1000px, not 600px**: the 28% float is narrower than any measure worth
+reading between 600 and about 1280px.
 
-- **A sidenote floats `width: 28%` *inside* its paragraph**, so any cap on `p` also narrows the note
-  and leaves the prose beside it at 72% of the number. A cap wants a paired
-  `p:has(:is(.sidenote, .marginnote))` rule at `cap / 0.72` to hold both, which is a second number
-  to keep in step with `.sidenote`.
-- **A `max-width` can only narrow**, so no value there can reintroduce a sideways scroll. That was
-  the one risk this idea did not carry.
+**`hyphens: auto` is scoped to the two narrowest prose measures**, the sidenote (28%) and `.col-2`
+(half a column). Not body copy, not `.nav-list li a` (a hyphen there reads as part of the slug), not
+headings. Both fixtures carry `lang="en"`, which hyphenation requires.
 
-**Sidenotes stack below 1000px, not below 600px.** The float is `width: 28%`. Between 600px and
-about 1280px the note is narrower than any measure worth reading. The body copy beside it keeps the
-full container.
-
-**`hyphens: auto` is scoped to the two narrowest prose measures.** Those are the sidenote at 28%
-and `.col-2` at half a column. It does **not** apply to body copy, which needs no help at the long
-measure. It does not apply to `.nav-list li a`, where a hyphen reads as part of the slug. It does
-not apply to headings. Both fixtures carry `lang="en"`, which hyphenation requires.
-
-**The 1000px block and the 600px block are separate on purpose.** Everything in the 600px block is
-genuinely phone-sized. Two breakpoints with distinct reasons beat one breakpoint that is wrong for
-half its contents.
+**The 1000px and 600px breakpoints stay separate on purpose**: the 600px block is genuinely
+phone-sized, and one breakpoint wrong for half its contents beats two with distinct reasons.
 
 ## Paragraphs and section rhythm
 
-**`section` spacing matches `h2`'s top margin**, so the two collapse to one value. Unequal values
-hid a defect rather than caused one. A section that opened with anything other than an `h2` got the
-smaller gap. The rhythm then depended on markup the stylesheet does not control.
+**`section` spacing matches `h2`'s top margin**, collapsing to one value; unequal values hid a
+defect (a section opening with anything but `h2` got the smaller gap) rather than caused one.
 
-**`section > :first-child { margin-top: 0 }` was tried and rejected.** It flattens the gap under
-the byline. In `body.conn-map` the sections are flex items, where margins do not collapse at all. A
-rule tuned for the collapsing case therefore misaligns the two columns.
+**`section > :first-child { margin-top: 0 }` was tried and rejected**: it flattens the gap under the
+byline, and in `body.conn-map` the sections are flex items where margins don't collapse at all, so a
+rule tuned for the collapsing case misaligns the two columns.
 
-**`.indented` is the book setting. It is opt-in, and it is two rules.** The paragraphs take
-`margin-block: 0`. Every `p + p` takes `text-indent: 1.5em`. The indent hangs off the sibling
-combinator, because nothing precedes the first paragraph.
+**`.indented` (book setting) is opt-in, not the default**, because the two conventions can't mix on
+one page without reading as an accident, and it's not what existing consumer output assumes. It's
+two rules: `margin-block: 0` on paragraphs, `text-indent: 1.5em` on every `p + p` (hung off the
+sibling combinator since nothing precedes the first paragraph).
 
-It is a class rather than the default for two reasons. The two conventions cannot mix on one page
-without a reader taking it for an accident. The default is also what every existing consumer's
-output assumes.
+**A sidenote marker must not use `vertical-align: super`**, which grows the line box and throws off
+every paragraph with a note. `position: relative; top: -0.4em; line-height: 0` lifts the glyph with
+no line-box impact instead.
 
-**A sidenote marker must not use `vertical-align: super`.** That grows the line box, which puts
-every paragraph with a note off the page rhythm. `.sidenote-number:after` and `.sidenote:before`
-use `position: relative; top: -0.4em; line-height: 0` instead. That lifts the glyph with no part in
-line-box height.
+**`.sidenote`/`.marginnote` reset what a surrounding `.newthought` inherits into them** (small caps,
+weight 600, tracking, 1.2em size), so a note pins the annotation register regardless of where its
+anchor lands. **Do not replace the reset with a markup rule.** A rendering invariant is the
+stylesheet's job.
 
-**`.sidenote` and `.marginnote` reset what a surrounding `.newthought` inherits into them.** Small
-caps, weight 600, tracking and the `1.2em` size all inherit, and the natural place for a note is
-inside the sentence it corroborates, so a generator that opens a paragraph with `.newthought` and
-keeps its note markup there produced a margin note in semibold small caps beside every other note
-in its normal register. The reset pins the annotation register: a note renders the same wherever
-its anchor lands. **Do not replace the reset with a markup rule instead.** A rendering invariant is
-the stylesheet's job; a consumer that ignores the contract must still get a correct note.
+**`--space-*` covers block rhythm only; component padding stays literal**, tuned by measurement
+rather than snapped to a scale that would move rendered boxes to satisfy an abstraction. The list
+indent stays literal too, pairing with `--tree-step` rather than the vertical scale.
 
-**`--space-*` covers block rhythm only. Component padding stays literal.** Six tokens replace the
-vertical-rhythm values. The off-scale values stay as they are, deliberately. They are
-component-internal padding tuned by measurement. A snap to the scale would move rendered boxes to
-satisfy an abstraction. The list indent stays literal for the same reason, because it pairs with
-`--tree-step` rather than with the vertical scale.
-
-**`text-wrap: pretty` sits on `p`, `.sidenote`/`.marginnote`, and `figcaption`/`caption`.** It
-avoids a lone short word stranded on the last line, the same defect `balance` fixes on headings,
-but for blocks too long for `balance`'s cost. Chrome and Safari ship it; Firefox falls back to
-normal wrapping with no breakage, so the rule costs nothing where it is not read.
+**`text-wrap: pretty` sits on `p`, `.sidenote`/`.marginnote`, `figcaption`/`caption`** to avoid a
+stranded last-line word, for blocks too long for `balance`. Firefox falls back to normal wrapping
+with no breakage.
 
 ## Lists
 
-**A prose `ul` keeps its markers.** A global `list-style: none` reset rendered bulleted lists as a
-run of short paragraphs with invisible nesting. It also made `li::marker` dead code. `ul` and `ol`
-share one indent, and `ul` keeps the UA marker progression, muted.
+**A prose `ul` keeps its markers.** A global `list-style: none` reset made bulleted lists read as a
+run of short paragraphs and made `li::marker` dead code. `ul`/`ol` share one indent; `ul` keeps the
+muted UA marker progression.
 
-**That is also half of the list-semantics problem.** WebKit drops list semantics from a list with
-`list-style: none`. A prose list with markers therefore keeps its semantics natively. `.nav-list`
-and `.icon-list` both reset `list-style: none` on the `<ul>` itself, so both need `role="list"` in
-the markup, which is a consumer obligation in `CONTRACT.md`.
+**That's also half of a list-semantics problem: WebKit drops list semantics from `list-style: none`.**
+`.nav-list`/`.icon-list` reset it on the `<ul>` itself, so both need `role="list"` in markup, a
+`CONTRACT.md` consumer obligation.
 
 ### `.recent-groups`
 
-**A landing index with several "recently updated, by category" lists is `auto-fit`, not a fixed
-column count.** `.edge-list` is always two columns, because an antecedent list and a descendant
-list are always a pair. A category index has no such fixed arity. A generator may emit two
-categories or eight, and a fixed `1fr 1fr` would either strand empty columns or overflow them.
-`repeat(auto-fit, minmax(min(36rem, 100%), 1fr))` sizes itself to whatever count the client emits,
-with no per-category selector and no count read from markup.
+**A landing index of several category lists is `auto-fit`, not a fixed column count.**
+`repeat(auto-fit, minmax(min(36rem, 100%), 1fr))` sizes to whatever count a generator emits, unlike
+`.edge-list`'s fixed two columns (always an antecedent/descendant pair). This is also why it needs no
+breakpoint override where `.edge-list` does: below two 36rem tracks, `auto-fit` collapses to one
+column on its own.
 
-**That is also why `.recent-groups` carries no breakpoint override, where `.edge-list` needs
-one.** At any width narrow enough to matter, two 36rem tracks no longer fit side by side, and
-`auto-fit` collapses to one column on its own. A fixed-column grid cannot do that, which is why
-`.edge-list` and `dl.timeline` each carry an explicit breakpoint. Adding one here would duplicate
-what the track-sizing function already does, against a number nobody measured for this component.
+**A bare `minmax(36rem, 1fr)` only fixed the column count, not the surviving column's own width**:
+it still floored at 576px, overflowing the document below that, a real WCAG 1.4.10 failure.
+`minmax(min(36rem, 100%), 1fr)` is the standard guard against exactly this `auto-fit` trap.
 
-**The bare `minmax(36rem, 1fr)` only fixed the column count, not the surviving column's own
-width.** `auto-fit` drops to one column below two tracks' width, but that one column still floors
-at 36rem (576px), which overflows the document below that width: a real WCAG 1.4.10 failure on any
-phone, confirmed by rendered layout. **`minmax(min(36rem, 100%), 1fr)` is the fix**, the standard
-guard against this exact `auto-fit` trap. It changes nothing above 576px and costs no new
-breakpoint.
+Item count and the "view all" link are a generator concern, not a stylesheet one. An uncategorized
+`.recent-group` is styled identically to a named one, one class not two.
 
-**Item count per category and the "view all" link are a generator concern, not a stylesheet
-one.** The CSS lays out whatever `.recent-group` sections arrive. It does not cap a list's length
-and does not style the overflow link beyond the plain `a` rules every link already carries.
+**A `.recent-group .nav-list li` is one line, title leading with `.count` trailing on the same
+row, never below it.** `a { display: block }` made the date wrap to its own line beneath the title,
+outranking it visually. Now `display: flex`: the anchor (`flex: 1 1 auto`, `min-width: 0`, ellipsis
+truncation) keeps the title from wrapping and pushing the date off the row; `.count` (`flex: none`,
+`--muted`, `0.82em`) never shrinks to make room. **Do not revert to `display: block`, and do not let
+the title wrap.**
 
-**A `.recent-group` for uncategorized items is styled identically to a named category.** It is
-one class, not two. A muted or demoted "Other" bucket would need a second class family for a
-distinction only the heading text needs to carry.
-
-**A `.recent-group .nav-list li` is one line: title leading, its trailing `<span class="count">`
-on the same row, never below it.** `a { display: block }` made the anchor claim the full row, so
-the date sat on a line of its own beneath the title, at the same size and color as the link
-itself. The date outranked the title it was annotating. `.recent-group .nav-list li` is now
-`display: flex`. The anchor takes `flex: 1 1 auto` with `min-width: 0` plus `overflow: hidden;
-text-overflow: ellipsis; white-space: nowrap`, so a long title truncates instead of wrapping to a
-second line and pushing the date off the row. `.count` takes `flex: none` at `--muted` and
-`0.82em`, so it reads as metadata, matching every other annotation register in the sheet, and it
-never shrinks to make room for the title. Do not revert the anchor to `display: block` inside a
-`.recent-group`, and do not let the title wrap: a second line is what this rule exists to prevent.
-
-**`.recent-group` and its `.nav-list` stretch to fill the grid row.** `.recent-groups` already
-sizes its tracks with `auto-fit`; without `.recent-group { display: flex; flex-direction: column }`
-plus `.recent-group .nav-list { flex: 1 }`, a category with fewer recent items renders a shorter
-card, and the "view all" links across a row land on different baselines. The list, not the card,
-absorbs the slack, so item rows keep their own height.
+**`.recent-group` and its `.nav-list` stretch to fill the grid row** (`flex-direction: column` plus
+`.nav-list { flex: 1 }`), so a card with fewer items doesn't leave its "view all" link at a different
+baseline than its neighbors.
 
 ### `dl.timeline`
 
-**A timeline entry is content, not annotation.** `dl.timeline > dd` and `> dt` both take
-`--on-surface`, where a plain `dd` is the caption tier. The date is the axis a reader scans, so it
-may not be the dimmest thing on the page.
+**A timeline entry is content, not annotation.** `dl.timeline > dd`/`dt` both take `--on-surface`
+(not the plain-`dd` caption tier), since the date is the axis a reader scans. An `h3` date line is
+the wrong shape too: label-tier weight 500 reads fainter than the event title, and dates never align
+into a column.
 
-**An `h3` date line is the wrong shape.** `h3` is the label tier at weight 500. The date therefore
-reads fainter than the event title beneath it, and the dates never align into a column.
+**`--timeline-date` exists because era groups are separate lists**, and `max-content` sizes each
+track against only its own rows, so a multi-list timeline needs `var(--timeline-date, max-content)`
+to pin one width in `ch` across lists CSS otherwise cannot see (no shared-parent `subgrid` applies).
 
-**`--timeline-date` exists because era groups are separate lists.** `max-content` sizes each track
-against only its own rows. A multi-list timeline then gets an axis that walks left down the page.
-`grid-template-columns: var(--timeline-date, max-content) 1fr` lets a wrapper pin one width in
-`ch`. The default stays `max-content`, so a single-list timeline needs no number.
+**Measure the widest label at weight 500 (what `dt` renders at) and round up.** `tabular-nums` pins
+digits to `1ch`; a spelled-out century often beats a numeric range. **A short `--timeline-date` has
+no CSS backstop**: `minmax(var(--timeline-date), max-content)` does not fix a bled label, since the
+`1fr` sibling consumes free space first. The `CONTRACT.md` measurement instruction is the only
+defense.
 
-**CSS cannot size every list to the document.** No selector reaches a sibling list's content.
-`subgrid` does not apply either, because the lists are not tracks of a shared parent grid.
+**`text-align: end` plus `tabular-nums` does not align mixed date formats** (real labels end in `CE`
+or `s`, not always a digit); `tabular-nums` stays only to make the `ch` measurement predictable.
+**`text-align: start` was rejected**, opening a wide gap between a short date and its rule.
 
-**Measure the widest label. It is rarely the one that looks longest.** `tabular-nums` pins every
-digit to exactly `1ch`, and letters stay proportional. A spelled-out century therefore beats a
-numeric range. **Measure at weight 500**, which is what `dt` renders at, and **round up**. `ch`
-resolves against the element the variable sits on, which is weight 400 and systematically narrower.
+**No `.approx` class exists for a `c.` prefix**: no generator emits a span for it, and a class with
+no emitter is a guess about markup this repo doesn't control.
 
-**A short `--timeline-date` has no CSS backstop.** `white-space: nowrap` means the label bleeds
-rather than wraps. `minmax(var(--timeline-date), max-content)` was measured and does **not** fix
-it. The `1fr` sibling consumes the free space before the growth limit is reached. The measurement
-instruction in `CONTRACT.md` is the only defense there is.
+**A floated `.sidenote` can't escape a `dl.timeline` entry** (the float resolves against the `dd`).
+**Cite a timeline entry with a `sup` link into a numbered source list instead**: better at density
+too, since a margin column loses sync with its anchors down a long page.
 
-**`text-align: end` plus `tabular-nums` is not what aligns mixed date formats.** It right-aligns on
-the last character. That forms a numeral column only while every label ends in a digit, and real
-labels end in `CE` or `s`. `tabular-nums` stays, because it makes the `ch` measurement predictable.
-**Do not go looking for the missing column.** **`text-align: start` was rejected**, because it
-opens a wide gap between a short date and the rule it labels.
+**`white-space: nowrap` on the date releases below 600px**, where the collapsed layout has no track
+left to protect and nowrap would be the one thing pushing the page wider than the viewport.
 
-**There is no `.approx` class for the `c.` prefix.** A muted prefix would read well. No generator
-emits a span for it, and a class with no emitter is a guess about markup this repo does not
-control.
+**A deep link's arrival cue is an `outline`, not the `--highlight` wash** (which takes link text
+under 4.5:1). It costs no layout shift, reads distinct from the link-blue focus ring by hue, and
+survives `prefers-reduced-motion` where a flash wouldn't. `dt:target` takes the orange text color
+instead (an outline can't reach a `dt`, and a background wash can't either since a grid gap takes no
+background). `:target` also carries `scroll-margin-block-start`, so a deep link doesn't land with its
+era heading scrolled off above. **Smooth scrolling was rejected**: on a long page it becomes a long
+animated scroll, and the outline already answers "where did I land".
 
-**A floated `.sidenote` cannot escape a `dl.timeline` entry.** The float resolves against the `dd`
-rather than the page, so the note lands inside the entry column. **Cite a timeline entry with a
-`sup` link into a numbered source list.** That is also the better answer at density. A margin column
-loses sync with its anchors down a long page.
+**`.footnote-ref` is `nowrap`**, scoped there rather than to `sup` since a converter may put anything
+in a bare `sup`. **The citation marker's hit area grows with `padding-block` alone**, never
+`padding-inline`, which would drag the underline out past the digit.
 
-**`white-space: nowrap` on the date is released below 600px.** It exists to stop a range from a
-break at its own hyphen inside a narrow track. The collapsed layout has no track to protect. There
-nowrap becomes the one declaration in the component that can push the page wider than the viewport.
+Print: `break-inside: avoid` on the entry, never the list (a whole timeline forced onto one page is
+worse). `break-after: avoid` on `dt` is not needed (the grid row travels as a unit, measured).
 
-**A deep link needs an arrival cue, and it is an `outline`.** It is not the `--highlight` wash. A
-source list item is mostly link text, and the wash takes link text under 4.5:1. The outline costs
-nothing in contrast. It shifts no layout, which matters inside the `.col-2` multicol source list.
-It reads as distinct from the link-blue focus ring by hue. It is static, so it survives
-`prefers-reduced-motion`, where a flash would leave that reader with no cue at all.
-
-**`dt:target` takes the orange text color, because the outline cannot reach the date.** An outline
-on both halves reads as two results rather than one. A background wash cannot work either, because
-a grid gap takes no background.
-
-**`:target` also carries `scroll-margin-block-start`.** Without it, a `dt` deep link lands against
-the viewport edge with its era heading scrolled off above. The rule sits on `:target` rather than
-on the headings, so it covers whatever a document links to. **Smooth scrolling was rejected.** On a
-long page the jump becomes a long animated scroll, and the outline already answers "where did I
-land".
-
-**`.footnote-ref` is `nowrap`.** A multi-source citation group is one unbreakable unit, and the
-commas inside it are ordinary break opportunities. The rule is scoped to `.footnote-ref` rather
-than to `sup`, because a converter may put arbitrary content in a bare `sup`.
-
-**The citation marker's hit area grows with `padding-block` alone.** Vertical padding on a
-non-replaced inline element extends the hit region and leaves the line box alone. **Do not add
-`padding-inline`.** Inline padding does affect inline layout, and it drags the underline out past
-the digit.
-
-**Print gets `break-inside: avoid` on the entry, never on the list.** A whole timeline forced onto
-one page is the worse failure.
-
-**`break-after: avoid` on the `dt` is not needed.** The grid row travels as a unit across page
-boundaries, which was measured. The property would therefore be a declaration nobody can observe.
-
-**The collapse to one column happens at 760px, not 600px.** The two-column layout holds far past
-the point where it should. The date track does not shrink out of the way, so the prose column
-becomes a narrow ribbon beside a wide empty date column. That is the same failure this repo already
-recorded for the measure cap. **A container query was rejected.** `container-type: inline-size` on
-`<article>` applies layout containment to every consumer's whole document to fix one component's
+**The collapse to one column happens at 760px, not 600px**: the date track doesn't shrink out of the
+way below that, leaving a narrow prose ribbon beside a wide empty date column, the same failure
+recorded for the measure cap. **A container query was rejected**: `container-type: inline-size` on
+`<article>` would apply layout containment to every consumer's whole document for one component's
 breakpoint.
 
-**A `strong` inside an `<a>` repaints the link.** `strong { color: var(--orange) }` wins on the
-inner element. A source title wrapped in `strong` therefore renders orange while the citation
-markers render link-cyan. That is one page with two link colors. Take the `strong` out of the
-anchor. Check this in any consumer that wraps a link title in `strong`.
+**A `strong` inside an `<a>` repaints the link** (`strong { color: var(--orange) }` wins on the inner
+element), so take `strong` out of any anchor a consumer wraps a link title in.
 
-**Nothing in `dl.timeline` encodes elapsed time, and that is the design.** A proportional axis puts
-most of the page in whitespace and most of the content in an unreadable pile. The era grouping
-already does the coarse chunking. Anyone who wants a real axis wants a chart, and a chart is not a
-thing a no-build stylesheet should grow.
+**Nothing in `dl.timeline` encodes elapsed time, by design.** A proportional axis buries most content
+in a pile and most of the page in whitespace; era grouping already does the coarse chunking, and
+anyone wanting a real axis wants a chart, which this stylesheet does not grow into.
 
 ## Tables
 
-**No `font-family` on `table`.** Tables inherit the body serif, which is correct, because Source
-Serif 4's digits are tabular and lining. **Do not put tables in the mono stack.** The repo tried
-that. It costs about a quarter of the table width, and it puts tables in a different register from
-the prose. `font-variant-numeric: tabular-nums` on `td` is belt-and-braces for the fallback path.
+**No `font-family` on `table`.** Tables inherit the body serif (tabular, lining digits by
+construction). **Do not put tables in the mono stack**: costs about a quarter of table width and
+puts tables in a different register from the prose.
 
-**`table.tree` is a table, deliberately not a `treegrid`.** That role is a keyboard contract. It
-promises roving `tabindex`, arrow keys, `aria-level`, `aria-expanded`, `aria-posinset` and
-`aria-setsize`. A ship without the script therefore promises interaction that does not exist. The
-role also removes the native row and column semantics a plain `<table>` announces. Depth is an
-author attribute, `data-depth`, and everything else is presentation.
+**`table.tree` is a table, deliberately not a `treegrid`.** That role promises roving `tabindex`,
+arrow keys, `aria-level`/`expanded`/`posinset`/`setsize`, a keyboard contract this repo ships no
+script for, and it would strip the native row/column semantics a plain `<table>` announces. Depth is
+an author attribute (`data-depth`); everything else is presentation.
 
-- **The indent is one `--tree-step` custom property, and only levels 0 to 3 exist.** `attr()`
-  cannot feed a length into `calc()` with useful support. The alternative is a custom property per
-  row, which pushes styling into the generator. A level-4 row degrades to flat rather than to
-  wrong.
-- **Depth de-emphasizes with `--label` at levels 2 and 3, not with smaller type.** Nested ratios
-  compound, and the table already sits at 0.95em.
-- **The `↳` needs the same alt-text treatment as the outbound arrow**, which is
-  `content: "\21B3\A0" / ""` behind `@supports`. Without it the glyph lands in the row's accessible
-  name. **Any future decorative `::before` owes this.**
+- **The indent is one `--tree-step` custom property, levels 0-3 only.** `attr()` can't feed a length
+  into `calc()` with useful support; a per-row custom property pushes styling into the generator. A
+  level-4 row degrades to flat, not wrong.
+- **Depth de-emphasizes with `--label` at levels 2-3, not smaller type** (nested ratios compound, and
+  the table already sits at 0.95em).
+- **The `↳` needs the same alt-text treatment as the outbound arrow** (`content: "\21B3\A0" / ""`
+  behind `@supports`), or the glyph lands in the row's accessible name. **Any future decorative
+  `::before` owes this.**
 
-**`width: auto; max-width: 100%`, not `width: 100%`.** Otherwise a narrow table stretches to the
-full page. A wide table is unchanged either way, because its min-content width is the floor.
+**`width: auto; max-width: 100%`, not `width: 100%`**, or a narrow table stretches to the full page.
 
-**The sideways-scroll escape hatch is `@media (max-width: 1000px)`.** It pairs `display: block`
-with `width: fit-content`. `display: block` alone is not the fix. A block-level table takes
-`width: auto` and fills its container, which reinstates the document-level sideways scroll.
-`fit-content` resolves to content width for a narrow table and to container width for a wide one,
-so both land correctly. The trigger is smaller than it looks. It starts at 200% text-only zoom, not
-at 400%.
+**The sideways-scroll escape hatch is `@media (max-width: 1000px)`**, pairing `display: block` with
+`width: fit-content` (block alone reinstates document-level scroll via `width: auto`; `fit-content`
+resolves correctly for both narrow and wide tables). The trigger is smaller than it looks: it starts
+at 200% text-only zoom, not 400%.
 
-**The cost of the hatch is the sticky header, which `display: block` makes inert up to 1000px. That
-is deliberate.** A pinned header matters on a long table at desktop width. A page that scrolls
-sideways is a WCAG 1.4.10 failure at every width where it happens. The opt-in answer to both is
-`.table-scroll`.
+**The hatch's cost is the sticky header, inert below 1000px, deliberately**: a page that scrolls
+sideways is a WCAG 1.4.10 failure at every width it happens, and that outranks a pinned header at
+desktop width. The opt-in answer to both is `.table-scroll`. **Chromium does not strip table
+semantics on `display: block`**, measured rather than assumed; role counts are identical above and
+below the breakpoint.
 
-**Chromium does not strip table semantics on `display: block`.** The repo measured that rather than
-assumed it. The role counts are identical above and below the breakpoint. The hatch costs the
-sticky header and the keyboard reach. It does not cost the role.
+**A sticky `th` needs an opaque background** (an inset shadow, not `border-bottom`, since
+`border-collapse: collapse` would scroll the border away from the stuck header).
 
-**A sticky `th` needs an opaque background.** Otherwise the rows that scroll under it show through.
-The header rule is an inset shadow rather than a `border-bottom`. Under `border-collapse: collapse`
-the table paints the collapsed border, and that border scrolls away from the stuck header.
+**No zebra striping**: it separated rows a reader could already separate by padding, and put the
+code surface behind arbitrary prose cells. Two consequences: `table.tree [data-depth="0"] td` is the
+only in-table fill (meaning *root row*, nothing else), and `tbody tr:hover td` keeps its `tbody`
+qualifier to stay clear of `thead`.
 
-**No zebra striping.** It separated rows a reader could already separate by padding. It also put
-the code surface behind arbitrary prose cells. A Tufte table separates rows with space and one
-rule. Two consequences follow.
-
-- **`table.tree [data-depth="0"] td` is the only fill inside any table.** `--code-bg` in a table
-  therefore means *root row* and nothing else.
-- **`tbody tr:hover td` keeps its `tbody` qualifier**, which now only scopes hover away from a
-  `thead` row.
-
-**`.num` is an opt-in class, not a heuristic.** CSS cannot tell a number from a label. `:has()`
-cannot match text content, and "a column that looks numeric" is a generator's claim. The class goes
-on the `th` too. Without it the header floats off its own column.
+**`.num` is an opt-in class, not a heuristic**: CSS can't tell a number from a label, and `:has()`
+can't match text content. Goes on the `th` too, or the header floats off its own column.
 
 **An unwrapped table takes `tabindex="0"` and a `<caption>`, never `role="region"`.** The escape
-hatch gives a table its own sideways-scroll axis. A scroll container no keyboard can reach is a
-2.1.1 failure. Chrome papers over that by a scroll container it makes focusable on its own, with a
-non-conforming default ring. Firefox and Safari do not.
+hatch makes it a scroll container, and an unreachable one is a 2.1.1 failure Chrome papers over (with
+a non-conforming ring) but Firefox and Safari do not. `role="region"` on the `<table>` overrides
+`role="table"` and takes row/column semantics with it, the same defect as `role="button"` on
+`pre.mermaid`. **This rule is gated in `scripts/maintain.nu check`** (prose alone didn't hold it):
+the check deletes the `.table-scroll`-wrapped case first, then asserts `tabindex="0"` on every
+remaining `<table>` and no `role="region"` on any.
 
-**`role="region"` on the `<table>` is the wrong fix.** It overrides `role="table"` and takes the row
-and column semantics with it. That is the same defect as `role="button"` on `pre.mermaid`.
-`tabindex` alone changes no role, and `<caption>` is the element that already exists to name it.
+**`.table-scroll` is the opt-in wrapper for a wide table**: `overflow: auto` with a `70vh` cap plus
+`.table-scroll > table { display: table }`, scrolling both axes and keeping the header pinned. A
+wrapper scrolling only one axis does **not** work (forces the other off `visible`, so the wrapper
+becomes the scrollport and the header still leaves). `tabindex="0"`, `role="region"` and a label go
+on the wrapper. The wrapper stays opt-in and `overflow-x` stays on `table` too, so both paths run at
+once rather than breaking un-wrapped consumers.
 
-**That rule is gated in `scripts/maintain.nu check`, because prose did not hold it.** The rule was
-written into `CONTRACT.md` § 2, `table.tree` was fixed to match, and two fixture tables stayed
-unreachable through the release that stated the requirement. The check deletes the
-`.table-scroll` wrapper case from the body first and then asserts `tabindex="0"` on every `<table>`
-that is left, plus no `role="region"` on any of them. **Delete the wrapper before the scan rather
-than write an exemption into the predicate.** A wrapped table is not a scroll container, so it has
-nothing to be reachable for, and a predicate that reasons about ancestry from a flat regex is the
-kind of check that passes for the wrong reason.
-
-**`.table-scroll` is the opt-in wrapper for a wide table.** It takes `overflow: auto` with a `70vh`
-cap, alongside `.table-scroll > table { display: table }`. It scrolls both axes and keeps the
-header pinned. A wrapper that scrolls one axis does **not** work. One axis on `auto` forces the
-other off `visible`, so the wrapper becomes the scrollport and the header still leaves.
-`tabindex="0"`, `role="region"` and a label go on the wrapper.
-
-**The wrapper stays opt-in, and `overflow-x` stays on `table`.** A move of the hatch off `table`
-would break every consumer that had not wrapped yet, so both paths run at once.
-
-**`.table-scroll` carries `scroll-padding-top: 3em`, matched against the sticky `th`'s own
-height.** A focusable cell in an early row lands under the pinned header otherwise, which is a
-WCAG 2.4.11 failure. A headless-Chrome repro confirmed both halves: with no `scroll-padding-top`,
-a focused link's rect sat fully inside the sticky header's bounding box; with it set, the
-browser's native focus-triggered scroll went far enough that the link cleared the header by
-roughly 46px. The fixture's wide table carries one link (row 2's trend cell) for exactly this
-reason, so a future regression here fails the same way it was caught.
+**`.table-scroll` carries `scroll-padding-top: 3em`, matched to the sticky `th`'s height**, or a
+focused cell in an early row lands under the pinned header (WCAG 2.4.11), confirmed by a headless
+repro: without it a focused link's rect sat inside the header's bounds, with it the native scroll
+cleared the header by about 46px. The fixture's wide table carries one link for exactly this reason.
 
 ## Links
 
 **Underline thickness has a 1px floor.** A sub-pixel underline paints as a faint partial-coverage
-line, and the underline is the only thing that marks a link.
+line, and the underline is the only thing that marks a link. `overflow-wrap: break-word` lets a long
+URL or slug break rather than escape its container (the conn-map Links column runs as narrow as
+220px).
 
-`overflow-wrap: break-word` lets a long URL or slug break rather than escape its container. The
-connections-map Links column is as narrow as 220px.
+**The outbound arrow is decorative and once reached the accessibility tree** (a screen reader read
+"north east arrow" after every external label). `content: "…" / ""` gives the pseudo-element empty
+alternative text, behind `@supports (content: "x" / "y")` since the alt-text syntax is a single
+value a browser that can't parse it discards **whole** (Firefox ESR still ships in that state).
+`\A0` keeps the arrow from an orphan line. Print drops both arrow and underline (the destination is
+unreachable on paper).
 
-**The outbound arrow is decorative, and it reached the accessibility tree.** A screen reader then
-read out "north east arrow" after every external label. `content: "…" / ""` gives the
-pseudo-element empty alternative text.
-
-That declaration sits behind `@supports (content: "x" / "y")`, because the alt-text syntax is a
-single value. A browser that cannot parse it discards the **whole** declaration, and the marker
-disappears. Firefox ESR is in that group, and it is still deployed. `\A0` keeps the arrow from an
-orphan line of its own. Print drops both the arrow and the underline, because on paper the
-destination is unreachable.
-
-`cite` is monospace and `font-style: normal`. The browser default is italic serif, which in this
-theme is indistinguishable from `<em>`.
+`cite` is monospace and `font-style: normal`: the browser default (italic serif) is indistinguishable
+from `<em>` in this theme.
 
 ## Color and the contrast budget
 
-**The `:root` block is the only source of color truth.** `tokens.css`, `mermaid-palette.json` and
-the inline hex in `mermaid.js` are machine-checked projections of it.
+**The `:root` block is the only source of color truth.** `tokens.css`, `mermaid-palette.json`, and
+the inline hex in `mermaid.js` are machine-checked projections of it. **Measure a composited color
+from rendered pixels, never a computed value**: a computed-value reading reports the un-composited
+mix, which is wrong (two surfaces went unmeasured this way for a long time).
 
-**Measure a composited color from rendered pixels, never from a computed value.** A computed-value
-reading reports the un-composited mix, and it is wrong. Two surfaces went unmeasured for a long
-time that way.
+**Text can land on three grounds** (`--surface`, `--code-bg`, `--surface-alt`) **and a new token must
+clear its floor against all three.** `--surface-alt` (row-hover fill) is the harder one to check in
+light mode.
 
-**Text can land on three grounds, and a new token must clear its floor against all three.** The
-grounds are `--surface`, `--code-bg` and `--surface-alt`. `--code-bg` covers `pre`, inline `code`,
-`.filter-box` and the `table.tree` root row. `--surface-alt` is the row-hover fill. **Do not check
-only the easiest ground.** `--surface-alt` is the harder one in light mode.
+**An accent can also be the ground.** `.verdict-*`, `.step-node`, `::selection` all invert and paint
+`--surface` text on an accent fill; check 9 gates all three (print is exempt for `.verdict-*` alone,
+since its print block swaps to an outline). **Two tokens in relative color syntax** (`--purple-bright`,
+`--highlight`) **sat outside every check** until check 10 resolved and gated both; this mattered most
+for `--purple-bright`, the one token putting purple text on `--code-bg` (accepted at 4.21:1, the
+`.hljs-type` pair).
 
-**An accent can also be the ground, and for a long time nothing looked at that.** Three components
-invert the usual direction and paint `--surface` *text* on an accent fill: `.verdict-*`,
-`.step-node` and `::selection`. Every check measured accents as foregrounds only, so none of these
-pairs was gated. Check 9 gates all three now. Print is exempt for `.verdict-*` alone, because the
-print block replaces the fill with a `currentColor` ring and recolors the text, so that pair does
-not exist on paper. `.step-node` has no print override and is checked there like everywhere else.
+**`prefers-contrast: more` states `--purple-bright` explicitly, as `oklch(0.885 0.060 300.909)`**,
+because the base relative-color rule (`calc(l + 0.07)` off `--purple`) would land past the sRGB
+ceiling once high contrast already raised `--purple`. **Do not replace it with the relative form
+again**, and do not park it on the gamut boundary.
 
-**Two tokens are written in relative color syntax, and the token regex cannot see either one.**
-`--purple-bright` and `--highlight` therefore sat outside every check. That mattered most for
-`--purple-bright`: it is the one token that puts purple *text* on `--code-bg`, which is the pair
-this file accepts at 4.21:1 on the grounds that no purple text renders there. It renders on every
-highlighted code block as `.hljs-type`. Check 10 resolves both forms and gates them.
-
-**`prefers-contrast: more` has to state `--purple-bright` explicitly now, and it never had to
-before.** The base rule is `calc(l + 0.07)` off `--purple`, and high contrast raises `--purple` for
-its 7:1 floor. Adding 0.07 on top of that landed the token past the sRGB ceiling, which shrinks as
-lightness climbs, so Chrome painted a clipped color the sheet never declared. This is the same trap
-check 7 exists for, reached through a token check 7 could not see. The mode declares
-`oklch(0.885 0.060 300.909)` instead: a smaller lift than the base rule, holding 90% of the ceiling
-at that lightness rather than 104% of it, and it keeps more chroma than a full `+0.07` could. **Do
-not replace it with the relative form again**, and do not park it on the boundary.
-
-The floors, by mode: default 4.2:1, `prefers-contrast: more` 7:1, light 4.5:1, print 4.5:1. Rule
-tokens sit at 3:1 against `--surface`, and the data ramp sits at 3.2:1.
+**Floors by mode: default 4.2:1, `prefers-contrast: more` 7:1, light 4.5:1, print 4.5:1.** Rule
+tokens sit at 3:1 against `--surface`; the data ramp at 3.2:1.
 
 ### Tier decisions
 
-**`--label` is the tier that moves toward body text. `--muted` is the tier pinned at the contrast
-floor.** The two shared a hue and a chroma, and they differed too little in lightness to read as
-two tiers. They also co-occur. `.scorecard` puts `--on-surface`, `--muted` and `--label` in one
-component, and `.byline` sits directly above `h3`. `--muted` cannot get quieter, so `--label`
-moved. The same holds in print, where the two had identical lightness.
+**`--label` moves toward body text; `--muted` is pinned at the contrast floor.** They used to share a
+hue/chroma and read as one tier despite co-occurring (`.scorecard`, `.byline` above `h3`); `--muted`
+couldn't get quieter, so `--label` moved.
 
-**The row-hover fill is `var(--surface-alt)`. It is a flat token, and it darkens rather than
-lightens.** It was a `color-mix` that composited to a lighter row, which took every accent on that
-row below 4.5:1. Darker-on-dark is the weaker affordance, and it is worth it. **Do not reach for
-another `color-mix`.** `--surface-alt` already exists, it needs no compositing to reason about, and
-it is the only other flat surface in the sheet.
+**The row-hover fill, `--surface-alt`, is a flat token that darkens, not a lightening `color-mix`.**
+A `color-mix` composited to a lighter row that took every accent below 4.5:1. **Do not reach for
+another `color-mix`**: `--surface-alt` already exists and needs no compositing to reason about.
 
-**`aside` has no fill at all, on screen or on paper.** The tint took a `cite`, `.sc-note`,
-`.count`, `::marker` or status span inside a callout below the floor. The orange accent bar marks
-the callout instead.
+**`aside` has no fill at all**, screen or paper: a tint took a `cite`/`.sc-note`/`.count`/`::marker`/
+status span below floor. The orange accent bar marks the callout instead.
 
-**`--purple` on `--code-bg` sits under the text floor, and the repo left it alone.** Purple is
-`h2`, the `pre` accent bar and `::selection`. The bar is non-text and clears 1.4.11. Nothing puts
-purple *text* on the gray, because an `h2` never renders inside a `pre` or a table cell. The repo
-recorded this rather than fixed it, because the token is mirrored into `mermaid-palette.json`
-twice.
+**`--purple` on `--code-bg` sits under the text floor, and the repo left it alone**: purple is `h2`,
+the `pre` bar, `::selection`, and nothing puts purple *text* there (an `h2` never renders inside a
+`pre` or cell). Recorded rather than fixed, since the token mirrors into `mermaid-palette.json` twice.
 
-**Borders drawn on `--code-bg` take `--rule`, not `--rule-light`.** The lighter weight fails 1.4.11
-there, which took out `.filter-box`, `.mermaid-zoom` and `pre.mermaid:hover`. The side effect is
-wanted. A control now reads stronger than a passive container like `details`.
+**Borders on `--code-bg` take `--rule`, not `--rule-light`** (the lighter weight fails 1.4.11 there:
+`.filter-box`, `.mermaid-zoom`, `pre.mermaid:hover`). The side effect is wanted: a control now reads
+stronger than a passive container like `details`.
 
-**`em` carries no color.** It inherits. That is what makes it correct inside an `aside`, a
-`blockquote` or a `.sidenote`. It matches its surroundings rather than overrides a color those
-containers already chose. The italic carries the emphasis.
+**`em` carries no color, it inherits**: correct inside `aside`/`blockquote`/`.sidenote`, matching
+surroundings rather than overriding a color they already chose.
 
-**`--highlight` is a body-copy surface only.** `mark` pins `color: var(--on-surface)` rather than
-inherits, because every other tier fails on the wash. **Do not paint the wash under anything but
-body copy.** A `li:target` highlight was built on that basis, measured, and removed.
+**`--highlight` is a body-copy surface only.** `mark` pins `color: var(--on-surface)` since every
+other tier fails on the wash. **Do not paint the wash under anything but body copy** (a `li:target`
+highlight was built, measured, and removed on this basis).
 
 ### The data ramp
 
-**`--data-1` to `--data-4` exist so that a diagram category cannot borrow a prose accent.**
-`--data-1` moved off the link hue, where it was a near-exact collision. Hue separation between ramp
-members is what matters, because they appear together in one diagram.
+**`--data-1` to `--data-4` exist so a diagram category can't borrow a prose accent.** `--data-1`
+moved off the link hue, a near-exact collision; hue separation between members is what matters, since
+they co-occur in one diagram. The ramp carries its own light and print values (a single base `:root`
+declaration once drew dark-ground fills on a light page). Each member holds a stated fraction of
+maximum in-gamut chroma at its lightness and hue; check 8 pins those fractions.
 
-**The ramp carries its own light and print values.** One declaration in the base `:root` drew
-dark-ground fills on a light page. The old reasoning was that slices abut each other rather than
-the ground. That argued the boundary does not matter, rather than measured that it passes.
+**A pie slice renders the token as of v1.40.0.** Check 5 always asserted the token cleared the
+non-text floor (governing a `classDef` fill, a legend swatch, any direct `var(--data-2)` use) but
+said nothing about what a `pie` fence itself rendered at Mermaid's default 0.7 `pieOpacity`.
+`pieOpacity: '1'` closes that gap; check 11 measures the label that lands on it. See
+[Diagram types](#mermaid).
 
-Each ramp member holds a stated fraction of maximum in-gamut chroma at its lightness and hue. Check
-8 pins those fractions.
+**`--data-2` sits close to `--pink`, `--data-3` close to `--green`, left alone**: nothing in a
+diagram puts a category fill beside body copy, and a move means two more hex projections to
+recompute.
 
-**A pie slice renders the token as of v1.40.0, and it did not before.** Mermaid's own stylesheet
-applies `opacity: pieOpacity` and a 2px black stroke, and the default 0.7 meant the stroke was what
-separated a slice from the card rather than the fill contrast. This entry used to record that and
-accept it: check 5 asserted the **token** cleared the non-text floor, which governs a `classDef`
-fill, a legend swatch and any consumer painting with `var(--data-2)` directly, and it deliberately
-said nothing about what a `pie` fence rendered. `pieOpacity: '1'` closes the gap rather than
-documenting it, so the slice is now the token, and check 11 measures the label that lands on it.
-See *Diagram types* for both halves of the pie fix.
-
-**`--data-2` sits close to `--pink`, and `--data-3` sits close to `--green`.** The repo left both
-that way. Nothing in a diagram puts a category fill beside body copy, and a move means two more hex
-projections to recompute.
-
-**The `classdef` fills have a light twin as of v1.40.0, and the missing half was never the hex.**
-`classdefLight` projects the same four roles through the light block, and check 2 gates both sets
-against their own palette plus the letter each one paints on its own fill. That letter is what
-inverts: the dark ramp is pale so the role's `color` is `--surface`, and the light ramp is mid-tone
-so it is `--on-surface`. Reusing `--surface` in the light set would have landed at 3.45 to 3.53:1,
-the same numbers that put the `--data-*` ramp out of bounds for `.step-node`, and the check measures
-that pair rather than asserting it.
-
-**What actually blocked this was the emit-time rule, and the rule is a prohibition.** A fence is
-diagram source: it has no CSS to read and no `var()` it can resolve, so one literal hex cannot
-follow a reader's appearance and no amount of palette work changes that. So `CONTRACT.md` § 2 now
-bans a `classDef name fill:#hex` line outright on a page that follows the reader's appearance, and
-permits it only on a page **locked** to one palette, which is the only case where a generator can
-know which set to reach for. The light hex exists for exactly that case.
+**`classdef`/`classdefLight` fills both exist as of v1.40.0**, check 2 gating both sets plus the
+letter each paints on its own fill (`--surface` on the pale dark ramp, `--on-surface` on the
+mid-tone light ramp: reusing `--surface` in light would land at 3.45-3.53:1, out of bounds).
+**`CONTRACT.md` § 2 bans a `classDef name fill:#hex` line on any page that follows the reader's
+appearance**, permitting it only on a page locked to one palette: a fence has no CSS to read, so one
+literal hex can't follow appearance and no palette work changes that.
 
 ### Gamut and vividness
 
-**A declared chroma that sRGB cannot hold is silently clipped, and every contrast check stays
-green.** Three high-contrast tokens shipped that way for two releases. `oklch_to_linear` clips
-before it measures, so the checks were accurate about what ships and blind to the gap against the
-source. Check 7 bisects the sRGB boundary and gates every parsed token in every mode.
+**A declared chroma sRGB can't hold is silently clipped, and every contrast check stays green**
+(three high-contrast tokens shipped that way for two releases, since `oklch_to_linear` clips before
+measuring). Check 7 bisects the sRGB boundary and gates every parsed token in every mode. **The trap
+is directional**: the chroma ceiling shrinks as lightness climbs, so raising `L` for "more contrast"
+washes a color out faster than the numbers predict. **Do not park a token exactly on the gamut
+boundary**: it tips out on any later lightness nudge; each token holds a stated fraction of ceiling
+instead.
 
-**The trap is directional.** The chroma ceiling *shrinks* as lightness climbs. An editor who reads
-a large chroma value therefore sees room to spare and raises `L` for more contrast. The color then
-washes out faster than the numbers predict.
+**High contrast compresses the accent set (the ceiling collapses at high lightness), and no token
+edit fixes that.** Text mitigates it (`verified`/`unverified`/`correction` spelled out), not color.
+**Do not try to widen these by a hue move**: chroma compressed, not hue separation.
 
-**Do not park a token exactly on the gamut boundary.** It tips back out on any later lightness
-nudge. Each token holds a stated fraction of the ceiling instead.
-
-**High contrast compresses the accent set, and no token edit can fix that.** The chroma ceiling
-collapses at high lightness. A mode that pushes every accent up for a 7:1 floor therefore converges
-them. Text mitigates it, not color. The status spans carry the words `verified`, `unverified` and
-`correction`. That is the same reasoning that lets the `.verdict-*` chips survive forced colors.
-**Do not try to widen these by a hue move.** The hue separations are already wide. Chroma is what
-compressed, and the gamut is what compressed it.
-
-**`--red` is the loudest accent in every mode on purpose**, and check 8 pins it there. The reflex is
-to bring it down into the family, and that reflex is wrong. Red's chroma is what separates
-`.correction` from `h1` pink and from `.unverified` orange. An alarm color that reads like the
-heading beside it is worse than one louder than its peers.
-
-**One absolute chroma across modes means different vividness in each**, because the ceiling moves
-with lightness. `--red` therefore writes a different chroma per mode to hold one fraction.
-
-**`--link` and the four other accents deliberately let their fraction float.** `--orange`,
-`--purple`, `--pink` and `--green` do not hold one absolute chroma across all four modes anymore
-(see "P3 gamut for six vivid accents" below); `--link` still does, and none of the five are pinned
-to an invariant fraction the way `--red` and the data ramp are. A pin means new chromas in three
-mode blocks each. It then means a re-measure of every ratio, every `/* was */` hex and both Mermaid
-projections. `--red` was worth it, because a status color that changes intensity between screen and
-paper is a semantic problem. `h2` calmer on paper is not. **A table of five that is true beats a
-table of ten that is aspirational.**
+**`--red` is the loudest accent in every mode on purpose**, check 8 pins it there: its chroma is what
+separates `.correction` from `h1` pink and `.unverified` orange. **`--link` and four other accents
+(`--orange`, `--purple`, `--pink`, `--green`) deliberately let their fraction float** rather than
+holding one pinned fraction like `--red` and the data ramp: a pin means new chromas across three
+mode blocks each, re-measuring every ratio and both Mermaid projections, worth it for a status color
+but not for "`h2` calmer on paper". **A table of five that's true beats a table of ten that's
+aspirational.**
 
 ### P3 gamut for six vivid accents
 
 **`--red`, `--orange`, `--purple`, `--pink`, `--green` and the `--data-*` ramp hold a wider,
-Display-P3-reaching chroma in dark and light mode.** High contrast and print keep these same six
-tokens at their original sRGB values. High contrast is already gamut-compressed by design (the
-paragraph above this one), and a screen's P3 gamut has no correspondence to reproducible ink, so
-neither mode had anything to gain from the wider ceiling. `.github/palette-check.py` gates this
-with `P3_WIDENED` and `P3_MODES`: only these nine tokens, only in `default` and
-`prefers-color-scheme: light`, get checked against a Display P3 ceiling instead of the sRGB one.
-Everywhere else, including these same tokens in high contrast and print, the sRGB gate is unchanged,
-so a real sRGB clip in an untouched mode still fails loudly rather than passing under a relaxation
-that was never meant to reach it.
+Display-P3-reaching chroma in dark and light mode only**: high contrast and print keep original
+sRGB values (high contrast is already gamut-compressed by design; a screen's P3 gamut has no
+correspondence to reproducible ink). `palette-check.py`'s `P3_WIDENED`/`P3_MODES` scope the relaxed
+ceiling to exactly these tokens in exactly these two modes; everywhere else the sRGB gate is
+unchanged.
 
-**`--red` and the data ramp keep the exact fraction they already held, now measured against the
-wider ceiling.** Same design, wider ruler: no re-litigation of how loud `--red` should read relative
-to its neighbors, because the fraction that answers that question did not change, only the ceiling
-it is a fraction of.
+**`--red` and the data ramp keep their exact existing fraction**, now measured against the wider
+ceiling: no re-litigation of loudness, only a wider ruler. **`--orange`/`--purple`/`--pink`/`--green`
+get no pinned fraction**: their fraction of the sRGB ceiling swung wildly between modes purely by
+accident of where one hardcoded chroma landed, so porting one as a "target" would state a precision
+that was never designed. The rule instead: **+25% chroma, independently in dark and light**, capped
+wherever it would break an existing check-5 floor (only `--purple` dark against `--code-bg` needed
+the cap, to +9.3% instead of +25%, holding 4.21:1).
 
-**`--orange`, `--purple`, `--pink` and `--green` do not get a pinned fraction.** Their current
-fraction of the sRGB ceiling swings wildly between dark and light, by measurement: orange 55.5%
-dark vs. 74.3% light, purple 56.5% vs. 37.6%, pink 63.3% vs. 52.6%, green 52.6% vs. 79.1%, purely
-from where one hard-coded chroma happened to land against two different per-mode ceilings. Porting
-one of those numbers as a "target fraction" would state a precision that was never designed, only
-landed on by accident. The rule instead: **+25% chroma, independently in dark and light**, capped
-at whatever value keeps every existing check 5 contrast floor passing. Only one pair needed the
-cap: `--purple` dark against `--code-bg` was already the closest accent/ground pair to its floor in
-the sheet (4.227:1 against a 4.2 floor, recorded above as "the repo left it alone"), and a flat +25%
-would have dropped it to 4.180:1, crossing the line. Capping purple's dark bump at +9.3% instead of
-+25% (chroma 0.107 to 0.117, not 0.134) holds it at 4.21:1. Every other token, mode and ground
-clears its floor with margin at the full +25%. This still leaves `--orange`, `--purple`, `--pink`
-and `--green` floating rather than pinned: dark and light now each hold their own bumped value, and
-high contrast and print hold the original one, which is one more split than these four had before,
-not a step toward the invariant-fraction model `--red` and the ramp use.
+**High contrast now restates the data ramp explicitly** (it never had to before check 8 caught an
+unstated inherited P3 chroma drifting its vividness fraction out of band), the same treatment the
+other five accents already get.
 
-**High contrast has to state the data ramp explicitly now, and it never had to before.** Its
-`:root` block redeclares `--red`, `--orange`, `--purple`, `--pink` and `--green` but had never
-redeclared `--data-1..4`, since inheriting the base block's values was always correct there. Once
-the base block's data ramp held a P3-reaching chroma, an unstated high-contrast override silently
-inherited it too, and check 8 caught the drift: the ramp's vividness fraction, measured against
-the sRGB ceiling as high contrast requires, moved outside its band. High contrast now restates the
-ramp at its original sRGB values explicitly, for the same reason the other five accents already do.
+**Every hex-only consumer (Mermaid, the three editor themes) is still sRGB and now needs gamut
+mapping, not a straight conversion.** Before this, no token's chroma ever exceeded the sRGB ceiling,
+so `oklch_to_hex`'s per-channel clip was dead code. `oklch_to_hex` now reduces chroma to the sRGB
+ceiling before converting (holding `L` and hue), matching what a browser's own CSS Color 4 gamut
+mapping does. `mermaid-palette.json` and `mermaid.js`'s `primaryBorderColor`/`nodeBorder`/`pie1..4`
+literals were recomputed to match; every other Mermaid hex was already in-gamut.
 
-**Every hex-only consumer, Mermaid and the three editor themes alike, is still sRGB, and now
-needs gamut mapping rather than a straight conversion.** `mermaid.js`, `mermaid-palette.json` and
-`scripts/create-themes.nu` (Zed, Rider, Ghostty, via `.github/palette-check.py --dump`) all read a
-`#rrggbb` projection of these tokens, never the `oklch()` itself. Before this change, no token's
-`C` ever exceeded the sRGB ceiling, so `oklch_to_hex`'s per-channel clip never actually engaged: it
-was dead code, exercised only by the reverted three-token bug check 7 was built to catch. Once
-`--purple` and the data ramp legitimately exceed sRGB in dark and light, per-channel clipping would
-have hue- and lightness-shifted them, the same drift check 7's own history describes. `oklch_to_hex`
-now reduces chroma to the sRGB ceiling before converting, holding `L` and `h`, which is what a
-browser's own CSS Color 4 gamut mapping does and matches the function's stated purpose. The
-practical result: Zed, Rider, Ghostty and every Mermaid diagram render the nearest in-gamut sRGB
-approximation of the new vivid colors, not the full P3 vividness (hex cannot carry that) and not a
-distorted guess either. `mermaid-palette.json`'s stated hex and `mermaid.js`'s inline literals for
-`primaryBorderColor`/`nodeBorder` (from `--purple`) and `pie1..4` (from the data ramp) were
-recomputed and updated to match; every other Mermaid hex was already within sRGB and unaffected.
+**Percent of maximum chroma is the wrong yardstick across lightness: it works only across hue.**
+**Do not carry the fraction rule to the near-neutral grays** (`--label` etc).
 
-**Percent of maximum chroma is the wrong yardstick across lightness. It works only across hue.** A
-near-neutral like `--label` holds one absolute chroma in every mode. A match on the fraction would
-make the light value a violently violet gray. The ramp applies the fraction rule at one lightness
-across four hues, which is where it belongs. **Do not carry it to the grays.**
-
-**An APCA reading inverts the WCAG 2 story, and no token moved because of it.** Dark mode runs below
-light mode on identical roles. That is the known WCAG 2 overstatement of light text on a dark
-ground, not a defect in these tokens. A flat Lc threshold as the bar misapplies the metric, because
-APCA's threshold falls with size and weight. The repo records this so that a later reader who runs
-APCA finds the answer rather than re-derives the panic.
+**An APCA reading inverts the WCAG 2 story (dark mode runs below light mode on identical roles), and
+no token moved because of it**: that's the known WCAG 2 overstatement of light-on-dark, not a
+defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with size and weight.
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs twelve checks.
+`.github/palette-check.py` runs twelve checks: (1) hex projections in both Mermaid palettes; (2) the
+`classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
+stray hex in `mermaid.js`; (5) the contrast floor in all four modes against three grounds, plus rules
+and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
+and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for every parsed token
+in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
+relative-color tokens per mode, plus `mark`'s alpha composite; (11) the pie slice label against all
+four fills in both palettes, plus `pieOpacity` pinned to `1`; (12) `--on-surface` over the
+`table.bar-chart` band at its alpha, against both grounds in every mode, plus print and forced-colors
+pins.
 
-1. Hex projections in both Mermaid palettes.
-2. The `classdef` fills, in both the dark and the light set, plus the letter each set paints on its
-   own fill.
-3. The `/* was */` provenance comments.
-4. Stray hex in `mermaid.js`.
-5. The contrast floor in all four modes, for text against three grounds, and for rules and the data
-   ramp against their own.
-6. `--mermaid-scheme` in both directions, no `prefers-color-scheme` in `mermaid.js` at all, and the
-   `(max-width: 600px)` breakpoint pinned in the stylesheet and in `mermaid.js` together.
-7. The sRGB gamut for every parsed token in every mode.
-8. The vividness bands.
-9. The inverted pairs, where an accent is the ground and `--surface` is the text.
-10. The two relative-color tokens, resolved per mode, plus the alpha composite `mark` renders.
-11. The pie slice label against all four slice fills, in both palettes, plus `pieOpacity` pinned
-    to `1`.
-12. `--on-surface` over a `table.bar-chart` band, at the alpha the rule declares, against both
-    grounds in every mode, plus the print pin and the forced-colors rule the two CSS charts need.
+**Check 9 also gates its own reason for existing**: `.step-node`'s role list deliberately omits
+`--data-*`, and the check says so out loud rather than leaving an untested prohibition. **A new token
+joins check 5's roles, then decide whether it also belongs in check 8's table**: a light-palette
+token move needs a matching Mermaid-side move, and the gate is what says so.
 
-**Check 9 also gates its own reason for existing.** The `.step-node` role list deliberately omits
-`--data-*`, and a prohibition with no test is a comment. If a later edit to the ramp ever made
-`--surface` legible on all four members in every mode, the exclusion would be dead weight, so the
-check says so out loud instead of leaving a rule nobody can retire.
+**Two `CONTRACT.md` § 2 requirements reach the sheet where no palette check can see them.**
+`--icon-color` on `.step-node` (inline `style` attribute) is gated in `scripts/maintain.nu check`
+instead, scanning every fixture for a banned `--data-*` value. A `quadrantChart` point label (inside
+a `pre.mermaid` fence, diagram source) stays prose: the fixture's own two overlong labels are the
+only instance in the repo and exist to exercise `overflow: visible` (see Diagram sizing), so a length
+gate would have to exempt its only subject and assert nothing. **Some obligations stay prose**: writing a gate that skips its only subject reports green about a question it never asked.
 
-**Check 10 pins both token names.** A token that stops matching the relative-color pattern stops
-being measured, and a check that silently covers nothing is worse than no check at all.
-
-**Check 11 exists because a pie slice label is the one place a themeVariable lands on another
-one.** Check 5 measures every token against `--surface`, `--code-bg` and `--surface-alt`, and a
-slice is none of the three, so nothing looked at the pair. **`pieOpacity` is pinned in the same
-check even though it is not a color,** because it is what the slice fill's own gated floor depends
-on: at Mermaid's 0.7 default a slice composited to 2.15 to 2.22:1 against the light card after the
-v1.25.0 ramp had cleared 3.2:1 flat. Nothing else in the repo would notice it drifting back, since
-contract-check.yml only maps hex.
-
-**Check 6 gained two pins that are not about color at all, and they sit there because that check
-already owns `mermaid.js`.** The `prefers-color-scheme` ban replaced a blanket `matchMedia` ban: the
-real prohibition is reading the host's appearance instead of the cascade, and a width query is a
-different question with a legitimate answer (see *Keyboard and assistive technology*). The
-breakpoint pin is a cross-file invariant: `mermaid.js` decides whether a diagram is a scrollable
-region from the same width the stylesheet gives it `overflow-x: auto`, and a number moved on one
-side alone is invisible in a render of the other. **Match the `matchMedia(...)` call, not the
-file.** A bare substring check passed on the comment beside the call while the live query said
-700px, which a mutation caught.
-
-**Two `CONTRACT.md` § 2 requirements reach the sheet where no palette check can see them, and only
-one of the two turned out to be gateable at all.** `--icon-color` on a `.step-node` arrives in an
-inline `style` attribute, and a `quadrantChart` point label lives inside a `pre.mermaid` fence as
-diagram source.
-
-- **The `.step-node` half is gated in `scripts/maintain.nu check`,** which scans every fixture's
-  `.step-node` attributes and fails on a `--icon-color: var(--data-*)`. That catches the repo's own
-  regressions and nothing in a consumer, which is the honest scope: check 9 already pins the
-  permitted token set inside the stylesheet, so an editor here was covered from two sides and a
-  generator from neither.
-- **The `quadrantChart` half stays prose, and the reason is that the fixture is the violation.**
-  `samples/dark.html` carries two deliberately overlong point labels to exercise
-  `pre.mermaid svg { overflow: visible }` (see *Diagram sizing*), so a length cap would have to
-  exempt the only instance in the repo and would then assert nothing. **Some obligations stay
-  prose.** Writing a gate that skips its only subject is worse than writing none, because it
-  reports green about a question it never asked.
-
-**A new token joins the roles in check 5.** Decide then whether it also belongs in check 8's table.
-A token in the light palette cannot move without a matching move on the Mermaid side, and the gate
-is what says so.
-
-Three things stay open, and none of them is a measurement. `--orange` carries eight roles. Five
-accents let their chroma fraction float. The high-contrast set is gamut-compressed, and text
-mitigates it. The two that used to sit in `backlog.md` beside them are closed: the `classdef` fills
-have a light twin as of v1.40.0, and the pie slice label carries its own token per palette.
-
-**`--orange` carries eight roles:** `strong`, the `mark` wash through `--highlight`, syntax
-numerals and constants, the `aside` and alert accent bar, `.markdown-alert-title`, `.unverified`,
-`.verdict-partial` and `:target`. The repo recorded that rather than moved it. Every alternative
-trades one collision for another. `--pink` is `h1`. `--purple` is `h2` and `::selection`. `--link`
-is the focus ring. `--green` and `--red` are status. A move off orange also breaks the recorded
-reason the arrival cue is orange. That cue reads as distinct from the link-blue focus ring. The
-outline is a shape as well as a hue, so the state stays unambiguous.
+**Three things stay open, none a measurement**: `--orange` carries eight roles (`strong`, the `mark`
+wash, syntax numerals/constants, the `aside`/alert bar, `.markdown-alert-title`, `.unverified`,
+`.verdict-partial`, `:target`): every alternative trades one hue collision for another, and a move
+would break the "orange arrival cue reads distinct from the link-blue focus ring" reasoning
+elsewhere. Five accents let their chroma fraction float (above). The high-contrast set is
+gamut-compressed and text mitigates it (above).
 
 ### Forced colors
 
-**Forced colors suppresses shadows.** Anything whose only boundary was a shadow therefore needs a
-border. That is the general rule. The print block's `inset 0 0 0 1px currentColor` cannot be
-reused, because an inset shadow is a shadow.
+**Forced colors suppresses shadows.** Anything whose only boundary was a shadow needs a border
+instead; the print block's inset-shadow trick can't be reused (an inset shadow is still a shadow).
 
-- **Semantic chips outline themselves.** `code, kbd, .verdict, .badge { border: 1px solid
-  currentColor }`. Every `.verdict-*` fill resolves to one appearance under emulation. The **state**
-  survives, because the chip's text says `PASS`, `PARTIAL`, `FAILED` or `N/A`. The border restores
+- **Semantic chips outline themselves**: `code, kbd, .verdict, .badge { border: 1px solid
+  currentColor }`. State survives in the chip's own text (`PASS`/`PARTIAL`/etc); the border restores
   the boundary, not the meaning.
-- **A code BLOCK is not a chip, and treating it as one shipped a visible fault.** `pre > code` is
-  `display: inline`, so the chip border fragmented across every line of a code block: three broken
-  boxes with rules running through the code, reading as a rendering fault rather than a boundary.
-  `pre code { border: none }` undoes it. Nothing is lost, because `pre` keeps a real
-  `border-inline-start` accent bar, which forced colors preserves, so the block stays bounded the
-  same way `blockquote` and `aside` are. **The lesson is the selector, not the rule:** every other
-  name in that list is a short inline chip, and `code` is the one that also appears as a block.
-- **Tables carry a real border.** `table, th, td { border: 1px solid currentColor }`. Without it the
-  outer rule, the inset header rule and the header background all vanish. A pixel scan down the
-  edge then returns one value: no frame, and a header indistinguishable from the data.
+- **A code BLOCK is not a chip.** `pre > code` is `display: inline`, so the chip border fragmented
+  across every code-block line into three broken boxes. `pre code { border: none }` undoes it; `pre`
+  keeps its own accent bar, which forced colors already preserves.
+- **Tables carry a real border** (`table, th, td { border: 1px solid currentColor }`), or the outer
+  rule, header shading and inset header rule all vanish, leaving no frame and no header distinction.
 
-Fills inside a table still flatten, and the repo left that alone. The user's own rendering is the
-point of the mode. The grid is what is restored, not the tint.
+Fills inside a table still flatten, left alone deliberately: the mode restores the grid, not the tint.
 
-**This block had no coverage at all until v1.41.1, which is how the code-block border survived.**
-`render-modes.py` renders dark, light and contrast, and its assertion is that the page paints that
-mode's `--surface`. **That assertion cannot transfer here**, because the whole point of forced
-colors is that the user agent repaints and the sheet's colors stop deciding anything. So the mode is
-gated on its **structure** instead, in `.github/script-probe.py`: the condition is rewritten to
-`@media all` in a scratch copy, the same trick `render-modes.py` uses, and eight assertions read the
-computed styles that an edit here actually breaks. A chip is outlined, a table and a cell are
-outlined, a block `code` is **not**, the `pre` keeps its bar, and the grain is off. The condition is
-checked as a string in the real fixture first, so a rename fails loudly rather than leaving the
-rewrite a no-op and the assertions vacuous.
-
-**A mode whose correctness is not a color needs a structural gate, not a pixel one.** That is the
-general form of it, and it is why the print work needed the same treatment one release earlier.
+**This block had no coverage at all until v1.41.1.** `render-modes.py`'s pixel assertion (checking
+`--surface` painted) can't transfer here, since forced colors means the sheet's colors stop deciding
+anything. So it's gated on **structure** instead, in `.github/script-probe.py`: the condition is
+rewritten to `@media all` in a scratch copy, and eight assertions read computed styles an edit here
+actually breaks (chip outlined, table/cell outlined, block `code` not outlined, `pre` keeps its bar,
+the grain is off). **A mode whose correctness is not a color needs a structural gate, not a pixel
+one.**
 
 ## Form follows role
 
-Three families were drawn the same way and meant different things. **Form separates them now, so
-the shape carries the role and color is free to mean one thing.**
+Three families were drawn the same way and meant different things; **form now separates them so the
+shape carries the role and color is free to mean one thing.**
 
-**A filled chip is a state. An outlined chip is a label.** `.verdict-*` keeps its fill, because
-pass, partial, failed and N/A are states of a claim. `.badge` is `--label` text with a
-`currentColor` ring and no fill. It had been three fills for Tier 1, 2 and 3. Those are ordinal
-levels rather than health states, so a green-to-red ramp told the reader that tier 3 was failing.
+**A filled chip is a state; an outlined chip is a label.** `.verdict-*` keeps its fill (pass/partial/
+failed/N/A are states of a claim). `.badge` is `--label` text with a `currentColor` ring, no fill: it had been three tier fills, which told the reader tier 3 was "failing" on a green-to-red ramp when
+tiers are ordinal, not health states. `.badge-t1/-t2/-t3` are not removed, just carry no
+declarations. **What that trades away**: tier is no longer scannable at a glance, but the text always
+carried the level. **Three steps of one new hue was costed and rejected** (three more `:root` tokens
+plus three print overrides, and the free hue gaps are too narrow to read as three colors at chip
+size).
 
-`.badge-t1`, `-t2` and `-t3` **are not removed.** Consumers emit them, and that markup keeps
-working. The variants simply carry no declarations.
+**A border means interactive; an accent bar means passive block.** `.scorecard` was bordered
+identically to `details`/`.nav-group`/`.nav-list`/`.filter-box`/`.mermaid-zoom`, so a data panel and
+a button read as one kind of object. `.scorecard` now takes `border-inline-start`. **Every remaining
+bordered box in the sheet is something you can click, type in, or open.**
 
-**What that trades away:** tier is no longer scannable at a glance. The text always carried the
-level, so nothing is lost. The reader now reads the ranking rather than sees it. **Three steps of
-one new hue was costed and rejected.** It needs three `:root` tokens plus three print overrides,
-each one clear of the floor on every ground. The free hue gaps are also too narrow for a three-step
-ramp to read as three colors at chip size. If tier scanning matters, the cheap version is weight or
-ring thickness on the existing hue.
+**Three prose accents carry two or three roles each, accepted:** `--pink` (h1, th), `--purple` (h2,
+`pre` bar, `::selection`), `--orange` (`strong`, aside bar, `.unverified`). Only `--orange`'s overlap
+is visible to a reader; the other two pairs are separated by form (a heading vs. an italic small
+header; a heading vs. a 3px bar and a selection fill).
 
-**A border means interactive. An accent bar means passive block.** `.scorecard` was a bordered box
-identical to `details`, `.nav-group`, `.nav-list`, `.filter-box` and `.mermaid-zoom`. A data panel,
-a disclosure widget, a form field and a button therefore all read as one object. `.scorecard` now
-takes `border-inline-start: var(--accent-bar) solid var(--rule-light)`. **Every remaining bordered
-box in the sheet is something you can click, type in or open.**
-
-**Three prose accents carry two or three roles each, and the repo accepts that:**
-
-```
---pink    h1, th
---purple  h2, pre accent bar, ::selection
---orange  strong, aside accent bar, .unverified
-```
-
-The only overlap a reader can see is `--orange`. It stays, because form separates the other two
-pairs. `--pink` is a large heading against an italic small table header. `--purple` is a heading
-against a 3px bar and a selection fill.
-
-**The hue budget is spent.** A new role takes an existing accent **plus a different form**, which
-means weight, bar, ring or fill. `.verdict` and `.badge` show that separation. A role that lives in
-a diagram takes `--data-1` to `--data-4` instead. A new hue is the last resort. A hue reused for a
-third prose role needs a line here that says why the two cannot appear together.
+**The hue budget is spent.** A new role takes an existing accent **plus a different form** (weight,
+bar, ring, fill), or a diagram role takes `--data-1..4`. A new hue is the last resort, and reusing one
+for a third prose role needs a line here explaining why the two won't appear together.
 
 ## Borrowed components
 
 Six components plus one page-wide texture were adapted from factory.strongdm.ai's product pages:
-structure only, no color. Every component reuses an existing token under this section's hue-budget
-rule. None introduces a new color role.
+structure only, no color, every component reusing an existing token under the hue-budget rule above.
 
-**`.kicker`** is an eyebrow label: a small tracked pill above a heading. It reuses `--link` and the
-`oklch(from … / alpha)` pattern `--highlight` already established, so no new token exists just for
-a tint. Do not give it a hue of its own. A document-status use should pick the color already scoped
-to that state (`--green` verified, `--orange` unverified) rather than add a seventh accent. **The
-tint sits at 8% alpha, not 12%.** Measured: `--link` text against a 12%-alpha `--link` background
-landed at 4.47:1 in light mode, under the 4.5:1 text floor, because the tint moves the background
-toward the text's own hue and lightness. 8% clears it (4.71:1 light, 6.6:1 dark) with margin instead
-of sitting on the line.
+**`.kicker`** (eyebrow pill) reuses `--link` and the `oklch(from … / alpha)` pattern `--highlight`
+established: no new token for a tint. A document-status use picks the color already scoped to that
+state rather than adding a seventh accent. **Tint sits at 8% alpha, not 12%**: 12% pushed `--link`
+text on a `--link`-tinted background under the 4.5:1 floor in light mode (4.47:1); 8% clears it with
+margin.
 
-**`.tag-dot`** is a `::before` circle, a categorical marker for a table cell or a nav-list entry. It
-paints `currentColor`, so it carries no color of its own and cannot reopen the `.badge-t1/-t2/-t3`
-tier ramp this repo already rejected above. A tier stays text, per that decision. A tag-dot is for a
-value that already has a color elsewhere, a `--data-*` role in a diagram legend, for instance, never
-a rank. **The class belongs on an empty element, never one that also holds the label.** `currentColor`
-recolors whatever text sits inside the same element, and `--data-*` was scoped for diagram marks
-(3:1, non-text), not body text (4.5:1). The first draft of the sample fixture set `color` on a span
-that wrapped the label too and measured 3.45-3.53:1 in light mode, a real failure a reader would have
-copied. `<span class="tag-dot" style="color: var(--data-1)"></span>Rust` keeps the color scoped to
-the dot; the label stays plain text.
+**`.tag-dot`** (`::before` circle) paints `currentColor`, carrying no color of its own, so it can't
+reopen the rejected tier-ramp above. **Belongs on an empty element, never one that also holds the
+label**: `currentColor` recolors sibling text too, and the first fixture draft measured 3.45-3.53:1
+painting a label directly.
 
-**`.live-dot`** is the sheet's first `@keyframes`. It reuses `--green`, the existing "healthy" role
-(`.verified`, `.verdict-pass`, `.markdown-alert-tip`), so a live indicator does not invent an eighth
-hue for the same meaning. `prefers-reduced-motion` at the top of the file already zeroes every
-animation-duration, so the pulse freezes there for free. No print override exists: print has no live
-state to show, and paged media does not run CSS animation regardless.
+**`.live-dot`** (the sheet's first `@keyframes`) reuses `--green`, the existing "healthy" role.
+`prefers-reduced-motion`'s global animation-duration zero already freezes the pulse for free. No
+print override needed (paged media runs no CSS animation regardless).
 
-**`.icon-list` / `.icon-chip`** is a definition-style row: a tinted square carrying an initial, a
-left accent bar in the same hue, then a title and a mono subtitle. It takes its color from an
-`--icon-color` custom property set inline per `<li>`, the convention `--timeline-date` already uses
-on `dl.timeline`. That keeps the component color-free by default and lets an author reuse `--orange`,
-`--purple`, `--green` or a `--data-*` slot rather than a new token. **The glyph itself is fixed
-`--on-surface`, never `--icon-color`.** A same-hue glyph on its own 15%-alpha tint measured as low as
-3.35:1 (dark, `--purple`) and failed outright in light mode for all four demo hues (3.85-4.01:1),
-because foreground and background differ only in alpha, not hue. `--on-surface` on the same tinted
-backgrounds measures 8.06:1 and up in both modes. `--icon-color` still carries the whole component's
-identity through the border and the tint; it is just never the letter.
+**`.icon-list`/`.icon-chip`** takes color from an inline `--icon-color` per `<li>` (the
+`--timeline-date` convention), keeping the component color-free by default. **The glyph itself is
+fixed `--on-surface`, never `--icon-color`**: a same-hue glyph on its own tint measured as low as
+3.35:1 dark and failed outright in light mode for all four demo hues, where `--on-surface` measures
+8.06:1+. **The `.icon-chip` glyph is `aria-hidden="true"`**, since it always sits beside a visible
+label (unhidden, a screen reader announces the initial and then the title right after it, twice).
+`.step-node` is the opposite case (no adjacent label) and keeps its letter as real text.
 
-**The `.icon-chip` glyph is `aria-hidden="true"`, because it always sits beside a visible label.**
-Unhidden, a screen reader announces the initial and then the `<strong>` title right after it, the
-same information twice on every row. `.step-node` is the opposite case and keeps its letter as real
-text: a step chain carries no adjacent label for it to duplicate.
+**A step chain names its steps in the prose that introduces it, and every `.step-arrow` is
+`aria-hidden="true"`.** A node is a circle with room for one character, so the words can't go inside
+it: the fixture originally shipped bare letters (`S`, `I`, `O`, `V`) decoding to nothing for any
+reader. **Do not answer this with a visually-hidden label class**: the sheet has none, and adding
+one turns a problem one sentence of prose already solves into a payload API.
 
-**A step chain therefore names its steps in the sentence that introduces it, and every
-`.step-arrow` takes `aria-hidden="true"`.** The letter in a node is real text by the rule above, but
-one character is not a label. The fixture shipped `S`, `I`, `O`, `V` with nothing anywhere on the
-page expanding them, so the only instance of the component a consumer can copy decoded to nothing
-for any reader, sighted or not. A node is a circle with room for one character, so the words cannot
-go inside it, and no CSS rule can supply copy it did not write. They go in the prose. The arrow is
-the other half of the same defect: unhidden, a screen reader reads the glyph between every pair of
-steps, which is the duplication `.icon-chip` is hidden for. **Do not answer this with a
-visually-hidden label class.** The sheet has none, and adding one makes a payload API out of a
-problem one sentence of fixture copy already closes.
+**`.step-chain`/`.step-hop`/`.step-node`/`.step-arrow`** is a linear process strip for a flow too
+trivial for Mermaid (three or four stages, no branching): not a Mermaid replacement; any graph with
+a branch or loop still belongs in `pre.mermaid`. Same `--icon-color` convention as `.icon-list`,
+**with one exception: `.step-node`'s `--icon-color` takes a prose accent, never a `--data-*` slot**: the node fills at full strength under real text (`--surface`), and the ramp is only checked at the
+3:1 non-text floor (measured 3.45-3.60:1 there). `.tag-dot`/`.icon-chip` may still carry `--data-*`
+since neither puts text on the fill. **Only a full-strength fill under real text is the problem**: check the distinction before adding a fifth component to this convention; check 9 gates the
+permitted set, `CONTRACT.md` § 2 states the consumer obligation. **Every node but the first is
+wrapped with its leading arrow in one `.step-hop`**, so a flex-wrap can't strand an arrow on one line
+and its node on the next with no visible connector.
 
-**`.step-chain` / `.step-hop` / `.step-node` / `.step-arrow`** is a linear process strip: circular
-nodes joined by an arrow glyph. It exists for a flow too trivial to justify a Mermaid diagram, three
-or four stages, no branching. It is not a Mermaid replacement. A graph with a branch or a loop still
-belongs in `pre.mermaid`. Same `--icon-color` convention as `.icon-list`, **with one exception that
-`.icon-list` does not need: `.step-node`'s `--icon-color` takes a prose accent, never a `--data-*`
-slot.** The node fills at full strength and the letter is `--surface` on top of it, so the fill is a
-text ground. The ramp is scoped to the 3:1 diagram floor, and `--surface` on it measures 3.45 to
-3.53:1 in light mode and 3.60:1 in print. Those are the same numbers this file already records for
-the first draft of the `.tag-dot` fixture, one component over. `.tag-dot` and `.icon-chip` may still
-carry a `--data-*` color, because neither puts text on the fill: the dot paints `currentColor` on an
-empty element, and the chip's glyph is `--on-surface` on a 15%-alpha tint. **Only a full-strength
-fill under real text is the problem**, which is the distinction to check before adding a fifth
-component to this convention. Check 9 gates the permitted set, and `CONTRACT.md` § 2 states it as a
-consumer obligation, because no stylesheet rule can stop an inline `style` attribute. **Every node
-but the first
-is wrapped with its leading arrow in one `.step-hop`.** `.step-chain` still wraps at `flex-wrap: wrap`
-for a narrow measure, but an arrow and a bare `.step-node` are separate flex items, so a wrap could
-land between them: the arrow stays on the line above, and the node that follows starts a new line
-with no visible connector. `.step-hop` makes the pair one flex item, so a wrap carries the arrow down
-with the node it points to instead of stranding it.
+**`blockquote.pull`** adds a large faint opening quote over the existing accent bar, opt-in since the
+default `blockquote` is used densely for citations. Decorative, so it takes the same alt-text
+convention as the outbound arrow.
 
-**`blockquote.pull`** adds a large faint opening quote mark, positioned over the existing accent bar.
-It is opt-in, because the sheet's default `blockquote` is used densely for citations and should not
-carry the extra glyph everywhere. The glyph is decorative, so it takes the sheet's existing
-accessible-alt convention: `blockquote.pull::before { content: "\201C" / ""; }` joins the
-`@supports (content: "x" / "y")` block already used for the outbound-link arrow and the tree-table
-turn.
+**`body::before` paints a fixed, full-viewport film grain** (an inline SVG `feTurbulence` filter,
+low opacity, `mix-blend-mode: overlay`), carrying no hue of its own so it crosses dark/light/print
+cleanly. `pointer-events: none` and `z-index: -1` (still paints above `body`'s own background, per
+CSS stacking order). **Switched off in print and `forced-colors: active`**: ink has no blend-mode
+equivalent, and a reader in that mode shouldn't see pure texture.
 
-**`body::before` paints a fixed, full-viewport film grain.** factory.strongdm.ai layers an inline
-SVG `feTurbulence` filter over its dark background at low opacity with `mix-blend-mode: overlay`.
-The technique carries no hue of its own, so it crosses over cleanly: dark ground, light ground and
-print all inherit whatever `--surface` already is, and the grain reads as paper stock rather than
-as a glow. It needs no consumer markup, unlike the six components above, because the pseudo-element
-lives entirely in the stylesheet. `pointer-events: none` keeps it out of the hit-test order, and
-`z-index: -1` is deliberate: a negative index still paints above `body`'s own background (the
-stacking-context step it belongs to comes right after that background, per the CSS stacking order),
-which is what makes it a backdrop rather than an opaque cover. **It is switched off in print and in
-`forced-colors: active`.** Ink has no equivalent of `mix-blend-mode`, and a texture with no
-informational content is exactly what a forced-colors reader should not have to see.
+**Four more factory.strongdm.ai patterns were measured against this repo's own decisions and left
+out, not missed**: a `.cta-button` hover sheen/lift (this repo already decided hover wants no motion,
+see Interaction states); a `.glass-card` `backdrop-filter` blur (already rejected for the sticky
+`th` case, and moot here with no busy background to soften); a `.section { min-height: 100vh }`
+one-idea-per-screen layout (opposite of the settled dense-reference-page decision); an
+absolute-positioned JS nav dropdown (`details.nav-group` already does this with no script).
 
-**Four more of factory.strongdm.ai's patterns were measured against this repo's own decisions and
-left out, not missed.**
+**`.kicker`, `.icon-chip`, `.step-node` join the forced-colors border list** (all three carry their
+whole shape through fill alone). **`.tag-dot`/`.live-dot` take `background: CanvasText` there, not a
+border**: both are round and empty, so a border would ring nothing; a render showed any author
+background (even `currentColor` on an empty `::before`) resolves to Canvas under forced colors, so
+the dot doesn't flatten, it vanishes without this. `.verified`/`.unverified`/`.correction` need no
+override: they color a glyph forced colors keeps drawing, so they only lose a hue, not their content.
 
-- **A `.cta-button` diagonal hover sheen plus a `translateY` lift.** That is new hover motion. This
-  repo already decided the opposite for its one real button: `pre.mermaid:hover`'s ring is
-  deliberately instant and untransitioned, because hover is high-frequency and "does not want
-  motion" (Interaction states). A sheen on `.mermaid-zoom` or `.filter-box` would reopen that
-  question for no stated reason.
-- **A `.glass-card` translucent panel with `backdrop-filter: blur`.** Already rejected once here,
-  for the sticky `th` case. It is also moot on this page: there is no busy background behind any
-  card for a blur to soften, so the effect would be a no-op tax on paint cost.
-- **A `.section { min-height: 100vh }` one-idea-per-screen layout.** It is the opposite of the
-  settled long-measure, dense-reference-page decision (Width and measure). A page here is meant to
-  hold a long table beside a diagram, not one thought per viewport.
-- **An absolute-positioned, JS-driven nav dropdown.** `details.nav-group` already does this job with
-  a native disclosure widget and no script. The dropdown is strictly worse for a no-build sheet.
-
-**`.kicker`, `.icon-chip` and `.step-node` join the forced-colors border list.** All three carry
-their whole shape through a background fill alone, which forced colors suppresses the same way it
-suppresses a shadow. Without a border, the fill disappears: `.kicker` and `.icon-chip` read as bare
-text with no chip shape left, and `.step-node` loses its circle outright, leaving only the letter
-floating with no node and no per-step color.
-
-**`.tag-dot` and `.live-dot` take `background: CanvasText` in that same block, and not a border.**
-Both were left out of the list once, on the reasoning that each sits beside text already carrying
-the same information, so a flattened dot loses no meaning. The meaning half of that holds. The
-rendering half was wrong, and a render is what settled it: any author background resolves to Canvas
-under forced colors, whether it came from `currentColor` on an empty `::before` or from a token, so
-the dot does not flatten, it vanishes. The fixture sentence then reads "the text beside it:  Rust,
- Go,  Python" with an orphan gap where each marker was. A system color keyword is honored in that
-mode, so one declaration paints both dots back at the forced foreground. **Do not give either one a
-border instead.** Both are round and empty, so a border draws a ring around nothing where the
-component wants a disc.
-
-`.verified` / `.unverified` / `.correction` still need no override there, and the reason is the one
-the dots do not have. Those three color a glyph that forced colors keeps drawing, so they lose a
-hue. An empty element painted by its background has nothing left once the background goes.
-
-**A sticky element does not take `backdrop-filter` blur.** factory.strongdm.ai's frosted sticky
-panels were a seventh candidate here, and this repo already has a decision that rules them out: "A
-sticky `th` needs an opaque background. Otherwise the rows that scroll under it show through"
-(Tables). Blur only reads as frosted glass over a translucent layer, and an opaque `background` makes
-`backdrop-filter` a no-op sitting on top of it. Reversing the opacity to get the frosted look would
-reopen the exact defect that rule exists to prevent. Left out rather than diluted into an unrelated
-shadow that would not deliver what was asked.
+**A sticky element does not take `backdrop-filter` blur**: the sticky-`th` decision above (opaque
+background required) already rules it out; blur over an opaque layer is a no-op.
 
 ## CSS charts
 
-One component draws a chart from ordinary markup: `table.bar-chart`. It is CSS only, so a page
-carries it with no script, no CDN and no build step. A pie is a Mermaid `pie showData` fence,
-which costs a CDN request and fails hard offline, the existing exception in *Constraints that
-shape every decision*. A second CSS pie was tried for one release and taken out again, and the
-subsection below records why.
+One component draws a chart from ordinary markup, `table.bar-chart`: CSS only, no script, no CDN, no
+build step. A pie is a Mermaid `pie showData` fence instead (the existing hard-offline CDN exception).
+A second CSS pie was tried for one release and removed; see below.
 
-**Values are text in the markup, always, and that is what makes shipping a pie chart
-defensible.** Tufte's objection stands: a pie asks a reader to compare angles and areas, and
-readers do both badly. The template themes one anyway, because a part-to-whole share of a few
-categories is a real thing to draw and a consumer who wants one is better served by a legible
-themed component than by an invented one. The condition is that the chart is a second reading of
-a number the page already states. `CONTRACT.md` § 2 states it as a consumer obligation. A
-ranking, a comparison of magnitudes, or five categories is `table.bar-chart`, which is a table,
-so the answer is a table twice over.
+**Values are text in the markup, always**: what makes shipping a pie chart defensible despite
+Tufte's objection that readers compare angles and areas badly: the template themes one anyway because
+a part-to-whole share of a few categories is real, provided the chart is always a second reading of a
+number the page already states (`CONTRACT.md` § 2 obligation). A ranking, a magnitude comparison, or
+five-plus categories is `table.bar-chart`.
 
-**The bar chart is a table with a class on it, and the band paints inside the cell that already
-holds the number.** A band in a cell of its own was rejected: an empty cell announces nothing, so
-the graphic becomes the only carrier of the value, and that is the failure the rule above exists
-to prevent.
+**The bar chart is a table with a class, and the band paints inside the cell holding the number**
+(an empty cell was rejected: it would make the graphic the only carrier of the value).
 
-- **The band is a 0.3 alpha wash of `--data-1`, never a full-strength fill.** Full strength under
-  text is the `.step-node` trap one component over: the ramp is checked at the 3:1 non-text floor,
-  and text on it measures about 3.5:1 in light mode. Check 12 of `palette-check.py` measures
-  `--on-surface` over the wash over both `--surface` and the row-hover fill in all four modes, and
-  reads the alpha out of the rule rather than restating it. The first failure appears at 0.5 alpha,
-  so 0.3 has real headroom rather than sitting on the line.
-- **Every band is one hue, and a per-row `--bar-color` was tried and taken back out.** The idea was
-  a shared category key: color each band from the ramp so a row matches its slice in the pie
-  legend. **At 0.3 alpha a band cannot carry a category.** Measured: the four washes land within
-  **Lc 2** of each other in every mode (1.00 to 1.13:1 band against band), while the legend dot
-  paints the same token at full strength, 7.39:1 against `--surface` where the band reads 1.93:1.
-  A reader cannot match a wash to a dot, and no alpha fixes it: check 12 caps the alpha near 0.4,
-  and 0.4 still leaves the four within about Lc 3. **Do not reintroduce a per-bar color property.**
-  It cannot deliver the key it implies, and as an inline hook it also invited a prose accent
-  (`--red`, `--green`) onto a neutral number, which is the misleading-semantics case check 9 gates
-  for `.step-node` and which nothing here would have gated. The row label carries the category.
-- **The bar cell takes `inline-size`, not `min-inline-size`.** Chromium's auto table layout does
-  not size a cell from `min-width`: an 8rem `min-inline-size` still produced a 130px column, where
-  a 52% band painted 62px and two adjacent bars stopped being comparable. Measured, then replaced
-  with `inline-size: 12rem`. Do not go back to a minimum.
-- **Background longhands, never the `background` shorthand.** `tbody tr:hover td` sets the
-  shorthand, and `table.bar-chart td.bar` carries two classes, so it wins the per-property
-  comparison: a shorthand here would set `background-color: transparent` at higher specificity and
-  delete the row-hover fill on exactly the rows that carry a bar. The longhands keep the band and
-  the hover.
-- **Direction costs one override.** A gradient takes no logical direction keyword and neither does
-  `background-position`, so `[dir="rtl"]` flips `left center` to `right center` and nothing else.
+- **The band is a 0.3-alpha wash of `--data-1`, never full strength** (full strength under text is
+  the `.step-node` trap; text on it measures about 3.5:1). Check 12 measures the actual composite
+  rather than restating the alpha; the first floor failure appears at 0.5.
+- **Every band is one hue; a per-row `--bar-color` was tried and reverted.** At 0.3 alpha the four
+  washes land within Lc 2 of each other (1.00-1.13:1 band-against-band) while the legend dot at full
+  strength reads 7.39:1: no alpha fix exists (even 0.4, check 12's cap, still leaves Lc 3). **Do not
+  reintroduce a per-bar color property**: it can't deliver the category key it implies, and as an
+  inline hook it also invites a prose accent onto a neutral number. The row label carries the
+  category.
+- **The bar cell takes `inline-size`, not `min-inline-size`**: Chromium's auto table layout doesn't
+  size a cell from `min-width` (measured: an 8rem minimum still produced a 130px column).
+- **Background longhands, never the shorthand**: `tbody tr:hover td` sets the shorthand at lower
+  specificity than `table.bar-chart td.bar`'s two classes, so a shorthand there would delete the
+  row-hover fill on exactly the rows with a bar.
+- **Direction costs one override**: `[dir="rtl"]` flips the gradient's `background-position`, since
+  neither a gradient nor `background-position` takes a logical direction keyword.
 
-**The pie is a Mermaid `pie showData` fence, and the CSS pie that shipped in v1.42.0 was
-removed in v1.43.0.** One release is the whole life of that component. It drew four shares from
-one `conic-gradient`, and rendered beside the Mermaid pie it lost on every count a pie is judged
-by: no percentage inside a slice, no legend of its own, no title, and a disc a reader had to
-measure. Nothing inside the element is text, which is what made the in-slice number unreachable,
-and the same fact forced a `role="img"`, an `aria-label` restating every value, and a legend
-in the caption restating them again. Three restatements of the numbers to draw a shape that still
-could not be read. Mermaid draws the label in the slice, themes every slice from the same
-`--data-*` ramp through `mermaid-palette.json`, and costs a CDN request.
+**The pie is a Mermaid `pie showData` fence; the CSS pie (v1.42.0) was removed in v1.43.0**, one
+release later, after rendering both side by side: the Mermaid pie drew in-slice percentages, a
+legend, a title; the CSS `conic-gradient` had none of that (nothing inside it was text, forcing a
+`role="img"` plus an `aria-label` plus a caption legend: three restatements of the numbers to draw a
+shape still unreadable). Mermaid draws the label in the slice and themes every slice from
+`--data-*`, at the cost of a CDN request. **The offline case is `table.bar-chart`, not a second CSS
+pie**: keeping one alive to cover Mermaid's offline failure cost a component, a § 2 requirement, a
+print pin, a forced-colors rule, and a check, for the one chart shape Tufte objects to, in the one
+form that can't carry its own numbers.
 
-- **The removal was decided by rendering the two side by side, not by argument.** At 1000px the
-  Mermaid pie drew a centered disc of about 375px with `72%`, `21%` and `8%` painted in the
-  slices and a legend carrying the raw counts. The CSS pie drew 224px on the left margin with
-  nothing in it. Growing it to 20rem and centering it closed the size gap and none of the rest,
-  which is what settled the question.
-- **The offline case is a `table.bar-chart`, not a CSS pie.** Mermaid fails hard with no CDN, and
-  that is the standing exception in *Constraints that shape every decision*. Keeping a second pie
-  alive to cover it costs a component, a § 2 requirement, a print pin, a forced-colors rule and a
-  check, to draw the one chart shape Tufte objects to, in the one form that cannot carry its own
-  numbers. The bar chart is CSS only, needs no CDN, and is already the first recommendation.
-- **Four slices stays the ceiling.** The ramp has four members and check 5 measures each one
-  against both grounds. A fifth category has no color left that clears the floor, in either pie.
-- **A pie needs a boundary between slices, and this is why Mermaid's `pieStrokeColor` is themed.**
-  The ramp holds one lightness by design, so two touching slices have **no luminance step at
-  all**. Measured on the ramp: adjacent pairs sit at 1.00 to 1.02:1 in the light and the print
-  palette, `--data-3` against `--data-4` at 1.01:1 in the default palette at 52 degrees of hue
-  apart, and under simulated deuteranopia, protanopia and tritanopia every boundary falls to 1.00
-  to 1.14:1. The 15% and the 12% wedge read as one shape without a stroke. The CSS pie answered
-  this with a `--pie-gap` of `--surface` and is gone. Mermaid answers it with a `pieStrokeColor`
-  of `--surface` and a `pieOuterStrokeColor` of `--muted`, both themed per palette since v1.41.0.
-  **Do not drop either stroke to Mermaid's `black` default.**
+**Four slices stays the ceiling**: the ramp has four members, and a fifth has no color left that
+clears the floor. **A pie needs a boundary between slices**: the ramp holds one lightness by design,
+so adjacent slices had no luminance step at all (measured 1.00-1.14:1 across palettes and even under
+simulated color-blindness). Mermaid's `pieStrokeColor` (`--surface`, so slices separate by a gap not
+a line) and `pieOuterStrokeColor` (`--muted`, matching every other hairline) answer this, themed as of
+v1.41.0. **Do not drop either stroke to Mermaid's `black` default.**
 
-**The bar band paints its whole content through a background image, which is where the mode traps
-are, and both were verified by rendering rather than reasoned about.**
+**The bar band paints through a background image, so print and forced-colors both need a pin,
+verified by rendering rather than reasoning.** Print drops background graphics by default (verified
+via `print_background=False`), so `table.bar-chart td.bar` takes `print-color-adjust: exact` (check
+12 holds it). **`.tag-dot::before` needed the same pin**: a legend's dots vanished on paper without
+it, costing the legend's whole key, found by reading a printed PDF. `forced-colors: active` computes
+`background-image: none` on its own (verified), so the bar table needs no rule; the CSS pie did, and
+it's gone with the component. **Never answer a forced-colors case with `forced-color-adjust: none`**: it overrides the reader's own accessibility setting for a graphic whose numbers the page already
+states.
 
-- **Print drops a background graphic by default.** Verified by printing the fixture through
-  Playwright with `print_background=False`: without the pin every band vanishes while the numbers
-  stay, and with it the band survives. `table.bar-chart td.bar` therefore takes
-  `print-color-adjust: exact` in `@media print`, the same pin and the same reason as
-  `pre.mermaid`. Check 12 holds the rule.
-- **`.tag-dot::before` joined that pin, and a chart legend is what exposed the gap.** The dot has
-  painted `background: currentColor` since v1.33.0 and had no print pin, so a printed page with
-  background graphics off lost every dot and left the gaps where they had been. On its own that
-  costs a decorative marker. In a legend it costs the key: the legend is what maps a color to its
-  label. Found by reading the printed PDF rather than the rule.
-- **`forced-colors: active` computes `background-image` to `none`.** Verified in headless Chrome
-  under `--force-high-contrast`, where `getComputedStyle` reports `none` for the band. The bar
-  table needs no rule: it loses the band and keeps every number, which is the graceful case. The
-  CSS pie needed one, because an empty ring states less than nothing, and that rule went out with
-  the component. **Never answer a forced-colors case with `forced-color-adjust: none`.** It
-  overrides a reader's own accessibility setting to preserve a graphic whose numbers the page
-  already states.
+**Nothing here draws a line chart.** A Mermaid `xychart-beta` fence can't be themed (see
+[Diagram types](#mermaid)), and a pure-CSS line chart needs hand-authored SVG paths a generator can't
+be asked to emit correctly. The gap is deliberate.
 
-**Nothing here draws a line chart.** A trend over time has no component, and a Mermaid
-`xychart-beta` fence cannot be themed (see *Diagram types*). Leaving the gap is deliberate: a line
-chart in pure CSS needs either a hand-authored `<svg>` path or a stack of positioned elements, and
-neither is markup a generator can be asked to emit correctly.
-
-`samples/dark-charts.html` is the fixture, with a forced-light twin. It carries two bar tables on
-purpose, and the difference between them is the axis rather than the color: the first is a share of
-the whole, the second a share of the largest value in the column, which is the convention that
-makes an unlabelled axis honest.
+`samples/dark-charts.html` carries two bar tables (share of whole vs. share of the largest value, the
+convention that makes an unlabelled axis honest) plus a Mermaid pie of the same numbers.
 
 ## Progressive disclosure
 
-Two components arrived with template v1.21.0. `nav.toc` is an on-this-page index. `details.deep` is
-a collapsed tier for detail a reader can skip.
+Two components (template v1.21.0): `nav.toc` (on-this-page index), `details.deep` (collapsed detail
+tier).
 
-**`nav.toc` marks its links with a dotted `border-block-end`, not with an underline.** The Links
-section states that the underline is the only thing that marks a link. That holds for prose. A
-standalone index is a list of links and nothing else, so the dotted rule is the marker there and the
-dropped `text-decoration` is deliberate. Do not delete the border. `prefers-contrast: more` raises
-the underline on `a` and cannot reach these links, because `nav.toc a` outranks it. The border
-carries the mode instead, through `--rule-light`.
+**`nav.toc` marks links with a dotted `border-block-end`, not an underline.** The underline-only-mark
+rule (Links) holds for prose; a standalone index is a list of links and nothing else, so the dotted
+rule is its marker (`prefers-contrast: more`'s underline bump can't reach it, outranked by
+`nav.toc a`).
 
-**The index runs two columns above 600px and one column below it.** At 320px a two-column index left
-each entry about 68px of inline space and wrapped every title to five lines. The narrow override
-matches what `.col-2` already does at the same breakpoint. **The print override targets
-`nav.toc ol`, not `nav.toc`.** `columns` on the wrapper does nothing to the list inside it, and the
-first version of that rule was inert on paper for exactly that reason.
+**The index runs two columns above 600px, one below**: at 320px two columns left each entry about
+68px and wrapped titles to five lines (matches `.col-2`'s breakpoint). **The print override targets
+`nav.toc ol`, not `nav.toc`** (`columns` on the wrapper does nothing to the list inside it).
 
-**Both components use logical properties only.** `border-left` and `padding-left` shipped in v1.45.0
-and kept the index rule and the list indent on the left in RTL while the prose flipped. Every side
-in this sheet is `inline-start`, `inline-end`, `block-start` or `block-end`.
+**Both components use logical properties only** (`border-left`/`padding-left` shipped in v1.45.0 and
+kept the index rule and list indent on the left in RTL while prose flipped).
 
-**Neither component names a font of its own.** The first version set `font-family: var(--sans)` on
-`.toc-label` and on `details.deep > summary`, and `:root` declares no `--sans`, so both rules
-resolved to the inherited serif and rendered that way in every mode. The sheet ships two faces, a
-body serif and a code mono. A third face is a decision this section does not make. Do not
-reintroduce the token without declaring it.
+**Neither component names a font of its own.** The first version set `font-family: var(--sans)`, a
+token `:root` never declares, resolving to the inherited serif either way. The sheet ships two faces
+(body serif, code mono); a third is a decision this section doesn't make. **Do not reintroduce the
+token without declaring it.**
 
-**The summary triangles are decorative, and they reached the accessibility tree.** `<details>`
-already exposes its own open state, so the marker adds a spoken "black right-pointing small
-triangle" and nothing else. `content: "…" / ""` behind `@supports (content: "x" / "y")` gives both
-of them empty alternative text, the same pattern the outbound arrow uses. The base declaration stays
-outside the guard, because a browser that cannot parse the alt-text form discards the whole
-declaration and the marker disappears with it.
+**The summary triangles are decorative and once reached the accessibility tree** (`<details>` already
+exposes its own open state, so the marker only added a spoken "black right-pointing small triangle").
+Same `content: "…" / ""` alt-text convention as the outbound arrow.
 
-**`nav.toc` paints a composited ground that no gate reaches.**
-`color-mix(in oklab, var(--surface-alt) 60%, transparent)` over `--surface` lands between two
-grounds `palette-check.py` already measures. `--muted` and `--purple-bright` clear their floor
-against both, so the mix is bounded rather than measured. Nothing checks it. This is the honest gap
-rather than a check that cannot see the mix.
+**`nav.toc` paints a composited ground no gate reaches** (`color-mix(in oklab, var(--surface-alt) 60%,
+transparent)` lands between two measured grounds). `--muted`/`--purple-bright` clear their floor
+against both, so this is an honest, documented gap, not a check that cannot see the mix.
 
-**Hover on both components sits inside `@media (hover: hover)`.** v1.45.0 shipped both `:hover`
-rules outside that block. Interaction states records what that costs: the browser sets `:hover` on
-tap and leaves it set until the reader taps something else.
+**Hover on both components sits inside `@media (hover: hover)`** (v1.45.0 shipped both outside it: see Interaction states for the tap-sticks-forever cost). **Both components carry a fixture instance**
+now (they shipped with none for two releases, so no mode render or forced-colors sweep ever drew
+them).
 
-**Both components carry a fixture instance.** They shipped styled with no instance for two
-releases, so no mode render, no forced-colors sweep and no structural gate ever drew them.
-
-**Every `var()` in this sheet either resolves to a token this sheet declares, or carries a
-fallback.** Seven references resolve outside `:root` and all seven are deliberate:
-`--tree-step` and `--bar-tint` are declared on the component that reads them, and `--bar`,
-`--icon-color`, `--natural-width` and `--timeline-date` are consumer-supplied and each
-carries its own fallback in the `var()`. `--sans` had neither, which is what made it dead
-rather than optional. A new consumer-supplied token states its fallback in the reference.
+**Every `var()` here resolves to a declared token or carries a fallback.** Seven references resolve
+outside `:root`, all deliberate: `--tree-step`/`--bar-tint` are declared on the component that reads
+them; `--bar`/`--icon-color`/`--natural-width`/`--timeline-date` are consumer-supplied with their own
+fallback in the `var()`. `--sans` had neither, which is what made it dead. **A new consumer-supplied
+token states its fallback in the reference.**
 
 ## Editor themes
 
-`themes/` shares the palette. The **slot map**, which is the question of which token paints which
-syntax class, is a separate decision. **Prose logic does not transfer to an editor.** In prose the
-color is sparse, and low chroma reads as restraint. In an editor almost every glyph carries a
-color, so the same chroma reads as wash.
+`themes/` shares the palette; the **slot map** (which token paints which syntax class) is a separate
+decision. **Prose logic does not transfer to an editor**: in prose, sparse low-chroma color reads as
+restraint; in an editor, where almost every glyph carries color, the same chroma reads as wash.
 
-**`--label` is the document's caption tier, not a code tier.** Punctuation, parameters and both
-field kinds on that token collapse a buffer into one blue-gray band. Punctuation sits at
-`--on-surface`, which matches upstream Dracula. Parameters sit at `--orange`. `--label` keeps
-instance and static fields, which are legitimately secondary.
+**`--label` is the document's caption tier, not a code tier.** Punctuation, parameters and both field
+kinds on it would collapse a buffer into one blue-gray band. Punctuation sits at `--on-surface`
+(matching upstream Dracula); parameters at `--orange`; `--label` keeps only legitimately secondary
+instance/static fields.
 
-**Types cannot sit on plain `--purple`**, the dimmest accent in the palette. Type names are the
-highest-frequency token in C#. They use the existing `.bright` lift. That is not a new placeholder
-and not a palette change.
+**Types cannot sit on plain `--purple`** (the dimmest accent) despite being C#'s highest-frequency
+token: they use the existing `.bright` lift, not a new placeholder or palette change.
 
-**The repo rendered three alternatives and rejected all three.** Each one adopts more of Dracula's
-slot map: functions to `--green`, strings to `--data-4`, numbers to `--purple`. `--data-4` reads
-olive rather than yellow at this chroma. A move of strings off green also breaks the one
-cross-medium tie the theme has. The stylesheet paints inline `code` green, so a string in the
-editor and a `<code>` span in a document are the same color.
+**Three alternatives (closer to Dracula's own slot map: functions to `--green`, strings to
+`--data-4`, numbers to `--purple`) were rendered and rejected**: `--data-4` reads olive not yellow at
+this chroma, and moving strings off green breaks the one cross-medium tie the theme has (inline
+`code` is also green).
 
-**Do not answer "the theme looks washed out" by a chroma raise in `:root`.** Every ratio in the
-contrast budget was measured against those values, and those values go into every published page. A
-theme that reads dim is a slot-map problem first. Verify by a render of the **generated** `.icls`,
-not the template. The placeholders hide which hex actually lands.
+**Do not answer "the theme looks washed out" with a chroma raise in `:root`.** Every contrast-budget
+ratio was measured against those values, on every published page. A dim-reading theme is a slot-map
+problem first. Verify against the **generated** `.icls`, not the template: placeholders hide which
+hex actually lands.
+
+### Light and dark parity
+
+**Rider, Zed, Ghostty, iTerm2 and VS Code ship a light variant**, projected from the same
+`prefers-color-scheme: light` override the page itself uses. opencode and tmux stay dark only:
+neither format has an appearance-switch mechanism to project a second palette into. `.github/palette-check.py --dump`
+returns `{dark: {...}, light: {...}}` rather than one flat map, and `scripts/create-themes.nu`'s
+`render`/`resolve` pick a palette per placeholder: bare `{{token}}` resolves against a template's
+default scheme, `{{light:token}}` (or `dark:`) overrides that one placeholder regardless of default.
+
+**Two shapes cover every format, chosen by whether the format's own schema holds more than one
+appearance per file.** A format that does not (Rider's `theme.json`/`.icls`, VS Code's
+`color-theme.json`, Ghostty's theme file, iTerm2's `.itermcolors`) gets a second, separately
+generated `-light` file: same template rendered a second time with `--scheme light`, so every bare
+placeholder in it resolves to light with no per-placeholder prefix. A format whose schema already
+holds several appearances in one document (Zed's `themes` array) keeps one file: the dark theme
+object renders unchanged and the light one, alongside it in the same template, prefixes every
+placeholder with `light:`. Do not invent a third shape for a future target before checking which of
+these two its schema actually is.
+
+**Rider ships two complete themes, not one that follows the system setting**: IntelliJ Platform
+themes are one appearance per `theme.json`, so `plugin.xml` registers a second `themeProvider` for
+the light one, and the light `.icls` inherits IntelliJ's built-in `Default` scheme
+(`parent_scheme="Default"`) where the dark one inherits `Darcula`. The light `theme.json`'s four
+`Checkbox.*` icon keys drop the `.Dark` suffix the dark theme's copies carry, per JetBrains' icon
+palette convention (a bare key is the light-icon asset, `.Dark` overrides it for the dark one).
+**Neither of those two differences has been run against an actual Rider install**, only checked
+against JetBrains' own theme documentation, because nothing in this repo's toolchain can render an
+IntelliJ theme the way Playwright renders the CSS payload. Flag it if either turns out wrong once
+installed, rather than trusting the doc citation as verification.
+
+**iTerm2 has no single-file dual mode**: a profile's "Use different colors for light and dark mode"
+checkbox takes two separately imported presets, so `dracula-tufte-light.itermcolors` is a second
+plist built by the same `render-itermcolors` function with `scheme: "light"`, not a field inside the
+existing file.
 
 ## Mermaid
 
 ### Init config
 
-Use `theme: 'base'` plus explicit `themeVariables`. **Never use `theme: 'dark'`**, which ignores
-this palette entirely.
+Use `theme: 'base'` plus explicit `themeVariables`. **Never `theme: 'dark'`**, which ignores this
+palette entirely. **Pass hex, never `oklch()`**: khroma throws and aborts init on an oklch string,
+so no diagram renders at all. Values mirror `mermaid-palette.json`, CI-enforced.
 
-**Pass hex, never `oklch()`.** khroma throws "Unsupported color format" and aborts init, so no
-diagram renders at all. The values mirror `mermaid-palette.json`, and CI enforces the match.
+**`look: 'classic'` is explicit, as of Mermaid v12.0.0.** Mermaid 12 changed its default look from
+`classic` to `neo` and its default layout from `dagre` to a bundled ELK. `theme: 'base'` stays
+explicit so colors don't move; `look` is pinned rather than left to follow the new default. Rendered
+side by side, `neo` adds a `filter: drop-shadow(...)` and a brighter stroke halo on every node, ink
+carrying no data, declined for the same reason the CSS pie lost its `conic-gradient`. **Layout is
+left unset**: every diagram now lays out with ELK by default, an upstream default this template
+accepts rather than pinning `layout: 'dagre'` to hold the old geometry (see [Large maps](#connections-map-layout)
+for what changed on the one fixture that already used ELK deliberately). **Mermaid v12 also raises
+its runtime floor to ES2024, Safari 17.4+, Node 22.12+**: this template ships no polyfill and states
+no browser matrix of its own, so that's now the floor for any page pulling Mermaid.
 
-**`darkMode` belongs inside `themeVariables`.** `mermaidAPI` passes only `config.themeVariables` to
-`base.getThemeVariables()`. A root-level `darkMode` therefore never reaches the theme, and every
-derived color computes light-mode.
+**The `@mermaid-js/layout-elk` CDN import is gone**: Mermaid v12 bundles ELK into core, so the
+second CDN pin and the dynamic `import()` that only ran for a `layout: elk` fence are dead weight.
+Verified by rendering `samples/dark-conn-map.html`'s three-subgraph flowchart and its explicit-ELK
+diagram with the import removed: both render with no layout-loader error.
 
-**`fontFamily`, `fontSize` and `pieOpacity` are the only non-color `themeVariables`.** None is
-mirrored into `mermaid-palette.json`, which catches hex drift and has no hex here to catch.
-`fontSize: '1rem'` tracks the reader's root size; Mermaid's default is a hard-coded 16px.
-`pieOpacity: '1'` is pinned by check 11 of `palette-check.py` instead, because unlike the other two
-it changes a measured contrast pair rather than only a size.
+**`darkMode` belongs inside `themeVariables`**, not root-level: `mermaidAPI` only passes
+`config.themeVariables` to `base.getThemeVariables()`, so a root-level `darkMode` never reaches the
+theme and every derived color computes light-mode.
 
-**`background` is inert.** A sweep across twelve diagram types showed that it never reaches the
-output. It is correct by intent rather than load-bearing.
+**`fontFamily`, `fontSize`, `pieOpacity` are the only non-color `themeVariables`**, none mirrored
+into `mermaid-palette.json` (nothing there to catch). `fontSize: '1rem'` tracks the reader's root
+size (Mermaid defaults to a hardcoded 16px); `pieOpacity: '1'` is pinned by check 11 instead, since it
+changes a measured contrast pair. **`background` is inert** (swept across twelve diagram types,
+never reaches output): correct by intent, not load-bearing.
 
-**Theme the `note*` family explicitly.** Coverage of nodes, clusters, edges and pie slices leaves a
-`Note over` at mermaid's stock yellow, which is the only light surface on a dark page.
-`noteBorderColor` takes the lighter rule weight, so a note reads as an annotation rather than as a
-second node.
+**Theme the `note*` family explicitly**, or `Note over` renders at Mermaid's stock yellow, the only
+light surface on a dark page. **`actorTextColor` is not needed and is deliberately absent**: a
+`text,tspan` sweep that looks like a hidden dark layer is really one `<text>` wrapping one `<tspan>`
+with no direct text child to paint. **Probe a `tspan`, not its parent `text`**, before adding this
+back; a no-op themeVariable still costs two CI gates to keep in step.
 
-**`actorTextColor` is not needed, and it is deliberately absent.** A `text,tspan` sweep returns each
-actor name twice, which looks like a hidden dark layer. It is not. Mermaid emits one `<text>` that
-wraps one `<tspan>`, and the parent has no direct text child to paint. **Probe a `tspan`, not its
-parent `text`,** before you believe this one again. A themeVariable that changes nothing still
-costs two CI gates to keep in step.
-
-**Pin the CDN to an exact version, never to a range.**
+**Pin the CDN to an exact version, never a range.**
 
 ### Label measurement
 
-**`fontFamily` is set at the top level of the config as well as in `themeVariables`. Both copies are
-load-bearing.** The themeVariable reaches the CSS mermaid injects, and it decides what paints the
-labels. The root one is what `calculateTextDimensions` measures with, and it decides how wide a
-label box computes to be. **The measurement font is the render font, or the arithmetic is wrong.**
-
-**`sequence.noteFontFamily` and `noteFontSize` are not the fix.** `initialize` accepts them, and
-`getConfig()` reads them back. Through 11.16.1 they change nothing.
+**`fontFamily` is set at both the config top level and in `themeVariables`, and both copies are
+load-bearing.** The themeVariable reaches the injected CSS that paints labels; the root one is what
+`calculateTextDimensions` measures with, deciding label box width. **The measurement font is the
+render font, or the arithmetic is wrong.** `sequence.noteFontFamily`/`noteFontSize` are accepted by
+`initialize()` and read back by `getConfig()` but change nothing through 11.16.1: not the fix.
 
 ### Diagram sizing
 
-Label size follows SVG scale, so both ends of the viewport range are the same bug.
+Label size follows SVG scale, so both viewport extremes are the same bug.
 
-**Wide end: `pre.mermaid svg` takes `width: auto`, not `width: 100%`.** A stretch of an SVG with a viewBox
-to its container multiplies the label size with it. A sparse graph then renders labels larger than
-`h1`. `max-width: 100%` still shrinks a graph too wide to fit. `text-align: center` keeps a small
-one centered, **in both layouts**. It once lived on `body.conn-map` only, so an inline diagram
-narrower than its column hugged the left edge in the default layout. `fontSize: '1rem'` alone does
-not fix this.
+**Wide end: `pre.mermaid svg` takes `width: auto`, not `width: 100%`**: stretching a viewBox SVG to
+its container multiplies label size with it (a sparse graph renders labels larger than `h1`).
+`max-width: 100%` still shrinks an oversized graph; `text-align: center` (in both layouts) keeps a
+small one centered.
 
-**Narrow end: below 600px the diagram renders at natural size and scrolls.** Scaled to a phone's
-width, diagram text renders at half the size of the prose it illustrates.
-
-**The natural width comes from `--natural-width`, because CSS cannot otherwise recover it.** With
-`useMaxWidth` at its default, mermaid writes `width="100%"` as an attribute and its real size as an
-inline `max-width`. `mermaid.js` copies that value into the custom property. Two attempts failed
-first.
-
-1. `width: auto` plus `max-width: none`. An SVG with a viewBox resolves `auto` to its container. The
-   diagram therefore stayed at container width, and the labels stayed small.
-2. A copy of the inline `max-width` into the inline `width`. That broke the band *above* the
-   breakpoint. A fixed width overflowed its column into a page-level sideways scroll, which is the
-   one thing this work exists to prevent.
-
-The `--natural-width` fallback covers `body.conn-map`. Its fences set `useMaxWidth: false`, so they
-carry a real width attribute and no inline `max-width`. The `!important` fights mermaid's own
-inline styles. The selector repeats inside the media block, because it is more specific **and**
-`!important`. Source order alone would not win.
+**Narrow end: below 600px the diagram renders at natural size and scrolls**, or diagram text would
+render at half the size of the prose beside it. **`--natural-width` recovers the natural size CSS
+otherwise can't**: with `useMaxWidth` default, mermaid writes `width="100%"` plus a real-size inline
+`max-width`; `mermaid.js` copies that into the custom property. Two earlier attempts failed: plain
+`width: auto` + `max-width: none` (an SVG with a viewBox resolves `auto` to its container, so labels
+stayed small); copying inline `max-width` into inline `width` (broke the band *above* the breakpoint
+with a page-level sideways scroll). The `!important` fights mermaid's own inline styles; the selector
+repeats inside the media block since it needs both higher specificity **and** `!important`.
 
 **`pre.mermaid svg { overflow: visible }` exists because some diagram types write a viewBox that
-does not contain their own content.** The outermost `<svg>` gets `overflow: hidden` from the UA
-stylesheet, so anything outside the viewBox is clipped. `quadrantChart` forced the rule with a fixed
-viewBox and point labels centered on the point. `pre.mermaid` needs the declaration too, or the
-inherited `overflow-x: auto` clips at the same place. `.mermaid-overlay svg` needs it too, or the
-zoom shows the truncation it was opened to escape.
+excludes their own content** (`quadrantChart`'s fixed viewBox with edge-centered point labels forced
+this). Needed on `pre.mermaid` (or inherited `overflow-x: auto` clips the same content) and on
+`.mermaid-overlay svg` (or zoom shows the same truncation it's meant to escape).
 
-**The cost is that a label outside its own viewBox is unreachable below roughly 700px, and no
-`overflow` value anywhere recovers it.** This entry used to say the labels clip below 600px, where
-`overflow-x: auto` forces computed `overflow-y` to `auto`, and that the zoom overlay shows the whole
-diagram either way. Both halves were wrong, and both were measured wrong-way-round.
+**The cost: a label outside its own viewBox is unreachable below about 690px (not 600px), and no
+`overflow` value anywhere recovers it.** `overflow-x: auto` unconditionally was tried and reverted: strictly worse: SVG ink outside the root `<svg>`'s box is not scrollable overflow for any CSS
+ancestor, so a scroller recovers nothing and instead *clips* content `overflow: visible` had at least
+been painting into the page gutter. The zoom overlay doesn't rescue it either: it's proportional to
+the SVG's own width, so the escape scales with the zoom (measured 69-105px lost at a 640px viewport): only shrinking the SVG helps, which would shrink every zoomed diagram, the one thing the overlay
+exists not to do. **This is a consumer constraint, stated in `CONTRACT.md` § 2**, not a stylesheet
+defect: the fixture's two overlong point labels exist to exercise this; realistic labels lose nothing
+above 601px. Same defect class as `packet`/`xyChart` (a Mermaid viewBox bug): take it when Mermaid
+fixes it.
 
-- **The band runs to about 690px, not 600px.** Between 601px and 690px `pre.mermaid` is
-  `overflow: visible`, so the reasoning about `overflow-y` does not apply, and the fixture's
-  `quadrantChart` still put 20px of label past the left viewport edge and 49px past the right.
-- **`overflow-x: auto` on `pre.mermaid` at every width was tried and reverted. It is strictly
-  worse.** SVG ink painted outside the root `<svg>`'s box is not scrollable overflow for any CSS
-  ancestor, so the scroller recovers nothing, and it *clips* the part that `overflow: visible` had
-  been painting into the page gutter, where a reader could at least see it. Scrolling such a
-  container fully right only trades a right-side loss for a left-side one.
-- **The zoom overlay does not rescue it either.** `.mermaid-overlay svg` is `95vw` by `95vh`, and
-  the escape is proportional to the svg's width, so it scales with the zoom: at a 640px viewport the
-  overlay lost 69px left and 105px right of the same labels. `overflow: auto` on the overlay
-  recovers nothing, for the same reason it recovers nothing on the `pre`. Only shrinking the svg
-  helps, and shrinking it to fit one diagram type's broken viewBox would make every zoomed diagram
-  smaller, which is the one thing the overlay exists not to do.
-
-**So this is a consumer constraint, not a stylesheet defect, and it is stated in `CONTRACT.md`
-§ 2.** The fixture's two point labels are deliberately overlong, to exercise
-`pre.mermaid svg { overflow: visible }`. The same chart with realistic labels loses nothing at any
-width from 601px up, measured. `quadrantChart` writing a viewBox that excludes its own content is
-the same class of Mermaid defect as `packet` and `xyChart`, and it gets the same answer: keep the
-labels short, and take it when Mermaid ships a fix. **Above 700px nothing is lost on any diagram
-type in the fixture set**, which is why `overflow: visible` stays.
-
-**A JS `refit()` that grows the viewBox to the measured `getBBox()` was tried and reverted.** Run
-from the `MutationObserver`, it fires before the flowchart's `foreignObject` labels lay out. The
-bbox is therefore enormous, and it drags the inline `max-width` with it. A correct version needs a
-settled-layout signal the observer does not have. **One CSS declaration needs no timing at all.**
+**A JS `refit()` growing the viewBox to `getBBox()` was tried and reverted**: fired from a
+`MutationObserver` before flowchart `foreignObject` labels lay out, producing an enormous bbox. **One
+CSS declaration needs no timing at all.**
 
 ### Zoom
 
 **The clone is stripped of mermaid's own sizing**, so the overlay's CSS governs every diagram
-identically. An inline `max-width` outranks the stylesheet. Left in place, the zoom magnifies in one
-layout and does nothing in the other. The overlay sets `width` and `height`, not `max-*`, because
-`max-width` alone leaves a small diagram at natural size. That is a zoom that does not zoom.
+identically (an inline `max-width` left in place would zoom in one layout and do nothing in the
+other; the overlay sets `width`/`height`, not `max-*`).
 
-**The zoomed diagram's halo is tinted from the scrim**, at
-`oklch(from var(--surface-alt) 0.15 c h / 0.5)`. A pure-black shadow only looked right in one
-palette. A zero-offset blur is a glow rather than an elevation shadow, and an untinted one picks up
-none of the surface it falls on.
+**The zoomed diagram's halo is tinted from the scrim**, `oklch(from var(--surface-alt) 0.15 c h /
+0.5)`: a pure-black shadow only looked right in one palette.
 
-**The close mark honors the safe-area insets, because the overlay is the sheet's only fixed layer.**
-Both offsets are `max()` against `env(safe-area-inset-*)`. The inline-end offset lists both physical
-insets, because `env()` has no logical spelling. Nobody verified this on hardware with a real notch.
+**The close mark honors safe-area insets** via `max()` against `env(safe-area-inset-*)` (not
+verified on hardware with a real notch). **The ✕ is a pseudo-element, not a button**: the whole
+overlay dismisses on click and Escape already closes it, so a button would add a second path to one
+action and a needless focus stop.
 
-**The ✕ stays a pseudo-element, not a button.** The whole overlay dismisses on click, and Escape
-closes it. A control there adds a second path to one action. It also adds a focus stop inside a
-dialog whose only content is a diagram.
+`securityLevel` defaults to `strict`, sanitizing `click` directives away; a consumer sets
+`window.mermaidSecurityLevel = 'loose'` to opt in. The overlay throws loudly when `#mermaid-zoom` is
+missing, rather than a bare `TypeError` pointing nowhere.
 
-`securityLevel` defaults to `strict`, which sanitizes `click` directives away. A consumer with a
-trusted source sets `window.mermaidSecurityLevel = 'loose'` in a preceding classic script tag. The
-overlay throws loudly when `#mermaid-zoom` is missing. Without that check the zoom dies on a bare
-`TypeError` that points nowhere near the missing element.
+**Clicking a diagram opened nothing, on any fixture, until this was found.** A `data-*` "already
+wired" guard is not safe against `cloneNode`: Mermaid clones the `<svg>` at least once during its own
+render pipeline, the clone carries the marker attribute over, but a JS listener added with
+`addEventListener` does not survive a clone, so the handler stays bound to the discarded original.
+**The fix is a `WeakSet` keyed on the element itself**, not an attribute a clone can copy: a clone is
+a different object and correctly misses the set; the same object on a later pass correctly doesn't
+get a second listener. Confirmed with a real driven click, not a synthetic `dispatchEvent` (which
+proves nothing about which element a listener is bound to).
 
-**Clicking a diagram never opened the overlay, on any fixture, until this was found.** A `data-*`
-attribute is not a safe "already wired up" guard, because it is a real DOM attribute and
-`cloneNode` copies it. Mermaid's own render pipeline clones the `<svg>` at least once after the
-initial insert, part of its own layout process, unrelated to anything this repo does. The clone
-carries the `data-zoomable="true"` marker over, so the guard reads "already done" and skips
-re-attaching, but a JS listener added with `addEventListener` does not survive a clone: the click
-handler stays bound to the discarded original, and the live element nobody can click has none.
-Confirmed with a real, driven click (Playwright, not a synthetic `dispatchEvent`, which fires
-listeners but proves nothing about which element they are bound to): a click straight at the
-diagram's own "Zoom diagram" button worked, because that button is recreated fresh on every render
-pass and always closes over the current `svg`, and a click on the diagram itself did nothing, on
-every fixture, small or large, ELK or not. **The fix is a `WeakSet` keyed on the element itself,
-not an attribute copied onto whatever clones it.** A clone is a different object and is not in the
-set, so it correctly gets its own listener; the same object seen again on a later render pass
-correctly does not get a second one.
-
-**A node's own link must win over the diagram's click-to-zoom, and nothing enforced that either.**
-The svg-wide listener that opens the overlay sees every click inside the diagram, including one
-that lands on a node's own `<a xlink:href>`. A connections map's nodes are exactly that kind of
-link. The listener now checks `e.target.closest('a')` and does nothing when the click is inside
-one, letting the node's own navigation proceed instead of racing it. Verified with a real click on
-a node carrying a `click` directive: the page navigates and the overlay never opens, against the
-same real click landing on a node with no directive, which still opens the overlay as before.
+**A node's own link must win over click-to-zoom.** The svg-wide zoom listener now checks
+`e.target.closest('a')` and defers to the node's own navigation when the click lands on one: verified with a real click on a `click`-directive node (navigates, overlay never opens) against one
+with no directive (opens as before).
 
 ### Diagram types
 
-**`packet` is not themeable through config, so CSS overrides it.**
-`defaultPacketStyleOptions` hard-codes black text on `#efefef`. Neither `initialize()` nor a fence
-directive moves any of it. `tufte-dracula.css` overrides mermaid's injected rule directly with
-`!important`. That is required rather than convenient. Mermaid's rule is id-scoped, so it beats a
-page-level class rule on specificity whatever the source order.
+**`packet` is not themeable through config, so CSS overrides it.** `defaultPacketStyleOptions`
+hard-codes black text on `#efefef`; neither `initialize()` nor a fence directive moves it.
+`tufte-dracula.css` overrides mermaid's id-scoped injected rule with `!important` (required, not
+convenient: id-scoping beats a page-level class rule regardless of source order). **Verify a
+mermaid override by rendered pixels, never by reading the exported SVG's own `<style>`**, which
+doesn't change even when an override is visually in effect.
 
-**Verify a mermaid override by a sample of rendered pixels, not by a read of the exported SVG.** The
-SVG's own embedded `<style>` does not change, even when an external stylesheet visually overrides it.
+**`xyChart` cannot be fixed here.** Same inert-config defect as `packet`, but no CSS door: bars and
+line are plain `<rect>`/`<path>` with a literal fill/stroke and **no class attribute at all**. Take
+it when Mermaid ships a fix, or use a per-diagram `<style>` scoped by a hand-added `id`. **Never
+widen a selector on the shared sheet for it.**
 
-**`xyChart` cannot be fixed here.** `plotColorPalette` has the same inert-config defect as `packet`.
-Unlike `packet`, there is no CSS door in. The bars and the line are plain `<rect>` and `<path>`
-elements with a literal `fill` or `stroke` and **no class attribute at all**. Take this when mermaid
-ships a fix. Otherwise use a per-diagram `<style>` scoped by a hand-added `id`. **Never widen a
-selector on the shared sheet for it.**
+**`sankey` and `block` render in d3's Tableau10 categorical scheme**, no config surface in front of
+it. Left alone: nothing puts a category fill beside body copy.
 
-**`sankey` and `block` render in d3's Tableau10 categorical scheme** rather than in any
-`themeVariable`. There is no config surface in front of it. The repo leaves them alone for the
-reason the contrast budget gives: nothing puts a category fill beside body copy.
+**`mindmap` was tried for the connections map and rejected.** Mermaid's own section coloring resolved
+to literal black under `theme: 'base'` with this palette's dark `primaryColor` (an `hsl(_, _, 0%)`
+Mermaid computes by hue-rotating off `primaryColor`), fixable the way `packet`/ELK clusters are. What
+actually killed it: `mindmap` accepts no `accTitle`/`accDescr` at any indentation and rejects the
+whole diagram (not just the directive) the moment either appears, a real accessibility regression
+against every other diagram type here; and it has no equivalent to a legend, since a connection is
+always a plain parent-child line with no per-edge line style. **Do not re-add `mindmap` on the
+strength of a theming fix alone**: neither gap above is a CSS problem.
 
-**Diagram text that lands on the page ground, rather than on a node fill, was invisible in print.**
-Mermaid bakes its hex into the SVG at init, and print is a media query with no re-render, so a
-diagram themed for a dark page keeps painting `textColor` at `#f8f8f2` while `@media print` turns
-`--surface` white. Measured on paper: the pie title and legend, the `quadrantChart` axis labels and
-every `sequenceDiagram` message label were white on white, about 1.0:1. **Nothing in NOTES.md or in
-the print block had ever mentioned diagrams**, and no gate looks at printed output.
+**`usecase` (v12.0.0+, keyword `usecase-beta`) needs no new `themeVariables`, and none were added.**
+Actors and ellipses already resolve through `primaryColor`/`primaryBorderColor`/`primaryTextColor`/
+`lineColor`, verified by rendering against both palettes. A `systemBoundary` doesn't read those: Mermaid numbers boundaries from its own categorical palette, and `usecaseBoundaryBkg`/`Border` are
+only a fallback for a theme with no such palette (setting them changed nothing, confirmed by
+rendering with and without). What carries the boundary correctly instead: a `systemBoundary` renders
+with a `cluster` class like a flowchart subgraph, so the existing `pre.mermaid .cluster rect`/
+`.cluster-label` override (written for ELK, see [Large maps](#connections-map-layout)) covers it for
+free. `samples/dark.html` carries a `usecase-beta` fence with one `systemBoundary` as fixture
+coverage.
 
-**v1.40.1 recolored the text. v1.41.0 replaced that with giving the diagram back its palette, and
-the second answer is the right one.** The first fix pulled four measured classes onto
-`--on-surface`. It worked, and it only ever covered the five diagram types the fixtures carry: a
-`gantt`, `class`, `state` or `journey` diagram puts text on the page ground too and printed exactly
-as badly. Enumerating classes per diagram type is a list that grows with Mermaid and rots quietly.
+**`C4Context`/`Container`/`Component`/`Dynamic`/`Deployment` are not themeable here, and no fixture
+exists for any of them.** A probe render found `Person()`/`System()` painted with Mermaid's hardcoded
+C4 defaults (`#08427B`, `#1168BD`) regardless of theme, since the C4 renderer sets fill/stroke as a
+literal shape attribute: same defect class as `xyChart`. A relationship label rendered at `#444444`,
+failing contrast on this dark ground outright. A CSS door does exist (the `!important` route
+`packet`/ELK clusters use), but C4's several shape tiers (`person`, `external_person`, `system`,
+`external_system`, `system_db`, `system_queue`, `container`/`component` tiers) are too much surface to
+theme with no fixture to prove it against (see [Fixtures are coverage](#fixtures-are-coverage)). A
+consumer adding a C4 diagram on this dark palette should verify contrast themselves.
 
-**The diagram is a dark object on a white page, so treat it as one.** In `@media print`,
-`pre.mermaid` re-declares the five palette tokens its own rules resolve through, and takes
-`background: var(--surface)` from the frozen value:
+**Diagram text on the page ground (not a node fill) was invisible in print**: Mermaid bakes hex into
+the SVG at init, and print is a media query with no re-render, so a dark-page-themed diagram kept
+painting `textColor` at `#f8f8f2` while `@media print` turned `--surface` white (measured: pie
+title/legend, `quadrantChart` axis labels, every `sequenceDiagram` message label at about 1.0:1). An
+earlier fix (v1.40.1) recolored four measured classes onto `--on-surface`, covering only the five
+diagram types the fixtures carried; v1.41.0 replaced it with giving the diagram back its own palette
+instead, which covers every diagram type with no per-class enumeration.
 
-```css
---surface  --on-surface  --code-bg  --purple  --muted
-```
+**The diagram is a dark object on a white page, so `@media print` treats it as one**: `pre.mermaid`
+re-declares the five tokens its own rules resolve through (`--surface`, `--on-surface`, `--code-bg`,
+`--purple`, `--muted`) and takes `background: var(--surface)` from the frozen value. Custom
+properties inherit, so every `var()` inside the diagram resolves correctly with no class enumeration.
 
-Custom properties inherit, so every `var()` inside the diagram then resolves the way the SVG was
-themed, and nothing has to know which class sits on which fill. That is what makes this correct for
-diagram types with no fixture: it never names a class.
+- **Freeze every token any `pre.mermaid` rule reads, or the half you miss goes dark on dark**: a
+  first attempt froze only the background, so `packet`'s own overrides still resolved `--on-surface`
+  to the paper palette, printing dark text on the new dark ground.
+- **`print-color-adjust: exact` is load-bearing**, verified by rendering a PDF with backgrounds
+  suppressed (the default): without it, backgrounds drop and light text lands on white paper again.
+  Pinned by `palette-check.py` alongside `-webkit-` and all five frozen literals.
+- **A light-themed diagram needs none of it**: a trailing
+  `@media print and (prefers-color-scheme: light)` block `unset`s all five (falling back to the
+  inherited paper palette), sitting after `@media print` on purpose since source order, not
+  specificity, is what lets it win.
 
-- **Freeze every token any `pre.mermaid` rule reads, or the half you miss goes dark on dark.** The
-  first attempt set only the background. The `packet` overrides then resolved `--on-surface` to the
-  paper palette, so the `packetTitle` and the byte labels printed dark text on the new dark ground:
-  the same defect, one component over, caught by rendering a PDF rather than by reading the rule.
-  `--rule` needs no entry of its own, because it is `var(--muted)` and follows the frozen one.
-- **`print-color-adjust: exact` is load-bearing, and it was verified, not assumed.** Chrome prints
-  no background colors by default. A plain background is dropped and the light text lands on white
-  paper again, which is the original defect wearing a new hat. Checked by rendering a PDF with
-  backgrounds suppressed: the plain block vanishes and the `exact` one survives. Both the standard
-  property and `-webkit-` are pinned by `palette-check.py`, along with all five frozen literals.
-- **A light-themed diagram needs none of it**, because it is already dark-on-light. A trailing
-  `@media print and (prefers-color-scheme: light)` block `unset`s all five and drops the ground.
-  `unset` on an inherited custom property falls back to the inherited value, which is the paper
-  palette, so the light diagram prints as it always did. The block sits after `@media print` on
-  purpose: media queries add no specificity, so source order is what lets it win.
-- **The overlong `quadrantChart` point labels print correctly now too.** They were faint under the
-  first fix, because they are light for the in-chart case and only leave the dark fill when a label
-  is too long, which `CONTRACT.md` § 2 already bans. With the diagram carrying its own ground there
-  is no white paper for them to escape onto, so the stress case stopped being a print defect
-  without the fixture changing.
+**`pie` paints text directly onto a `--data-*` fill and took two coupled fixes**, both found by
+rendering rather than reading tokens. `pieOpacity` is now `1` (Mermaid's 0.7 default composited every
+slice toward the card, undoing the ramp's own contrast work). `pieSectionTextColor` is per palette
+and inverts (`--surface` in the pale dark ramp, `--on-surface` in the mid-tone light ramp: one value
+can't serve both). Both are real `themeVariables` in mermaid 11.17.2; no `!important` was needed.
+**Both pie strokes are themed too** (`pieStrokeColor: --surface` so slices separate by a gap not a
+line; `pieOuterStrokeColor: --muted` matching every other hairline): Mermaid defaults both to
+literal `black`, not a palette color in any mode. **Do not drop either stroke back to Mermaid's
+default.**
 
-**`pie` is the one diagram type that paints text directly onto a `--data-*` fill, and it took two
-coupled fixes.** Mermaid writes `.pieCircle { opacity: pieOpacity }` and `.slice { fill:
-pieSectionTextColor }`, so the slice percentage is a text-on-accent pair and the opacity decides
-what the accent even is. Both were wrong, and both were found by rendering a `pie` fence rather
-than by reading tokens.
-
-- **`pieOpacity` now says `1`.** Mermaid defaults it to 0.7, which composited every slice toward
-  the card and measured 2.15 to 2.22:1 against the light one, after the v1.25.0 ramp had cleared
-  3.2:1 flat. The opacity was undoing the ramp work.
-- **`pieSectionTextColor` is per palette, and it inverts.** The dark ramp is pale and the light
-  ramp is mid-tone, which is the opposite of what Mermaid's single `textColor` assumes, so one
-  value cannot serve both: a dark-mode label at `#f8f8f2` measured 1.81:1 flat. It is `--surface`
-  in the dark set (7.39 to 7.51:1) and `--on-surface` in the light set (4.98 to 5.10:1).
-- **No seventh `!important` was needed.** This was recorded as needing one, on the belief that
-  `.pieCircle`'s opacity had to be fought in CSS. It does not: both values are real
-  `themeVariables` in mermaid 11.17.2, confirmed against the pinned `pieDiagram` chunk before the
-  edit and by a render after it.
-- **Both pie strokes are themed as of v1.41.0, and Mermaid defaults both to literal `black`.** That
-  is not a palette color in any of the four modes, and a 2px black keyline around a pale slice on a
-  dark card reads as a foreign object rather than as a boundary. `pieStrokeColor` is `--surface`,
-  so adjacent slices are separated by the ground they sit on and the separator is a gap rather than
-  a line. `pieOuterStrokeColor` is `--muted`, which is `--rule`'s own value, so the outer ring is
-  the same hairline weight every other boundary in the sheet uses. The slice fills already clear
-  the 3:1 non-text floor against both grounds, so neither stroke is carrying a contrast
-  requirement: they are separation, and check 1 pins both hexes to the tokens they name.
-
-`samples/dark.html` carries a `pie showData` fence as of v1.40.0. Its absence is why this went
-unmeasured for four releases, which is the *Fixtures are coverage* rule stated from the other end.
+`samples/dark.html` carries a `pie showData` fence as of v1.40.0; its absence is why the above went
+unmeasured for four releases (see [Fixtures are coverage](#fixtures-are-coverage)).
 
 ## Connections-map layout
 
-`body.conn-map` has exactly two sections in order: **(1) Links, (2) Graph**. Above 900px Links sits
-left and sticky, and the graph sits right. Below 900px they stack.
+`body.conn-map` has exactly two sections in order: **(1) Links, (2) Graph.** Above 900px Links sits
+left and sticky with the graph right; below 900px they stack.
 
-**Markup order is the layout order. The stylesheet does not reorder.** CSS `order` reversed them,
-so the visual leading column was Links while tab order and screen-reader order started in the graph
-on the right.
+**Markup order is the layout order; the stylesheet does not reorder.** CSS `order` once reversed
+them, so the visual leading column was Links while tab/screen-reader order started in the graph.
+**That was a silent breaking change for consumers**: a page emitted with the old order renders with
+the graph in the narrow sticky column and nothing errors. Supporting both orders behind
+`:has(> .links)` was rejected: two layout paths in a file every consumer inlines verbatim.
 
-**That was a breaking change for consumers, and the break is silent.** A page emitted with the old
-order renders with the graph in the narrow sticky column, and nothing errors. Support for both
-orders behind `:has(> .links)` was rejected. That is two layout paths in a file every consumer
-inlines verbatim.
+**The article sets layout only, never width**: it once broke out of the page container to be wider
+than the default layout, so a connections map and an ordinary page never shared a left edge.
+`pre.mermaid` broke out a second time. **Both breakouts were deleted, not ported.** The container is
+`--page-width`; the SVG renders at natural size; there's nothing to escape to.
 
-**The article sets layout only, never width.** It once broke out of the page container to be *wider*
-than the default layout. A connections map and an ordinary page therefore never shared a left edge.
-`pre.mermaid` broke out a second time. **The repo deleted both breakouts rather than ported them.**
-The container is `--page-width`, and the SVG renders at natural size. There is nothing to escape to,
-and extra width would buy nothing.
+**The full-width row is `article > *`, not an allow-list**: an allow-list would let a new direct
+child (e.g. a generator-added footer) silently join the two-column flex row instead of spanning it.
 
-**The full-width row is `article > *`, not an allow-list.** With an allow-list, any other direct
-child silently joined the two-column flex row rather than spanned it. A generator triggers that by a
-new footer. The column rules still win on specificity, so the shipped layout is unchanged.
-
-**The sticky column has a height ceiling.** `position: sticky` pins nothing when the element is
-taller than the viewport. It scrolls with the page like any block, silently, with nothing clipped.
-The column takes `max-height: calc(100vh - 2rem); overflow-y: auto; overscroll-behavior: contain`.
-
-**`tabindex="0"` is deliberately not on that column.** This is the one place the sideways-scroller
-rule does not apply. That rule exists for a `pre`, a table and a `math[display="block"]`, whose
-overflowed content holds nothing focusable. The Links column holds links. Focus on one scrolls it
-into view, so a tab stop on the container would announce a region the reader is already inside.
+**The sticky column has a height ceiling** (`max-height: calc(100vh - 2rem); overflow-y: auto;
+overscroll-behavior: contain`): `position: sticky` pins nothing once the element is taller than the
+viewport; it silently scrolls with the page instead. **`tabindex="0"` is deliberately not on that
+column**: the sideways-scroller rule exists for a `pre`/table/`math` whose overflow holds nothing
+focusable; the Links column holds links, and focusing one already scrolls it into view.
 
 ### Large maps
 
-The two-node sample above proves the container. It says nothing about a map with dozens of nodes,
-and the default `flowchart BT` fan-out does not scale to one: a 50-node production map measured
-`viewBox="0 0 7435 798"`, five ranks, one of them holding 27 of the 50 nodes because dagre lays a
-flat rank out left to right with nothing to break it up. That is a horizontal-scroll wall, not a
-diagram. **Past roughly 15 to 20 nodes on one rank, restructure rather than widen:**
+The default `flowchart BT` fan-out does not scale past a small map: a 50-node production map measured
+`viewBox="0 0 7435 798"`, one rank holding 27 of 50 nodes, a horizontal-scroll wall. **Past roughly
+15-20 nodes on one rank, restructure rather than widen:**
 
-**1. Cluster nodes into open subgraphs for visual grouping. Never collapse one that a reader must
-click into.** `subgraphId@{ view: collapsed }` (Mermaid 11.17) does not shrink a cluster, it
-deletes it: every node inside is dropped from the render, and with it every one of that node's own
-`click id href "url"` anchors. A connections map exists to link out to every item it names, so
-collapse is disqualified outright for this template, not a tradeoff to weigh. Verified against the
-same reason the zoom overlay depends on `click`: a `click` directive rendered under an open
-subgraph produces a real `<a xlink:href>` per node, identical to a node outside any subgraph, and
-Mermaid's own PR description for the feature confirms internal edges and nodes are dropped rather
-than hidden. Grouping into an open (uncollapsed) subgraph still gives a reader visual structure,
-an era or a topic reads as one region, but it does not reduce the node count on the page. Point 4
-is what does.
+**1. Cluster into open subgraphs for visual grouping. Never collapse one a reader must click into.**
+`subgraphId@{ view: collapsed }` (Mermaid 11.17) deletes every node inside a cluster from the render,
+along with each node's own `click` anchors: disqualified outright for a template that exists to
+link out to every item it names. An open subgraph still gives visual structure; it just doesn't
+reduce node count (point 4 does that).
 
-**2. Switch a large map to the ELK layout engine, loaded only when a page asks for it.**
-`mermaid.js` imports `@mermaid-js/layout-elk` from the CDN and calls
-`mermaid.registerLayoutLoaders()`, but only when a `pre.mermaid` fence on the page contains
-`layout: elk`. An unconditional import would add a second mandatory CDN dependency to every page
-with a Mermaid diagram, including the ones with five nodes that never needed it. A consumer opts
-in per diagram with a `config: { layout: elk }` frontmatter block in the fence.
+**2. Switch a large map to the ELK layout engine.** As of v12.0.0 ELK ships inside core rather than
+the separate `@mermaid-js/layout-elk` module this template used to conditionally load: a
+`config: { layout: elk }` fence still opts in exactly as before, with nothing left to load
+conditionally or race against `mermaid.initialize()` (verified by rendering the explicit-ELK diagram
+with no second import present). **ELK is also the default layout for every diagram naming no
+`layout` at all**, as of the same release; this template accepts that default (see
+[Init config](#mermaid)).
 
-**The ELK import must never block `mermaid.initialize()`, and a top-level `await` on it does
-exactly that.** A first attempt awaited the dynamic import before calling `initialize`, so nothing
-on the page rendered, not even diagrams that never asked for ELK, until that import settled. Under
-`--virtual-time-budget`, the flag `.github/render-modes.py` already uses to screenshot every
-fixture, the import never settles at all: virtual time does not let a pending `fetch` resolve, so
-the `await` hangs forever and the page stays unrendered for the full budget. The fix is
-fire-and-forget: `mermaid.initialize` and `startOnLoad` run immediately as before, and the ELK
-import, once it resolves, calls `mermaid.registerLayoutLoaders()` then `mermaid.run({ nodes:
-elkPres })` to re-render only the diagrams that requested `layout: elk`. Every other diagram on
-the page is never blocked on it. If the import never resolves, an ELK diagram shows Mermaid's own
-inline error state indefinitely: the same offline failure this repo already accepts for Mermaid
-itself, now scoped to the one diagram that opted into the extra dependency instead of the whole
-page.
+**ELK trades width for height on an unbalanced fan-out: it does not just shrink the diagram.**
+Eighteen leaf nodes into one focus node measured `3063 x 174` under dagre vs. `2671 x 324` under ELK:
+about 13% narrower, roughly twice as tall. A map already short and wide will read taller under ELK,
+not merely narrower.
 
-**ELK trades width for height on an unbalanced fan-out, it does not just shrink the diagram.**
-Eighteen leaf nodes into one focus node, the shape of the production map's worst rank, measured
-`3063 x 174` under dagre and `2671 x 324` under ELK: about 13% narrower and roughly twice as tall.
-ELK spreads a flat rank across more than one row instead of extending it sideways. That is the
-fix for the sprawl, and it is a real layout change, not a free win: a map that is already short
-and wide will read taller under ELK, not merely narrower.
+**ELK clusters ignore `clusterBkg`/`clusterBorder` outright**: isolated against dagre with an
+identical subgraph and `theme: 'base'`, ELK hardcodes Mermaid's stock `#ffffde` fill, `#aaaa33`
+stroke, `#333` label text regardless of `themeVariables`. Same defect class as `packet`/`xyChart`, so
+`tufte-dracula.css` overrides it the same way: `pre.mermaid .cluster rect` and
+`pre.mermaid .cluster-label :is(p, span)` with `!important` (Mermaid's injected rule is id-scoped).
+Verified by rendered pixels in both dark and forced-light, not by reading the exported SVG's own
+`<style>`.
 
-**ELK clusters ignore `clusterBkg` and `clusterBorder` outright.** Isolated against dagre with the
-identical subgraph and the identical `theme: 'base'` config: dagre paints the cluster from the
-theme, ELK hardcodes Mermaid's stock `#ffffde` fill and `#aaaa33` stroke, and the label text
-hardcodes to `#333`, regardless of `themeVariables`. This is the same defect class as `packet` and
-`xyChart` above, a diagram surface Mermaid does not theme, so `tufte-dracula.css` overrides it the
-same way: `pre.mermaid .cluster rect` and `pre.mermaid .cluster-label :is(p, span)` carry
-`!important`, because Mermaid's injected rule is ID-scoped and beats a page-level class rule on
-specificity otherwise. Verified by rendered pixels in Chromium in both the dark and forced-light
-palettes, not by reading the exported SVG's own `<style>` block, which does not change even when
-this override is in effect.
+**3. Encode relationship type as line style, once, in a legend, not as a text label on every edge.**
+The production map carried 39 edges each labelled `technological`/`conceptual` in its own
+`foreignObject`, adding to the width dagre solves for. A `classDef` on two edge classes (solid vs.
+`stroke-dasharray`) plus one small unconnected legend subgraph states the distinction once.
 
-**3. Encode relationship type as line style, once, in a legend, not as a text label on every
-edge.** The production map carried 39 edges, each labelled `technological` or `conceptual` in its
-own `foreignObject`, the same two strings repeated forty times, each one adding to the width dagre
-solves for. A `classDef` on two edge classes, solid against `stroke-dasharray`, plus one small
-unconnected subgraph holding two short labelled edges as a key, states the distinction once
-instead of on every edge.
-
-**4. Past that node count, split into multiple maps rather than hide any node.** This is the actual
-answer to a map too large for one page, now that point 1 rules out collapsing: every node stays
-present and clickable, on whichever of the several maps holds it. The production map's edges split
-31 technological against 8 conceptual, and a map that lopsided reads better as two focused maps by
-relationship type than as one map carrying both past the point where either reads clearly. An era
-split works the same way. This is a decision for whatever generates the map's content, not
-something the template enforces, but it is the recommended default past the threshold above.
+**4. Past that node count, split into multiple maps rather than hide any node.** Every node stays
+present and clickable on whichever map holds it. The production map's 31 technological vs. 8
+conceptual edges read better as two focused maps by relationship type (or by era) than as one map
+carrying both past the point either reads clearly. A generator decision, not something the template
+enforces, but the recommended default past the threshold above.
 
 ## Interaction states
 
-**A transition belongs on the resting rule, and `transform` and `scale` are different properties.**
-The press feedback on `.nav-list li a` was inert for both reasons at once. The transition named
-`scale` while the rule set `transform`. The declaration also sat inside `:active`, so it vanished
-with the state. It is now `scale: 0.96` in `:active`, with the transition on the base rule.
+**A transition belongs on the resting rule, and `transform`/`scale` are different properties.** The
+`.nav-list li a` press feedback was inert for both reasons: the transition named `scale` while the
+rule set `transform`, and it sat inside `:active` where it vanished with the state. Now `scale: 0.96`
+in `:active`, transition on the base rule. `.mermaid-zoom` (the sheet's only real `<button>`) takes
+the same treatment.
 
-**`.mermaid-zoom` follows the same language.** It takes `transition: color, background-color, scale`
-on the resting rule and `scale: 0.96` in `:active`. It is the only real `<button>` in the sheet, and
-it had neither a transition nor a press state.
+**`[tabindex="0"]:focus-visible` is in the focus rule**: the one stop this sheet doesn't own is the
+one consumers are told to add (a focused `pre`/`math`/`.table-scroll` would otherwise fall back to
+Chromium's default ring). **No `border-radius` in `:focus-visible`**: it tightened `.filter-box`
+corners unevenly at the moment the ring appeared (Chromium already rounds an outline to the
+element's own radius). **`.nav-list` radius is `calc(var(--radius-sm) + 0.3rem)`**, not
+`var(--radius)`, keeping the outer/inner radii concentric as either changes.
 
-**`[tabindex="0"]:focus-visible` is in the focus rule.** The one stop this sheet does not own is the
-one consumers are told to add. Without that selector, a focused `pre`, `math` or `.table-scroll`
-falls back to Chromium's default ring. That is a consistency failure rather than a contrast one. The
-attribute selector covers a wrapper before it exists.
+**Every hover rule sits inside `@media (hover: hover)`.** Eight rules didn't, and an unguarded hover
+rule doesn't fail to apply on touch: it applies at the wrong time and sticks: the browser sets
+`:hover` on tap and leaves it set until the next tap elsewhere (measured with real touch emulation).
+**The block's position, immediately before `::selection`, is load-bearing**: a media query adds no
+specificity, so placed after `prefers-contrast: more` instead, `.nav-list li a:hover` would tie and
+win on source order, stripping that mode's underline from hovered nav links.
 
-**No `border-radius` in the `:focus-visible` rule.** It made `.filter-box` corners tighten at the
-moment the ring appeared. It also applied unevenly, because `.nav-list li a` outranks
-`a:focus-visible`. Chromium already rounds an outline to the element's own radius plus offset. The
-removal is therefore what makes the ring follow each surface.
+**`pre.mermaid:hover` gets an instant, untransitioned 1px ring, for a pointer only**: hover is
+high-frequency and doesn't want motion. **Do not describe it as the touch affordance**: a hover rule
+fires after the tap, so it can never advertise anything in advance on touch. The injected
+`.mermaid-zoom` button is the real touch affordance.
 
-**`.nav-list` radius is `calc(var(--radius-sm) + 0.3rem)`**, not `var(--radius)`. The outer radius
-is the inner radius plus the padding. The `calc` keeps them concentric when either one changes.
+**The View Transitions API was considered for the mermaid overlay and passed over**: cross-document
+support isn't Baseline yet, and the existing `opacity` transition already covers the need.
 
-**Every hover rule sits inside `@media (hover: hover)`.** Eight of them did not, and a hover style
-with no such guard does not fail to apply on touch, it applies at the wrong time: the browser sets
-`:hover` on tap and leaves it set until the reader taps something else. Measured with real touch
-emulation, a tapped `.nav-list` link kept its `--code-bg` fill indefinitely. Every affordance in the
-sheet was affected at once, which is why this is one block rather than eight guards.
+**The overlay's way out is a `✕` glyph on `.mermaid-overlay::after`**: click-anywhere and Escape
+already dismiss it, so this is a cue on an already-clickable surface, not a new target. `cursor:
+zoom-out` alone is invisible on touch. Glyph rather than a word (untranslatable in a file consumers
+inline verbatim), same `content: "✕" / ""` alt-text convention as the outbound arrow.
 
-**The block sits immediately before `::selection`, and the position is load-bearing.** A media query
-adds no specificity. Placed after the `prefers-contrast: more` block instead, `.nav-list li a:hover`
-would tie that block's `.nav-list li a` rule on specificity and win on source order, which would
-take the mode's `currentColor` underline off every hovered nav link. Before it, the mode keeps it.
-
-**`pre.mermaid:hover` gets a 1px ring, and the ring is for a pointer only.** Before it,
-`cursor: zoom-in` was the only pointer signal that a diagram was clickable. The ring is instant and
-not transitioned. Hover is high-frequency, and it does not want motion. **Do not describe it as the
-touch affordance.** A hover rule fires after the tap, so it can never advertise anything in advance
-on touch. The injected `.mermaid-zoom` button is the touch affordance, which the Keyboard section
-already states correctly.
-
-**The View Transitions API was considered for the mermaid overlay open/close, and passed over.**
-Cross-document support is not Baseline yet, and the overlay's existing `opacity` transition already
-covers the same need. A new browser API earns its place by doing something the current transition
-cannot, not by replacing it with an equivalent.
-
-**The overlay's way out is a `✕` glyph on `.mermaid-overlay::after`.** Click-anywhere and Escape
-both dismissed it before and still do. Nothing advertised either one, and `cursor: zoom-out` is
-invisible on touch. It is a glyph rather than a word, because consumers inline this stylesheet
-verbatim and cannot translate a string in it. It uses `content: "✕" / ""` behind `@supports`, for
-the same reason the outbound arrow does. It is a cue on an already-clickable surface, not a new
-target.
-
-**Every transition in the sheet is `ease-out`.** The default `ease` leaves the first frame
-near-invisible and then rushes. The interaction then feels late.
+**Every transition in the sheet is `ease-out`**: the default `ease` leaves the first frame
+near-invisible then rushes, reading as late.
 
 ## Keyboard and assistive technology
 
-**Zoom is a real `<button>` that `mermaid.js` injects. It is not a focusable `pre`.** Before it, the
-only way to zoom was a click on the SVG, and no tab stop reached the diagram (WCAG 2.1.1). The repo
-rejected two cheaper fixes.
+**Zoom is a real `<button>` `mermaid.js` injects, not a focusable `pre`.** Two cheaper fixes were
+rejected: `tabindex="0"` + `role="button"` on `pre.mermaid` makes the SVG's content presentational,
+hiding its `graphics-document` name; `tabindex="0"` with no role leaves a focusable generic, and
+`aria-label` can't name `role=generic`. A native button gets keyboard/pointer support and an
+accessible name for free, leaves the SVG untouched, and doubles as the touch affordance `cursor:
+zoom-in` could never be.
 
-- `tabindex="0"` plus `role="button"` on `pre.mermaid` makes the button's content presentational.
-  That hides the SVG's own `graphics-document` node and its name. The control would work, and the
-  diagram would stop existing.
-- `tabindex="0"` with no role leaves a focusable generic, and `aria-label` cannot name
-  `role=generic`.
+**The observer that creates the button has to be idempotent**: Mermaid rewrites the `pre`'s children
+after first render, so a one-shot guard let the second pass delete the button and then blocked
+recreation. It now re-adds the button whenever one is missing, and marks the **SVG** (not the `pre`)
+for the click listener.
 
-The injected button is a native control. It gets keyboard and pointer support for free. It has an
-accessible name of its own. It leaves the SVG untouched. It is also the touch affordance that
-`cursor: zoom-in` could never be.
+**The overlay is a native `<dialog>`, opened with `showModal()`**, replacing an earlier hand-rolled
+`<div>` (`role="dialog"`, `aria-modal`, manual focus, manual `inert` toggling, a guarded document-level
+Escape listener). `showModal()` provides all of it natively: implicit role/`aria-modal`, the rest of
+the page excluded from focus/a11y tree with no sibling touched, focus moves in automatically, Escape
+closes via the browser's own `cancel` event. `aria-label` still needs setting by hand (a `<dialog>`
+has no accessible name of its own).
 
-**The observer that creates it has to be idempotent.** Mermaid rewrites the `pre`'s children after
-the first render. A one-shot guard therefore let the second pass delete the button and then blocked
-a recreation. The observer now re-adds the button whenever one is missing. It also marks the **SVG**
-rather than the `pre` for the click listener. The button append is therefore a no-op on the next
-tick rather than a loop.
+**Close runs through one `hide()`**, called from both a `click` listener on the overlay and a
+`cancel` listener that calls `preventDefault()` first, so the same cleanup runs either way (drop the
+`active` class, call `overlay.close()`, empty its `innerHTML`). `close()` runs synchronously rather
+than deferred to `transitionend`, since a transition that never completes would otherwise leave the
+dialog open forever with no cleanup. **The trade: the overlay fades in but does not fade out**: `showModal()`'s top-layer removal is synchronous, and a removed property can't transition. Not
+pursued via `@starting-style`/`transition-behavior: allow-discrete`, since a dismissal a reader asked
+for isn't a state worth watching happen. **Focus returns to the opening button for free** via
+`close()`'s native restore.
 
-**The overlay is a native `<dialog>`, opened with `showModal()`.** An earlier version was a `<div>`
-that hand-rolled every part of modality: `role="dialog"`, `aria-modal="true"`, a `tabindex="-1"` plus
-a manual `.focus()` call, an `inert` toggle across every other `body` child on open and close, and a
-guarded `document`-level Escape listener that had to check `.active` before it ran, because an
-unguarded one reached into a consumer's page on every Escape press and cleared `inert` off whatever
-the consumer's own dialog had set. `showModal()` does all of it natively: the dialog carries an
-implicit `role="dialog"` and an implicit `aria-modal="true"` while shown, the rest of the page is
-excluded from focus and the accessibility tree without this file touching a single sibling, focus
-moves to the dialog automatically (there is nothing focusable in a cloned diagram to move to
-instead), and Escape closes it through a `cancel` event the browser fires on its own. `aria-label`
-still needs setting by hand, same as before, since a `<dialog>` has no accessible name of its own.
+**The zoom button is named from the diagram (`accTitle` → SVG `<title>`), not a hardcoded constant**: a page with several diagrams would otherwise get several identically named buttons. `aria-label` is
+`label + ': ' + title`; the overlay takes the same name on open.
 
-**Close still runs through one function, `hide()`, called from a `click` listener on the overlay
-and from a `cancel` listener that first calls `preventDefault()`.** The `preventDefault()` stops the
-browser's own auto-close so `hide()` can run the same cleanup either way: drop the `active` class,
-call `overlay.close()`, empty `overlay.innerHTML`. `close()` is called synchronously in `hide()`
-rather than deferred to the fade's `transitionend`, because a `transitionend` that never fires (a
-missing frame, a stalled compositor, anything that stops the opacity transition from completing)
-would otherwise leave the dialog open forever with no cleanup and no focus restored, which is worse
-than the fragility this replaced. **The trade is that the overlay's entrance still fades in but its
-exit does not.** `showModal()` puts the dialog in the top layer and removing it with `close()` takes
-it back out synchronously, and a property that no longer applies cannot transition. An exit fade is
-possible with `@starting-style` and `transition-behavior: allow-discrete`, and was not pursued here,
-because closing this dialog is a dismissal a user asked for, not a state a user is meant to watch
-happen.
+**The `pre` region is named for what the container IS, not for the diagram inside it**
+(`window.mermaidRegionLabel || 'Scrollable diagram'`): it used to take the bare title, which the SVG
+already exposes as its own `graphics-document` name, so a screen reader read the diagram title, the
+word "region", and the diagram title again. **The trade: several regions on one page now share a
+name** where each was once unique: weighed deliberately, since the duplication cost was paid on
+every entry into every diagram, while the shared-name cost only hits a reader browsing a region list
+below 600px, one step before a uniquely named diagram. **Do not "fix" this by putting the title back
+in the label.**
 
-**Focus returns to the button that opened it for free.** `close()` restores focus to whatever had it
-when `showModal()` was called, which is the trigger button for any focus-driven activation. The
-manual `opener` variable and its `.focus()` call are gone with the code that made them necessary.
+**`pre.mermaid` is a labelled region only at widths where it can actually scroll**, answering two
+defects at once: `mermaid.js` used to set the tab stop unconditionally, so above 600px (measured
+`scrollWidth == clientWidth` on every fixture diagram) every diagram was a tab stop with nothing to
+scroll, carrying the duplicate-name `aria-label` above too. Two cheaper alternatives (a second
+invented English string; a focusable generic) were declined for the reasons already stated above.
+`mermaid.js` matches `window.matchMedia('(max-width: 600px)')` and syncs `tabindex`/`role`/
+`aria-label` on `change`: verified by driving a real resize (region absent at 1440px, present at
+400px, absent again returning), and swept at 1440/1000/700/601/600/400px confirming no diagram above
+the breakpoint both scrolls and lacks a region. **`matchMedia` is now permitted in `mermaid.js`,
+`prefers-color-scheme` is not**: the real prohibition was always reading the host's appearance
+instead of the cascade. **The breakpoint is pinned in both files** (stylesheet and `mermaid.js`
+separately); a move on one side alone is invisible in a render of the other.
 
-**The zoom button is named from the diagram, not from a constant.** A hard-coded label gives a page
-with several diagrams several identically named buttons. Mermaid writes each fence's `accTitle:`
-into the SVG's root `<title>`. `aria-label` is therefore `label + ': ' + title`, and the visible
-text stays short. The overlay takes the same name on open.
+`window.mermaidZoomLabel`/`mermaidRegionLabel` override the two label words, following the
+`mermaidSecurityLevel` convention (all three are hardcoded English in a file consumers inline
+verbatim). **`accTitle`/`accDescr` are consumer obligations**: fence directives no stylesheet change
+can supply; without them the SVG is a `graphics-document` with no accessible name.
 
-**The `pre` region is named for what the container is, not for the diagram inside it.** It used to
-take the bare title, and the SVG exposes that same string as its own `graphics-document` name by
-construction, so a screen reader read the diagram title, the word "region", and the diagram title
-again on entry. The label is now `window.mermaidRegionLabel || 'Scrollable diagram'`, following the
-same override convention as `mermaidZoomLabel` and `mermaidSecurityLevel`. Identification stays on
-the node that actually is the diagram, which is where a reader can act on it.
+**The sidenote margin-toggle checkbox is inert by design, and its `display: none` rules must stay**: `.sidenote` is `display: block` at every width, so the Tufte collapse pattern does nothing here, but
+consumer generators still emit that markup and dropping the rules would show raw checkboxes on every
+page.
 
-**The trade is that several regions on one page now share a name**, where before each was unique.
-That was weighed rather than ignored. The duplication cost is paid on every entry into every
-diagram; the shared-name cost is paid only by a reader browsing a region list, only below 600px
-where the region exists at all, and each of those regions still contains a uniquely named diagram
-one step in. **Do not "fix" this by putting the title back in the label.** That restores the
-duplication this removed. The zoom button keeps its title-derived name for a different reason,
-stated above: buttons are actionable and get listed, so identical names there really do lose
-information.
-
-**`pre.mermaid` is a labelled region only at the widths where it can scroll, and that one change
-answered two recorded defects at once.** The tab stop exists for the narrow-viewport
-`overflow-x: auto` case, and `mermaid.js` used to set it unconditionally. Above 600px the `pre` is
-`overflow: visible`, measured at `scrollWidth == clientWidth` on all four fixture diagrams at
-1440px, so every diagram was a tab stop with nothing to scroll and no action of its own. Worse, its
-`aria-label` was the SVG's own `<title>` by construction, so the SVG then exposed the identical
-string as its `graphics-document` name and a screen reader read the diagram title, the word
-"region", and the diagram title again on entry.
-
-Both were recorded as declines, and both were declined for the same reason: the alternatives on the
-table were a second invented English string (untranslatable in a file consumers inline verbatim)
-or a focusable generic, which the button case above already rejects. **The third option is to make
-the region conditional, which nobody had costed.** `mermaid.js` matches
-`window.matchMedia('(max-width: 600px)')` and syncs `tabindex`, `role` and `aria-label` from it,
-listening for `change`. Below the breakpoint the region is load-bearing and the repeated name is
-the price of keyboard access. Above it there is no region, no tab stop and no duplication.
-
-- **A media query is not resize-stale, which is what made the earlier estimate wrong.** The
-  rejection assumed a resize listener or a `scrollWidth` probe, both of which go stale between
-  events. `matchMedia` fires `change` on the transition, so the two directions were verified by
-  driving a real resize: absent at 1440px on all five diagrams, present at 400px where all five do
-  scroll, absent again on the way back.
-- **The safety property was swept, not assumed.** Every fence in every fixture, at 1440, 1000, 700,
-  601, 600 and 400px: **no diagram at any width above the breakpoint both scrolls and lacks a
-  region.** That is the failure this change could have introduced, and it does not occur. At exactly
-  600px two small diagrams fit at natural size and still take a region, which is correct rather
-  than a miss: the `pre` is a scroll container in that band whatever one diagram happens to
-  measure, and a container's tab stop cannot depend on its content's width without going stale on
-  the next re-render.
-- **`matchMedia` is now permitted in `mermaid.js`, and `prefers-color-scheme` is not.** Check 6 of
-  `palette-check.py` used to ban the function outright. The real prohibition was always reading the
-  host's appearance instead of the cascade, so the ban moved onto the condition, which is stricter
-  about the thing it cares about and silent about a width query.
-- **The breakpoint is pinned in both files.** The number lives in the stylesheet and in
-  `mermaid.js` separately, and a move on one side alone either puts the tab stop where nothing
-  scrolls or takes it from where something does. Neither shows up in a render of the other side.
-
-`window.mermaidZoomLabel` overrides the label word and `window.mermaidRegionLabel` the region's.
-Both follow the `window.mermaidSecurityLevel` convention. All three strings were hard-coded English
-in a file consumers inline verbatim. That is the same constraint that made the overlay's close cue
-a glyph.
-
-**`accTitle` and `accDescr` are consumer obligations.** They are fence directives, so no stylesheet
-change can supply them. Without them the SVG is a `graphics-document` with no accessible name.
-
-**The sidenote margin-toggle is inert by design, and its two `display: none` rules must stay.**
-`.sidenote` is `display: block` at every width, so the Tufte collapse pattern does nothing here. The
-rules are not dead weight. Consumer generators emit that checkbox and label markup, and a drop of
-the rules would show raw checkboxes on every published page. A revival of the pattern needs a
-focusable control, not a hidden checkbox.
-
-**`math[display="block"]` takes `tabindex="0"`, `role="region"` and a label.** It carries its own
-`overflow-x: auto`, so it is a scroll container like `pre`. `role="region"` costs nothing here,
-unlike on a `<table>`. Chrome exposes no native `math` role for this element either way, so there is
-no role to protect.
+**`math[display="block"]` takes `tabindex="0"`, `role="region"`, and a label**: it's a scroll
+container like `pre` (own `overflow-x: auto`), and `role="region"` costs nothing here since Chrome
+exposes no native `math` role either way.
 
 ## Direction, zoom and growth
 
-**Sidenotes float to the inline end, with the physical value first as the fallback:** `float:
-right; float: inline-end; clear: right; clear: inline-end`. **The duplicate physical declaration is
-deliberate.** A browser that cannot parse `inline-end` drops that line and keeps the LTR behavior it
-had. `margin` became `margin-block` and `margin-inline` for the same reason.
+**Sidenotes float to the inline end, with the physical value first as fallback**: `float: right;
+float: inline-end; clear: right; clear: inline-end`: a browser that can't parse `inline-end` drops
+that line and keeps LTR behavior. `margin` is `margin-block`/`margin-inline` for the same reason.
 
-**`th` and `td` are `text-align: start`, not `left`.** With `left`, every cell stays left-aligned in
-RTL while the prose around it flips. `.num` uses `end` for the same reason.
+**`th`/`td` are `text-align: start`, not `left`** (`.num` uses `end`), or cells stay left-aligned in
+RTL while the surrounding prose flips. **`h1`/`h2`/`h3` carry `overflow-wrap: break-word`**: the
+only text in the sheet without a break rule, so a long title word ran off the page under text-only
+zoom.
 
-**`h1`, `h2` and `h3` carry `overflow-wrap: break-word`.** They were the only text in the sheet with
-no break rule, so a long title word ran off the page under text-only zoom.
+**`--gutter` folds safe-area insets at every width, not only under 600px**: a landscape phone is
+wider than the mobile breakpoint yet still has lateral insets larger than the desktop gutter, so text
+ran under the notch without this. **The `0px` `env()` fallbacks are load-bearing**: without them, a
+browser with no support makes the whole custom property invalid at computed-value time, taking the
+`width: min(...)` calc down with it. Not verified on real hardware (Chromium doesn't emulate insets).
 
-**`--gutter` folds the safe-area insets at every width, not only under 600px.** A landscape phone is
-wider than the mobile breakpoint, and it still has lateral insets larger than the desktop gutter.
-Text therefore ran under the notch. **The `0px` fallbacks inside `env()` are load-bearing.** Without
-them, a browser with no support for the variable makes the whole custom property invalid at
-computed-value time. That takes `width: min(100% - 2 * var(--gutter), …)` down with it. Nobody
-verified this on a real device, because Chromium does not emulate the insets.
+**A container query fixes `.scorecard` overflow under text-only zoom; a media query cannot**: `em`
+inside a container query resolves against the container's own font size (correctly asking "is text
+large relative to space"), where a media query's `em` resolves against the browser's initial size and
+sees nothing at a doubled root. Two things about it are load-bearing: the `:has()` scoping (plain
+`container-type: inline-size` on every `section` would also shrink the conn-map sticky sidebar at
+zoom), and its position after the `max-width: 600px` block (container queries add no specificity, so
+source order decides).
 
-**A container query fixes the `.scorecard` overflow under text-only zoom. A media query cannot.**
-`em` inside a container query resolves against the **container's** font size. The query therefore
-asks "is the text large relative to the space", which is the failure condition. In a media query
-`em` resolves against the browser's initial font size, and it sees nothing at a doubled root.
+Two earlier attempts failed: `minmax(0, max-content)` tracks let a track shrink to zero without the
+`.verdict` chip shrinking with it (chip spilled out); `auto` tracks plus `overflow-wrap: break-word`
+fixed only one width, since **`break-word` does not reduce a box's min-content contribution, and
+`anywhere` does.**
 
-Two things about that rule are load-bearing.
-
-- **The `:has()` scoping.** `container-type: inline-size` on every `section` also applies
-  inline-size containment to the conn-map columns, which shrinks the sticky sidebar at zoom.
-- **Its source position, after the `max-width: 600px` block.** Container queries add no specificity,
-  so source order is what makes it win.
-
-Two attempts on the same problem failed. `minmax(0, max-content)` tracks let the track shrink to
-zero without the `.verdict` chip shrinking with it, so the chip spilled out of a zero-width column.
-`auto` tracks plus `overflow-wrap: break-word` fixed one width only. **`break-word` does not reduce
-a box's min-content contribution, and `anywhere` does.**
-
-**At 400% text-only zoom the page still scrolls sideways.** That is past what WCAG 1.4.4 asks for,
-and nobody chases it.
+**At 400% text-only zoom the page still scrolls sideways**: past what WCAG 1.4.4 asks for, and
+nobody chases it further.
 
 ## Cascade layer
 
-**The whole sheet sits in one layer, `@layer tufte-dracula`.** Before it, a consumer's override had
-to win on specificity against syntax-highlight groups at `0,2,0` and component rules at `0,1,1`.
-**Unlayered author styles beat every layered author style for normal declarations**, whatever the
-specificity. A consumer's plain `h1 { color: … }` therefore wins now, and nothing in this sheet has
-to move.
+**The whole sheet sits in one layer, `@layer tufte-dracula`.** Before it, a consumer override had to
+win on specificity against syntax-highlight groups at `0,2,0`. **Unlayered author styles beat every
+layered author style for normal declarations, whatever the specificity**: a consumer's plain
+`h1 { color: … }` now wins with nothing here needing to move.
 
-**The `!important` declarations became harder to override, not easier. That is the trade.** In the
-important half of the cascade the layer order reverses, so every `!important` rule here beats a
-consumer's unlayered `!important`. **A consumer who genuinely needs to win declares an own layer
-ahead of this one.** A lift of those rules outside the layer was rejected: two of them sit inside a
-media query, so it would mean duplicating those `@media` blocks outside the wrapper.
+**The `!important` declarations became harder to override, not easier: that's the trade.** In the
+important half of the cascade the layer order reverses, so every `!important` here beats a consumer's
+unlayered `!important`. A consumer who genuinely needs to win declares their own layer ahead of this
+one. Lifting those rules outside the layer was rejected (two sit inside a media query, meaning
+duplicated `@media` blocks).
 
-They fall in three groups, and the grouping is the useful part rather than the total. **This entry
-stated a count instead, and the count went stale by three without anyone noticing**, which is why
-the number is gone from `README.md` and why the list below is a list.
+They fall in three groups: **six fight Mermaid**, which nothing else can reach (four fight its
+id-scoped injected stylesheet: `packet`, `cluster` fill/label; two fight its inline `style`
+attributes: conn-map and narrow-viewport svg sizing); **`.filter-hidden { display: none !important }`**
+(a consumer override there means a filtered row stays on the page); **the `prefers-reduced-motion`
+reset** (has to beat every transition/animation the sheet declares).
 
-- **Six fight Mermaid**, which nothing else can reach. Four of those fight its *injected
-  stylesheet*, which is id-scoped and therefore beats any page-level class rule whatever the source
-  order: the `packet` overrides and the `cluster` fill and label. Two fight its *inline `style`
-  attributes*, both of them the conn-map and narrow-viewport svg sizing.
-- **`.filter-hidden { display: none !important }`**, where a consumer override means a filtered row
-  stays on the page.
-- **The `prefers-reduced-motion` reset**, which has to beat every transition and animation the
-  sheet declares.
+**One layer, not four** (`@layer reset, base, components, utilities`): that convention is for a
+stylesheet a consumer composes from parts and can reorder; this is one file, inlined verbatim, in a
+fixed order.
 
-**One layer, not four.** `@layer reset, base, components, utilities` is advice for a stylesheet a
-consumer composes from parts and can reorder. This is one file, inlined verbatim, in a fixed order.
+**Do not re-indent the sheet body.** The wrapper opens on line 3 and closes before `</style>`; a
+re-indent rewrites every line, putting `git blame` on the whole stylesheet at one commit, breaking the
+trace from a declaration to the change that made it look that way. `scripts/build-sample.nu` also
+slices `:root` with a hard-coded `^    ` de-indent.
 
-**Do not re-indent the sheet body.** The wrapper opens on line 3 and closes before `</style>`. The
-lines between keep their four-space indent. A re-indent is the correct-looking change, and it
-rewrites every line, which puts `git blame` on the whole stylesheet at one commit. This repo's
-discipline depends on a trace from a declaration back to the change that made it look that way.
-`scripts/build-sample.nu` also slices `:root` with a hard-coded `^    ` de-indent.
-
-**`:is()` and `:not()` both take the highest specificity of their arguments.**
-`:is(ul, ol, menu):not(.nav-list)` therefore scored a class weight from a class it never matches. It
-then silently outranked the nested-list rule below it. The `:where()` form scores zero on both
-sides. **Check the specificity of a negation before you trust source order.**
-
-**The other `:is()` groups stay.** The layer already gives consumers the override. Two would also
-break if lowered. The syntax-highlight groups have to beat a highlighter theme a consumer may also
-load. The permalink group has to beat the plain `a` rule. **Lower specificity is not free when
-something real sits on the other side of it.**
+**`:is()`/`:not()` both take the highest specificity of their arguments**: `:is(ul, ol, menu):not(.nav-list)` scored a class weight from a class it never matches, silently
+outranking the nested-list rule below it. The `:where()` form scores zero on both sides. **Check the
+specificity of a negation before trusting source order.** The other `:is()` groups stay (the layer
+already gives consumers an override, and two would break if lowered: syntax-highlight groups must
+beat a loaded highlighter theme, the permalink group must beat the plain `a` rule).
 
 ## Appearance modes
 
-**`@media (prefers-contrast: more)` reassigns tokens, not elements.** It raises every accent to the
-mode's 7:1 floor against `--code-bg`, which is the harder ground. `--surface-alt` *darkens* there.
-It is the row-hover and tinted-root fill, and its job in that mode is to be unmistakable.
+**`@media (prefers-contrast: more)` reassigns tokens, not elements**: raises every accent to the
+mode's 7:1 floor against `--code-bg` (the harder ground); `--surface-alt` *darkens* there (its job as
+row-hover/tinted-root fill is to be unmistakable). `a` takes a thicker `currentColor` underline, and
+the focus ring widens. **`.nav-list li a` repeats the underline declaration**: a media query adds no
+specificity, so without the repeat the base `.nav-list li a` rule outranked the mode's `a` rule,
+leaving every nav link underline-free in the one mode built for the strongest cue. `mark` does not
+reach the mode's floor (the `--highlight` alpha wash caps what the composite can reach, and lowering
+alpha would defeat the highlight's purpose).
 
-Three rules move as well. `a` takes a thicker underline at `currentColor`. `.nav-list li a` repeats
-that one declaration. The focus ring widens.
+**`@media (prefers-color-scheme: light)` is a full second screen palette, not the print palette**: reusing print fails on screen for three reasons: `--surface`/`--surface-alt` are both pure white
+there (killing row hover and the overlay backdrop), `--code-bg` is a paper compromise, and the
+accents are tuned against white rather than a light code fill. In light mode `--surface-alt` is
+*darker* than `--surface` (row hover reads like dark mode); `.verdict` keeps its filled form (no
+print-style outline needed); `--purple-bright` inverts to `calc(l - 0.06)` (brighter is less contrast
+on a light ground).
 
-**The `.nav-list` repeat exists because a media query adds no specificity.** The base
-`.nav-list li a` rule outranked the block's `a` rule. Every nav link therefore stayed underline-free
-in the one mode whose whole purpose is the strongest available cue.
+**Mermaid follows the media query by reading a CSS token, never `matchMedia`.** `:root` declares
+`--mermaid-scheme: dark`, the light block overrides it. **`matchMedia` reads the host; the token
+reads the cascade**: the forced-light preview pages only work because they rewrite the `@media`
+condition, which `matchMedia` can't see but a computed custom property resolves correctly. A deleted
+token used to fail silently (`getPropertyValue` on a missing property returns `''`, not `'light'`);
+check 6 now asserts all four: `:root` declares `dark`, the light block declares `light`, `mermaid.js`
+reads the token by name, and `mermaid.js` does **not** read `matchMedia`.
 
-`mark` does not reach the mode's floor. `--highlight` is an alpha wash, and the alpha caps what the
-composite can reach. A lower alpha would make the highlight harder to see, which is the one thing
-the element exists to do.
+**The dark-island design (light mode handing `pre.mermaid` the dark palette back as inherited custom
+properties) was tried and removed**: it looked fine but was wrong three ways: a dark slab beside a
+light sidebar reads as broken; the card-width fix needed a `width: fit-content` that clipped
+`quadrantChart` and collapsed self-sizing SVGs; the re-declared palette was a third `:root` projection
+needing its own gate. **The net change after deleting it is fewer rules than before it existed.**
 
-**`@media (prefers-color-scheme: light)` is a full second screen palette. It is not the print
-palette.** Reuse of print fails on screen for three reasons. `--surface` and `--surface-alt` are
-both pure white there, which kills row hover and the overlay backdrop. `--code-bg` is a paper
-compromise. The accents are also tuned against white rather than against a light code fill.
+**A scheme flip with no reload leaves the diagram stale**: the token is read once, at init; a live
+re-theme means a re-init, a re-render from source, and a fresh `MutationObserver` race. **An in-page
+toggle was asked for and refused**: the fixtures carry exactly one `<style>` and two `<script>`
+blocks, both gated, so a toggle would need a second theming convention or a fourth inlined script.
+Take it only as a deliberate public-API decision if a consumer asks for a manual override as a
+feature.
 
-In light mode `--surface-alt` is *darker* than `--surface`, so row hover reads the way it does in
-dark mode. `.verdict` keeps its filled form, so the print block's outlined variant is not needed.
-**`--purple-bright` inverts its rule to `calc(l - 0.06)`, because brighter is less contrast on a
-light ground.**
-
-**Mermaid follows the media query by a read of a CSS token, never `matchMedia`.** `:root` declares
-`--mermaid-scheme: dark`, and the light block overrides it. **`matchMedia` reads the host. The token
-reads the cascade.** The forced-light sample pages work only because of that. They rewrite the
-`@media` condition in their own copy of the stylesheet. `matchMedia` cannot see that, and a computed
-custom property resolves it correctly.
-
-**A delete of `--mermaid-scheme` used to fail silently.** `getPropertyValue` on a missing property
-returns an empty string, which is not `'light'`. Check 6 asserts four things. `:root` declares
-`dark`. The light block declares `light`. `mermaid.js` reads that token by name. `mermaid.js` does
-**not** read `matchMedia`.
-
-**The dark-island design was tried and removed.** Light mode handed `pre.mermaid` the dark palette
-back as inherited custom properties, and it painted the diagram a dark card. It looked fine, and it
-was wrong for three reasons. A dark slab beside a light sidebar reads as broken rather than as a
-plate. A fix for the card width needed a `width: fit-content` rule that clipped `quadrantChart` and
-collapsed the SVGs that size themselves. The re-declared palette was also a third projection of
-`:root`, which needed its own gate. **The net change after the delete is fewer rules than before it
-existed.**
-
-**A scheme flip with no reload leaves the diagram stale.** The token is read once, at init. A live
-re-theme means a re-init of mermaid, a re-render of every fence from source, and a fresh
-`MutationObserver` race. That is a lot for a case one refresh costs. Take it if a consumer ships an
-in-page appearance toggle.
-
-**An in-page toggle was asked for and refused, because there is nowhere to put it.** The fixtures
-carry exactly one `<style>` and two `<script>` blocks, and both counts are gated. Fixture-only
-toggle CSS therefore does not exist as an option. A toggle goes in the shared payload every consumer
-inlines. It costs either a second theming convention with the light palette duplicated under it, or
-a fourth inlined script. Take it when a consumer asks for a manual override as a feature. Treat it
-then as a public API decision. It covers the selector, the persistence and the first-paint flash.
-
-**Two generated preview pages carry the light palette to the web instead.** Pages serves the repo
-root from `main`, so the light fixtures go live on merge with no workflow and no `docs/` directory.
-The rewrite makes the light condition `@media all` and the contrast condition `@media not all`.
-**A force of light alone is not enough.** It leaves the contrast block's two non-token rules live,
-so a visitor who asks for more contrast gets a preview nobody else gets.
-
-**The generator raises when the rewrite no-ops.** If the stylesheet renames either condition, the
-replace matches nothing and the preview equals the fixture. Pages then serves a dark page called
-light, while regeneration still compares clean.
-
-**Do not remove the banner on a light preview page to tidy it.** These pages once carried the
-warning in their filenames, and a rename cost that signal. Three things carry it instead. Each light
-page opens with a `markdown-alert-caution` block. `CONTRACT.md` § 1 states it. The light pages are
-also deliberately **not** among the contract files, while the dark ones are. **Nothing outside this
+**Two generated preview pages carry the light palette to the web instead**, rewriting the light
+condition to `@media all` and the contrast condition to `@media not all` (forcing light alone isn't
+enough: it would leave the contrast block's non-token rules live). **The generator raises when the
+rewrite no-ops**, or Pages would serve a dark page called light while regeneration still compares
+clean. **Do not remove the light-preview banner to tidy it**: the filename no longer carries the
+warning, so the `markdown-alert-caution` block, the `CONTRACT.md` § 1 statement, and the pages'
+deliberate exclusion from the contract-files list are what's left to carry it. **Nothing outside this
 repo should pin a page whose media queries were rewritten.**
 
-**There is no high-contrast preview page.** That block leaves `--surface` alone, so a forced page
-would look almost exactly like the dark sample. A preview that looks like the thing it contrasts
-with teaches nothing. CI renders it and attaches the image to the pull request.
+**There is no high-contrast preview page**: that mode leaves `--surface` alone, so a forced page
+would look almost like the dark sample and teach nothing; CI renders it and attaches the image to the
+PR instead.
 
-**Two gates cover the modes, and they cover different halves.** Neither one is a screenshot diff.
-Layout is identical across the modes, and only color moves.
+**Two gates cover the modes, covering different halves, neither a screenshot diff** (layout is
+identical across modes, only color moves). `.github/palette-check.py` check 5 re-derives the contrast
+floor for all four palettes on every run, overlaying each mode block's overrides on the default
+palette the way the cascade actually resolves it. `.github/render-modes.py` covers that the palette
+**arrives**: **headless Chrome cannot be told which media query to match** (`--force-dark-mode` etc.
+all leave the OS's own result unchanged), so each render rewrites **every** mode condition in a
+scratch copy, the target becoming `@media all` and the rest `@media not all`. **Neutralizing the
+other conditions is the load-bearing half**: its absence failed CI on the first attempt (a
+dark-appearance mac measured its own light-runner result as correct). The pixel read needs no image
+library: for the first pixel of PNG row 0, every filter type predicts from an all-zero left/above
+byte, so the filtered byte is the raw byte. Renders are **advisory on purpose**, not in
+`REQUIRED_CHECKS`: the assertions are the gate, the images are for a person to look at.
 
-`.github/palette-check.py` check 5 re-derives the contrast floor for all four palettes on every run.
-Each mode block only restates what it changes. The check therefore overlays the block's overrides on
-the default palette, which is how the cascade resolves it too. **A measurement in prose is not a
-gate.**
+**`light-dark()` was considered for the mode swap and passed over**: each mode redeclares roughly
+fifteen tokens in one `:root` block; `light-dark()` sets one declaration at a time from two values,
+meaning fifteen inline calls instead of one block to keep in step.
 
-`.github/render-modes.py` covers the other half, which is that the palette **arrives**. **Headless
-Chrome cannot be told which media query to match.** It reads `prefers-color-scheme` from the host.
-`--force-dark-mode`, `--force-prefers-color-scheme` and `--enable-features=WebContentsForceDark` all
-leave the result exactly as the OS had it. Each render therefore rewrites **every** mode condition
-in a scratch copy. The target becomes `@media all`, and the rest become `@media not all`.
-
-**The neutralization of the other conditions is the load-bearing half.** Its absence failed CI on
-the first attempt. A rewrite of the target alone looked sufficient on a dark-appearance mac, and it
-measured the light palette on a light runner.
-
-The pixel read does not distinguish contrast mode from dark. The high-contrast block leaves
-`--surface` alone by design. A sample of a text pixel instead means a fight with antialiasing for
-nothing. **The read needs no image library.** For the first pixel of PNG row 0, every filter type
-predicts from a left byte and an above byte that are both zero. The filtered bytes are therefore the
-raw bytes.
-
-The renders are **advisory on purpose**. They are not in `REQUIRED_CHECKS`. The assertions are the
-gate, and the images are for a person to look at.
-
-**`light-dark()` was considered for the mode swap and passed over.** Each mode redeclares roughly
-fifteen tokens as one `:root` block under one media condition. `light-dark()` sets one declaration
-at a time from two values, so the same swap would mean fifteen inline calls instead of one block,
-which is more to read and more to keep in step, not less.
-
-**High contrast and light mode do not compose. The ordering is deliberate.**
-`prefers-contrast: more` is declared *before* the light block. A reader who asks for both therefore
-gets the light palette at its own floor, rather than a high-contrast light palette. The alternative
-is a fourth palette in a combined query. That is ten more measured values for a combination this
-sheet has never been asked for. **The failure mode of a wrong order is much worse: dark
-high-contrast accents on a white surface. Do not reorder the two blocks.** Take the fourth palette
-when a reader asks for it.
+**High contrast and light mode do not compose, and the ordering is deliberate**:
+`prefers-contrast: more` is declared *before* the light block, so a reader asking for both gets the
+light palette at its own floor rather than a fourth, never-built high-contrast-light palette. **The
+failure mode of a wrong order is much worse: dark high-contrast accents on a white surface. Do not
+reorder the two blocks.**
 
 ## Print
 
-**The print block overrides the palette tokens, not the elements.** `background` and `color` on
-`body` alone leave every accent at its dark value on a white page. That also breaks both print paths
-at once. With background graphics on, near-black text sits on dark fills. With them off, which is
-Chrome's default, the light text those fills backed is stranded on white.
+**The print block overrides palette tokens, not elements**: `background`/`color` on `body` alone
+would leave every accent at its dark value on white, breaking both print paths (near-black text on
+dark fills with backgrounds on; light text stranded on white with them off, Chrome's default).
 
-**Accent lightness is chosen against the print `--code-bg` gray, not against white.** The gray is
-the harder ground. `--surface-alt` goes white as well. It is only the overlay backdrop, which cannot
-be on screen and on paper at once. A dark value would park a near-black rectangle in the print
-stylesheet, waiting for someone to reuse the token.
+**Accent lightness is chosen against the print `--code-bg` gray, not white** (the harder ground).
+`--surface-alt` goes pure white too (only the overlay backdrop, never simultaneously on screen and
+paper).
 
-**`.table-scroll` releases its cap on paper.** A scrollport is a screen affordance. On paper it is a
-guillotine that drops the overflow with no mark to say it is missing. Print sets
-`max-height: none; overflow: visible`. The existing `tr { break-inside: avoid }` and
-`thead { display: table-header-group }` carry the released table across pages. **A styled class with
-no instance is an untested class.** That is why the fixture's wrapped table is twenty-four rows
-rather than three.
+**`.table-scroll` releases its cap on paper** (`max-height: none; overflow: visible`): a scrollport
+is a screen affordance; on paper it's a guillotine with no mark that content is missing. The existing
+`tr { break-inside: avoid }` and `thead { display: table-header-group }` carry the released table
+across pages. The fixture's wrapped table is twenty-four rows, not three, to actually exercise this.
 
-**Page breaks are controlled.** `p` takes `orphans: 2; widows: 2`. The headings take
-`break-after: avoid`. `break-inside: avoid` covers `tr`, `blockquote`, `aside`, `details`,
-`.scorecard`, `.verdict`, `img`, `.markdown-alert`, `pre`, `dl.timeline > dd` and
-`math[display="block"]`. `thead` takes `display: table-header-group`.
+**Page breaks**: `p` takes `orphans: 2; widows: 2`; headings take `break-after: avoid`;
+`break-inside: avoid` covers `tr`, `blockquote`, `aside`, `details`, `.scorecard`, `.verdict`, `img`,
+`.markdown-alert`, `pre`, `dl.timeline > dd`, `math[display="block"]`; `thead` takes
+`display: table-header-group`.
 
-**`pre` belongs in that list, and the argument against it was wrong.** The worry was that
-`break-inside: avoid` on a block longer than a page would be "either ignored or overflows". A fence
-that fits moves whole to the next page, and it brings its heading with it. A fence that cannot fit
-splits across pages with nothing lost, and it reprints its fill and accent bar on every fragment.
-**The declaration is honored when the block fits, and dropped when it cannot.** That is the standard
-resolution, and it is the behavior you want.
+**`pre` belongs in that `break-inside: avoid` list**: the worry that it would be "ignored or
+overflow" on a block longer than a page was wrong: a fence that fits moves whole to the next page
+with its heading; one that can't fit splits with nothing lost, reprinting its fill and accent bar on
+every fragment. **That's the standard resolution, and it's the behavior you want.**
 
-**`.verdict` prints as an outlined label**, with the semantic color moved to `color`. Its fill
-carried the meaning, and white-on-accent is fine with backgrounds on and invisible with them off.
-`.badge` needs no print rule. It is already an outlined `--label` chip, and print reassigns
-`--label`.
+**`.verdict` prints as an outlined label**, moving its semantic color to `color` (its fill carried
+the meaning, invisible with backgrounds off). `.badge` needs no print rule: already an outlined
+`--label` chip, and print reassigns `--label` for it automatically.
 
 ## Filter
 
-`filter.js` is the third inlined payload. Three decisions are load-bearing.
+`filter.js` is the third inlined payload. Three load-bearing decisions:
 
-- **The scope is the sibling span, not the parent.** From the input, walk forward over siblings and
-  stop at the next `input.filter-box`, or at the end. Within that span, filter `tbody tr` and
-  `.nav-list > li`. **No `closest()` and no id-matching.** The script therefore never needs to know a
-  consumer's ids, and the input-to-content pairing is the only relationship the markup states. A
-  stop at the next filter box is a rule a consumer can predict with no read of the source. A stop at
-  the first structural break would be arbitrary.
-- **The script creates the empty line rather than requires it.** The created line carries its own
-  copy. It starts `hidden`, because `.filter-empty` has no `display` declaration of its own. **It
-  names no query on purpose.** An interpolated string would put a bare template in a payload
-  consumers inline verbatim and cannot translate. Author-supplied copy stays untouched, because the
-  branch only runs when there is none.
+- **The scope is the sibling span, not the parent.** From the input, walk forward over siblings,
+  stopping at the next `input.filter-box` or the end; within that span filter `tbody tr` and
+  `.nav-list > li`. **No `closest()`, no id-matching**: the script never needs a consumer's ids, and
+  a stop at the next filter box is predictable with no read of the source.
+- **The script creates the empty line rather than requiring it**, starting `hidden` (`.filter-empty`
+  has no `display` of its own). **It names no query on purpose**: an interpolated string would put
+  untranslatable template text in a payload consumers inline verbatim.
 - **No CDN, no build step, no comments.** The whole handler is `querySelectorAll` plus
   `classList.toggle`.
 
-**The one-table scope was reversed, and the reversal is deliberate.** The rule used to be one input,
-one table, one listener. Two things forced the change. The fixture's own filter box was inert for
-six releases. What follows it is a `.nav-list` and a `details.nav-group` with no table, and no gate
-asks "does the handler bind". The scope rule also guaranteed that no consumer could inherit a
-fix. The largest generator of these pages hand-maintained its own 41-line replacement. **A shipped
-contract file with no reachable user is worse than no file.**
+**The one-table scope was reversed from an earlier one-input-one-table-one-listener rule, and the
+reversal is deliberate**: the fixture's own filter box was inert for six releases under the old rule,
+and the largest generator of these pages hand-maintained its own 41-line replacement rather than
+inherit a fix scoped too narrow to reach its markup. **A shipped contract file with no reachable user
+is worse than no file.**
 
-The script captures `details.nav-group` open state once at bind time, and it restores that state
-when the query clears. A group the script opened during a search must not read as a group the reader
-opened.
+The script captures `details.nav-group` open state (and `summary .count`) once at bind time and
+restores both when the query clears: a group the script opened during a search must not read as one
+the reader opened, and **the authored count, not a recomputed `rows.length`, is what's restored**
+(the number a generator wrote is a claim about the group, not necessarily a row count; restoring the
+authored text avoids the page stating two different, disagreeing numbers).
 
-**`summary .count` is captured and restored on the same terms as the open state, and for the same
-reason.** The count was left alone while the query hid items under it, so a group read `5` over two
-visible rows while the `[role="status"]` line beside it read the truth. That is one page stating a
-number twice and disagreeing with itself, and the stale figure is the larger of the two. The
-authored text is restored rather than recomputed on clear, because the number a generator wrote is
-a claim about the group and not necessarily a row count. **Do not derive the cleared value from
-`rows.length`.**
+**The `[role="status"]` line takes a register**: `.filter-box ~ [role="status"]` styles it at body
+weight on `--on-surface`, matching every other filter-chrome piece. **The selector stays a sibling
+combinator on purpose**: `filter.js` finds the element via `input.parentElement.querySelector`,
+wider than any CSS selector could be without claiming every `[role="status"]` on a consumer's page;
+the narrower CSS rule styles only the shape `CONTRACT.md` § 6 documents.
 
-**The `[role="status"]` line takes a register: `.filter-box ~ [role="status"]`.** Every other piece
-of filter chrome had one, so the count rendered at body weight on `--on-surface` and read as content
-sitting above the list. **The selector stays a sibling combinator on purpose.** `filter.js` finds
-the element with `input.parentElement.querySelector`, which is wider than any selector can be
-without claiming every `[role="status"]` on a consumer's page. The narrower rule styles the shape
-`CONTRACT.md` § 6 actually documents and leaves a status line elsewhere in the document alone.
-
-`.filter-box` is `font-size: 1em`. **Do not write a `pt` floor here.** 16pt is not 16px, and the
+`.filter-box` is `font-size: 1em`. **Do not write a `pt` floor here**: 16pt is not 16px, and the
 iOS-zoom threshold is 12pt.
 
 ## Nav link separators
 
-`nav > a + a` takes a `border-inline-start` plus symmetric padding. Without it, a `<nav>` of sibling
-`<a>` children renders as an undifferentiated run of link text.
+`nav > a + a` takes a `border-inline-start` plus symmetric padding: without it, sibling `<a>`
+children in a `<nav>` render as an undifferentiated run of link text.
 
-**The wrapped-line separator is a known artefact, and the repo accepts it.** The separator is a
-border on the link. A link that begins a wrapped line therefore carries a separator with nothing to
-its left. **No pure-CSS rule can suppress a border at a line break.** The wrap position is not
-addressable from a selector, and flex wrapping moves the problem rather than solves it. The
-alternatives were a pseudo-element glyph, which dangles identically, or no separators at all, which
-is the state the rule exists to fix. The fixture carries enough links to wrap at a phone width, so
-the artefact stays visible rather than hidden behind a two-link nav.
+**The wrapped-line separator is a known artefact, accepted.** A link beginning a wrapped line carries
+a separator with nothing to its left. **No pure-CSS rule can suppress a border at a line break** (the
+wrap position isn't addressable from a selector, and flex wrapping just moves the problem). The
+alternatives (a dangling pseudo-element glyph, or no separators at all) were both worse. The fixture
+carries enough links to wrap at a phone width so the artefact stays visible.
 
 ## Version stamps are not version history
 
-**`scripts/maintain.nu bump` rewrites three anchored stamps and nothing else.** Those are the
-stylesheet header comment, the `(template vX.Y.Z, oklch palette)` cell, and the `is **vX.Y.Z**`
-line. A blanket replace across `README.md` also walked historical claims forward. Prose of the form
-"raw HTML is covered as of vX.Y.Z" then credited the wrong release on every bump.
-
-**Each pattern must match, or the bump fails.** A stamp that moves is a loud failure rather than a
-silent no-op. A no-op leaves the tree with a claim of the previous version, while the release verb
-believes it stamped.
-
-This matters more than a docs tidy. `CONTRACT.md` carries a per-version delta table, which is the
-same shape of data. A blanket replace would rewrite every row of it.
+**`scripts/maintain.nu bump` rewrites three anchored stamps and nothing else**: the stylesheet header
+comment, the `(template vX.Y.Z, oklch palette)` cell, the `is **vX.Y.Z**` line. A blanket
+find-and-replace across `README.md` once walked historical claims forward too, crediting the wrong
+release on every bump for prose like "raw HTML is covered as of vX.Y.Z". **Each pattern must match,
+or the bump fails**: a loud failure beats a silent no-op that leaves the tree claiming the previous
+version while the release process believes it stamped. `CONTRACT.md`'s per-version delta table is the
+same shape of risk; a blanket replace would rewrite every row of it.
 
 ## Unclaimed elements
 
-**An element the sheet does not claim renders in whatever the UA decided.** In a dark theme that
-usually means a light-mode default that survives. `mark` came out pure yellow on pure black.
-`caption` centered itself. `figcaption` read as an ordinary paragraph. `figure` had no margins at
-all, because the `*` reset ate the UA's.
+**An element the sheet doesn't claim renders in whatever the UA decided**, usually a light-mode
+default that survives a dark theme (`mark` came out pure yellow on pure black, `caption` centered
+itself, `figcaption` read as an ordinary paragraph, `figure` had no margins at all since the `*`
+reset ate the UA's).
 
-**`mark` is a wash, not a chip.** `--highlight` is `--orange` at a tuned alpha. The wash reads
-clearly against the page, and body copy on it still clears the text floor with headroom. A higher
-alpha reads as a chip, and it costs text contrast. `mark` pins `color: var(--on-surface)`
-rather than inherits, because it renders inside `--label` containers where every other tier fails on
-the wash. Print inverts it to an outline, which is the same move as `.verdict`.
+**`mark` is a wash, not a chip**: `--highlight` is `--orange` at a tuned alpha, and body copy on it
+still clears the text floor with headroom (a higher alpha would read as a chip and cost contrast).
+`mark` pins `color: var(--on-surface)` rather than inheriting, since it renders inside `--label`
+containers where every other tier fails on the wash. Print inverts it to an outline, the same move as
+`.verdict`.
 
-**`kbd` is a ringed chip, deliberately not `code`.** It takes the same fill and mono face, with
-`--on-surface` text rather than `--green`, and a `--rule` ring. A shortcut is not a code fragment,
-and the ring is the only thing that separates them. The ring is `--rule` rather than `--rule-light`,
-because it sits on `--code-bg`. `kbd` joins the forced-colors border list, because an inset shadow
-is the only boundary it has.
+**`kbd` is a ringed chip, deliberately not `code`**: same fill and mono face, but `--on-surface`
+text (not `--green`) and a `--rule` ring (not `--rule-light`, since it sits on `--code-bg`). A second
+shadow layer (`0 1px 0 var(--rule)` outside the ring, borrowed from factory.strongdm.ai's keycap)
+reads as a raised edge. Joins the forced-colors border list (an inset shadow is its only boundary).
 
-**A second shadow layer, `0 1px 0 var(--rule)` outside the ring, gives the bottom edge one more
-weight.** Borrowed from factory.strongdm.ai's keycap, this is what reads as a raised edge rather
-than a flat chip. It reuses `--rule`, the same token the ring already uses on `--code-bg`, so no new
-token exists for it. The existing forced-colors border already replaces both shadow layers at once,
-the same way it already replaced the ring alone.
-
-**A `caption` sits above the table's frame, not inside it.** `caption` is a child of `table`, so the
-table's top rule paints above it, and the caption reads as a stray first row. `table:has(caption)`
-drops the top rule. The caption then becomes a label over the table.
-
-**`figcaption` sets `text-align: start` explicitly.** `pre.mermaid` is centered, and a caption that
-inherited that would float in the middle of a full-width column.
+**A `caption` sits above the table's frame, not inside it**: `table:has(caption)` drops the top rule,
+or the table's own top rule paints above the caption and it reads as a stray first row.
+**`figcaption` sets `text-align: start` explicitly**: `pre.mermaid` is centered, and an inheriting
+caption would float mid-column.
 
 ## Markdown coverage
 
-The sheet was written for hand-authored markup. A consumer can also point a markdown converter at
-it. Every construct a converter emits lands in a theme register with **no classes of its own**. **Do
-not invent classes for markdown constructs.**
+The sheet was written for hand-authored markup; a consumer can also point a markdown converter at it.
+Every construct a converter emits lands in a theme register with **no classes of its own**. **Do not
+invent classes for markdown constructs.**
 
-**`h4` to `h6` all sit at `1em`.** Weight and color carry the tier. h4 is 600, h5 and h6 are 500. The
-colors run `--label` then `--muted`, and h6 adds italic. The `*` reset ate the UA margins while the
-UA font-size ramp survived. A sixth-level heading therefore rendered smaller and heavier than body
-copy, which is the exact inverse of the type-scale rule. **Weight 450 was rejected for h5 and h6.**
-It ties body copy, and it gives the same problem one tier down. Depth past h4 is rare enough that a
-fourth size step buys less than a fourth color step.
+**`h4`-`h6` all sit at `1em`**; weight (600/500/500) and color (`--label` then `--muted`, h6 also
+italic) carry the tier, since the `*` reset ate UA margins while the UA font-size ramp survived
+(a sixth-level heading would otherwise render smaller and heavier than body copy, the exact inverse
+of the type scale). **Weight 450 was rejected for h5/h6**: it ties body copy and pushes the same
+problem one tier down.
 
-**A presentational attribute loses to author CSS.** That is why pipe-table alignment vanished.
-`td { text-align: start }` silently beat `<td align="right">` every time. Three `[align]` rules are
-the fix. Inline `style="text-align:…"`, which pandoc emits, already won on its own.
+**A presentational attribute loses to author CSS**: `td { text-align: start }` silently beat
+`<td align="right">`, so three `[align]` rules fix pipe-table alignment (inline
+`style="text-align:…"`, which pandoc emits, already won on its own).
 
-**GFM alerts take the `aside` rule rather than a second callout form.** An alert *is* an aside, so it
-takes the same form: one bar and no fill. The two selectors share one declaration block. The hue
-lands on the bar and on `.markdown-alert-title`, never on the body text. `warning` keeps plain
-`aside` orange, so an alert-free document and an alert-heavy one read the same. The octicon GitHub
-emits is `fill: currentColor`, so it takes the hue for free.
+**GFM alerts take the `aside` rule rather than a second callout form**: an alert *is* an aside. The
+hue lands on the bar and `.markdown-alert-title`, never body text; `warning` keeps plain `aside`
+orange so alert-free and alert-heavy documents read the same. GitHub's octicon is `fill: currentColor`
+and takes the hue for free.
 
-**Highlighted code reuses the Rider slot map rather than invents one.** Keywords take `--pink`.
-Strings take `--green`. Numbers and parameters take `--orange`. Comments take `--muted` italic.
-Functions take `--link`. Types take `--purple-bright`. Fields and attributes take `--label`. Errors
-and deletions take `--red`. Punctuation inherits. One grouped selector per role covers
-`highlight.js`, pandoc and skylighting, Prism and Pygments.
+**Highlighted code reuses the Rider slot map rather than invents one**: keywords `--pink`, strings
+`--green`, numbers/parameters `--orange`, comments `--muted` italic, functions `--link`, types
+`--purple-bright`, fields/attributes `--label`, errors/deletions `--red`, punctuation inherits. One
+grouped selector per role covers `highlight.js`, pandoc/skylighting, Prism, Pygments, **all scoped
+under `:is(pre, code)`** since the pandoc/Pygments classes are one and two letters that would
+otherwise repaint a consumer's own markup. **One known, accepted collision**: `.ch` is pandoc's
+`Char` in the string group and Pygments' `Comment.Hashbang`, so a shebang renders in the string tier: cheaper than a second selector set.
 
-**Every rule is scoped under `:is(pre, code)`.** The pandoc and Pygments classes are one and two
-letters. An unscoped `.dt`, `.op` or `.m` would repaint a consumer's own markup.
+**Types take `--purple-bright`, and print inverts the lift back to plain `--purple`**: plain
+`--purple` is the one ratio the contrast budget records as a failure on `--code-bg` ("nothing puts
+purple text on the gray"), but a syntax slot map does exactly that; `--purple-bright` is the same
+`oklch(from var(--purple) calc(l + 0.07) c h)` lift `scripts/create-themes.nu` already calls
+`bright`, needing no new hex. Print redeclares plain `--purple` since more lightness is less contrast
+on light ground.
 
-**One collision inside that map is known and accepted.** `.ch` is pandoc's `Char` in the string
-group and Pygments' `Comment.Hashbang`, so a shebang renders in the string tier. One line in the
-wrong tier is cheaper than a second selector set.
+**Monospace was inheriting italic from `blockquote`/`th`/`summary`**: one rule resets `code`, `pre`,
+`kbd`, `samp` inside those three (and `h2`/`h6` for the same reason).
 
-**Types take `--purple-bright`, and in print the lift inverts.** Plain `--purple` is the one ratio
-the contrast budget records as a failure on `--code-bg`. The repo left it alone, because "nothing
-puts purple text on the gray". A syntax slot map does exactly that. `--purple-bright` is
-`oklch(from var(--purple) calc(l + 0.07) c h)`, which is the same lift `scripts/create-themes.nu`
-already calls `bright`. It therefore needs no new hex and no new `/* was */` note. **Print
-redeclares it as plain `--purple`**, because on a light ground more lightness is less contrast.
-
-**Monospace was inheriting italic from `blockquote`, `th` and `summary`.** One rule resets `code`,
-`pre`, `kbd` and `samp` inside those three. It covers `h2` and `h6` for the same reason.
-
-**`color-scheme: dark` on `:root` is not cosmetic.** Without it a UA form control renders light-mode
+**`color-scheme: dark` on `:root` is not cosmetic**: without it a UA form control renders light-mode
 inside a dark page. Print sets `color-scheme: light`.
 
-**The task-list checkbox stays a native control, and it stays gray when checked.** GFM emits it
-`disabled`, and Chromium ignores `accent-color` on a disabled control. A repaint means
-`appearance: none` plus a tick from a data-URI SVG. That puts a literal hex in the stylesheet with
-nothing to gate its drift against `--surface`, and pseudo-elements on inputs are unreliable in
-Safari. **A read-only checkbox that reads as read-only is the cheaper answer.** `list-style` drops
-through `li:has(input[type="checkbox"]:first-child)` rather than GFM's `.contains-task-list`, so the
-rule holds for `markdown-it` output too.
+**The task-list checkbox stays native and gray when checked**: GFM emits it `disabled`, and Chromium
+ignores `accent-color` on a disabled control; a repaint would mean a literal hex data-URI SVG with
+nothing to gate its drift and unreliable pseudo-elements in Safari. **A read-only checkbox that reads
+as read-only is the cheaper answer.** `list-style` drops through
+`li:has(input[type="checkbox"]:first-child)` rather than GFM's own class, so it holds for
+`markdown-it` output too.
 
-**Five smaller claims.** `del` and `s` drop to `--muted`, because a line-through at full body color
-reads as emphasis. `samp` takes `--mono-font`. `sub` and `sup` take `line-height: 0`, so a footnote
-reference does not open the line it sits on. `abbr[title]` gets a dotted rule and `cursor: help`.
-`img.emoji` loses the `--ring` outline and takes `1.1em`, because the ring is for figures.
+**Five smaller claims**: `del`/`s` drop to `--muted` (full body color would read as emphasis); `samp`
+takes `--mono-font`; `sub`/`sup` take `line-height: 0` (a footnote ref shouldn't open its line);
+`abbr[title]` gets a dotted rule and `cursor: help`; `img.emoji` loses the `--ring` outline (that's
+for figures) and takes `1.1em`.
 
-**Footnotes land in `:is(.footnotes, .footnote)` behind a hairline at the caption tier.** That
-matches both the `cmark-gfm` and pandoc shape and Python-Markdown's singular class, and it drops the
-duplicate leading `<hr>`. The Tufte `.sidenote` apparatus is separate, and it still needs
-hand-authored markup.
+**Footnotes land in `:is(.footnotes, .footnote)` behind a hairline at the caption tier**, matching
+`cmark-gfm`, pandoc, and Python-Markdown's shapes, dropping the duplicate leading `<hr>`. The Tufte
+`.sidenote` apparatus is separate and still needs hand-authored markup.
 
-**`.footnote-backref` needs an `aria-label`, and this is the one accessible-name requirement this
-repo asks of converter output rather than only of hand-authored markup.** `cmark-gfm` and pandoc
-both emit the backref as a bare `&#8617;` glyph with no name of its own. A screen reader announces
-the Unicode character or nothing useful, never "back to reference 1", and no CSS rule can attach an
-accessible name to content the stylesheet did not write. This differs from the outbound-link arrow,
-which was silenced (`content: "…" / ""`) because it is decorative and had wrongly reached the
-accessibility tree; a `.footnote-backref` is a real, functional control, so the fix runs the other
-way: give it a name rather than take one away. `CONTRACT.md` § 2 states it as a generator
-obligation, numbered per footnote, because two unlabeled backrefs on one page announce identically
-either way.
+**`.footnote-backref` needs an `aria-label`**: the one accessible-name requirement this repo asks of
+converter output, not just hand-authored markup, since `cmark-gfm`/pandoc emit it as a bare `&#8617;`
+glyph a screen reader can't name. This is the opposite fix from the outbound-arrow (which was
+silenced because it's decorative): a backref is a real functional control, so it gets a name rather
+than losing one. `CONTRACT.md` § 2 states it as a generator obligation, numbered per footnote.
 
-**The sheet styles math where it arrives as real HTML. It renders none.** An unstyled
-`<math display="block">` overflows the **page**, not itself. That is the same failure a wide table
-has, and it takes the same two rules: its own scroll axis, and `pre`'s margin rhythm.
-`.math.display` takes `display: block` and the same pair. That class covers the span pandoc emits
-without `--mathml` and the box KaTeX renders into. **A font-size bump was built and dropped.** The
-math font's x-height already matches the body serif, and the bump would re-scale math inside `h3`
-and `td` as well. Color, italic variables and the centering of display math are all UA behavior, and
-all correct.
+**The sheet styles math where it arrives as real HTML; it renders none.** An unstyled
+`<math display="block">` overflows the page (same failure as a wide table, same two-rule fix: its own
+scroll axis plus `pre`'s margin rhythm). `.math.display` covers both the pandoc `--mathml` span and a
+KaTeX box. **A font-size bump was built and dropped**: the math font's x-height already matches the
+body serif, and a bump would re-scale math inside `h3`/`td` too.
 
-**TeX is not rendered, and that is where the CDN line sits.** KaTeX or MathJax is a second
-hard-offline dependency of Mermaid's kind, for a construct that may never appear. The sheet styles
-the containers, so a consumer who adds KaTeX gets the block layout free.
+**TeX is not rendered**: KaTeX/MathJax would be a second hard-offline dependency (Mermaid's kind)
+for a construct that may never appear; the sheet styles the containers so a consumer adding KaTeX
+gets block layout free.
 
-**Chroma was declined on a namespace argument, and that argument silently excluded Pygments.** Hugo
-defaults to `noClasses = true`, and it writes inline color on every span, so Chroma is mostly moot.
-Pygments is not. It emits classes by default, and it is the highlighter behind Sphinx, MkDocs,
-Quarto and `nbconvert`. Chroma copies the Pygments class names, so the same selectors cover it for
-consumers who turn `noClasses` off.
+**Chroma was declined on a namespace argument that turned out to silently exclude Pygments.** Hugo
+defaults `noClasses = true` (inline color, mostly moot), but Pygments emits classes by default and is
+the highlighter behind Sphinx, MkDocs, Quarto, `nbconvert`. Chroma copies Pygments' class names, so
+the same selectors already cover consumers who turn `noClasses` off.
 
 ## Raw HTML and other generators
 
 Every converter passes raw HTML through untouched.
 
 **Intrinsic-width media pushes the document sideways, and `img` was the only element claimed.**
-`:is(svg, video, canvas, iframe, object, embed) { max-width: 100% }` is the fix. That is the same
-1.4.10 failure the MathML block had.
+`:is(svg, video, canvas, iframe, object, embed) { max-width: 100% }` fixes the same 1.4.10 failure
+the MathML block had. **No `height: auto` on that rule, deliberately**: an SVG with a viewBox
+preserves its own ratio, and adding it would put a second sizing input on `pre.mermaid svg`, where
+three earlier attempts were correct on paper and wrong on screen. **`svg` is in that selector only
+because a fixture diff proved it inert against mermaid**: `pre.mermaid svg` already carries its own
+`max-width` at higher specificity in every band that matters.
 
-**That rule carries no `height: auto`, and that is deliberate.** `img` needs it, because a raster has
-an intrinsic aspect ratio to preserve. An SVG with a viewBox preserves its own ratio, and the
-sideways scroll is what the rule exists to stop. The declaration would also put a second sizing
-input on `pre.mermaid svg`, where three previous attempts were correct on paper and wrong on screen.
+**`body` takes `overflow-wrap: break-word`, not a list of nine selectors**: one declaration inherits
+to every prose container, including ones a hand list would forget, at no layout cost (`break-word`
+doesn't reduce min-content contribution).
 
-**`svg` is in that selector only because a fixture diff proved it inert against mermaid.**
-`pre.mermaid svg` already carries `max-width` through its own rules. Below 600px it carries
-`max-width: none !important`. The new rule is therefore outranked exactly where a diagram needs to
-escape.
-
-**`body` takes `overflow-wrap: break-word`, not a list of nine selectors.** A hash, a long path or a
-base64 fragment outside a code span had no break opportunity. One declaration inherits to every
-prose container. That includes the ones a list would forget and the ones a later release adds. It
-costs nothing in layout, because `break-word` does not reduce a box's min-content contribution.
-
-**`position: sticky` is scoped to `thead th`.** Unscoped, a `tfoot` header cell pinned to the top,
-which is a totals row stuck in the header's place. The `th` typography stays on `th`, so a footer
-cell still reads as a header cell.
+**`position: sticky` is scoped to `thead th`**: unscoped, a `tfoot` header cell would pin to the top
+too (a totals row stuck in the header's place).
 
 **Permalink anchors reveal on hover, and the `:focus-visible` half is not optional.** Sphinx, MkDocs
-and markdown-it-anchor emit `a.headerlink` or `a.anchor` inside the heading, visible at all times by
-default. The rule sets `opacity: 0`. It lifts on `:hover` of the heading and on `:focus-visible` of
-the link. **Without the focus half the link stays in the tab order while it is invisible.** That is a
-keyboard stop nobody can see.
+and markdown-it-anchor emit them visible by default; `opacity: 0` hides them, lifting on `:hover` of
+the heading **and** `:focus-visible` of the link: without the focus half, the link stays in tab
+order while invisible, a keyboard stop nobody can see.
 
-**Form controls take `font: inherit` and a `1rem` floor, and nothing else.** `.filter-box` was the
-only control that set a family. Every other one fell to a small sans-serif inside a serif page,
-below the threshold where iOS Safari zooms on focus. **Appearance is deliberately not styled.** A
-focus ring, a hover state, a disabled state and a pressed state are a button design. This is a
-document theme with exactly one control of its own. `color-scheme: dark` already tells the UA to
-render its widgets dark.
+**Form controls take `font: inherit` and a `1rem` floor, nothing else**: `.filter-box` was the only
+control that set a family; every other one fell to a small sans-serif below the iOS Safari zoom
+threshold. **Appearance is deliberately not styled**: a focus ring, hover, disabled and pressed state
+is a button design this document theme (one control) doesn't need. `color-scheme: dark` already
+themes the UA widgets dark.
 
-**Three conventions stay unclaimed, and the reasons are worth keeping.**
+**Three conventions stay unclaimed, reasons worth keeping**: non-GFM callouts (`.admonition`,
+`.callout-*`, `.admonitionblock`) render bare: Asciidoctor's is worse, rendering as a `<table>` that
+inherits the sheet's sticky header; against three more names for a role the sheet already paints
+twice, revisit only when a consumer actually runs Sphinx/MkDocs. Jupyter ANSI output: sixteen names
+onto seven accents is a set of choices, not a translation, and the intense variants have nowhere
+sensible to land (the `.dataframe` table pandas emits already inherits table rules). `address` and
+`.tabbed-set`: `address` keeps UA italic (arguably right for a postal block); `.tabbed-set` shows
+every panel at once, and a fix means a claim on a radio-driven widget rather than one rule.
 
-- **Non-GFM callouts.** `.admonition` (Python-Markdown, MkDocs, Sphinx, docutils), `.callout-*`
-  (Quarto) and `.admonitionblock` (Asciidoctor) all render bare. Asciidoctor is worse than bare. It
-  renders its callout as a `<table>`, so it inherits the sheet's table frame and sticky header.
-  Against that: three more conventions is a fourth, fifth and sixth name for a role the sheet
-  already paints twice. Every selector is also weight in every consumer file. Revisit this when a
-  consumer actually runs Sphinx or MkDocs.
-- **Jupyter ANSI output.** Sixteen ANSI names onto seven accents is a set of choices rather than a
-  translation. The intense variants also have nowhere sensible to land. The `.dataframe` table
-  pandas emits already inherits the sheet's table rules.
-- **`address` and `.tabbed-set`.** `address` keeps its UA italic, which is arguably right for a
-  postal block. `.tabbed-set` shows every panel at once. A fix means a claim on a radio-driven
-  widget rather than one rule.
+**A solid underline means a link; a dotted underline means an annotation.** `ins`/`u` took the UA
+underline at body color (the one mark this theme uses for a link), so track-changes markup read as
+clickable. Both now use the dotted form `abbr[title]` already uses.
 
-**A solid underline means a link. A dotted underline means an annotation.** `ins` and `u` took the UA
-underline at body color, which is the one mark this theme uses for a link. Track-changes markup
-therefore read as clickable. Both now use the dotted form `abbr[title]` already uses. `del` and `s`
-keep their `--muted` line-through.
-
-**`menu` joins all three list rules.** It takes `list-item` children. Without the indent rule the `*`
+**`menu` joins all three list rules** (takes `list-item` children): without the indent rule the `*`
 reset left its markers hanging outside the box.
 
-**The zero-user class families stay.** `scorecard`, `edge-list`, `col-2`, `badge`, `newthought`,
-`sidenote`, `marginnote`, the filter family and `body.conn-map` have no documents in the measured
-lode. That zero measures the generator as much as the stylesheet. A generator that never offers a
-component guarantees that no document uses it. **`sidenote` and `marginnote` are the Tufte signature,
-and they are the reason the layout reserves a right margin at all.** The zero there is a generator
-gap. `conn-map` is the weakest case, and it is also the only worked example of the two-section
-sticky layout.
+**The zero-user class families stay**: `scorecard`, `edge-list`, `col-2`, `badge`, `newthought`,
+`sidenote`, `marginnote`, the filter family, `body.conn-map` have no documents in the measured lode,
+which measures the generator as much as the stylesheet: a generator that never offers a component
+guarantees no document uses it. **`sidenote`/`marginnote` are the Tufte signature and the reason the
+layout reserves a right margin at all**; the zero there is a generator gap, not a design failure.
 
-**`.verdict` and `.scorecard` had the same generator gap, undocumented rather than merely unused.**
-A real proof-test page (a graded scorecard against 27 lens-methods, the exact content this component
-exists for) rendered every verdict as bare text: a plain `<table>` cell, a heading suffix, a bold
-summary word, none of them carrying `.verdict` or a pass/partial/failed/neutral class. `CONTRACT.md`
-had never listed the markup, so the generator had no way to discover it existed. `dl.timeline` got a
-`§ 2` checklist entry when it shipped. `.verdict` and `.scorecard` did not. Fixed by adding one now:
-see `CONTRACT.md` § 2 and the v1.31.0 row of § 3.
+**`.verdict`/`.scorecard` had the same generator gap, undocumented rather than merely unused**: a
+real proof-test page rendered every verdict as bare text, since `CONTRACT.md` had never listed the
+markup for a generator to discover. Fixed by adding it (`CONTRACT.md` § 2, v1.31.0 row of § 3).
 
 **`.verdict` was missing `display: inline-block`, and `min-width` had been silently dead outside
-`.scorecard`'s grid the whole time.** A grid item's computed `display` blockifies regardless of what
-the rule itself declares, so `min-width: 5.2ch` held inside `.scorecard`, where every measurement to
-date happened. `min-width` does not apply to a non-replaced inline box at all, per spec, so the same
-class on a bare `<span>` in a `<table>` cell, a heading, or prose sized to its own text with no floor
-under it. Nothing in this repo's fixtures ever put `.verdict` outside `.scorecard`, so nothing here
-caught it. A short word like `N/A` still happened to clear the floor on its own padding, which is why
-the defect produced no visibly broken badge, only an inconsistent one next to a wider verdict.
+`.scorecard`'s grid the whole time**: a grid item's computed `display` blockifies regardless of the
+rule's own declaration, so `min-width: 5.2ch` only ever held inside `.scorecard`; `min-width` doesn't
+apply to a non-replaced inline box at all, per spec, so the same class on a bare `<span>` elsewhere
+had no floor under it. No fixture ever put `.verdict` outside `.scorecard`, so nothing caught it; a
+short word like `N/A` happened to clear the floor on its own padding, producing an inconsistent
+badge rather than a visibly broken one.
 
 ## Fixtures are coverage
 
-**A fixture demonstrates states. It does not simulate them.** Several details look like filler and
+**A fixture demonstrates states. It does not simulate them.** Several details that look like filler
 are regression checks. **A cut to any of these retires the check it exists to be.**
 
-**A fixture is also the copy consumers paste, so its own strings have to be right.** Two were not.
+**A fixture is also the copy consumers paste, so its own strings have to be right.** Two weren't:
+`.filter-empty` must not state a count (the fixture once said "Clear the filter to see all 4", wrong
+for any other list length, and `filter.js` only writes its own copy when the element is absent: so
+whatever's in the fixture is what ships and gets copied); `.verdict` text is written in sentence case
+(the class already carries `text-transform: uppercase`, so `PASS`/`SEE BELOW` baked presentation into
+copy).
 
-- **`.filter-empty` must not state a count.** The fixture said "Clear the filter to see all 4",
-  which is wrong for every list that is not four items long, and `filter.js` only writes its own
-  copy when the element is absent, so the fixture's version is the one that shipped and the one that
-  got copied. It states no count now, matching the script's string exactly. **Do not add the query
-  to either one**, for the reason the Filter section already gives.
-- **`.verdict` text is written in sentence case.** The class already carries
-  `text-transform: uppercase`, so `PASS` and `SEE BELOW` in the markup were presentation baked into
-  copy, and they read as a second convention beside the scorecard's own `Pass` and `Partial` two
-  sections up. Same rendered pixels, one convention.
+**A new page means five hardcoded fixture lists, not one**: the page list in
+`scripts/build-sample.nu`; the presence, style-and-script-count, and light-preview lists in
+`scripts/maintain.nu`; the staleness list there plus `FIXTURES` in `.github/render-modes.py`. **Miss
+the `render-modes.py` one and the new page renders in no appearance mode while `check` still prints
+`Contract OK`**: that list drives the image count rather than deriving from the directory (four
+fixtures times three modes is twelve images, the tell).
 
-**A new page means five hardcoded fixture lists, not one.** The five are:
-
-1. The page list in `scripts/build-sample.nu`.
-2. The presence list in `scripts/maintain.nu`.
-3. The style-and-script count list in `scripts/maintain.nu`.
-4. The light-preview list in `scripts/maintain.nu`.
-5. The staleness list in `scripts/maintain.nu`, plus `FIXTURES` in `.github/render-modes.py`.
-
-**Miss the `render-modes.py` one and the new page renders in no
-appearance mode, while the check still prints `Contract OK`.** That list drives the image count
-rather than derives from the directory. The count is the tell. Four fixtures times three modes is
-twelve images.
-
-- **`samples/dark-timeline.html` is the one fixture built from real content, and the length is the
-  point.** Four era groups are four separate lists, which is the case `max-content` cannot serve and
-  `--timeline-date` exists for. The citation density is where the floated sidenote form fails. It is
-  also what the `:target` outline and the enlarged marker hit area were measured against. Every `dt`
-  carries an id, so the arrival cue is walkable rather than merely declared.
-- **The sequence diagram and quadrant chart** sit beside the flowchart, because a flowchart is the
-  one diagram type that shows neither label-measurement bug. Its labels are `foreignObject` HTML the
-  browser measures, and its viewBox comes from the laid-out graph. The sequence fence's `Note over`
-  is deliberately wider than its actor box. The quadrant fence carries point labels long enough to
-  overrun the canvas.
-- **The `pie` fence is the only one that puts text on a `--data-*` fill**, which is why its absence
-  hid two real contrast defects for four releases (see *Diagram types*). `showData` is on, so the
-  legend renders too, and the legend text is the pair that sits on the card rather than on a slice.
-  It is also the only fence whose rendering depends on a non-color `themeVariable`.
-- **`samples/dark-charts.html` carries both bar tables, because `table.bar-chart` has no other
-  coverage.** It appears in no other fixture, and it draws its band through a background image,
-  which is exactly what print and forced colors take away: the print pin was measured against this
-  page. The page also carries a Mermaid pie of the same four numbers, so the guidance it states is
-  visible rather than asserted (see *CSS charts*). Those numbers as a bar table beside the same
-  numbers as slices is what makes the recommendation checkable by eye.
-- **The conn-map focus node's long label.** The connections map is the one fixture that renders with
-  `useMaxWidth: false`. It is therefore the only place a mis-sized node box lands in a *constrained*
-  column rather than on an open page.
-- **The filter's `role="status"` line and its `.filter-empty` line.** The repo asked consumers for
-  both and had neither anywhere. Nothing verified that the empty state rendered, and a consumer had
-  no reference copy. **Nothing hand-written into a fixture may restate a runtime value the reader
-  controls.** The empty line once quoted a query the reader never typed, so the page stated two
-  different things about one keystroke. A count can be checked against the page. A quoted query
-  cannot.
-- **The wide table in `.table-scroll` is wide and tall on purpose. It is the only instance of that
-  wrapper in the repo.** A short wrapped table renders identically to an unwrapped one, and it
-  proves nothing. Eight columns push it past the body, so the wrapper takes the sideways scroll
-  rather than the document. Twenty-four rows push it past the `70vh` cap, so the pinned header has
-  something to hold against. `role="region"` sits on the wrapper, so the table keeps its own
-  semantics.
-- **The highlighted code block carries real emitter classes**, in the nesting `highlight.js`
-  produces. They are not hand-written spans on invented names. It is the only check that the slot map
-  still matches [`themes/rider/README.md`](themes/rider/README.md), and the only place
-  `--purple-bright` renders. All five GFM alert types are present for the same reason.
-- **The Pygments block beside it carries the one- and two-letter names.** It is the only check on the
-  half of the slot map a bare `.k` or `.m` could break. It is also the only place `.p` proves that it
-  still inherits. Two code blocks on one page is on purpose. The two sets can drift apart without
-  either one failing alone.
-- **The MathML block** exists to prove that `math[display="block"]` is claimed at all. A delete
-  retires the only test that a converter's math does not reintroduce a horizontal page scrollbar.
-- **The `<em>` label says what `em` actually does.** It named a color the sheet no longer paints,
-  long after the rule was deleted.
+Specific fixture details and what they catch: `samples/dark-timeline.html`'s length is the point (four
+era groups exercise `--timeline-date`'s multi-list case; citation density is where floated sidenotes
+fail; the enlarged marker hit area and `:target` outline were measured against it). The sequence
+diagram and quadrant chart sit beside the flowchart because a flowchart shows neither
+label-measurement bug (its labels are browser-measured `foreignObject` HTML). The `pie` fence is the
+only one putting text on a `--data-*` fill (its absence hid two real contrast defects for four
+releases) and the only one depending on a non-color `themeVariable`. `samples/dark-charts.html`
+carries both bar tables (no other coverage exists for `table.bar-chart`, and its background-image
+band is exactly what print/forced-colors take away) plus a Mermaid pie of the same numbers, so the
+CSS-chart-vs-pie guidance is checkable by eye. The conn-map focus node's long label is the only place
+a mis-sized node box lands in a *constrained* column. The filter's `role="status"` and
+`.filter-empty` lines are the only reference copy for both: **nothing hand-written into a fixture
+may restate a runtime value the reader controls** (a count can be checked against the page; a quoted
+query cannot). The wide `.table-scroll` table is the only instance of that wrapper (eight columns,
+twenty-four rows, deliberately past both the sideways-scroll and `70vh` thresholds). The highlighted
+code block carries real `highlight.js` emitter classes (the only check the Rider slot map still
+matches, and the only place `--purple-bright` renders); the Pygments block beside it is the only
+check on the one/two-letter half of the slot map. The MathML block proves `math[display="block"]` is
+claimed at all.
 
 ### Never cite a line number into a generated file
 
-`CONTRACT.md` § 2 points a consumer's generator at a fixture for most of its requirements, and for
-twelve releases it did that with line numbers. **All 22 of them were wrong, and they were already
-wrong at v1.38.1.** The cited range was 637 to 927 against a 1007-line file, and every spot check
-landed on unrelated markup: the pointer for `<main>` reached into `mermaid.js`'s tail, the one for
-`role="list"` on `.icon-list` at a wide-table row, the one for the rollup `.verdict` at the task
-list.
+`CONTRACT.md` § 2 once pointed a consumer's generator at fixture line numbers, and **all 22 were
+wrong, already wrong at v1.38.1**: a fixture regenerates on every payload edit, so a line number
+rots on a change unrelated to the requirement it names, and nothing could see it happen. Renumbering
+was rejected (resets the same clock, needs a machine-readable token to gate at all, which is the
+whole cost of the real fix). **Each pointer is now a search string** instead:
+``(in `samples/dark.html`, search `class="tag-dot"`)``, parsed and verified by
+`nu scripts/maintain.nu check`, which refuses to pass on fewer than 20 pointers so a bulk delete can't
+make the gate vacuous.
 
-**The cause is structural, not clerical.** A fixture is regenerated on every payload edit, so a
-line number rots on a change that has nothing to do with the requirement it names, and no check in
-the repo could see it happen. That is worse than a dead link: § 2 promises "a working example
-instead of only a sentence", so a wrong pointer sends a reader to markup that does not demonstrate
-the requirement and looks authoritative doing it.
+**§ 2 also made two countable claims about itself that had gone false**: that every requirement
+points at a fixture or says it has none (five bullets did neither), and its own bullet count stated
+in prose (read "Sixteen" against 21 bullets before v1.39.0, with `README.md` carrying its own stale
+copy). Both are now derived from the bullets rather than trusted. **A prose claim about a countable
+property is a gate waiting to be written.**
 
-Renumbering all 22 was the other option on the table and it was rejected. It keeps the format and
-resets the same clock, and it needs a machine-readable token per requirement to gate at all, which
-is the entire cost of the fix that does not rot. **So each pointer is now a search string:**
-``(in `samples/dark.html`, search `class="tag-dot"`)``. `nu scripts/maintain.nu check` parses every
-pointer out of § 2 and fails when one stops matching the file it names, and it refuses to pass on
-fewer than 20 pointers so a bulk delete cannot make the gate vacuous. Three pointers moved to
-`samples/dark-timeline.html` in the rewrite, because the requirements they name were never
-demonstrated in `samples/dark.html` at all.
+**Both the pointer gate and the fixture table-tab-stop scan were local-only for a while, which
+doesn't hold a merge.** Both are now one function, `contract-markup-ok`, called from `check` and from
+a `main contract-markup` CI subcommand.
 
-**§ 2 also made two countable claims about itself, and both had gone false.** It said every
-requirement either points at a fixture or says it has none, and five bullets did neither, so a
-generator was told an example existed and never given its name. And it states the requirement count
-in prose, which read "Sixteen" against 21 bullets before v1.39.0: a spelled-out number in two files
-is drift waiting to happen, and `README.md` carried its own copy. Both are derived from the bullets
-now rather than trusted, and the count check fails loudly on a number outside the spelled-out range
-it knows instead of passing on a word it cannot read. **A prose claim about a countable property is
-a gate waiting to be written.**
-
-**A gate that runs only locally does not hold a merge, and two of them were doing exactly that.**
-`nu scripts/maintain.nu check` mirrors `contract-check.yml` step for step, which is the whole
-reason to trust a local pass. The pointer gate went in as an inline block inside `check` with no CI
-step beside it, and the fixture table-tab-stop scan had been local-only since v1.27.0. Both are one
-function now, `contract-markup-ok`, called from `check` and from a `main contract-markup`
-subcommand that CI runs as its own step. **Anything that reads the fixtures to enforce a § 2
-obligation belongs there**, so the next one is a line in an existing function rather than a second
-place to forget.
-
-**The fixture breaks exactly one § 2 requirement on purpose, and that had to be said out loud.**
-`CONTRACT.md` opens by telling a generator that the fixture wins any disagreement, and
-`samples/dark.html` carries two deliberately overlong `quadrantChart` point labels, which § 2 bans.
-A reader following the top-of-file rule would have copied them. The exception is now named in the
-intro and in the bullet, which is the only honest way to keep a rule that has one.
+**The fixture breaks exactly one § 2 requirement on purpose, and that had to be said out loud**: `samples/dark.html` carries two deliberately overlong `quadrantChart` point labels that § 2 otherwise
+bans, since `CONTRACT.md` tells a generator the fixture wins any disagreement. The exception is now
+named in both the intro and the bullet.
 
 ### The one check that runs the payload
 
-`.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives the two inlined
-scripts, and asserts what a reader would see: eighteen assertions over `filter.js` scope, counts,
-group state and its restore path, and over `mermaid.js` rendering, zoom binding and the conditional
-region, plus eight over the forced-colors block, which had no coverage of any kind before. Everything else in CI counts blocks, compares bytes or measures colors, and **none of those
-questions is "does this handler attach to anything".** Two defects prove the gap was real: the
-fixture shipped an inert `input.filter-box` from v1.16.0 to v1.21.0, and a click on a diagram opened
-nothing for several releases (see *Zoom*).
+`.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives both inlined scripts,
+and asserts what a reader would see (eighteen assertions over `filter.js` scope/counts/group-state,
+`mermaid.js` rendering/zoom-binding/conditional-region, plus eight over the forced-colors block).
+Everything else in CI counts blocks, compares bytes, or measures colors: **none of that asks "does
+this handler attach to anything."** Two real defects proved the gap: the fixture shipped an inert
+`input.filter-box` for five releases, and a diagram click opened nothing for several more (see
+[Zoom](#mermaid)).
 
-- **It needs no new dependency, which is what changed the answer.** This sat in `backlog.md` for
-  releases on the stated cost of Node and jsdom. `render-modes.py` already shells out to headless
-  Chrome, so the probe is the same binary with `--dump-dom` instead of `--screenshot`, plus a driver
-  script appended to a scratch copy of the fixture. The driver writes its results into the DOM,
-  so reading them back is one regex.
-- **The mermaid half is network-dependent and says so out loud.** The pinned CDN is the one input
-  here that can be unavailable rather than broken, so reachability is probed first and reported as
-  a `SKIP`. A gate that goes quiet when the network does is worse than no gate.
-- **It refuses to pass on fewer than 13 binding assertions and 8 forced-colors ones**, for the same
-  reason every other vacuity floor in the repo exists: a driver that throws halfway would otherwise
-  publish a short, green list. It renders the fixture twice, once as shipped and once with the
-  `forced-colors` condition rewritten on (see *Forced colors*).
-- **Both halves were mutation-tested.** Moving `filter.js`'s scope walk up one level and making the
-  mermaid region unconditional each turned the gate red on the exact assertions that name them.
+**It needs no new dependency**: reuses `render-modes.py`'s same headless Chrome binary with
+`--dump-dom` instead of `--screenshot`, a driver script appended to a scratch copy writing results
+into the DOM for a one-regex readback (this sat in `backlog.md` for releases on a stated Node/jsdom
+cost that was never actually required). **The mermaid half is network-dependent and says so out
+loud**: the pinned CDN is probed for reachability first and reported as a `SKIP`, never folded into
+a pass. **It refuses to pass on fewer than 13 binding assertions and 8 forced-colors ones**, and both
+halves were mutation-tested (moving `filter.js`'s scope walk up one level, and making the mermaid
+region unconditional, each turned the gate red on the exact assertion naming them).
 
 ## Repo layout
 
-**The Nushell scripts live in `scripts/`, and the Python helpers stay in `.github/`. The split is by
-who invokes a file, not by language.** Each Python helper is a CI step of its own, and it appears
-verbatim in `contract-check.yml`. It therefore lives beside the workflow that runs it. The Nushell
-scripts are the commands a person types.
+**The Nushell scripts live in `scripts/`, Python helpers stay in `.github/`: split by who invokes a
+file, not by language.** Each Python helper is a CI step appearing verbatim in `contract-check.yml`
+and lives beside it; the Nushell scripts are commands a person types.
 
-**Both kinds resolve every path from the repo root, never from `cwd`.** The Nushell side needs two
-constants, because `path self | path dirname | path dirname` is **not** a legal const chain in
-Nushell:
+**Both kinds resolve every path from the repo root, never `cwd`.** Nushell needs two constants,
+since `path self | path dirname | path dirname` is not a legal const chain:
 
 ```nu
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 ```
 
-The payload, the fixtures, `tokens.css` and the docs stay at the root. Pages serves the root, and
-consumers pin paths into it.
+**`AGENTS.md` is the instruction file; `CLAUDE.md` is a pointer to it, split by audience not
+content.** The rules used to live in `CLAUDE.md`, which made a filename a dependency (another
+harness reading `AGENTS.md` would have found nothing). `AGENTS.md` holds every rule and names no
+harness; `CLAUDE.md` records only what Claude Code adds on top (the skills in `.claude/skills/`) and
+states `AGENTS.md` wins on conflict. **A skill may only wrap a flow `AGENTS.md` already states in
+full**: that's what keeps a harness without skills at full capability, losing an entry point, never
+a rule. **Do not let a rule come to rest only inside a skill**, and don't put repo policy in
+`.claude/settings.json` (status line config only). Both files sit in the presence gate
+(`scripts/maintain.nu` and `contract-check.yml`): a deleted instruction file is the one deletion that
+leaves every check green while removing the reason the checks exist.
 
-**`AGENTS.md` is the instruction file. `CLAUDE.md` is a pointer to it.** The rules were in
-`CLAUDE.md` for as long as one harness edited this repo, which made a filename into a dependency:
-another harness reads `AGENTS.md` and would have found nothing. The split is by *audience*, not by
-content. `AGENTS.md` holds every rule and names no harness, so everything it asks for is a shell
-command, a file path or a decision rule. `CLAUDE.md` records only what Claude Code adds on top,
-which is the two skills in `.claude/skills/`, and states that `AGENTS.md` wins on any conflict.
-
-**A skill may only wrap a flow that `AGENTS.md` already states in full.** That is what keeps a
-harness without skills at full capability: it loses an entry point, never a rule. `release` is the
-order in which to call `scripts/maintain.nu`, and every one of those commands is in `AGENTS.md`.
-**Do not let a rule come to rest only inside a skill**, and do not put repo policy in
-`.claude/settings.json`, which configures a status line.
-
-**Both files are in the presence gate, in `scripts/maintain.nu` and in `contract-check.yml`.** A
-deleted instruction file is the one kind of deletion that leaves every check green while removing
-the reason the checks exist. The CI step's name and its closing count are part of the list: change
-the list, change both numbers.
-
-**Python stays, and the repo measured the alternatives rather than argued them.** Both helpers were
-put up for rewrite, and both stayed.
-
-- **"Bash" is not an option. Only awk is.** Bash has no floating-point arithmetic, and the Oklab
-  matrix needs `cos`, `sin` and a fractional power. A bash version is an awk program in a shell
-  wrapper. That takes the repo from `{nu, python, bash}` to `{nu, bash, awk}`, which is the same
-  three languages with the math in the least readable of them.
-- **Nushell would genuinely drop one language, and it is a rewrite of the primary gate.** The math
-  ports exactly. That is a real gain. It is also two hundred lines of the most load-bearing check
-  in the repo, rewritten to save a dependency preinstalled everywhere it runs. **Take it if the check
-  needs a substantial change for its own reasons. Do not take it on its own.**
-- **`render-modes.py` cannot move at all, and this is the hard blocker.** A read of one PNG pixel
-  needs zlib inflate, which neither Nushell nor bash has. The gzip-header workaround inflates
-  correctly, and then it **always fails its trailer**, because a zlib adler32 is not a gzip crc32.
-  The check would therefore have to ignore its own exit status. It could then no longer tell a
-  corrupt screenshot from a good one. That is the exact class of quiet wrongness the gate exists to
-  catch.
+**Python stays in the two `.github/` helpers, measured rather than argued.** Bash is not a real
+alternative (no floating-point arithmetic; the Oklab matrix needs `cos`/`sin`/fractional powers, so a
+bash version would really be an awk program in a shell wrapper, trading Python for a less readable
+language). Nushell would genuinely drop a language for `palette-check.py` (the math ports exactly),
+but it's two hundred lines of the most load-bearing check in the repo, rewritten only to save an
+already-preinstalled dependency: **take it if the check needs a substantial change for its own
+reasons, not on its own.** `render-modes.py` cannot move at all: reading one PNG pixel needs zlib
+inflate, which neither Nushell nor bash has, and the gzip-header inflate workaround always fails its
+trailer (a zlib adler32 isn't a gzip crc32), forcing the check to ignore its own exit status: exactly
+the quiet wrongness the gate exists to catch.
 
 ## Odds and ends
 
-**A shadow-drawn rule on a zero-height box paints nothing.** `hr` read `border: none; box-shadow:
-…`, and `border: none` collapses the element to zero height. The separator was therefore invisible at
-every width, in print and in forced colors, for as long as the rule existed. It is a
-`border-block-start` now. The same defect does **not** affect `table`, whose box has real height.
-**Shadow-drawn rules are fine. Shadow-drawn rules on a zero-height box are not.**
+**A shadow-drawn rule on a zero-height box paints nothing.** `hr` read `border: none; box-shadow: …`,
+and `border: none` collapses the element to zero height, making the separator invisible at every
+width, in print, and in forced colors. Now a `border-block-start`. **Shadow-drawn rules are fine.
+Shadow-drawn rules on a zero-height box are not.**
 
-**A pipe-separated `nav` is a flex row, and the rule goes on the link, not between the links.**
-`nav:has(> a)` takes `display: flex; flex-wrap: wrap`, and `nav > a + a` carries the
-`border-inline-start` with its own `padding-inline-start`. As plain inline anchors with a
-`margin-inline-start`, a long destination name broke *inside* the link across two lines, so at 320px
-the fixture's seven-link row put a bare leading separator at the start of a line and split "Spike
-Results" and "Reuse Candidates" across rows with no separator between the halves. A reader could not
-tell where one destination ended and the next began. A flex item wraps as a unit and carries its own
-leading rule down with it.
+**A pipe-separated `nav` is a flex row, and the rule goes on the link, not between the links**: `nav:has(> a)` takes `display: flex; flex-wrap: wrap`, `nav > a + a` carries the border. As plain
+inline anchors, a long destination name broke *inside* the link across lines, splitting labels with
+no separator between the halves; a flex item wraps as a unit and carries its leading rule with it.
+**The `:has(> a)` scoping is deliberate**: a bare `nav { display: flex }` would also catch a
+consumer's `nav > ul`, silently turning it into a shrinking flex item.
 
-**The `:has(> a)` scoping is deliberate.** A bare `nav { display: flex }` would also catch a
-consumer who emits `nav > ul`, and turn that list into a flex item that shrinks. The sheet does not
-control that markup, and a silent layout change to it is the kind of break this repo already paid
-for once on the conn-map column order.
+**`scrollbar-color` sits on `body`, not on every scrolling box**, since the property inherits: one
+declaration reaches `.table-scroll`, `pre`, the narrow-viewport mermaid scroll, and the document
+scrollbar. **`overscroll-behavior: contain` goes on every scroll container the sheet owns**
+(`.table-scroll`, the mermaid overlay, narrow-viewport `pre.mermaid`, the conn-map sticky column), or
+a scroll to an edge chains into the page behind it.
 
-**`scrollbar-color` sits on `body`, not on every scrolling box, because the property inherits.** One
-declaration reaches `.table-scroll`, `pre`, the narrow-viewport `pre.mermaid` scroll and the
-document's own scrollbar.
+**`--ring` is a token because the `img` hairline was the one color declared twice as a literal**: as a token it flips in print with the other overrides. Deliberately not a palette color (white at
+10% over an arbitrary image is a translucent veil, not a hue), so its alpha-slash form doesn't match
+`palette-check.py`'s token regex, leaving the parsed token count unaffected.
 
-**`overscroll-behavior: contain` goes on every scroll container the sheet owns.** Those are
-`.table-scroll`, the mermaid overlay, the narrow-viewport `pre.mermaid` rule and the conn-map sticky
-column. Without it, a scroll to an edge chains into the page behind it.
-
-**`--ring` is a token, because the `img` hairline was the one color declared twice as a literal.** As
-a token it flips in print beside the other overrides, and the `img` rule disappears from that block
-entirely. It is deliberately not a palette color. White at 10% over an arbitrary image is a
-translucent veil rather than a hue. Its alpha-slash form does not match `palette-check.py`'s
-`oklch(L C h)` regex, so the parsed token count is unaffected.
-
-**The W3C CSS validator reports two errors, and both are the validator.** It flags `container-type`
-and `@container`, which come from a module its `css3` profile predates. Those two declarations are
-the load-bearing fix for `.scorecard` overflow under text-only zoom. **Do not delete them to make
-the validator quiet.** That trades a real rendering bug for a green badge. The warnings are noise of
-the same kind, mostly "CSS variables are currently not statically checked".
+**The W3C CSS validator reports two errors, and both are the validator**: it flags `container-type`
+and `@container` (a module its `css3` profile predates), which are the load-bearing `.scorecard`
+zoom fix. **Do not delete them to make the validator quiet**: that trades a real rendering bug for a
+green badge.

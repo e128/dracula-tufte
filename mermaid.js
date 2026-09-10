@@ -1,14 +1,5 @@
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs';
-    const elkPres = [...document.querySelectorAll('pre.mermaid')].filter(pre => /layout:\s*elk/.test(pre.textContent));
-    if (elkPres.length) {
-      import('https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.3/dist/mermaid-layout-elk.esm.min.mjs')
-        .then(elkLayouts => {
-          mermaid.registerLayoutLoaders(elkLayouts.default);
-          return mermaid.run({ nodes: elkPres });
-        })
-        .catch(() => {});
-    }
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.0.0/dist/mermaid.esm.min.mjs';
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
     const mermaidDark = {
@@ -52,7 +43,7 @@
       pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
     };
     mermaid.initialize({
-      startOnLoad: true, theme: 'base',
+      startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
       fontFamily: mermaidFont,
       themeVariables: {

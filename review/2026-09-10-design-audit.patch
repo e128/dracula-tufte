@@ -1,0 +1,149 @@
+diff --git a/NOTES.md b/NOTES.md
+index df34af5..586f9ca 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -1300,6 +1300,28 @@ not the template. The placeholders hide which hex actually lands.
+ Use `theme: 'base'` plus explicit `themeVariables`. **Never use `theme: 'dark'`**, which ignores
+ this palette entirely.
+ 
++**`look: 'neo'` is explicit, as of Mermaid v12.0.0.** Mermaid 12 changed its own default look from
++`classic` to `neo` for most diagram types, and it changed the default layout algorithm from `dagre`
++to a bundled ELK at the same time. `theme: 'base'` was already explicit, so a diagram's fill and
++stroke colors do not move on the bump. Layout is left unset, which means every diagram now lays
++out with ELK by default rather than dagre: this template accepts that upstream default rather than
++pinning `layout: 'dagre'` to hold the old geometry, and Large maps below records what changed for
++the one fixture that already exercised ELK deliberately. `look` gets the same explicit treatment as
++`theme` for the same reason: a page-visible decision should be a stated fact in the payload, not an
++upstream default the payload happens to inherit. **Mermaid v12 also raises its own runtime floor to
++ES2024, Safari 17.4+ and Node 22.12+.** This template ships no polyfill and states no minimum
++browser matrix of its own, so that floor is now this template's floor too, for whichever page pulls
++Mermaid at all.
++
++**The `@mermaid-js/layout-elk` CDN import is gone.** Mermaid v12 bundles ELK into the core package
++rather than shipping it as a separate optional module, so the second CDN pin and the dynamic
++`import()` that only ran for a `pre.mermaid` fence containing `layout: elk` are both dead weight now
++that every layout algorithm core ships already covers what that import used to add. Verified by
++rendering `samples/dark-conn-map.html`'s three-subgraph flowchart and its explicit `layout: elk`
++diagram with the import removed: both render, and neither raises a layout-loader error. This
++resolves the objection Large maps originally raised against an unconditional second CDN dependency,
++because there no longer is one.
++
+ **Pass hex, never `oklch()`.** khroma throws "Unsupported color format" and aborts init, so no
+ diagram renders at all. The values mirror `mermaid-palette.json`, and CI enforces the match.
+ 
+@@ -1479,6 +1501,34 @@ selector on the shared sheet for it.**
+ `themeVariable`. There is no config surface in front of it. The repo leaves them alone for the
+ reason the contrast budget gives: nothing puts a category fill beside body copy.
+ 
++**`usecase` (Mermaid v12.0.0+, keyword `usecase-beta`) needs no new `themeVariables` here, and none
++were added.** Its actors and use-case ellipses already resolve through `primaryColor`,
++`primaryBorderColor`, `primaryTextColor` and `lineColor`, the same as every other node this template
++themes, verified by rendering the actor glyph, the ellipse fill and the `include`/`extend` line
++against the dark and light palettes. A `systemBoundary` is the one part that does not read those:
++Mermaid numbers boundaries from its own categorical palette rather than from `usecaseBoundaryBkg`/
++`usecaseBoundaryBorder`, which are themselves only a fallback for a theme that carries no palette to
++number with. Setting them changed nothing here, confirmed by rendering with and without them. What
++does carry the boundary correctly is `pre.mermaid .cluster rect` and `pre.mermaid .cluster-label
++:is(p, span)` (see ELK clusters, Large maps): a `systemBoundary` renders with a `cluster` class same
++as a flowchart subgraph, so the override this template already ships for ELK's ignored
++`clusterBkg`/`clusterBorder` covers a use-case boundary for free. `samples/dark.html` carries a
++`usecase-beta` fence with one `systemBoundary`, so this is fixture coverage, not an untested claim.
++
++**`C4Context`, `C4Container`, `C4Component`, `C4Dynamic` and `C4Deployment` are not themeable here,
++and this template does not carry a fixture for any of them.** A probe render found `Person()` and
++`System()` painted with Mermaid's own hardcoded C4 defaults (`#08427B`, `#1168BD`) regardless of
++`theme: 'base'` or any `themeVariable`, because the C4 renderer sets `fill`/`stroke` as a literal
++attribute on each shape rather than reading the theme, the same defect class as `xyChart` above. A
++relationship label rendered at `#444444`, which fails contrast against this template's dark ground
++outright. Unlike `xyChart`, a CSS door does exist, the same `!important` route `packet` and ELK
++clusters use, but nothing here writes that CSS with no fixture to prove it against (see *Fixtures
++are coverage*), and C4's several shape tiers (`person`, `external_person`, `system`,
++`external_system`, `system_db`, `system_queue`, and the `container`/`component` tiers each again)
++are a lot of surface to theme blind. A consumer who adds a C4 diagram to a page carrying this
++template's dark palette should verify contrast themselves until a fixture earns this coverage a real
++fix.
++
+ **Diagram text that lands on the page ground, rather than on a node fill, was invisible in print.**
+ Mermaid bakes its hex into the SVG at init, and print is a media query with no re-render, so a
+ diagram themed for a dark page keeps painting `textColor` at `#f8f8f2` while `@media print` turns
+@@ -1607,26 +1657,19 @@ than hidden. Grouping into an open (uncollapsed) subgraph still gives a reader v
+ an era or a topic reads as one region, but it does not reduce the node count on the page. Point 4
+ is what does.
+ 
+-**2. Switch a large map to the ELK layout engine, loaded only when a page asks for it.**
+-`mermaid.js` imports `@mermaid-js/layout-elk` from the CDN and calls
+-`mermaid.registerLayoutLoaders()`, but only when a `pre.mermaid` fence on the page contains
+-`layout: elk`. An unconditional import would add a second mandatory CDN dependency to every page
+-with a Mermaid diagram, including the ones with five nodes that never needed it. A consumer opts
+-in per diagram with a `config: { layout: elk }` frontmatter block in the fence.
+-
+-**The ELK import must never block `mermaid.initialize()`, and a top-level `await` on it does
+-exactly that.** A first attempt awaited the dynamic import before calling `initialize`, so nothing
+-on the page rendered, not even diagrams that never asked for ELK, until that import settled. Under
+-`--virtual-time-budget`, the flag `.github/render-modes.py` already uses to screenshot every
+-fixture, the import never settles at all: virtual time does not let a pending `fetch` resolve, so
+-the `await` hangs forever and the page stays unrendered for the full budget. The fix is
+-fire-and-forget: `mermaid.initialize` and `startOnLoad` run immediately as before, and the ELK
+-import, once it resolves, calls `mermaid.registerLayoutLoaders()` then `mermaid.run({ nodes:
+-elkPres })` to re-render only the diagrams that requested `layout: elk`. Every other diagram on
+-the page is never blocked on it. If the import never resolves, an ELK diagram shows Mermaid's own
+-inline error state indefinitely: the same offline failure this repo already accepts for Mermaid
+-itself, now scoped to the one diagram that opted into the extra dependency instead of the whole
+-page.
++**2. Switch a large map to the ELK layout engine.** As of Mermaid v12.0.0, ELK ships inside the
++core package rather than as the separate `@mermaid-js/layout-elk` module this template used to
++load with a dynamic `import()`, scoped to only the pages that asked for it. That import and its
++second CDN pin are gone: a `pre.mermaid` fence still opts in with a `config: { layout: elk }`
++frontmatter block exactly as before, but every layout algorithm core now understands ships with the
++one `mermaid` import already on the page, so there is nothing left to load conditionally and
++nothing left to race against `mermaid.initialize()`. Verified by rendering
++`samples/dark-conn-map.html`'s explicit-ELK diagram with no second import present.
++
++ELK is also the default layout for every diagram that names no `layout` at all, as of the same
++release, so the flowchart above and every other diagram type on this page now lays out with ELK
++unless a fence sets `layout: 'dagre'` itself. This template accepts that default rather than
++overriding it; see Init config.
+ 
+ **ELK trades width for height on an unbalanced fan-out, it does not just shrink the diagram.**
+ Eighteen leaf nodes into one focus node, the shape of the production map's worst rank, measured
+diff --git a/mermaid.js b/mermaid.js
+index 2e77cfa..5d952bd 100644
+--- a/mermaid.js
++++ b/mermaid.js
+@@ -1,14 +1,5 @@
+   <script type="module">
+-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs';
+-    const elkPres = [...document.querySelectorAll('pre.mermaid')].filter(pre => /layout:\s*elk/.test(pre.textContent));
+-    if (elkPres.length) {
+-      import('https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.3/dist/mermaid-layout-elk.esm.min.mjs')
+-        .then(elkLayouts => {
+-          mermaid.registerLayoutLoaders(elkLayouts.default);
+-          return mermaid.run({ nodes: elkPres });
+-        })
+-        .catch(() => {});
+-    }
++    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.0.0/dist/mermaid.esm.min.mjs';
+     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
+     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
+     const mermaidDark = {
+@@ -52,7 +43,7 @@
+       pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
+     };
+     mermaid.initialize({
+-      startOnLoad: true, theme: 'base',
++      startOnLoad: true, theme: 'base', look: 'neo',
+       securityLevel: window.mermaidSecurityLevel || 'strict',
+       fontFamily: mermaidFont,
+       themeVariables: {
+diff --git a/scripts/build-sample.nu b/scripts/build-sample.nu
+index 50b5b1b..b04f617 100644
+--- a/scripts/build-sample.nu
++++ b/scripts/build-sample.nu
+@@ -558,6 +558,7 @@ def body [] {
+     "      <pre class=\"mermaid\">sequenceDiagram\n  accTitle: Sequence diagram sample\n  accDescr: The caller sends a request, the service stores it, and a note records that a label box must fit its own monospace text.\n  participant C as Caller\n  participant S as Service (long name)\n  C->>S: Request with a fairly long label\n  S->>S: Store it\n  Note over S: This note is wider than the actor box.<br/>Its rect must contain the rendered text.\n  S->>C: Result</pre>"
+     "      <pre class=\"mermaid\">quadrantChart\n  accTitle: Quadrant chart sample\n  accDescr: Four labelled points near the chart edges, where long labels would otherwise be clipped by the fixed chart viewBox.\n  x-axis Narrow --> Wide\n  y-axis Shallow --> Deep\n  quadrant-1 Best of both\n  quadrant-2 Deep but narrow\n  quadrant-3 Neither yet\n  quadrant-4 Wide but shallow\n  A label long enough to reach past the edge: [0.9, 0.9]\n  Another deliberately overlong point label: [0.1, 0.1]</pre>"
+     "      <pre class=\"mermaid\">packet-beta\n  accTitle: Packet diagram sample\n  accDescr: A UDP header split into four labelled byte ranges, styled through tufte-dracula.css because mermaid's own packet themeVariables are a documented no-op.\n  title UDP Header\n  0-15: \"Source Port\"\n  16-31: \"Destination Port\"\n  32-47: \"Length\"\n  48-63: \"Checksum\"</pre>"
++    "      <pre class=\"mermaid\">usecase-beta\n  accTitle: Use case diagram sample\n  accDescr: A reader actor reaching a system boundary that groups a use case and the diagram zoom it includes.\n  direction LR\n  actor Reader\n  systemBoundary Site\n    Read(\"Read page\")\n    Zoom(\"Zoom diagram\")\n  end\n  Reader --> Read\n  Read ..> : include Zoom</pre>"
+     "      <p>The pie chart is the only diagram type that paints text directly onto a <code>--data-*</code> fill, so it carries its own <code>pieSectionTextColor</code> per palette and pins <code>pieOpacity</code> to <code>1</code>. Mermaid's stock 0.7 composited every slice toward the card, and its single <code>textColor</code> is the wrong end of the ramp in one palette or the other (see NOTES.md, Diagram types).</p>"
+     "      <pre class=\"mermaid\">pie showData\n  accTitle: Pie chart sample\n  accDescr: Four payload files as a share of the template's bytes, drawn from the data ramp, with each slice's percentage painted inside the slice.\n  title Payload bytes by file\n  \"tufte-dracula.css\" : 52\n  \"mermaid.js\" : 21\n  \"filter.js\" : 15\n  \"mermaid-palette.json\" : 12</pre>"
+     "    </section>"

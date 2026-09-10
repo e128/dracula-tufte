@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.46.0 */
+    /* Dracula-Tufte (muted) v1.47.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -576,16 +576,7 @@
     }
   </style>
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs';
-    const elkPres = [...document.querySelectorAll('pre.mermaid')].filter(pre => /layout:\s*elk/.test(pre.textContent));
-    if (elkPres.length) {
-      import('https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.3/dist/mermaid-layout-elk.esm.min.mjs')
-        .then(elkLayouts => {
-          mermaid.registerLayoutLoaders(elkLayouts.default);
-          return mermaid.run({ nodes: elkPres });
-        })
-        .catch(() => {});
-    }
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.0.0/dist/mermaid.esm.min.mjs';
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
     const mermaidDark = {
@@ -629,7 +620,7 @@
       pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
     };
     mermaid.initialize({
-      startOnLoad: true, theme: 'base',
+      startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
       fontFamily: mermaidFont,
       themeVariables: {
@@ -1084,6 +1075,17 @@
   16-31: "Destination Port"
   32-47: "Length"
   48-63: "Checksum"</pre>
+      <pre class="mermaid">usecase-beta
+  accTitle: Use case diagram sample
+  accDescr: A reader actor reaching a system boundary that groups a use case and the diagram zoom it includes.
+  direction LR
+  actor Reader
+  systemBoundary Site
+    Read("Read page")
+    Zoom("Zoom diagram")
+  end
+  Reader --> Read
+  Read ..> : include Zoom</pre>
       <p>The pie chart is the only diagram type that paints text directly onto a <code>--data-*</code> fill, so it carries its own <code>pieSectionTextColor</code> per palette and pins <code>pieOpacity</code> to <code>1</code>. Mermaid's stock 0.7 composited every slice toward the card, and its single <code>textColor</code> is the wrong end of the ramp in one palette or the other (see NOTES.md, Diagram types).</p>
       <pre class="mermaid">pie showData
   accTitle: Pie chart sample

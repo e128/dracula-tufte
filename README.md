@@ -44,7 +44,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.46.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.47.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
@@ -62,7 +62,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.46.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.47.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -109,16 +109,22 @@ plist, which `scripts/create-themes.nu` builds straight from the palette because
 three float components, not a hex string. The Slack entry has no file format to generate: it is a
 hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/README.md).
 
-| Theme | Files | Install |
-| --- | --- | --- |
-| **Rider** | `dracula-tufte.theme.json` (IDE chrome) and `dracula-tufte.icls` (editor scheme) | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip` |
-| **Zed** | `dracula-tufte.json` | Copy to `~/.config/zed/themes/` |
-| **Ghostty** | `dracula-tufte` | Copy to `~/.config/ghostty/themes/`, then set `theme = dracula-tufte` |
-| **iTerm2** | `dracula-tufte.itermcolors` | Preferences, Profiles, Colors, Color Presets, Import, then select it |
-| **opencode** | `dracula-tufte.json` | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
-| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select the theme |
-| **tmux** | `dracula-tufte.conf` | `source-file` it from `~/.tmux.conf` |
-| **Slack** | `themes/slack/README.md` (color string, no file to install) | Preferences, Themes, Custom Theme, paste string |
+**Rider, Zed, Ghostty, iTerm2 and VS Code ship both a dark and a light variant**, projected
+from the same `:root` palette and its `prefers-color-scheme: light` override respectively.
+opencode, tmux and Slack ship dark only: opencode's and tmux's theme formats have no
+appearance-switch mechanism to project a light variant into, and Slack is a hand-copied string
+with nowhere to hold a second one.
+
+| Theme | Files | Modes | Install |
+| --- | --- | --- | --- |
+| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light) | dark + light | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick either theme from the theme list |
+| **Zed** | `dracula-tufte.json` (one file, both appearances) | dark + light | Copy to `~/.config/zed/themes/` |
+| **Ghostty** | `dracula-tufte`, `dracula-tufte-light` | dark + light | Copy both to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light` |
+| **iTerm2** | `dracula-tufte.itermcolors`, `dracula-tufte-light.itermcolors` | dark + light | Preferences, Profiles, Colors, Color Presets, Import both; check "Use different colors for light and dark mode" and assign each preset to its appearance |
+| **opencode** | `dracula-tufte.json` | dark only | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
+| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` (dark) and `themes/dracula-tufte-light-color-theme.json` (light) | dark + light | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select either theme |
+| **tmux** | `dracula-tufte.conf` | dark only | `source-file` it from `~/.tmux.conf` |
+| **Slack** | `themes/slack/README.md` (color string, no file to install) | dark only | Preferences, Themes, Custom Theme, paste string |
 
 ```sh
 nu scripts/create-themes.nu           # write every theme, then package the Rider plugin

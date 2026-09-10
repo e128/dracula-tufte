@@ -17,6 +17,22 @@
 # Ghostty and the Rider theme.json write `#{{green}}` and the .icls writes
 # `{{green}}`. One placeholder vocabulary, no per-file escaping rule.
 #
+# Every placeholder resolves against the dark palette by default, since every template
+# predates light/dark parity and reads that way unchanged. A `light:` prefix
+# (`{{light:green}}`, `{{light:mix:surface:red:20}}`, `{{light:green.bright}}`) forces
+# that one placeholder to the light palette instead. Two ways a target uses this:
+#
+#   - A whole light-mode output file (Rider's `-light.icls`, VS Code's
+#     `-light-color-theme.json`, Ghostty's `-light`, iTerm2's light preset) is a
+#     separate `.in` template rendered with `--scheme light`, so every bare
+#     placeholder in it means light with no prefix needed. This is the shape for a
+#     format that only ever carries one appearance per file.
+#   - Zed's one file carries both: the dark theme object renders with bare
+#     placeholders under the default `--scheme dark` render, and the light theme
+#     object beside it in the same template uses `light:`-prefixed placeholders so
+#     one render pass produces both. This is the shape for a format whose own
+#     schema already holds multiple appearances in one document.
+#
 # iTerm2's .itermcolors is the one output with no `.in` template. A plist color is
 # three float components, not a hex string, so there is nothing for `{{}}` substitution
 # to land on. `render-itermcolors` below builds it straight from $palette, the same way
@@ -37,19 +53,31 @@
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
-# Pairs are (template, output). Output is always the template minus `.in`, but
-# spelling both keeps the list greppable from either direction.
+# Each row is (template, output, scheme). Output is always the template minus `.in`,
+# but spelling both keeps the list greppable from either direction. `scheme` picks
+# which palette bare placeholders resolve against; every row not naming one defaults
+# to dark, which is every row that predates light/dark parity.
+#
+# Rider, VS Code and Ghostty ship light and dark as two rows pointing at two
+# templates (an IDE theme or a terminal theme is one appearance per file in all
+# three formats); Zed ships both from the one row above, its own template holding
+# both appearances already (see the placeholder comment above). iTerm2 has no `.in`
+# template at all, so it is not in this list; see `render-itermcolors` below.
 const THEMES = [
-  "themes/ghostty/dracula-tufte"
-  "themes/opencode/dracula-tufte.json"
-  "themes/rider/dracula-tufte.icls"
-  "themes/rider/dracula-tufte.theme.json"
-  "themes/rider/META-INF/plugin.xml"
-  "themes/tmux/dracula-tufte.conf"
-  "themes/vscode/extension.vsixmanifest"
-  "themes/vscode/package.json"
-  "themes/vscode/themes/dracula-tufte-color-theme.json"
-  "themes/zed/dracula-tufte.json"
+  {template: "themes/ghostty/dracula-tufte.in", output: "themes/ghostty/dracula-tufte", scheme: "dark"}
+  {template: "themes/ghostty/dracula-tufte-light.in", output: "themes/ghostty/dracula-tufte-light", scheme: "light"}
+  {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte.json", scheme: "dark"}
+  {template: "themes/rider/dracula-tufte.icls.in", output: "themes/rider/dracula-tufte.icls", scheme: "dark"}
+  {template: "themes/rider/dracula-tufte-light.icls.in", output: "themes/rider/dracula-tufte-light.icls", scheme: "light"}
+  {template: "themes/rider/dracula-tufte.theme.json.in", output: "themes/rider/dracula-tufte.theme.json", scheme: "dark"}
+  {template: "themes/rider/dracula-tufte-light.theme.json.in", output: "themes/rider/dracula-tufte-light.theme.json", scheme: "light"}
+  {template: "themes/rider/META-INF/plugin.xml.in", output: "themes/rider/META-INF/plugin.xml", scheme: "dark"}
+  {template: "themes/tmux/dracula-tufte.conf.in", output: "themes/tmux/dracula-tufte.conf", scheme: "dark"}
+  {template: "themes/vscode/extension.vsixmanifest.in", output: "themes/vscode/extension.vsixmanifest", scheme: "dark"}
+  {template: "themes/vscode/package.json.in", output: "themes/vscode/package.json", scheme: "dark"}
+  {template: "themes/vscode/themes/dracula-tufte-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-color-theme.json", scheme: "dark"}
+  {template: "themes/vscode/themes/dracula-tufte-light-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-light-color-theme.json", scheme: "light"}
+  {template: "themes/zed/dracula-tufte.json.in", output: "themes/zed/dracula-tufte.json", scheme: "dark"}
 ]
 
 # iTerm2's ANSI slots, in the same hue-to-slot assignment the Ghostty template already
@@ -75,6 +103,7 @@ const ANSI_SLOTS = [
 ]
 
 const ITERM_OUT = "themes/iterm2/dracula-tufte.itermcolors"
+const ITERM_LIGHT_OUT = "themes/iterm2/dracula-tufte-light.itermcolors"
 
 def main [
   --check       # render in memory and fail on drift instead of writing
@@ -85,28 +114,34 @@ def main [
   let version = (version-of-css)
 
   mut drift = []
-  for rel in $THEMES {
-    let out = ($ROOT | path join $rel)
-    let rendered = (render (open --raw $"($out).in") $palette $version)
+  for row in $THEMES {
+    let template = ($ROOT | path join $row.template)
+    let out = ($ROOT | path join $row.output)
+    let rendered = (render (open --raw $template) $palette $version $row.scheme)
     if $check {
       if (not ($out | path exists)) or (open --raw $out) != $rendered {
-        $drift = ($drift | append $rel)
+        $drift = ($drift | append $row.output)
       }
     } else {
       $rendered | save --force --raw $out
-      print $"  → ($rel)"
+      print $"  → ($row.output)"
     }
   }
 
-  let iterm_path = ($ROOT | path join $ITERM_OUT)
-  let iterm_rendered = (render-itermcolors $palette $version)
-  if $check {
-    if (not ($iterm_path | path exists)) or (open --raw $iterm_path) != $iterm_rendered {
-      $drift = ($drift | append $ITERM_OUT)
+  for pair in [
+    {out: $ITERM_OUT, scheme: "dark"}
+    {out: $ITERM_LIGHT_OUT, scheme: "light"}
+  ] {
+    let iterm_path = ($ROOT | path join $pair.out)
+    let iterm_rendered = (render-itermcolors $palette $version $pair.scheme)
+    if $check {
+      if (not ($iterm_path | path exists)) or (open --raw $iterm_path) != $iterm_rendered {
+        $drift = ($drift | append $pair.out)
+      }
+    } else {
+      $iterm_rendered | save --force --raw $iterm_path
+      print $"  → ($pair.out)"
     }
-  } else {
-    $iterm_rendered | save --force --raw $iterm_path
-    print $"  → ($ITERM_OUT)"
   }
 
   let plugin = (plugin-path $version)
@@ -189,31 +224,44 @@ def version-of-css []: nothing -> string {
   $m | first | get v
 }
 
-def render [text: string, palette: record, version: string]: nothing -> string {
+def render [text: string, palette: record, version: string, scheme: string = "dark"]: nothing -> string {
   mut out = $text
   for key in ($text | parse --regex '\{\{(?<k>[^}]+)\}\}' | get k | uniq) {
-    $out = ($out | str replace --all $"{{($key)}}" (resolve $key $palette $version))
+    $out = ($out | str replace --all $"{{($key)}}" (resolve $key $palette $version $scheme))
   }
   $out
 }
 
-def resolve [key: string, palette: record, version: string]: nothing -> string {
+# `key` resolves against `palette.dark` or `palette.light`, chosen by `scheme`, unless
+# it carries its own `light:`/`dark:` prefix, which wins regardless of `scheme`. See the
+# THEMES placeholder comment above for which templates need the prefix and which don't.
+def resolve [key: string, palette: record, version: string, scheme: string = "dark"]: nothing -> string {
   if $key == "version" { return $version }
 
+  if ($key | str starts-with "light:") {
+    return (resolve-flat ($key | str substring 6..) $palette.light)
+  }
+  if ($key | str starts-with "dark:") {
+    return (resolve-flat ($key | str substring 5..) $palette.dark)
+  }
+  resolve-flat $key ($palette | get $scheme)
+}
+
+def resolve-flat [key: string, flat: record]: nothing -> string {
   if ($key | str starts-with "mix:") {
     let p = ($key | split row ":")
     if ($p | length) != 4 {
       error make {msg: $"bad placeholder {{($key)}}: want mix:base:accent:percent"}
     }
-    return (mix (token $palette $p.1) (token $palette $p.2) ($p.3 | into float))
+    return (mix (token $flat $p.1) (token $flat $p.2) ($p.3 | into float))
   }
 
   if ($key | str ends-with ".bright") {
     let name = ($key | str replace ".bright" "")
-    return (field $palette $name "bright")
+    return (field $flat $name "bright")
   }
 
-  token $palette $key
+  token $flat $key
 }
 
 def token [palette: record, name: string]: nothing -> string {
@@ -271,21 +319,24 @@ def iterm-key [name: string, hex: string, alpha: float]: nothing -> string {
 }
 
 # Same slot map the Ghostty template renders, projected into iTerm2's
-# float-component plist instead of a `theme = ` key file.
-def render-itermcolors [palette: record, version: string]: nothing -> string {
+# float-component plist instead of a `theme = ` key file. iTerm2 has no single-file
+# dual-mode option: a profile's "Use different colors for light and dark mode" takes
+# two separately-imported presets, so `scheme` picks which palette this pass renders
+# and main() calls this twice, once per appearance.
+def render-itermcolors [palette: record, version: string, scheme: string = "dark"]: nothing -> string {
   mut entries = []
   for slot in $ANSI_SLOTS {
-    $entries = ($entries | append (iterm-key $"Ansi ($slot.idx) Color" (resolve $slot.key $palette $version) 1.0))
+    $entries = ($entries | append (iterm-key $"Ansi ($slot.idx) Color" (resolve $slot.key $palette $version $scheme) 1.0))
   }
-  $entries = ($entries | append (iterm-key "Background Color" (resolve "surface" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Foreground Color" (resolve "on-surface" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Bold Color" (resolve "on-surface" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Cursor Color" (resolve "pink" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Cursor Text Color" (resolve "surface" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Cursor Guide Color" (resolve "code-bg.bright" $palette $version) 0.25))
-  $entries = ($entries | append (iterm-key "Selection Color" (resolve "code-bg.bright" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Selected Text Color" (resolve "on-surface" $palette $version) 1.0))
-  $entries = ($entries | append (iterm-key "Link Color" (resolve "link" $palette $version) 1.0))
+  $entries = ($entries | append (iterm-key "Background Color" (resolve "surface" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Foreground Color" (resolve "on-surface" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Bold Color" (resolve "on-surface" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Cursor Color" (resolve "pink" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Cursor Text Color" (resolve "surface" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Cursor Guide Color" (resolve "code-bg.bright" $palette $version $scheme) 0.25))
+  $entries = ($entries | append (iterm-key "Selection Color" (resolve "code-bg.bright" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Selected Text Color" (resolve "on-surface" $palette $version $scheme) 1.0))
+  $entries = ($entries | append (iterm-key "Link Color" (resolve "link" $palette $version $scheme) 1.0))
 
   [
     '<?xml version="1.0" encoding="UTF-8"?>'
@@ -357,13 +408,17 @@ def package [out: path, version: string] {
   let stage = ($dist | path join "stage")
   let jar_name = $"dracula-tufte-rider-($version).jar"
 
-  # Inner jar first, out of its own staging tree.
+  # Inner jar first, out of its own staging tree. Two theme.json/icls pairs go in,
+  # dark and light, since a JetBrains theme is one appearance per theme.json and
+  # plugin.xml (below) registers both as separate themeProviders.
   let jstage = ($stage | path join "jar")
   rm --recursive --force $stage
   mkdir ($jstage | path join "META-INF")
   cp ($dir | path join "META-INF" "plugin.xml") ($jstage | path join "META-INF" "plugin.xml")
   cp ($dir | path join "dracula-tufte.theme.json") ($jstage | path join "dracula-tufte.theme.json")
   cp ($dir | path join "dracula-tufte.icls") ($jstage | path join "dracula-tufte.xml")
+  cp ($dir | path join "dracula-tufte-light.theme.json") ($jstage | path join "dracula-tufte-light.theme.json")
+  cp ($dir | path join "dracula-tufte-light.icls") ($jstage | path join "dracula-tufte-light.xml")
   [ "Manifest-Version: 1.0"
     "Implementation-Title: Dracula-Tufte (muted)"
     $"Implementation-Version: ($version)"
@@ -371,14 +426,18 @@ def package [out: path, version: string] {
   ] | str join "\n" | save --force --raw ($jstage | path join "META-INF" "MANIFEST.MF")
 
   # Files before directories: writing a file bumps its parent's mtime.
-  for f in ["META-INF/MANIFEST.MF" "META-INF/plugin.xml" "dracula-tufte.theme.json" "dracula-tufte.xml" "META-INF"] {
+  for f in [
+    "META-INF/MANIFEST.MF" "META-INF/plugin.xml" "dracula-tufte.theme.json" "dracula-tufte.xml"
+    "dracula-tufte-light.theme.json" "dracula-tufte-light.xml" "META-INF"
+  ] {
     ^touch -t 198001010000 ($jstage | path join $f)
   }
 
   let jar = ($stage | path join "lib" $jar_name)
   mkdir ($stage | path join "lib")
   cd $jstage
-  let jz = (^zip -q -X $jar "META-INF/" META-INF/MANIFEST.MF META-INF/plugin.xml dracula-tufte.theme.json dracula-tufte.xml | complete)
+  let jz = (^zip -q -X $jar "META-INF/" META-INF/MANIFEST.MF META-INF/plugin.xml
+    dracula-tufte.theme.json dracula-tufte.xml dracula-tufte-light.theme.json dracula-tufte-light.xml | complete)
   cd $ROOT
   if $jz.exit_code != 0 {
     rm --recursive --force $stage
@@ -471,11 +530,12 @@ def package-vscode [out: path, version: string] {
   cp ($dir | path join "package.json") ($extension | path join "package.json")
   cp ($dir | path join "README.md") ($extension | path join "readme.md")
   cp ($dir | path join "themes" "dracula-tufte-color-theme.json") ($extension | path join "themes" "dracula-tufte-color-theme.json")
+  cp ($dir | path join "themes" "dracula-tufte-light-color-theme.json") ($extension | path join "themes" "dracula-tufte-light-color-theme.json")
   cp ($dir | path join "extension.vsixmanifest") ($stage | path join "extension.vsixmanifest")
   content-types | save --force --raw ($stage | path join "[Content_Types].xml")
 
   for f in [
-    "extension/themes/dracula-tufte-color-theme.json" "extension/themes"
+    "extension/themes/dracula-tufte-color-theme.json" "extension/themes/dracula-tufte-light-color-theme.json" "extension/themes"
     "extension/package.json" "extension/readme.md" "extension"
     "extension.vsixmanifest" "[Content_Types].xml"
   ] {
@@ -486,7 +546,7 @@ def package-vscode [out: path, version: string] {
   cd $stage
   let z = (^zip -q -X $out "[Content_Types].xml" "extension.vsixmanifest"
     "extension/" "extension/package.json" "extension/readme.md"
-    "extension/themes/" "extension/themes/dracula-tufte-color-theme.json" | complete)
+    "extension/themes/" "extension/themes/dracula-tufte-color-theme.json" "extension/themes/dracula-tufte-light-color-theme.json" | complete)
   cd $ROOT
   rm --recursive --force $stage
   if $z.exit_code != 0 {
