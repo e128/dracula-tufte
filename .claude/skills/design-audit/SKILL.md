@@ -75,7 +75,7 @@ this repo did, and it is where the findings are.
 PREV=<the SHA named in the previous report's header>
 git log --oneline "$PREV..HEAD"
 git diff --stat "$PREV..HEAD"
-git diff "$PREV..HEAD" -- tufte-dracula.css mermaid.js filter.js NOTES.md scripts/ .github/
+git diff "$PREV..HEAD" -- tufte-dracula.css mermaid.js filter.js NOTES.md scripts/ .github/ 'themes/**/*.in'
 ```
 
 If the previous report names no SHA, fall back to the tag for the version it says it read
@@ -90,7 +90,7 @@ its effort on Step 4 instead.
 ### Every added payload line gets four questions
 
 Read the diff, not a summary of it. For each added or changed line in `tufte-dracula.css`,
-`mermaid.js` or `filter.js`:
+`mermaid.js`, `filter.js`, or a `themes/**/*.in` slot-map template:
 
 1. **Does NOTES.md document it?** AGENTS.md: "When you make a new decision worth keeping,
    add it to NOTES.md as a decision plus its prohibition." A new component with no NOTES.md
@@ -131,17 +131,17 @@ stable run to run, and so the maintainer can tell which sections an audit never 
 
 | # | Topic | Covers | NOTES.md sections |
 | --- | --- | --- | --- |
-| 1 | Color and contrast | OKLCH gamut, APCA vs WCAG 2, forced-colors, dark/light parity | Color and the contrast budget, Appearance modes, Print, Mermaid |
+| 1 | Color and contrast | OKLCH gamut, APCA vs WCAG 2, forced-colors, dark/light parity, editor slot-map chroma | Color and the contrast budget, Appearance modes, Print, Mermaid, Editor themes |
 | 2 | Typography | Variable fonts, type scale, `text-wrap`, hyphenation | Fonts, Type scale, Italics, Paragraphs and section rhythm |
 | 3 | Layout and spacing | Container queries, `:has()`, intrinsic sizing, breakpoints | Width and measure, Tables, Lists, Connections-map layout, Cascade layer |
 | 4 | Accessibility | WCAG updates, ARIA patterns, focus handling, keyboard reach | Keyboard and assistive technology, Direction, zoom and growth, Links |
 | 5 | Interaction and motion | `prefers-reduced-motion`, transitions, press/hover states | Interaction states, Form follows role |
 | 6 | Pinned dependencies | Whether the pinned CDN versions have shipped fixes worth taking | Fonts, Mermaid |
 
-Sections outside the map (Editor themes, Filter, Unclaimed elements, Markdown coverage,
-Raw HTML and other generators, Fixtures are coverage, Repo layout, Odds and ends) are out
-of scope for this skill. Say so in one line in the report so their absence reads as a
-decision rather than an oversight.
+Sections outside the map (Filter, Unclaimed elements, Markdown coverage, Raw HTML and
+other generators, Fixtures are coverage, Repo layout, Odds and ends) are out of scope for
+this skill. Say so in one line in the report so their absence reads as a decision rather
+than an oversight.
 
 For each topic:
 
@@ -192,6 +192,12 @@ wrapper) plus real markup for the component, then measure it:
 
 Measure the same page again after the patch and put both numbers in the report. A claim with
 a before-and-after pair is checkable a year later; "fixed" is not.
+
+**A slot-map finding gets a probe of its own kind, not a Chromium render.** Editor themes,
+Light and dark parity: "Verify against the generated `.icls`, not the template: placeholders
+hide which hex actually lands." Run `scripts/create-themes.nu` and `.github/palette-check.py
+--dump` in the scratchpad, and quote the resolved hex per slot, before and after any patch
+touching a `themes/**/*.in` file.
 
 **A fix is not verified until the probe shows it.** On 2026-09-08 the first version of a
 narrow-width column override was inert: the override sat in a media block above the rule it
@@ -302,7 +308,25 @@ For each, report the current release (`npm view <pkg> version time.modified`), w
 anything between the two is a rendering or security fix, and whether the upgrade is worth
 taking. **Do not put a Mermaid bump in the patch:** `nu scripts/maintain.nu mermaid <version>`
 is the supported path and it touches generated files. Name the command in the report and stop
-there.
+that part there.
+
+**Also check provenance, not only freshness.** Every jsDelivr URL in the two files above
+loads through a mechanism with no `integrity` attribute available to it: `@font-face src:
+url()` has no SRI hook in any browser, and a bare-specifier ESM `import` of a remote URL has
+no `integrity` hook either, current npm-package or import-map metadata aside. State this
+plainly rather than proposing an `integrity=` attribute that cannot attach to either
+construct. What is checkable:
+- The URL pins an exact version (already covered by the exact-pin row in Step 4's table,
+  cross-reference rather than re-run).
+- jsDelivr serves the npm-published tarball unmodified at a versioned path, so the actual
+  supply-chain question is whether the **npm package itself** has a provenance attestation
+  (`npm view <pkg> dist.attestations` or the npm registry's provenance badge), not whether
+  the CDN edge is trusted.
+- Whether self-hosting the four font files or the Mermaid bundle (checked into the repo
+  instead of fetched from a CDN) is now worth the tradeoff NOTES.md already weighed when it
+  chose a CDN pin. Read that passage before proposing self-hosting again; if NOTES.md
+  already declined it, this is a `[Repeat]` or a `review/declined.md` match, not new
+  ground.
 
 ## Step 4: the ungated-rules sweep
 
