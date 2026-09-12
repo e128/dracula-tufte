@@ -767,6 +767,7 @@
     <nav>
       <a href="#bars">Bar chart</a>
       <a href="#pie">Pie chart</a>
+      <a href="#more">More diagram types</a>
       <a href="#which">Which one</a>
     </nav>
 
@@ -808,6 +809,115 @@
   "filter.js" : 15
   "mermaid-palette.json" : 12</pre>
       <p>The cost is a CDN request, and offline that request fails, so the fence renders as its own source text and every number in it stays readable. Four slices is still the ceiling, because the ramp has four members and each one is contrast-checked against the card it sits on. A fifth category has no color left that clears the floor, and a page that reaches for one is telling you it wanted a bar chart. Give every fence an <code>accTitle</code> and an <code>accDescr</code>, and state the same numbers in the prose or a table, because a reader who cannot see the slices needs them either way.</p>
+    </section>
+
+    <section>
+      <h2 id="more">More diagram types</h2>
+      <p>Twelve more Mermaid fences, each rendered against this palette and verified by <code>getComputedStyle</code> rather than by reading the exported SVG's own attributes, which can carry a stale literal hex even after CSS has already repainted it (see NOTES.md, Diagram types).</p>
+      <h3>Class diagram</h3>
+      <pre class="mermaid">classDiagram
+  accTitle: Class diagram sample
+  accDescr: An Animal base class with a name and a sound, and a Dog subclass that inherits from it.
+  class Animal {
+    +String name
+    +makeSound()
+  }
+  class Dog
+  Animal <|-- Dog</pre>
+      <h3>State diagram</h3>
+      <pre class="mermaid">stateDiagram-v2
+  accTitle: State diagram sample
+  accDescr: A job that starts idle, moves to running when started, and returns to idle when stopped.
+  [*] --> Idle
+  Idle --> Running: start
+  Running --> Idle: stop</pre>
+      <h3>Entity relationship diagram</h3>
+      <pre class="mermaid">erDiagram
+  accTitle: Entity relationship diagram sample
+  accDescr: A customer who places zero or more orders.
+  CUSTOMER ||--o{ ORDER : places</pre>
+      <h3>Requirement diagram</h3>
+      <pre class="mermaid">requirementDiagram
+  accTitle: Requirement diagram sample
+  accDescr: A high-risk requirement satisfied by a simulation element.
+  requirement req1 {
+    id: 1
+    text: the system shall log every request
+    risk: high
+    verifymethod: test
+  }
+  element sim {
+    type: simulation
+  }
+  sim - satisfies -> req1</pre>
+      <h3>Kanban board</h3>
+      <pre class="mermaid">kanban
+  accTitle: Kanban board sample
+  accDescr: Two tasks in a Todo column and one task in a Done column.
+  Todo
+    task1[Write docs]
+    task2[Fix bug]
+  Done
+    task3[Ship it]</pre>
+      <h3>Radar chart</h3>
+      <pre class="mermaid">radar-beta
+  accTitle: Radar chart sample
+  accDescr: One series scored across three axes.
+  axis a["Speed"], b["Cost"], c["Quality"]
+  curve x["Current"]{3,4,2}</pre>
+      <h3>Git graph</h3>
+      <pre class="mermaid">gitGraph
+  accTitle: Git graph sample
+  accDescr: A develop branch committed once and merged back into main.
+  commit
+  branch develop
+  commit
+  checkout main
+  merge develop</pre>
+      <h3>Treemap</h3>
+      <pre class="mermaid">treemap-beta
+  accTitle: Treemap sample
+  accDescr: Two categories under one root, each sized by its own value.
+  "Root"
+    "A": 10
+    "B": 20</pre>
+      <h3>Timeline</h3>
+      <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types).</p>
+      <pre class="mermaid">timeline
+  accTitle: Timeline diagram sample
+  accDescr: Three release years plotted on Mermaid's own timeline diagram, each naming the versions that shipped that year.
+  title Release history
+  2024 : v1.20.0 : v1.30.0
+  2025 : v1.40.0 : v1.47.0
+  2026 : v1.48.0</pre>
+      <h3>Gantt chart</h3>
+      <pre class="mermaid">gantt
+  accTitle: Gantt chart sample
+  accDescr: Two sequential tasks against a dated axis.
+  title Two-task schedule
+  dateFormat YYYY-MM-DD
+  section Phase
+  Task A :a1, 2026-01-01, 3d
+  Task B :after a1, 3d</pre>
+      <h3>Architecture diagram</h3>
+      <pre class="mermaid">architecture-beta
+  accTitle: Architecture diagram sample
+  accDescr: A database and a server grouped inside one API boundary.
+  group api(cloud)[API]
+  service db(database)[Database] in api
+  service server(server)[Server] in api
+  db:L -- R:server</pre>
+      <h3>User journey</h3>
+      <p>Task and section fills theme from this palette. The actor band and the per-task mood face keep Mermaid's own fixed colors on purpose, because a mood face reads as a fixed emotional scale rather than a brand category (see NOTES.md, Diagram types).</p>
+      <pre class="mermaid">journey
+  accTitle: User journey sample
+  accDescr: One day rated across two sections, Work and Home.
+  title My day
+  section Work
+    Code: 5: Me
+    Review: 3: Me
+  section Home
+    Relax: 4: Me</pre>
     </section>
 
     <section>

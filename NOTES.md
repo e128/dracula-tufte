@@ -1080,13 +1080,14 @@ same four this template already themes for `flowchart` and `sequenceDiagram`. `g
 matching `mermaid-palette.json`) until a second render with `primaryColor` swapped to a probe red
 moved those same colors in step: both derive their palette from `primaryColor` by hue rotation,
 so they track this template's purple correctly, they just do not equal one of the pinned hexes.
-None of these six carries a fixture yet.
+All nine carry a fixture as of v1.48.0, in `samples/dark-charts.html` under "More diagram types"
+(search `classDiagram`).
 
 **Mermaid's own `timeline` keyword is a twelfth working type, unrelated to this template's
 `dl.timeline` component.** Same keyword, two different things: one is a Mermaid diagram, the other
-is HTML this stylesheet themes directly. Confirmed themed the same way as the six above. No
-fixture demonstrates it, and the name collision is worth flagging to a generator that greps this
-file for "timeline" and finds the wrong hit.
+is HTML this stylesheet themes directly. Confirmed themed the same way as the six above. Fixed in
+`samples/dark-charts.html` (search `Mermaid's own <code>timeline</code>`), and the name collision
+is worth flagging to a generator that greps this file for "timeline" and finds the wrong hit.
 
 **`gantt` and `architecture-beta` needed one new `themeVariable` each, both confirmed by the same
 swap test.** `gantt`'s axis ticks rendered at Mermaid's literal `lightgrey` regardless of theme;
@@ -1101,8 +1102,8 @@ keeps the pie and cluster strokes off any accent this template already assigns a
 hex for a signal that already reads correctly. `architecture-beta`'s arrowheads were checked and
 found not to exist on this diagram's edges at all (no `<marker>` in the render), so
 `archEdgeArrowColor` was left out: a `themeVariable` with nothing to paint is a dead declaration,
-the same objection that removed a dead `font-family` rule in v1.46.0. Neither diagram carries a
-fixture yet.
+the same objection that removed a dead `font-family` rule in v1.46.0. Both diagrams carry a
+fixture in `samples/dark-charts.html` (search `Gantt chart` and `Architecture diagram`).
 
 **`journey`'s task and section fills theme correctly through `fillType0..7`; its actor band and
 mood face do not, and are left alone.** The swap test is what told them apart: task and section
@@ -1111,7 +1112,7 @@ cornsilk circle with grey eyes and mouth) did not move at all. Both are Mermaid'
 colors with no `themeVariable` in front of them, the same defect class as `sankey`/`block`. Left
 alone for the same reason `today` was left alone above: a mood face reads as a fixed emotional
 scale, not a brand category, and repainting it purple would cost the one piece of information it
-carries. No fixture demonstrates `journey`.
+carries. Fixed in `samples/dark-charts.html` (search `User journey`).
 
 **`zenuml` does not render at all, and stays out.** Mermaid ships it as a second package
 (`@mermaid-js/mermaid-zenuml`) registered through `mermaid.registerExternalDiagrams`, not inside
