@@ -37,6 +37,18 @@ paints without error, and an image a person can look at.
 
 The PNGs are written for a human to look at. CI uploads them as artifacts.
 
+**Every `<script>` is stripped from the scratch copy before Chrome ever sees it.**
+Check 3 reads `body { background }`, which paints from CSS before any script runs,
+so `mermaid.js` and `filter.js` are dead weight here: a CDN fetch neither check
+needs, plus every `pre.mermaid` fence laying itself out through Mermaid's own
+renderer, ELK included, for a background pixel that never depended on any of it.
+This surfaced as a real cost, not a theoretical one: adding twelve more fences to
+`samples/dark-charts.html` (see NOTES.md, Diagram types) took this script from
+under a minute to over seven on a GitHub-hosted runner, rendering that same
+fixture three times (once per mode) with thirteen diagrams laid out each time.
+Stripping the scripts also drops the one network dependency this file used to
+have with nothing here that reads its result.
+
 Run: python3 .github/render-modes.py <outdir>
 
 ponytail: no puppeteer, no playwright, no PIL. A `--screenshot` subprocess and
@@ -44,6 +56,7 @@ ten lines of zlib.
 """
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -110,6 +123,11 @@ def first_pixel(png):
     return tuple(raw[1:4])
 
 
+def strip_scripts(html):
+    """Drop every <script>, so Chrome paints CSS alone: no CDN fetch, no diagram layout."""
+    return re.sub(r"<script\b[^>]*>.*?</script>", "", html, flags=re.S)
+
+
 def render(chrome, source, outfile):
     subprocess.run(
         [chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars",
@@ -143,10 +161,11 @@ def main():
             fail = 1
         if missing:
             continue
+        stripped = strip_scripts(html)
         for mode, (condition, want_hex) in MODES.items():
             # Switch every mode off, then switch the target one on. `@media not all`
             # never matches, so what the host prefers stops mattering.
-            body = html
+            body = stripped
             for c in CONDITIONS:
                 body = body.replace(c, "@media all" if c == condition else "@media not all", 1)
             source = outdir / f"{fixture.stem}-in-{mode}.html"
