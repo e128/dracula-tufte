@@ -1067,6 +1067,59 @@ default.**
 `samples/dark.html` carries a `pie showData` fence as of v1.40.0; its absence is why the above went
 unmeasured for four releases (see [Fixtures are coverage](#fixtures-are-coverage)).
 
+**Nine more diagram types theme correctly with no code change, verified by rendering each against
+both palettes and reading `getComputedStyle` on every colored element, not by reading the exported
+SVG's own attributes.** That last part matters: a Mermaid element can carry a literal
+`fill="#191970"` attribute and still paint the themed color, because an SVG presentation attribute
+sits at the bottom of the cascade and any ordinary CSS rule beats it with no `!important` needed.
+Reading the attribute string alone would have misreported every one of these as broken.
+`classDiagram`, `stateDiagram-v2`, `erDiagram`, `requirementDiagram`, `kanban` and `radar-beta`
+resolve every color through `primaryColor`/`primaryBorderColor`/`primaryTextColor`/`lineColor`, the
+same four this template already themes for `flowchart` and `sequenceDiagram`. `gitGraph` and
+`treemap-beta` looked suspect at first pass (their commit and section colors are not literal hex
+matching `mermaid-palette.json`) until a second render with `primaryColor` swapped to a probe red
+moved those same colors in step: both derive their palette from `primaryColor` by hue rotation,
+so they track this template's purple correctly, they just do not equal one of the pinned hexes.
+All nine carry a fixture as of v1.48.0, in `samples/dark-charts.html` under "More diagram types"
+(search `classDiagram`).
+
+**Mermaid's own `timeline` keyword is a twelfth working type, unrelated to this template's
+`dl.timeline` component.** Same keyword, two different things: one is a Mermaid diagram, the other
+is HTML this stylesheet themes directly. Confirmed themed the same way as the six above. Fixed in
+`samples/dark-charts.html` (search `Mermaid's own <code>timeline</code>`), and the name collision
+is worth flagging to a generator that greps this file for "timeline" and finds the wrong hit.
+
+**`gantt` and `architecture-beta` needed new `themeVariables`, confirmed by the same swap
+test.** `gantt`'s axis ticks rendered at Mermaid's literal `lightgrey` regardless of theme;
+`gridColor` (the token this template already uses for `clusterBorder`/`noteBorderColor`) fixed it.
+`architecture-beta`'s connecting lines and group boundary rendered at Mermaid's literal mid-grey;
+`archEdgeColor` (the same token as `lineColor`) and `archGroupBorderColor` (the same token as
+`clusterBorder`) fixed both. All three are real `themeVariables`, mirrored into
+`mermaid-palette.json` like every other hex here. **`gantt`'s `today` marker stays Mermaid's
+literal red on purpose:** it is a "you are here" signal, not a category, the same reasoning that
+keeps the pie and cluster strokes off any accent this template already assigns a meaning
+(see the settled decision on `--data-1..4` above). Setting it would cost a new gamut-clipped
+hex for a signal that already reads correctly. `architecture-beta`'s arrowheads were checked and
+found not to exist on this diagram's edges at all (no `<marker>` in the render), so
+`archEdgeArrowColor` was left out: a `themeVariable` with nothing to paint is a dead declaration,
+the same objection that removed a dead `font-family` rule in v1.46.0. Both diagrams carry a
+fixture in `samples/dark-charts.html` (search `Gantt chart` and `Architecture diagram`).
+
+**`journey`'s task and section fills theme correctly through `fillType0..7`; its actor band and
+mood face do not, and are left alone.** The swap test is what told them apart: task and section
+color moved with `primaryColor`, the actor band (a fixed seagreen) and the per-task face (a fixed
+cornsilk circle with grey eyes and mouth) did not move at all. Both are Mermaid's own literal
+colors with no `themeVariable` in front of them, the same defect class as `sankey`/`block`. Left
+alone for the same reason `today` was left alone above: a mood face reads as a fixed emotional
+scale, not a brand category, and repainting it purple would cost the one piece of information it
+carries. Fixed in `samples/dark-charts.html` (search `User journey`).
+
+**`zenuml` does not render at all, and stays out.** Mermaid ships it as a second package
+(`@mermaid-js/mermaid-zenuml`) registered through `mermaid.registerExternalDiagrams`, not inside
+the core bundle this template imports. Adding it means a second CDN import and a load-order
+dependency against `mermaid.initialize()`, exactly the complexity v1.47.0 removed when ELK moved
+into core. Declined on the same cost basis, with no fixture and no demonstrated consumer need.
+
 ## Connections-map layout
 
 `body.conn-map` has exactly two sections in order: **(1) Links, (2) Graph.** Above 900px Links sits
