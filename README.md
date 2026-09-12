@@ -53,7 +53,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 | `samples/dark.html` | Living style fixture, and the executable specification. Generated. Do not edit it by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. It uses `<body class="conn-map">` with the sections in Links-then-Graph order. Generated. |
 | `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Generated. |
-| `samples/dark-charts.html` | Chart fixture: `table.bar-chart` and a Mermaid `pie showData` fence, both forms of the same four numbers, plus the guidance on which one to draw. Generated. |
+| `samples/dark-charts.html` | Chart fixture: `table.bar-chart` and a Mermaid `pie showData` fence for the same four numbers, plus the guidance on which one to draw, and twelve more Mermaid fence types verified against this palette. Generated. |
 | `CONTRACT.md` | The consumer checklist. It stays imperative and short, because a consumer's agent reads it on every bump. |
 
 The four light previews are deliberately **not** contract files. The rest of the repo splits by
@@ -75,7 +75,7 @@ run `git submodule update --remote external/dracula-tufte` and then commit the p
 5. What each pin mode costs (§ 5).
 
 Most of § 2 is modelled in `samples/dark.html`, three requirements only in
-`samples/dark-timeline.html`, two only in `samples/dark-charts.html`, and three in no fixture yet,
+`samples/dark-timeline.html`, one only in `samples/dark-charts.html`, and three in no fixture yet,
 which each of those three says. CI fails
 when a fixture drifts from the stylesheet, so **when CONTRACT.md and a fixture disagree about
 markup, the fixture is right.** The single exception is flagged in § 2 itself: the fixture's
