@@ -1089,8 +1089,8 @@ is HTML this stylesheet themes directly. Confirmed themed the same way as the si
 `samples/dark-charts.html` (search `Mermaid's own <code>timeline</code>`), and the name collision
 is worth flagging to a generator that greps this file for "timeline" and finds the wrong hit.
 
-**`gantt` and `architecture-beta` needed one new `themeVariable` each, both confirmed by the same
-swap test.** `gantt`'s axis ticks rendered at Mermaid's literal `lightgrey` regardless of theme;
+**`gantt` and `architecture-beta` needed new `themeVariables`, confirmed by the same swap
+test.** `gantt`'s axis ticks rendered at Mermaid's literal `lightgrey` regardless of theme;
 `gridColor` (the token this template already uses for `clusterBorder`/`noteBorderColor`) fixed it.
 `architecture-beta`'s connecting lines and group boundary rendered at Mermaid's literal mid-grey;
 `archEdgeColor` (the same token as `lineColor`) and `archGroupBorderColor` (the same token as
