@@ -1089,21 +1089,54 @@ is HTML this stylesheet themes directly. Confirmed themed the same way as the si
 `samples/dark-charts.html` (search `Mermaid's own <code>timeline</code>`), and the name collision
 is worth flagging to a generator that greps this file for "timeline" and finds the wrong hit.
 
-**`gantt` and `architecture-beta` needed new `themeVariables`, confirmed by the same swap
-test.** `gantt`'s axis ticks rendered at Mermaid's literal `lightgrey` regardless of theme;
-`gridColor` (the token this template already uses for `clusterBorder`/`noteBorderColor`) fixed it.
-`architecture-beta`'s connecting lines and group boundary rendered at Mermaid's literal mid-grey;
-`archEdgeColor` (the same token as `lineColor`) and `archGroupBorderColor` (the same token as
-`clusterBorder`) fixed both. All three are real `themeVariables`, mirrored into
-`mermaid-palette.json` like every other hex here. **`gantt`'s `today` marker stays Mermaid's
+**`architecture-beta` needed two new `themeVariables`, confirmed by the same swap
+test.** `architecture-beta`'s connecting lines and group boundary rendered at Mermaid's literal
+mid-grey; `archEdgeColor` (the same token as `lineColor`) and `archGroupBorderColor` (the same
+token as `clusterBorder`) fixed both. Both are real `themeVariables`, mirrored into
+`mermaid-palette.json` like every other hex here.
+
+**`gantt` needed no `themeVariable` at all, and the `gridColor` this repo once added for it was
+removed as dead.** The axis already paints from this stylesheet: in the fixture, `.grid .tick line`
+computes to the themed rule colour and `.grid .tick text` to the foreground, in both schemes, with
+no `themeVariable` in front of either. The swap test settles it: writing a probe red into
+`gridColor` in both palettes left the gantt render byte for byte identical, md5
+`ae55bd6ce30e1c68ed5f7a24e126b1ae` before and after, while the same test on `archEdgeColor` moved
+the edge stroke as expected. A `themeVariable` with nothing to paint is a dead declaration, the
+same objection that removed a dead `font-family` rule in v1.46.0. **`gantt`'s axis was a real
+defect, and a chart option rather than a `themeVariable` is what fixed it:** at default tick
+spacing Mermaid drew every date twice, thirteen labels for seven days, so `tickInterval 1day` in
+the fence is what makes the axis print each date once. **`gantt`'s `today` marker stays Mermaid's
 literal red on purpose:** it is a "you are here" signal, not a category, the same reasoning that
 keeps the pie and cluster strokes off any accent this template already assigns a meaning
 (see the settled decision on `--data-1..4` above). Setting it would cost a new gamut-clipped
-hex for a signal that already reads correctly. `architecture-beta`'s arrowheads were checked and
+hex for a signal that already reads correctly. **The trade: no fixture renders that marker**, since
+the sample's axis sits months away from the current date and the marker lands at x=47252 in a
+1228-wide viewBox, outside the visible area. The decision is therefore untested rather than wrong,
+and a consumer chart that does include today is the first place it will show.
+`architecture-beta`'s arrowheads were checked and
 found not to exist on this diagram's edges at all (no `<marker>` in the render), so
-`archEdgeArrowColor` was left out: a `themeVariable` with nothing to paint is a dead declaration,
-the same objection that removed a dead `font-family` rule in v1.46.0. Both diagrams carry a
-fixture in `samples/dark-charts.html` (search `Gantt chart` and `Architecture diagram`).
+`archEdgeArrowColor` was left out, on the same dead-declaration objection as `gridColor` above.
+Both diagrams carry a fixture in `samples/dark-charts.html` (search `Gantt chart` and
+`Architecture diagram`).
+
+**`kanban` and `timeline` accept `accTitle`/`accDescr` and never surface them, and the inline form
+corrupts `kanban`.** Written inside the fence body, `kanban` reads both lines as column names and
+draws two junk columns, `accTitle: Kanban board sample` and `accDescr: ...`, ahead of the real
+ones; `timeline` drops both in silence. Neither type puts the text into an SVG `<title>`, which is
+the one place the zoom button reads a diagram name from (see *Keyboard and assistive technology*),
+so a button over either diagram keeps the bare `Zoom diagram` label and a page with several
+diagrams gets that repeated name back. The fixture writes both keys as front matter instead, which
+both types parse without drawing anything, and a sentence above each fence carries the text
+alternative. Fixed in `samples/dark-charts.html` (search `A kanban board`).
+
+**`journey` renders empty on roughly one load in five, and no gate in this repo can see it.** The
+fence parses, `data-processed` is set, an `<svg>` element exists, and the `<svg>` is empty: the
+readiness check every harness here uses (an `svg` with a `.mermaid-zoom` button inside the `pre`)
+is satisfied by exactly that state, so `script-probe.py` calls it rendered. Re-running the same
+fixture under CDP with a real-time wait rendered it on four loads out of five and left it empty on
+the fifth, with no console error on the failing load. Recorded rather than patched: the failure is
+inside Mermaid's journey renderer, this template inlines the built bundle and cannot fix it, and a
+fixture-level retry would hide a defect a consumer page will also hit.
 
 **`journey`'s task and section fills theme correctly through `fillType0..7`; its actor band and
 mood face do not, and are left alone.** The swap test is what told them apart: task and section
@@ -1258,7 +1291,12 @@ for isn't a state worth watching happen. **Focus returns to the opening button f
 `close()`'s native restore.
 
 **The zoom button is named from the diagram (`accTitle` → SVG `<title>`), not a hardcoded constant**: a page with several diagrams would otherwise get several identically named buttons. `aria-label` is
-`label + ': ' + title`; the overlay takes the same name on open.
+`label + ': ' + title`; the overlay takes the same name on open. **The trade: `kanban` and
+`timeline` never produce that `<title>`**, whatever form `accTitle`/`accDescr` take, so their
+buttons read the bare `Zoom diagram` and a page carrying several of them is back to repeated
+names. Mermaid's own renderers are the reason and this template inlines the built bundle, so
+there is nothing to fix here without patching Mermaid. See *Mermaid* for what the fixture does
+instead.
 
 **The `pre` region is named for what the container IS, not for the diagram inside it**
 (`window.mermaidRegionLabel || 'Scrollable diagram'`): it used to take the bare title, which the SVG

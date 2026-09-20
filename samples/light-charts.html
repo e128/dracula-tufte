@@ -6,7 +6,7 @@
   <title>Tufte-Dracula chart components: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.48.0 */
+    /* Dracula-Tufte (muted) v1.48.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -595,7 +595,6 @@
       noteBkgColor:        '#343746',
       noteTextColor:       '#f8f8f2',
       noteBorderColor:     '#707388',
-      gridColor:           '#707388',
       archEdgeColor:       '#979fc4',
       archGroupBorderColor: '#707388',
       pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
@@ -618,7 +617,6 @@
       noteBkgColor:        '#f0f1f9',
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
-      gridColor:           '#7b7f94',
       archEdgeColor:       '#626a8c',
       archGroupBorderColor: '#7b7f94',
       pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
@@ -851,9 +849,12 @@
   }
   sim - satisfies -> req1</pre>
       <h3>Kanban board</h3>
-      <pre class="mermaid">kanban
-  accTitle: Kanban board sample
-  accDescr: Two tasks in a Todo column and one task in a Done column.
+      <p>A kanban board: two tasks in a <code>Todo</code> column and one task in a <code>Done</code> column.</p>
+      <pre class="mermaid">---
+accTitle: Kanban board sample
+accDescr: Two tasks in a Todo column and one task in a Done column.
+---
+kanban
   Todo
     task1[Write docs]
     task2[Fix bug]
@@ -882,16 +883,19 @@
     "A": 10
     "B": 20</pre>
       <h3>Timeline</h3>
-      <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types).</p>
-      <pre class="mermaid">timeline
-  accTitle: Timeline diagram sample
-  accDescr: Three release years plotted on Mermaid's own timeline diagram, each naming the versions that shipped that year.
+      <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types). Three release years, each naming the versions that shipped that year: 2024 shipped v1.20.0 and v1.30.0, 2025 shipped v1.40.0 and v1.47.0, and 2026 shipped v1.48.0.</p>
+      <pre class="mermaid">---
+accTitle: Timeline diagram sample
+accDescr: Three release years plotted on Mermaid's own timeline diagram, each naming the versions that shipped that year.
+---
+timeline
   title Release history
   2024 : v1.20.0 : v1.30.0
   2025 : v1.40.0 : v1.47.0
   2026 : v1.48.0</pre>
       <h3>Gantt chart</h3>
       <pre class="mermaid">gantt
+  tickInterval 1day
   accTitle: Gantt chart sample
   accDescr: Two sequential tasks against a dated axis.
   title Two-task schedule
