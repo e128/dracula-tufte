@@ -1,0 +1,165 @@
+diff --git a/CONTRACT.md b/CONTRACT.md
+index e333b1d..fd3d586 100644
+--- a/CONTRACT.md
++++ b/CONTRACT.md
+@@ -253,7 +253,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
+ 
+ | since | your generator must now |
+ | --- | --- |
+-| v1.48.0 | nothing. Nine more fence types theme correctly with no markup change: `classDiagram`, `stateDiagram-v2`, `erDiagram`, `requirementDiagram`, `kanban`, `radar-beta`, `gitGraph`, `treemap-beta` and Mermaid's own `timeline` keyword (unrelated to this template's `dl.timeline` component; same word, two different things). `gantt` and `architecture-beta` also theme correctly now: `gantt` needed one new `themeVariable` (`gridColor`), `architecture-beta` needed two (`archEdgeColor`, `archGroupBorderColor`), all three mirrored into `mermaid-palette.json` like every other hex `mermaid.js` carries. `journey` themes its task and section fills the same way but keeps Mermaid's own fixed actor-band and mood-face colors on purpose, see NOTES.md. `zenuml` still does not render: it ships as a second package this template does not import, and stays out on the same cost basis that dropped the separate ELK import in v1.47.0. § 2 gained no new requirement; `accTitle`/`accDescr` already covers every fence. All twelve working types now carry a fixture, under "More diagram types" (in `samples/dark-charts.html`, search `classDiagram`) |
++| v1.48.0 | nothing. Nine more fence types theme correctly with no markup change: `classDiagram`, `stateDiagram-v2`, `erDiagram`, `requirementDiagram`, `kanban`, `radar-beta`, `gitGraph`, `treemap-beta` and Mermaid's own `timeline` keyword (unrelated to this template's `dl.timeline` component; same word, two different things). `gantt` and `architecture-beta` also theme correctly now: `architecture-beta` needed two new `themeVariable`s (`archEdgeColor`, `archGroupBorderColor`), both mirrored into `mermaid-palette.json` like every other hex `mermaid.js` carries, while `gantt`'s axis was already themed and needed a fence option (`tickInterval 1day`) rather than a colour, since default tick spacing drew every date twice. `journey` themes its task and section fills the same way but keeps Mermaid's own fixed actor-band and mood-face colors on purpose, see NOTES.md. `zenuml` still does not render: it ships as a second package this template does not import, and stays out on the same cost basis that dropped the separate ELK import in v1.47.0. **§ 2's `accTitle`/`accDescr` requirement holds for every fence, but do not read it as a naming guarantee:** `kanban` and `timeline` accept both keys and never surface them, and written inline `kanban` draws them as two junk columns, so those two types take the front-matter form instead (`---` block above the diagram keyword, both keys at column 0) and their zoom buttons keep the bare `Zoom diagram` label. All twelve working types now carry a fixture, under "More diagram types" (in `samples/dark-charts.html`, search `classDiagram`) |
+ | v1.47.0 | nothing. `mermaid.js` moves its pinned CDN import from `mermaid@11.17.2` to `mermaid@12.0.0`, self-contained over fences you already emit. Mermaid 12 changed its own defaults, layout to a bundled ELK engine and look to `neo`; this template keeps `look: 'classic'` explicit so rendered diagrams do not gain a drop-shadow, and leaves layout unset so every diagram now lays out with the new ELK default rather than the old `dagre`, which can reflow an existing diagram's geometry on the next render with no markup change on your side. The separate `@mermaid-js/layout-elk` CDN import and its dynamic loader are gone, since v12 bundles ELK into core: nothing to change if you never referenced that pin directly. `usecase-beta` is now a supported fence, styled with the same cluster rules a `systemBoundary` already draws. `themes/` also gained a light variant for five of its non-contract targets (Rider, iTerm2, VS Code, Zed, Ghostty); no submodule reads `themes/`, so this row is informational only |
+ | v1.46.0 | nothing, unless you emit a `nav.toc`, and then one new § 2 requirement applies: **name the landmark with `aria-labelledby` pointing at its own `p.toc-label`, not with an `aria-label` that repeats the label's text.** § 2 is twenty-five requirements. Everything else in this release is self-contained over markup you already emit, and all of it repairs v1.45.0. The index rule and its list indent were the only physical-side declarations in the stylesheet, so both stayed on the left in RTL while the prose flipped; they are `border-inline-start` and `padding-inline-start` now. The two-column index had no narrow override, and at 320px every entry wrapped to five lines in about 68px of inline space; it is one column under 600px, matching `.col-2`. The print override named `nav.toc` where the `columns` declaration lives on `nav.toc ol`, so a printed index stayed two columns; measured under print emulation before and after. Both `:hover` rules sat outside `@media (hover: hover)`, which leaves a tapped affordance stuck in its hover state on touch, and both moved inside it. The summary disclosure triangles reached the accessibility tree, so `<details>` announced its open state and then a screen reader read "black right-pointing small triangle" on top of it; they take `content: "…" / ""` behind `@supports` now, like the outbound arrow. Two rules set `font-family: var(--sans)` and no token of that name is declared anywhere, so both always resolved to the inherited body serif; the dead declarations are gone and the rendering is unchanged. Both components finally carry a fixture instance, so a mode render and the forced-colors sweep draw them. **One known gap stays open:** the `forced-colors: active` block does not mention `nav.toc`, so the index loses its `color-mix` ground there and reads as a bordered box rather than a filled one |
+ | v1.45.1 | nothing. It republished the samples, `tokens.css` and the editor themes that v1.45.0 tagged while stale. No payload byte changed |
+diff --git a/NOTES.md b/NOTES.md
+index 8993aff..cd5ccb2 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -1089,21 +1089,54 @@ is HTML this stylesheet themes directly. Confirmed themed the same way as the si
+ `samples/dark-charts.html` (search `Mermaid's own <code>timeline</code>`), and the name collision
+ is worth flagging to a generator that greps this file for "timeline" and finds the wrong hit.
+ 
+-**`gantt` and `architecture-beta` needed new `themeVariables`, confirmed by the same swap
+-test.** `gantt`'s axis ticks rendered at Mermaid's literal `lightgrey` regardless of theme;
+-`gridColor` (the token this template already uses for `clusterBorder`/`noteBorderColor`) fixed it.
+-`architecture-beta`'s connecting lines and group boundary rendered at Mermaid's literal mid-grey;
+-`archEdgeColor` (the same token as `lineColor`) and `archGroupBorderColor` (the same token as
+-`clusterBorder`) fixed both. All three are real `themeVariables`, mirrored into
+-`mermaid-palette.json` like every other hex here. **`gantt`'s `today` marker stays Mermaid's
++**`architecture-beta` needed two new `themeVariables`, confirmed by the same swap
++test.** `architecture-beta`'s connecting lines and group boundary rendered at Mermaid's literal
++mid-grey; `archEdgeColor` (the same token as `lineColor`) and `archGroupBorderColor` (the same
++token as `clusterBorder`) fixed both. Both are real `themeVariables`, mirrored into
++`mermaid-palette.json` like every other hex here.
++
++**`gantt` needed no `themeVariable` at all, and the `gridColor` this repo once added for it was
++removed as dead.** The axis already paints from this stylesheet: in the fixture, `.grid .tick line`
++computes to the themed rule colour and `.grid .tick text` to the foreground, in both schemes, with
++no `themeVariable` in front of either. The swap test settles it: writing a probe red into
++`gridColor` in both palettes left the gantt render byte for byte identical, md5
++`ae55bd6ce30e1c68ed5f7a24e126b1ae` before and after, while the same test on `archEdgeColor` moved
++the edge stroke as expected. A `themeVariable` with nothing to paint is a dead declaration, the
++same objection that removed a dead `font-family` rule in v1.46.0. **`gantt`'s axis was a real
++defect, and a chart option rather than a `themeVariable` is what fixed it:** at default tick
++spacing Mermaid drew every date twice, thirteen labels for seven days, so `tickInterval 1day` in
++the fence is what makes the axis print each date once. **`gantt`'s `today` marker stays Mermaid's
+ literal red on purpose:** it is a "you are here" signal, not a category, the same reasoning that
+ keeps the pie and cluster strokes off any accent this template already assigns a meaning
+ (see the settled decision on `--data-1..4` above). Setting it would cost a new gamut-clipped
+-hex for a signal that already reads correctly. `architecture-beta`'s arrowheads were checked and
++hex for a signal that already reads correctly. **The trade: no fixture renders that marker**, since
++the sample's axis sits months away from the current date and the marker lands at x=47252 in a
++1228-wide viewBox, outside the visible area. The decision is therefore untested rather than wrong,
++and a consumer chart that does include today is the first place it will show.
++`architecture-beta`'s arrowheads were checked and
+ found not to exist on this diagram's edges at all (no `<marker>` in the render), so
+-`archEdgeArrowColor` was left out: a `themeVariable` with nothing to paint is a dead declaration,
+-the same objection that removed a dead `font-family` rule in v1.46.0. Both diagrams carry a
+-fixture in `samples/dark-charts.html` (search `Gantt chart` and `Architecture diagram`).
++`archEdgeArrowColor` was left out, on the same dead-declaration objection as `gridColor` above.
++Both diagrams carry a fixture in `samples/dark-charts.html` (search `Gantt chart` and
++`Architecture diagram`).
++
++**`kanban` and `timeline` accept `accTitle`/`accDescr` and never surface them, and the inline form
++corrupts `kanban`.** Written inside the fence body, `kanban` reads both lines as column names and
++draws two junk columns, `accTitle: Kanban board sample` and `accDescr: ...`, ahead of the real
++ones; `timeline` drops both in silence. Neither type puts the text into an SVG `<title>`, which is
++the one place the zoom button reads a diagram name from (see *Keyboard and assistive technology*),
++so a button over either diagram keeps the bare `Zoom diagram` label and a page with several
++diagrams gets that repeated name back. The fixture writes both keys as front matter instead, which
++both types parse without drawing anything, and a sentence above each fence carries the text
++alternative. Fixed in `samples/dark-charts.html` (search `A kanban board`).
++
++**`journey` renders empty on roughly one load in five, and no gate in this repo can see it.** The
++fence parses, `data-processed` is set, an `<svg>` element exists, and the `<svg>` is empty: the
++readiness check every harness here uses (an `svg` with a `.mermaid-zoom` button inside the `pre`)
++is satisfied by exactly that state, so `script-probe.py` calls it rendered. Re-running the same
++fixture under CDP with a real-time wait rendered it on four loads out of five and left it empty on
++the fifth, with no console error on the failing load. Recorded rather than patched: the failure is
++inside Mermaid's journey renderer, this template inlines the built bundle and cannot fix it, and a
++fixture-level retry would hide a defect a consumer page will also hit.
+ 
+ **`journey`'s task and section fills theme correctly through `fillType0..7`; its actor band and
+ mood face do not, and are left alone.** The swap test is what told them apart: task and section
+@@ -1258,7 +1291,12 @@ for isn't a state worth watching happen. **Focus returns to the opening button f
+ `close()`'s native restore.
+ 
+ **The zoom button is named from the diagram (`accTitle` → SVG `<title>`), not a hardcoded constant**: a page with several diagrams would otherwise get several identically named buttons. `aria-label` is
+-`label + ': ' + title`; the overlay takes the same name on open.
++`label + ': ' + title`; the overlay takes the same name on open. **The trade: `kanban` and
++`timeline` never produce that `<title>`**, whatever form `accTitle`/`accDescr` take, so their
++buttons read the bare `Zoom diagram` and a page carrying several of them is back to repeated
++names. Mermaid's own renderers are the reason and this template inlines the built bundle, so
++there is nothing to fix here without patching Mermaid. See *Mermaid* for what the fixture does
++instead.
+ 
+ **The `pre` region is named for what the container IS, not for the diagram inside it**
+ (`window.mermaidRegionLabel || 'Scrollable diagram'`): it used to take the bare title, which the SVG
+diff --git a/mermaid-palette.json b/mermaid-palette.json
+index 83666d1..9b74bd6 100644
+--- a/mermaid-palette.json
++++ b/mermaid-palette.json
+@@ -17,7 +17,6 @@
+     "noteBkgColor":        { "hex": "#343746", "from": "--code-bg" },
+     "noteTextColor":       { "hex": "#f8f8f2", "from": "--on-surface" },
+     "noteBorderColor":     { "hex": "#707388", "from": "--rule-light" },
+-    "gridColor":           { "hex": "#707388", "from": "--rule-light" },
+     "archEdgeColor":       { "hex": "#979fc4", "from": "--muted" },
+     "archGroupBorderColor": { "hex": "#707388", "from": "--rule-light" },
+     "pie1":                { "hex": "#96bef0", "from": "--data-1" },
+@@ -45,7 +44,6 @@
+     "noteBkgColor":        { "hex": "#f0f1f9", "from": "--code-bg" },
+     "noteTextColor":       { "hex": "#161616", "from": "--on-surface" },
+     "noteBorderColor":     { "hex": "#7b7f94", "from": "--rule-light" },
+-    "gridColor":           { "hex": "#7b7f94", "from": "--rule-light" },
+     "archEdgeColor":       { "hex": "#626a8c", "from": "--muted" },
+     "archGroupBorderColor": { "hex": "#7b7f94", "from": "--rule-light" },
+     "pie1":                { "hex": "#3c88e4", "from": "--data-1" },
+diff --git a/mermaid.js b/mermaid.js
+index 9a72e64..9ae36f5 100644
+--- a/mermaid.js
++++ b/mermaid.js
+@@ -18,7 +18,6 @@
+       noteBkgColor:        '#343746',
+       noteTextColor:       '#f8f8f2',
+       noteBorderColor:     '#707388',
+-      gridColor:           '#707388',
+       archEdgeColor:       '#979fc4',
+       archGroupBorderColor: '#707388',
+       pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
+@@ -41,7 +40,6 @@
+       noteBkgColor:        '#f0f1f9',
+       noteTextColor:       '#161616',
+       noteBorderColor:     '#7b7f94',
+-      gridColor:           '#7b7f94',
+       archEdgeColor:       '#626a8c',
+       archGroupBorderColor: '#7b7f94',
+       pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
+diff --git a/scripts/build-sample.nu b/scripts/build-sample.nu
+index 5b923de..f45d1c3 100644
+--- a/scripts/build-sample.nu
++++ b/scripts/build-sample.nu
+@@ -258,7 +258,8 @@ def charts-body [] {
+     "      <h3>Requirement diagram</h3>"
+     "      <pre class=\"mermaid\">requirementDiagram\n  accTitle: Requirement diagram sample\n  accDescr: A high-risk requirement satisfied by a simulation element.\n  requirement req1 {\n    id: 1\n    text: the system shall log every request\n    risk: high\n    verifymethod: test\n  }\n  element sim {\n    type: simulation\n  }\n  sim - satisfies -> req1</pre>"
+     "      <h3>Kanban board</h3>"
+-    "      <pre class=\"mermaid\">kanban\n  accTitle: Kanban board sample\n  accDescr: Two tasks in a Todo column and one task in a Done column.\n  Todo\n    task1[Write docs]\n    task2[Fix bug]\n  Done\n    task3[Ship it]</pre>"
++    "      <p>A kanban board: two tasks in a <code>Todo</code> column and one task in a <code>Done</code> column.</p>"
++    "      <pre class=\"mermaid\">---\naccTitle: Kanban board sample\naccDescr: Two tasks in a Todo column and one task in a Done column.\n---\nkanban\n  Todo\n    task1[Write docs]\n    task2[Fix bug]\n  Done\n    task3[Ship it]</pre>"
+     "      <h3>Radar chart</h3>"
+     "      <pre class=\"mermaid\">radar-beta\n  accTitle: Radar chart sample\n  accDescr: One series scored across three axes.\n  axis a[\"Speed\"], b[\"Cost\"], c[\"Quality\"]\n  curve x[\"Current\"]{3,4,2}</pre>"
+     "      <h3>Git graph</h3>"
+@@ -266,10 +267,10 @@ def charts-body [] {
+     "      <h3>Treemap</h3>"
+     "      <pre class=\"mermaid\">treemap-beta\n  accTitle: Treemap sample\n  accDescr: Two categories under one root, each sized by its own value.\n  \"Root\"\n    \"A\": 10\n    \"B\": 20</pre>"
+     "      <h3>Timeline</h3>"
+-    "      <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types).</p>"
+-    "      <pre class=\"mermaid\">timeline\n  accTitle: Timeline diagram sample\n  accDescr: Three release years plotted on Mermaid's own timeline diagram, each naming the versions that shipped that year.\n  title Release history\n  2024 : v1.20.0 : v1.30.0\n  2025 : v1.40.0 : v1.47.0\n  2026 : v1.48.0</pre>"
++    "      <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types). Three release years, each naming the versions that shipped that year: 2024 shipped v1.20.0 and v1.30.0, 2025 shipped v1.40.0 and v1.47.0, and 2026 shipped v1.48.0.</p>"
++    "      <pre class=\"mermaid\">---\naccTitle: Timeline diagram sample\naccDescr: Three release years plotted on Mermaid's own timeline diagram, each naming the versions that shipped that year.\n---\ntimeline\n  title Release history\n  2024 : v1.20.0 : v1.30.0\n  2025 : v1.40.0 : v1.47.0\n  2026 : v1.48.0</pre>"
+     "      <h3>Gantt chart</h3>"
+-    "      <pre class=\"mermaid\">gantt\n  accTitle: Gantt chart sample\n  accDescr: Two sequential tasks against a dated axis.\n  title Two-task schedule\n  dateFormat YYYY-MM-DD\n  section Phase\n  Task A :a1, 2026-01-01, 3d\n  Task B :after a1, 3d</pre>"
++    "      <pre class=\"mermaid\">gantt\n  tickInterval 1day\n  accTitle: Gantt chart sample\n  accDescr: Two sequential tasks against a dated axis.\n  title Two-task schedule\n  dateFormat YYYY-MM-DD\n  section Phase\n  Task A :a1, 2026-01-01, 3d\n  Task B :after a1, 3d</pre>"
+     "      <h3>Architecture diagram</h3>"
+     "      <pre class=\"mermaid\">architecture-beta\n  accTitle: Architecture diagram sample\n  accDescr: A database and a server grouped inside one API boundary.\n  group api(cloud)[API]\n  service db(database)[Database] in api\n  service server(server)[Server] in api\n  db:L -- R:server</pre>"
+     "      <h3>User journey</h3>"
