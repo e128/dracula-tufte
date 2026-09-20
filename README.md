@@ -162,9 +162,9 @@ violations`. Consumers pin to tags, so a tag on an ungated commit hands every on
 unverified payload. **When a push reports a bypass, say so and revert. Do not tag on top of it.**
 
 [`AGENTS.md`](AGENTS.md) states this flow as plain shell, and states the rules that have no
-exception. It is the instruction file for any agent working in this repo, whichever harness runs
-it. [`CLAUDE.md`](CLAUDE.md) adds only Claude Code entry points on top, including a `release` skill
-that packages the same flow.
+exception. It is the only instruction file in this repo and the one any agent reads, whichever
+harness runs it, Claude Code included. Its *Harness entry points* section lists the two Claude Code
+skills, `release` and `design-audit`, each of which packages a flow stated in full there.
 
 ## Contract enforcement
 
