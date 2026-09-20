@@ -3,11 +3,13 @@
 Instructions for any agent that works in this repo, whichever harness runs it. These instructions
 override default behavior.
 
-**This file is the whole contract for agent behavior here. It names no harness and depends on
-none.** Everything it asks for is a shell command, a file path, or a decision rule. A harness may
-wrap a flow below behind a command, a skill or a slash command of its own, and a sibling file may
-document that wrapper (`CLAUDE.md` does, for Claude Code). Such a file adds an entry point. **It
-never adds, relaxes or overrides a rule stated here.** If one appears to, this file wins.
+**This file is the whole contract for agent behavior here, and the only instruction file in the
+repo.** Everything it asks for is a shell command, a file path, or a decision rule. A harness may
+wrap a flow below behind a command, a skill or a slash command of its own. Such a wrapper adds an
+entry point. **It never adds, relaxes or overrides a rule stated here.** If one appears to, this
+file wins. The wrappers that exist, and the rules that bind them, are listed under
+[Harness entry points](#harness-entry-points) near the end. Nothing outside this file is required
+reading, and **a second instruction file beside this one is a regression**: see that section.
 
 ## Read [NOTES.md](NOTES.md) first
 
@@ -86,7 +88,7 @@ comment here is not written once. Every page a consumer renders carries a copy o
     this note when their chroma widened past sRGB into Display P3: a P3 chroma has no exact sRGB
     hex to state. See NOTES.md, Color and the contrast budget.
 - The Nushell scripts (`scripts/build-sample.nu`, `scripts/maintain.nu`), `README.md`, `backlog.md`
-  and the agent instruction files are **not** inlined. Comment those files as normal.
+  and `AGENTS.md` are **not** inlined. Comment those files as normal.
 
 **Put the reasoning in one of these places instead**, in order of preference:
 
@@ -224,6 +226,47 @@ diagram nobody could click for several more, all of it green.
 costs that were simply wrong: a jsdom dependency the repo did not need, a resize listener a media
 query replaces, and an `!important` that two real `themeVariables` made unnecessary. A recorded
 decline is a cost estimate with a date on it, not a verdict.
+
+## Harness entry points
+
+**Every rule in this file reaches every harness through this one file, and nothing in this section
+adds a rule.** A harness that ships wrappers, config or skills gets them listed here, so that an
+agent which opens `.claude/` can tell an entry point from a rule. **These names exist for
+orientation only. Delete `.claude/` and this repo still works exactly as written above.**
+
+### Claude Code
+
+Claude Code reads `AGENTS.md` directly from v2.1.277 on, with no `CLAUDE.md` beside it. Two skills
+live in `.claude/skills/`, and they are available to Claude Code only. Each one packages a flow that
+this file states in full as plain shell, so a harness without skills loses an entry point and no
+capability.
+
+| Skill | Wraps | Invoked by |
+| --- | --- | --- |
+| [`release`](.claude/skills/release/SKILL.md) | The full release flow in *A tag claims that the contract held*, plus publishing the Rider plugin zip, the VS Code vsix and the themes zip | "make a release", "cut a release", "tag a release", or a named version |
+| [`design-audit`](.claude/skills/design-audit/SKILL.md) | An audit of every payload line landed since the previous audit's commit, then a research-and-report pass over current CSS, color, typography, layout, accessibility and CDN-pin practice against the settled decisions in NOTES.md, plus two fixed sweeps: WCAG Level A/AA, and the repo's own prose rules that no check enforces. Renders new components rather than reasoning about the cascade. Writes a dated report and an unapplied patch to `review/`. Never edits the payload | "design audit", "check WCAG compliance", `/design-audit` |
+
+**Neither skill is required to do the work.** `release` is the order in which to call
+`scripts/maintain.nu`, and every one of those commands appears above. `design-audit` produces a
+report a person reads, and `review/` holds the prior ones as precedent whatever wrote them.
+
+### Rules that bind a harness, its skills and its config
+
+- **A skill, or any bundled design skill, is not authority over a settled decision.** *Style
+  decisions that are already settled* is the authority, and its NON-NEGOTIABLE measure rule is
+  closed to re-argument from any skill's findings, including a `better-*` review.
+- **A skill may only wrap a flow this file states in full, and may not restate it as its own.** Do
+  not let a rule come to rest only inside a skill: a harness without skills must lose an entry
+  point, never a rule. If a skill's instructions and this file disagree, this file is right and the
+  skill is a bug.
+- **No skill edits `tufte-dracula.css` or `mermaid.js` without a render.** *Verify a rendered claim
+  by rendering it* applies to skill-driven edits exactly as it does to direct ones.
+- **`.claude/settings.json` configures the status line and nothing about the payload.** Do not put
+  repo policy there. Policy goes in this file, where every harness can read it.
+- **A second instruction file beside this one is a regression.** Claude Code's default
+  `claude-md-or-agents-md` setting loads a `CLAUDE.md` and then **skips `AGENTS.md` altogether**, so
+  a pointer file does not accompany this contract, it replaces it. Do not add one, do not leave a
+  stale one, and do not symlink one.
 
 ## Style decisions that are already settled
 

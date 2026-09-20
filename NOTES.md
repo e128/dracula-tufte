@@ -1823,16 +1823,22 @@ const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 ```
 
-**`AGENTS.md` is the instruction file; `CLAUDE.md` is a pointer to it, split by audience not
-content.** The rules used to live in `CLAUDE.md`, which made a filename a dependency (another
-harness reading `AGENTS.md` would have found nothing). `AGENTS.md` holds every rule and names no
-harness; `CLAUDE.md` records only what Claude Code adds on top (the skills in `.claude/skills/`) and
-states `AGENTS.md` wins on conflict. **A skill may only wrap a flow `AGENTS.md` already states in
-full**: that's what keeps a harness without skills at full capability, losing an entry point, never
-a rule. **Do not let a rule come to rest only inside a skill**, and don't put repo policy in
-`.claude/settings.json` (status line config only). Both files sit in the presence gate
-(`scripts/maintain.nu` and `contract-check.yml`): a deleted instruction file is the one deletion that
-leaves every check green while removing the reason the checks exist.
+**One instruction file: `AGENTS.md`, read directly by every harness.** The rules once lived in
+`CLAUDE.md`, which made a filename a dependency (another harness reading `AGENTS.md` would have
+found nothing). The split that replaced it, with `AGENTS.md` for the rules and `CLAUDE.md` for the
+Claude Code entry points, then failed the other way: Claude Code's default `claude-md-or-agents-md`
+setting loads a `CLAUDE.md` and **skips `AGENTS.md` altogether**, so a session read the short
+pointer and never opened the contract it pointed at, with every check still green. Claude Code reads
+`AGENTS.md` on its own from v2.1.277 on, so the pointer is deleted and its only content (the two
+skills in `.claude/skills/`, and the rules binding a skill) moved into `AGENTS.md`, *Harness entry
+points*. **A second instruction file beside `AGENTS.md` is a regression, not a fallback**: it
+suppresses the contract instead of accompanying it, so do not add one, leave a stale one or symlink
+one. **A skill may only wrap a flow `AGENTS.md` already states in full**: that's what keeps a
+harness without skills at full capability, losing an entry point, never a rule. **Do not let a rule
+come to rest only inside a skill**, and don't put repo policy in `.claude/settings.json` (status
+line config only). `AGENTS.md` sits in the presence gate (`scripts/maintain.nu` and
+`contract-check.yml`): a deleted instruction file is the one deletion that leaves every check green
+while removing the reason the checks exist.
 
 **Python stays in the two `.github/` helpers, measured rather than argued.** Bash is not a real
 alternative (no floating-point arithmetic; the Oklab matrix needs `cos`/`sin`/fractional powers, so a
