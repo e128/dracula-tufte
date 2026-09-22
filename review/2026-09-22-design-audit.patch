@@ -1,0 +1,88 @@
+diff --git a/.github/script-probe.py b/.github/script-probe.py
+index dfabe59..0481c71 100644
+--- a/.github/script-probe.py
++++ b/.github/script-probe.py
+@@ -108,6 +108,17 @@ DRIVER = """
+       t('filter-restores-status', status.textContent === '4 entries');
+     }
+ 
++    // Decorative pseudo-element text carries empty alternative text. The `/ ""` twin
++    // only wins when it sits after its base rule, and two of them once sat above it.
++    const alt = (sel, pseudo) => {
++      const el = document.querySelector(sel);
++      return Boolean(el) && getComputedStyle(el, pseudo).content.endsWith('/ ""');
++    };
++    t('alt-outbound-arrow', alt('a[href^="http"]', '::after'));
++    t('alt-tree-arrow', alt('table.tree [data-depth="1"] td:first-child', '::before'));
++    t('alt-pull-quote', alt('blockquote.pull', '::before'));
++    t('alt-summary-triangle', alt('details.deep > summary', '::before'));
++
+     if (!window.__probeMermaid) {
+       out.push('mermaid=SKIP');
+       publish();
+@@ -229,7 +240,7 @@ def main():
+     if "</body>" not in html:
+         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
+     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
+-    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 13, "binding")
++    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 17, "binding")
+ 
+     # Same page, forced-colors switched on by rewriting the condition. Checked as a
+     # string in the real fixture first, so a renamed or deleted query fails loudly here
+diff --git a/NOTES.md b/NOTES.md
+index 8bdeb84..3a26a05 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -406,6 +406,10 @@ URL or slug break rather than escape its container (the conn-map Links column ru
+ "north east arrow" after every external label). `content: "…" / ""` gives the pseudo-element empty
+ alternative text, behind `@supports (content: "x" / "y")` since the alt-text syntax is a single
+ value a browser that can't parse it discards **whole** (Firefox ESR still ships in that state).
++**The twin sits after its base rule, never above it.** `@supports` adds no specificity, so a twin
++above the base loses on source order and the glyph reaches the accessibility tree anyway (a tree
++cell once read "↳ F1").
++`.github/script-probe.py` asserts every twin.
+ `\A0` keeps the arrow from an orphan line. Print drops both arrow and underline (the destination is
+ unreachable on paper).
+ 
+@@ -801,7 +805,7 @@ against both, so this is an honest, documented gap, not a check that cannot see
+ now (they shipped with none for two releases, so no mode render or forced-colors sweep ever drew
+ them).
+ 
+-**Every `var()` here resolves to a declared token or carries a fallback.** Seven references resolve
++**Every `var()` here resolves to a declared token or carries a fallback.** Six references resolve
+ outside `:root`, all deliberate: `--tree-step`/`--bar-tint` are declared on the component that reads
+ them; `--bar`/`--icon-color`/`--natural-width`/`--timeline-date` are consumer-supplied with their own
+ fallback in the `var()`. `--sans` had neither, which is what made it dead. **A new consumer-supplied
+diff --git a/tufte-dracula.css b/tufte-dracula.css
+index c9522a2..9690947 100644
+--- a/tufte-dracula.css
++++ b/tufte-dracula.css
+@@ -113,8 +113,6 @@
+     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
+     @supports (content: "x" / "y") {
+       a[href^="http"]::after { content: "\A0↗" / ""; }
+-      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
+-      blockquote.pull::before { content: "\201C" / ""; }
+     }
+     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
+     strong { font-weight: 600; color: var(--orange); }
+@@ -193,6 +191,9 @@
+     table.tree [data-depth="2"] td:first-child { padding-inline-start: calc(2 * var(--tree-step) + .6rem); }
+     table.tree [data-depth="3"] td:first-child { padding-inline-start: calc(3 * var(--tree-step) + .6rem); }
+     table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0"; color: var(--muted); }
++    @supports (content: "x" / "y") {
++      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
++    }
+     table.tree [data-depth="0"] td { background: var(--code-bg); font-weight: 600; }
+     table.tree [data-depth="2"] td, table.tree [data-depth="3"] td { color: var(--label); }
+     details { margin: var(--space-2) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
+@@ -220,6 +221,9 @@
+     blockquote.pull { position: relative; padding-inline-start: 2.2rem; }
+     blockquote.pull::before { content: "\201C"; position: absolute; inset-inline-start: 0.2rem; top: -0.15em;
+       font-family: var(--body-font); font-size: 2.5em; line-height: 1; color: var(--muted); opacity: 0.4; }
++    @supports (content: "x" / "y") {
++      blockquote.pull::before { content: "\201C" / ""; }
++    }
+     hr { border: none; border-block-start: 1px solid var(--rule-light); margin: var(--space-10) 0; }
+     img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--ring); border-radius: var(--radius-sm); }
+     :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }
