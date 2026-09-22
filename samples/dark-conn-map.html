@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.48.1 */
+    /* Dracula-Tufte (muted) v1.48.2 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -120,8 +120,6 @@
     a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
-      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
-      blockquote.pull::before { content: "\201C" / ""; }
     }
     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; color: var(--orange); }
@@ -200,6 +198,9 @@
     table.tree [data-depth="2"] td:first-child { padding-inline-start: calc(2 * var(--tree-step) + .6rem); }
     table.tree [data-depth="3"] td:first-child { padding-inline-start: calc(3 * var(--tree-step) + .6rem); }
     table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0"; color: var(--muted); }
+    @supports (content: "x" / "y") {
+      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
+    }
     table.tree [data-depth="0"] td { background: var(--code-bg); font-weight: 600; }
     table.tree [data-depth="2"] td, table.tree [data-depth="3"] td { color: var(--label); }
     details { margin: var(--space-2) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
@@ -227,6 +228,9 @@
     blockquote.pull { position: relative; padding-inline-start: 2.2rem; }
     blockquote.pull::before { content: "\201C"; position: absolute; inset-inline-start: 0.2rem; top: -0.15em;
       font-family: var(--body-font); font-size: 2.5em; line-height: 1; color: var(--muted); opacity: 0.4; }
+    @supports (content: "x" / "y") {
+      blockquote.pull::before { content: "\201C" / ""; }
+    }
     hr { border: none; border-block-start: 1px solid var(--rule-light); margin: var(--space-10) 0; }
     img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--ring); border-radius: var(--radius-sm); }
     :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }

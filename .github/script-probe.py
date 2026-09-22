@@ -108,6 +108,17 @@ DRIVER = """
       t('filter-restores-status', status.textContent === '4 entries');
     }
 
+    // Decorative pseudo-element text carries empty alternative text. The `/ ""` twin
+    // only wins when it sits after its base rule, and two of them once sat above it.
+    const alt = (sel, pseudo) => {
+      const el = document.querySelector(sel);
+      return Boolean(el) && getComputedStyle(el, pseudo).content.endsWith('/ ""');
+    };
+    t('alt-outbound-arrow', alt('a[href^="http"]', '::after'));
+    t('alt-tree-arrow', alt('table.tree [data-depth="1"] td:first-child', '::before'));
+    t('alt-pull-quote', alt('blockquote.pull', '::before'));
+    t('alt-summary-triangle', alt('details.deep > summary', '::before'));
+
     if (!window.__probeMermaid) {
       out.push('mermaid=SKIP');
       publish();
@@ -229,7 +240,7 @@ def main():
     if "</body>" not in html:
         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
-    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 13, "binding")
+    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 17, "binding")
 
     # Same page, forced-colors switched on by rewriting the condition. Checked as a
     # string in the real fixture first, so a renamed or deleted query fails loudly here

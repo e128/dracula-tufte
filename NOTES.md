@@ -406,6 +406,10 @@ URL or slug break rather than escape its container (the conn-map Links column ru
 "north east arrow" after every external label). `content: "…" / ""` gives the pseudo-element empty
 alternative text, behind `@supports (content: "x" / "y")` since the alt-text syntax is a single
 value a browser that can't parse it discards **whole** (Firefox ESR still ships in that state).
+**The twin sits after its base rule, never above it.** `@supports` adds no specificity, so a twin
+above the base loses on source order and the glyph reaches the accessibility tree anyway (a tree
+cell once read "↳ F1").
+`.github/script-probe.py` asserts every twin.
 `\A0` keeps the arrow from an orphan line. Print drops both arrow and underline (the destination is
 unreachable on paper).
 
@@ -801,7 +805,7 @@ against both, so this is an honest, documented gap, not a check that cannot see 
 now (they shipped with none for two releases, so no mode render or forced-colors sweep ever drew
 them).
 
-**Every `var()` here resolves to a declared token or carries a fallback.** Seven references resolve
+**Every `var()` here resolves to a declared token or carries a fallback.** Six references resolve
 outside `:root`, all deliberate: `--tree-step`/`--bar-tint` are declared on the component that reads
 them; `--bar`/`--icon-color`/`--natural-width`/`--timeline-date` are consumer-supplied with their own
 fallback in the `var()`. `--sans` had neither, which is what made it dead. **A new consumer-supplied
@@ -1331,7 +1335,10 @@ page.
 
 **`math[display="block"]` takes `tabindex="0"`, `role="region"`, and a label**: it's a scroll
 container like `pre` (own `overflow-x: auto`), and `role="region"` costs nothing here since Chrome
-exposes no native `math` role either way.
+exposes no native `math` role either way. **Pandoc's `span.math.display` takes the same three, and
+the consumer supplies them.** CSS cannot add a tab stop. Chrome 132 and Firefox focus a scroller
+with no focusable child on their own, and Safari does not. No script adds them either: `mermaid.js`
+fails offline and `filter.js` loads only with a filter box.
 
 ## Direction, zoom and growth
 
@@ -1763,7 +1770,9 @@ twenty-four rows, deliberately past both the sideways-scroll and `70vh` threshol
 code block carries real `highlight.js` emitter classes (the only check the Rider slot map still
 matches, and the only place `--purple-bright` renders); the Pygments block beside it is the only
 check on the one/two-letter half of the slot map. The MathML block proves `math[display="block"]` is
-claimed at all.
+claimed at all, and the pandoc span after it does the same for `.math.display`. The two permalinks
+(`a.headerlink` on an `h2`, `a.anchor` on an `h3`) and the emoji image are the only instances of
+their rules.
 
 ### Never cite a line number into a generated file
 
