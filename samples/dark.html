@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.48.2 */
+    /* Dracula-Tufte (muted) v1.49.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -239,6 +239,7 @@
     figcaption, caption { font-size: 0.9em; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
     figcaption { margin-top: 0.4rem; }
     caption { font-style: italic; padding-block-end: 0.3rem; }
+    :is(figcaption, caption) .byline { display: block; font-size: 1em; margin: 0.15rem 0 0; }
     table:has(caption) { box-shadow: 0 1px 0 var(--rule); }
     dl { margin: var(--space-4) 0; }
     dt { font-weight: 600; margin-top: .5rem; }
@@ -317,10 +318,12 @@
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
       transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .nav-list li a:active { scale: 0.96; }
-    .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; margin: var(--space-6) 0; }
+    .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) 0; margin: var(--space-6) 0;
+      --edge-gutter: var(--space-4); --edge-rule: 1px solid var(--rule-light); }
     .edge-list h3 { margin-top: 0; }
-    .edge-list > div { display: flex; flex-direction: column; }
+    .edge-list > div { display: flex; flex-direction: column; padding-inline-end: var(--edge-gutter); }
     .edge-list > div > .nav-list { flex: 1; }
+    .edge-list > div + div { border-inline-start: var(--edge-rule); padding-inline: var(--edge-gutter) 0; }
     .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(36rem, 100%), 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
     .recent-group { display: flex; flex-direction: column; }
     .recent-group h3 { margin-top: 0; }
@@ -394,7 +397,7 @@
         flex: 1 1 0; min-width: 0;
       }
       body.conn-map article > section:nth-of-type(1) .edge-list {
-        grid-template-columns: 1fr; gap: 0.4rem;
+        grid-template-columns: 1fr; gap: 0.4rem; --edge-gutter: 0; --edge-rule: none;
       }
     }
     @media (hover: hover) {
@@ -426,7 +429,7 @@
       pre { padding: 0.6rem; }
       aside, blockquote { padding: 0.4rem 0.85rem; }
       details, details.nav-group { padding: 0.3rem 0.6rem; }
-      .edge-list { grid-template-columns: 1fr; gap: 0.4rem; }
+      .edge-list { grid-template-columns: 1fr; gap: 0.4rem; --edge-gutter: 0; --edge-rule: none; }
       .col-2 > ol, .col-2 > ul { columns: 1; }
       .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
       .scorecard .sc-note { grid-column: 1 / -1; }
@@ -1051,7 +1054,7 @@
   B -->|no| D[Skip it]
   C --> E[Done]
   D --> E</pre>
-      <figcaption>A figure caption sits in the annotation register and stays start-aligned under a centred diagram.</figcaption>
+      <figcaption>A figure caption sits in the annotation register and stays start-aligned under a centred diagram.<span class="byline">Source: the flowchart above, rendered at the template's pinned Mermaid version.</span></figcaption>
       </figure>
       <pre class="mermaid">sequenceDiagram
   accTitle: Sequence diagram sample
