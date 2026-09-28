@@ -246,6 +246,26 @@ muted UA marker progression.
 `.nav-list`/`.icon-list` reset it on the `<ul>` itself, so both need `role="list"` in markup, a
 `CONTRACT.md` consumer obligation.
 
+### `.edge-list`
+
+**Two tracks carry a hairline between them.** An antecedent/descendant pair reads as one unbroken
+field when a gap alone separates the columns, so the second track takes
+`border-inline-start: var(--edge-rule)` and the gutter becomes two half-gutters of padding instead
+of a column gap. It is the same move `dl.timeline > dd` already makes: a structural hairline at
+`--rule-light`, not a box and not an accent bar.
+
+**`--edge-gutter` and `--edge-rule` exist so each collapse site resets the divider in one
+declaration rather than three.** `.edge-list` collapses to one track at 600px, and again inside
+`body.conn-map`, where the first section is a narrow link rail rather than a pair. A divider left
+standing in either state is a stray vertical line beside nothing, so both sites set
+`--edge-gutter: 0` and `--edge-rule: none`. **Do not delete either reset because the conn-map one
+looks unused**: no fixture page puts an `.edge-list` in the rail, and `CONTRACT.md` § 2 leaves that
+markup to the consumer, so the rule collapsing it there is defensive by design.
+
+**`.recent-groups` does not take the same divider.** Its `auto-fit` tracks number anywhere from one
+to several, and no selector knows how many tracks were laid out, so a rule cannot be placed between
+them. Getting one there costs a script or a fixed column count, and both are worse than the gap.
+
 ### `.recent-groups`
 
 **A landing index of several category lists is `auto-fit`, not a fixed column count.**
@@ -1589,6 +1609,16 @@ reads as a raised edge. Joins the forced-colors border list (an inset shadow is 
 or the table's own top rule paints above the caption and it reads as a stray first row.
 **`figcaption` sets `text-align: start` explicitly**: `pre.mermaid` is centered, and an inheriting
 caption would float mid-column.
+
+**A caption takes a second tier for a source or credit line.** `figure`/`figcaption` were claimed as
+one register, so a caption naming what it shows and then where it came from ran together as two
+sentences of the same weight. `.byline` inside `:is(figcaption, caption)` becomes a block: the
+annotation tier the sheet already has, italic and muted, one line under the caption it belongs to.
+No new class and no new token, since the hue budget is spent and the tier exists. **Its
+`font-size: 1em` is load-bearing, not cosmetic**: `.byline` carries 0.9em and a caption carries
+0.9em, so without the reset the source line compounds to 0.81em, the trap this file records under
+Type scale. Nested inside a `caption` it also loses the italic that distinguishes it there, since
+`caption` is already italic, and colour alone carries the tier.
 
 ## Markdown coverage
 
