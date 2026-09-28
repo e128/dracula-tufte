@@ -1,0 +1,50 @@
+name: pages
+
+# Pages on this repo is set to `build_type: workflow`, which means GitHub's own
+# managed builder no longer runs and nothing is published unless a workflow does it.
+# The last managed deploy was 2026-09-12, so the live site sat three releases stale:
+# it still served the v1.48.0 fixtures while main was on v1.49.0. Requesting a build
+# through the REST API is refused outright for that build type ("The repository does
+# not have a GitHub Pages site"), so this file is the only path back to a live site.
+#
+# The build runs the same Jekyll pipeline the managed builder ran, from the same
+# source and path the Pages settings name. That keeps the site's shape unchanged:
+# README.md still renders as the root index and `samples/` is still served beside it.
+# Publishing a bare artifact instead would drop the index and 404 the root.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v5
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
