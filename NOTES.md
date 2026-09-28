@@ -48,6 +48,8 @@ Two comments remain in the CSS. A machine reads both.
 | [Appearance modes](#appearance-modes) | High contrast, light, `--mermaid-scheme`, the mode gates |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its load-bearing decisions |
+| [Nav link separators](#nav-link-separators) | The `nav > a + a` rule and the wrapped-line artefact |
+| [Version stamps are not version history](#version-stamps-are-not-version-history) | Why `bump` rewrites three anchored stamps and nothing more |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `caption`, `figure`, `figcaption` |
 | [Markdown coverage](#markdown-coverage) | What a converter emits, and how the sheet claims it |
 | [Raw HTML and other generators](#raw-html-and-other-generators) | Intrinsic-width media, unbreakable tokens, permalinks |
@@ -498,7 +500,7 @@ they co-occur in one diagram. The ramp carries its own light and print values (a
 declaration once drew dark-ground fills on a light page). Each member holds a stated fraction of
 maximum in-gamut chroma at its lightness and hue; check 8 pins those fractions.
 
-**A pie slice renders the token as of v1.40.0.** Check 5 always asserted the token cleared the
+**A pie slice renders the token.** Check 5 always asserted the token cleared the
 non-text floor (governing a `classDef` fill, a legend swatch, any direct `var(--data-2)` use) but
 said nothing about what a `pie` fence itself rendered at Mermaid's default 0.7 `pieOpacity`.
 `pieOpacity: '1'` closes that gap; check 11 measures the label that lands on it. See
@@ -508,7 +510,7 @@ said nothing about what a `pie` fence itself rendered at Mermaid's default 0.7 `
 diagram puts a category fill beside body copy, and a move means two more hex projections to
 recompute.
 
-**`classdef`/`classdefLight` fills both exist as of v1.40.0**, check 2 gating both sets plus the
+**`classdef`/`classdefLight` fills both exist**, check 2 gating both sets plus the
 letter each paints on its own fill (`--surface` on the pale dark ramp, `--on-surface` on the
 mid-tone light ramp: reusing `--surface` in light would land at 3.45-3.53:1, out of bounds).
 **`CONTRACT.md` § 2 bans a `classDef name fill:#hex` line on any page that follows the reader's
@@ -620,7 +622,7 @@ instead; the print block's inset-shadow trick can't be reused (an inset shadow i
 
 Fills inside a table still flatten, left alone deliberately: the mode restores the grid, not the tint.
 
-**This block had no coverage at all until v1.41.1.** `render-modes.py`'s pixel assertion (checking
+**This block's coverage is structural, not a color, so a pixel check cannot see it.** `render-modes.py`'s pixel assertion (checking
 `--surface` painted) can't transfer here, since forced colors means the sheet's colors stop deciding
 anything. So it's gated on **structure** instead, in `.github/script-probe.py`: the condition is
 rewritten to `@media all` in a scratch copy, and eight assertions read computed styles an edit here
@@ -758,8 +760,8 @@ five-plus categories is `table.bar-chart`.
 - **Direction costs one override**: `[dir="rtl"]` flips the gradient's `background-position`, since
   neither a gradient nor `background-position` takes a logical direction keyword.
 
-**The pie is a Mermaid `pie showData` fence; the CSS pie (v1.42.0) was removed in v1.43.0**, one
-release later, after rendering both side by side: the Mermaid pie drew in-slice percentages, a
+**The pie is a Mermaid `pie showData` fence; a CSS pie was built, rendered beside it, and removed**,
+after the comparison: the Mermaid pie drew in-slice percentages, a
 legend, a title; the CSS `conic-gradient` had none of that (nothing inside it was text, forcing a
 `role="img"` plus an `aria-label` plus a caption legend: three restatements of the numbers to draw a
 shape still unreadable). Mermaid draws the label in the slice and themes every slice from
@@ -772,8 +774,8 @@ form that can't carry its own numbers.
 clears the floor. **A pie needs a boundary between slices**: the ramp holds one lightness by design,
 so adjacent slices had no luminance step at all (measured 1.00-1.14:1 across palettes and even under
 simulated color-blindness). Mermaid's `pieStrokeColor` (`--surface`, so slices separate by a gap not
-a line) and `pieOuterStrokeColor` (`--muted`, matching every other hairline) answer this, themed as of
-v1.41.0. **Do not drop either stroke to Mermaid's `black` default.**
+a line) and `pieOuterStrokeColor` (`--muted`, matching every other hairline) answer this.
+**Do not drop either stroke to Mermaid's `black` default.**
 
 **The bar band paints through a background image, so print and forced-colors both need a pin,
 verified by rendering rather than reasoning.** Print drops background graphics by default (verified
@@ -793,7 +795,7 @@ convention that makes an unlabelled axis honest) plus a Mermaid pie of the same 
 
 ## Progressive disclosure
 
-Two components (template v1.21.0): `nav.toc` (on-this-page index), `details.deep` (collapsed detail
+Two components: `nav.toc` (on-this-page index), `details.deep` (collapsed detail
 tier).
 
 **`nav.toc` marks links with a dotted `border-block-end`, not an underline.** The underline-only-mark
@@ -805,8 +807,8 @@ rule is its marker (`prefers-contrast: more`'s underline bump can't reach it, ou
 68px and wrapped titles to five lines (matches `.col-2`'s breakpoint). **The print override targets
 `nav.toc ol`, not `nav.toc`** (`columns` on the wrapper does nothing to the list inside it).
 
-**Both components use logical properties only** (`border-left`/`padding-left` shipped in v1.45.0 and
-kept the index rule and list indent on the left in RTL while prose flipped).
+**Both components use logical properties only** (`border-left`/`padding-left` would keep the index
+rule and list indent on the left in RTL while prose flipped).
 
 **Neither component names a font of its own.** The first version set `font-family: var(--sans)`, a
 token `:root` never declares, resolving to the inherited serif either way. The sheet ships two faces
@@ -821,9 +823,9 @@ Same `content: "…" / ""` alt-text convention as the outbound arrow.
 transparent)` lands between two measured grounds). `--muted`/`--purple-bright` clear their floor
 against both, so this is an honest, documented gap, not a check that cannot see the mix.
 
-**Hover on both components sits inside `@media (hover: hover)`** (v1.45.0 shipped both outside it: see Interaction states for the tap-sticks-forever cost). **Both components carry a fixture instance**
-now (they shipped with none for two releases, so no mode render or forced-colors sweep ever drew
-them).
+**Hover on both components sits inside `@media (hover: hover)`** (outside it, a tap on a touch device
+leaves the affordance stuck in its hover state: see Interaction states). **Both components carry a
+fixture instance**, without which no mode render and no forced-colors sweep draws them.
 
 **Every `var()` here resolves to a declared token or carries a fallback.** Six references resolve
 outside `:root`, all deliberate: `--tree-step`/`--bar-tint` are declared on the component that reads
@@ -1057,10 +1059,10 @@ consumer adding a C4 diagram on this dark palette should verify contrast themsel
 **Diagram text on the page ground (not a node fill) was invisible in print**: Mermaid bakes hex into
 the SVG at init, and print is a media query with no re-render, so a dark-page-themed diagram kept
 painting `textColor` at `#f8f8f2` while `@media print` turned `--surface` white (measured: pie
-title/legend, `quadrantChart` axis labels, every `sequenceDiagram` message label at about 1.0:1). An
-earlier fix (v1.40.1) recolored four measured classes onto `--on-surface`, covering only the five
-diagram types the fixtures carried; v1.41.0 replaced it with giving the diagram back its own palette
-instead, which covers every diagram type with no per-class enumeration.
+title/legend, `quadrantChart` axis labels, every `sequenceDiagram` message label at about 1.0:1).
+**Recoloring the measured classes was the first fix and it covered only the diagram types the
+fixtures carried.** Giving the diagram back its own palette covers every type with no per-class
+enumeration.
 
 **The diagram is a dark object on a white page, so `@media print` treats it as one**: `pre.mermaid`
 re-declares the five tokens its own rules resolve through (`--surface`, `--on-surface`, `--code-bg`,
@@ -1088,8 +1090,8 @@ line; `pieOuterStrokeColor: --muted` matching every other hairline): Mermaid def
 literal `black`, not a palette color in any mode. **Do not drop either stroke back to Mermaid's
 default.**
 
-`samples/dark.html` carries a `pie showData` fence as of v1.40.0; its absence is why the above went
-unmeasured for four releases (see [Fixtures are coverage](#fixtures-are-coverage)).
+`samples/dark.html` carries a `pie showData` fence; its absence is why the above went unmeasured
+(see [Fixtures are coverage](#fixtures-are-coverage)).
 
 **Nine more diagram types theme correctly with no code change, verified by rendering each against
 both palettes and reading `getComputedStyle` on every colored element, not by reading the exported
@@ -1104,7 +1106,7 @@ same four this template already themes for `flowchart` and `sequenceDiagram`. `g
 matching `mermaid-palette.json`) until a second render with `primaryColor` swapped to a probe red
 moved those same colors in step: both derive their palette from `primaryColor` by hue rotation,
 so they track this template's purple correctly, they just do not equal one of the pinned hexes.
-All nine carry a fixture as of v1.48.0, in `samples/dark-charts.html` under "More diagram types"
+All nine carry a fixture in `samples/dark-charts.html` under "More diagram types"
 (search `classDiagram`).
 
 **Mermaid's own `timeline` keyword is a twelfth working type, unrelated to this template's
@@ -1126,7 +1128,7 @@ no `themeVariable` in front of either. The swap test settles it: writing a probe
 `gridColor` in both palettes left the gantt render byte for byte identical, md5
 `ae55bd6ce30e1c68ed5f7a24e126b1ae` before and after, while the same test on `archEdgeColor` moved
 the edge stroke as expected. A `themeVariable` with nothing to paint is a dead declaration, the
-same objection that removed a dead `font-family` rule in v1.46.0. **`gantt`'s axis was a real
+same objection that removed a dead `font-family` rule. **`gantt`'s axis was a real
 defect, and a chart option rather than a `themeVariable` is what fixed it:** at default tick
 spacing Mermaid drew every date twice, thirteen labels for seven days, so `tickInterval 1day` in
 the fence is what makes the axis print each date once. **`gantt`'s `today` marker stays Mermaid's
@@ -1174,8 +1176,8 @@ carries. Fixed in `samples/dark-charts.html` (search `User journey`).
 **`zenuml` does not render at all, and stays out.** Mermaid ships it as a second package
 (`@mermaid-js/mermaid-zenuml`) registered through `mermaid.registerExternalDiagrams`, not inside
 the core bundle this template imports. Adding it means a second CDN import and a load-order
-dependency against `mermaid.initialize()`, exactly the complexity v1.47.0 removed when ELK moved
-into core. Declined on the same cost basis, with no fixture and no demonstrated consumer need.
+dependency against `mermaid.initialize()`, exactly the complexity the ELK move into core removed.
+Declined on the same cost basis, with no fixture and no demonstrated consumer need.
 
 ## Connections-map layout
 
@@ -1807,7 +1809,7 @@ their rules.
 ### Never cite a line number into a generated file
 
 `CONTRACT.md` § 2 once pointed a consumer's generator at fixture line numbers, and **all 22 were
-wrong, already wrong at v1.38.1**: a fixture regenerates on every payload edit, so a line number
+wrong**: a fixture regenerates on every payload edit, so a line number
 rots on a change unrelated to the requirement it names, and nothing could see it happen. Renumbering
 was rejected (resets the same clock, needs a machine-readable token to gate at all, which is the
 whole cost of the real fix). **Each pointer is now a search string** instead:
@@ -1817,7 +1819,7 @@ make the gate vacuous.
 
 **§ 2 also made two countable claims about itself that had gone false**: that every requirement
 points at a fixture or says it has none (five bullets did neither), and its own bullet count stated
-in prose (read "Sixteen" against 21 bullets before v1.39.0, with `README.md` carrying its own stale
+in prose (it read "Sixteen" against 21 bullets, with `README.md` carrying its own stale
 copy). Both are now derived from the bullets rather than trusted. **A prose claim about a countable
 property is a gate waiting to be written.**
 
