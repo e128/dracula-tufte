@@ -57,7 +57,7 @@ Use whatever the sentence actually needs instead:
 `nu scripts/maintain.nu check` and the `contract` workflow both fail on any occurrence, and
 `nu scripts/maintain.nu bump` refuses to stamp a version while one is present, so this is gated
 rather than trusted. The commit-subject convention is `feat: vX.Y.Z - <summary>` with a hyphen.
-Commits already in history keep the old em-dash form; nothing rewrites them.
+Commits in history keep the old em-dash form. No rewrite changes them.
 
 The rule exists because 186 em-dashes across 22 files read as one voice tic rather than as
 punctuation, and because a gate is the only thing that keeps a prose rule alive in a repo where
@@ -206,26 +206,112 @@ request was explicitly to release.
 
 **A layout or contrast claim about this stylesheet is not verified until a browser has drawn it.**
 The repo already drives headless Chromium in `.github/render-modes.py`, and Playwright is the
-convention for anything more interactive. Three plausible fixes were once reported as correct from
-arithmetic alone and all three were wrong: SVG ink painted outside a root `<svg>` is not scrollable
-overflow for any CSS ancestor, so no `overflow` value recovers it; the zoom overlay does not rescue
-an escaping viewBox at narrow widths, because it scales the overrun with the diagram; and alpha
-compositing must be computed in gamma-encoded sRGB, not linear, or a contrast ratio reads several
-tenths too bright.
+convention for anything more interactive. Three plausible fixes once seemed correct from arithmetic
+alone. All three were wrong. SVG ink outside a root `<svg>` does not create scrollable overflow for
+any CSS ancestor. No `overflow` value recovers it. The zoom overlay does not fix an escaping
+viewBox at narrow widths. It scales the overrun with the diagram. Alpha compositing must use
+gamma-encoded sRGB, not linear. Otherwise, a contrast ratio reads several tenths too bright.
 
 **When a claim rests on a mitigation, test the mitigation too, not just the defect.**
 
 **A behavioural claim about `mermaid.js` or `filter.js` is not verified until the script has run.**
 `.github/script-probe.py` drives both of them in the real fixture through the same headless Chrome.
 Add an assertion there when you change either file, and mutate the change to confirm the assertion
-fails without it. Every other check in this repo reads the payload; this is the only one that runs
-it, and it exists because the fixture shipped an inert `input.filter-box` for six releases and a
-diagram nobody could click for several more, all of it green.
+fails without it. Every other check in this repo reads the payload. This is the only check that runs it. The probe exists because the fixture shipped an inert `input.filter-box` for six releases and a diagram nobody could click for several more. Other checks missed both defects.
 
 **Re-price a decline before you repeat it.** Three entries sat in `backlog.md` for releases on
 costs that were simply wrong: a jsdom dependency the repo did not need, a resize listener a media
 query replaces, and an `!important` that two real `themeVariables` made unnecessary. A recorded
 decline is a cost estimate with a date on it, not a verdict.
+
+## Design Audit Evidence
+
+Every design audit includes performance, responsive usability, accessibility, and standards currency.
+For each check, report measured results, limits, and missing inputs. Never report an unrun check as a pass. Recheck current W3C, ISO/IEC, ETSI, and Baseline sources on each run. Add
+newly ratified applicable criteria to that audit's report, even if this file and the skill have not
+changed. Update either instruction file only through a separate maintainer-authorized change.
+
+### Performance and Stability
+
+- Check the current Core Web Vitals thresholds at web.dev on every audit. The good targets currently are LCP at or below 2.5 seconds, INP at or below 200 milliseconds, and CLS at or below 0.1. Cite the source and access date. For field data, report the 75th percentile and separate mobile from desktop.
+- If lab data is collected, label it as lab data and report it separately from field data. Report INP only when valid field data exists.
+- Use PageSpeed Insights only for a public deployment and after the user authorizes the external
+  request. The `web-vitals` library may measure field data only when the deployed consumer provides
+  consent and instrumentation. Do not add it to this static template. If no public URL or CrUX data
+  exists, report field data as unavailable.
+- The stylesheet is inline. Do not report a separate stylesheet request as render-blocking. Check
+  the resources that the fixture actually loads.
+- Check images and embedded content for reserved dimensions or aspect ratios that prevent layout
+  shifts. Mark ad checks not applicable when no ad slot exists.
+- Use browser Coverage to find CSS that fixtures did not exercise. Treat each result as a candidate,
+  not proof that the CSS is unused. Do not remove CSS based only on fixtures or a PurgeCSS report.
+  Fixtures do not cover every consumer.
+
+### Responsive Usability
+
+- Render representative fixtures at every combination of these viewport widths and heights:
+  320, 375, 768, 1024, and 1280 CSS pixels wide, with heights of 568, 768, and 900 CSS pixels.
+- Measure page-level horizontal overflow with `scrollWidth` and `clientWidth`. Identify intentional
+  overflow inside documented scroll hatches. Check flex and grid stacking against DOM order. Do not
+  use a matrix result to narrow prose, change `--page-width`, or add a breakpoint override.
+- Measure interactive targets at the rendered size. Report targets below 44 x 44 CSS pixels as a
+  usability gap. Keep this result separate from WCAG 2.2 AA, whose 2.5.8 minimum is 24 x 24 CSS
+  pixels.
+- Test each implemented loading, error, and empty state. Confirm that critical actions remain
+  reachable. If a state does not exist, report it as not applicable and do not invent one.
+- Check visual hierarchy and typography at each viewport. Preserve the settled type scale and
+  heading decisions in NOTES.md.
+
+### Accessibility Checks
+
+At each audit, check current records from the [W3C WCAG standards page](https://www.w3.org/WAI/standards-guidelines/wcag/),
+[W3C TR index](https://www.w3.org/TR/), [ISO catalog](https://www.iso.org/search.html?q=ISO%2FIEC%2040500),
+[ETSI Human Factors group](https://www.etsi.org/technical-groups/hf/), and [EU Official Journal](https://eur-lex.europa.eu/oj/direct-access.html).
+Check WCAG 3.0 draft status at [W3C TR](https://www.w3.org/TR/wcag-3.0/). Cite each source and access date.
+Do not treat a draft as a conformance standard or a published EN version as harmonised unless its
+Official Journal status confirms that claim. Compare their applicable web-content criteria with the
+WCAG sweep and report any difference. Report standards mapping only. Do not claim legal compliance.
+
+When W3C ratifies a new version or changes criteria, add the relevant current Level A and AA
+criteria to that audit's report table. Track relevant AAA criteria separately. Include Focus Not
+Obscured, Dragging Movements, Target Size (Minimum), Consistent Help, Redundant Entry, and
+Accessible Authentication checks where they apply. Track Focus Appearance as AAA, not AA. Mark
+criteria for absent features not applicable with a reason. Record version, status, and date checked.
+Update this file and the skill only through a separate maintainer-authorized change.
+
+Track WCAG 3.0 changes as draft information only until W3C publishes a Recommendation. Record the
+latest draft date and relevant changes. Do not treat proposed outcomes as conformance criteria or
+state a predicted Recommendation date as fact.
+
+Do not send non-public content to an external service without user authorization.
+
+Test keyboard navigation by hand. Check Tab, Shift+Tab, Enter, Space, and Escape where relevant.
+Confirm visible focus for each interactive element in each appearance mode. Automated results, when available, supplement the current WCAG sweep. They do not replace the palette gate, manual keyboard checks, or rendered contrast checks.
+
+### Modern CSS Evaluation Targets
+
+At each audit, check current MDN or web.dev Baseline status and dates for every feature below.
+Report status as of the audit date. Prefer Baseline Widely available features when the audience
+includes older browsers. Newly available features need an `@supports` fallback unless current
+consumer needs make the fallback unnecessary. In that case, state why. Baseline indicates
+interoperability across its core browsers. It does not guarantee support on every device or with
+every assistive technology. Do not claim a feature is safe to ship without checking its status and
+support needs.
+
+Evaluate these features against actual use and the current stylesheet. Do not add them only to
+follow a trend:
+
+- Container queries (`@container`), `:has()`, subgrid, cascade layers (`@layer`), native CSS
+  nesting, and `@scope`.
+- OKLCH, `color-mix()`, `clamp()`, logical properties, `aspect-ratio`, and Flexbox `gap`.
+- Dynamic viewport units (`dvh`, `svh`, `lvh`), scroll-driven animations, View Transitions,
+  and `@starting-style`.
+- CSS Grid Lanes, `sibling-index()`, `sibling-count()`, CSS Anchor Positioning, and registered
+  custom properties (`@property`).
+
+Evaluate mobile-first authoring as current practice, not as a requirement to reverse settled layout
+decisions. Record Baseline tier, Newly available date, current use, fallback behavior, and reason
+not to adopt each feature.
 
 ## Harness entry points
 
@@ -243,8 +329,8 @@ capability.
 
 | Skill | Wraps | Invoked by |
 | --- | --- | --- |
-| [`release`](.claude/skills/release/SKILL.md) | The full release flow in *A tag claims that the contract held*, plus publishing the Rider plugin zip, the VS Code vsix and the themes zip | "make a release", "cut a release", "tag a release", or a named version |
-| [`design-audit`](.claude/skills/design-audit/SKILL.md) | An audit of every payload line landed since the previous audit's commit, then a research-and-report pass over current CSS, color, typography, layout, accessibility and CDN-pin practice against the settled decisions in NOTES.md, plus two fixed sweeps: WCAG Level A/AA, and the repo's own prose rules that no check enforces. Renders new components rather than reasoning about the cascade. Writes a dated report and an unapplied patch to `review/`. Never edits the payload | "design audit", "check WCAG compliance", `/design-audit` |
+| [`release`](.claude/skills/release/SKILL.md) | Release flow and three published assets | "release", "cut", "tag", or version |
+| [`design-audit`](.claude/skills/design-audit/SKILL.md) | Audits payload changes against NOTES.md and current practice. Checks current standards, Core Web Vitals, responsive usability, WCAG, manual accessibility, and prose rules. Renders changed components and writes a dated report with unapplied patch to `review/`. Never edits the payload | "design audit", "check WCAG compliance", `/design-audit` |
 
 **Neither skill is required to do the work.** `release` is the order in which to call
 `scripts/maintain.nu`, and every one of those commands appears above. `design-audit` produces a

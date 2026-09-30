@@ -1,6 +1,6 @@
 ---
 name: design-audit
-description: Periodic design review for the Dracula-Tufte template. Audits every payload line that landed since the previous audit's commit, then researches current CSS, color, typography, layout, accessibility and CDN-pin practice against this repo's settled NOTES.md decisions, and writes a dated report and a draft (unapplied) patch to review/. Includes two fixed sweeps: WCAG Level A/AA success criteria against the actual CSS/JS/fixtures, and the repo's own prose rules that no check enforces. Renders any new or changed component in headless Chromium rather than reasoning about the cascade. Reads the previous audit first so a repeat run reports what changed, not the same list again. Use when the user says "design audit", "review my design assumptions", "check for new CSS patterns", "check WCAG compliance", "/design-audit", or asks whether the stylesheet needs a refresh against current practice.
+description: Periodic design review for the Dracula-Tufte template. Audits payload changes, researches current CSS and design practice against settled NOTES.md decisions, and writes a dated report and unapplied patch. Rechecks current W3C, ISO/IEC, ETSI, and Baseline status on every run. Includes Core Web Vitals, responsive usability, current WCAG Level A/AA and relevant AAA criteria, manual accessibility checks, and prose-rule sweeps. Renders new or changed components. Use for design audits, CSS pattern reviews, WCAG checks, and refresh reviews.
 ---
 
 # Design audit: settled decisions vs current practice
@@ -49,9 +49,9 @@ ways:
   it, is marked `Repeat, unchanged since YYYY-MM-DD` in one line. Do not re-argue it, do
   not re-cite it, and do not put it in the patch again.
 - **It respects declines.** `review/declined.md` is the ledger of findings the maintainer
-  looked at and said no to. NOTES.md records the prohibitions this repo paid for in
-  reverted commits; it does not record "the audit proposed X and the maintainer declined".
-  Without the ledger, the same rejected proposal returns every quarter.
+  looked at and said no to. NOTES.md records prohibitions this repo paid for in reverted
+  commits. It does not record "the audit proposed X and the maintainer declined". Without
+  the ledger, the same rejected proposal returns every quarter.
 - **Its own claims are re-checkable, and one of them was wrong.** See Step 2, last part.
 
 `review/declined.md` is a single markdown table: `| Date | Topic | Finding | Reason |`. **The
@@ -113,35 +113,35 @@ like any other bug, and the report quotes the NOTES.md passage it broke.
 
 Any claim in the previous report that named a file, a selector, or an owner is checkable.
 Check the ones this run's delta touches. On 2026-09-07 the report attributed two
-`font-family: var(--sans)` declarations to a consumer's generator; they were already in
-`tufte-dracula.css`, shipped in v1.45.0 a day earlier. Under the repeat rule alone, a wrong
-verdict stays wrong forever, because the next run is told not to re-argue it. Correct it in
-the new report and say which report it corrects.
+`font-family: var(--sans)` declarations to a consumer's generator. The declarations already
+appeared in `tufte-dracula.css`, shipped in v1.45.0 a day earlier. Under the repeat rule alone,
+a wrong verdict stays wrong forever because the next run is told not to re-argue it. Correct it
+in the new report and say which report it corrects.
 
 ## Step 3: run one topic at a time
 
-Six topics. The first five mirror the `better-*` skills the maintainer already runs by
+Seven topics. The first five mirror the `better-*` skills the maintainer already runs by
 hand (`better-colors`, `better-typography`, `better-layout`, `better-accessibility`,
 `better-ui`), so this audit is the layer on top: "what changed in the field since the last
-pass", not a repeat of what those skills already check per-session. The sixth covers the
-one thing here that rots on a calendar rather than on a spec.
+pass", not a repeat of what those skills already check per-session. The sixth covers pinned
+CDN dependencies. The seventh covers performance and stability.
 
 Each topic owns a fixed set of NOTES.md sections. The map is fixed so that coverage is
 stable run to run, and so the maintainer can tell which sections an audit never looked at.
 
 | # | Topic | Covers | NOTES.md sections |
 | --- | --- | --- | --- |
-| 1 | Color and contrast | OKLCH gamut, APCA vs WCAG 2, forced-colors, dark/light parity, editor slot-map chroma | Color and the contrast budget, Appearance modes, Print, Mermaid, Editor themes |
+| 1 | Color and contrast | Color tokens, modes, editor themes | Color and the contrast budget, Appearance modes, Print, Mermaid, Editor themes |
 | 2 | Typography | Variable fonts, type scale, `text-wrap`, hyphenation | Fonts, Type scale, Italics, Paragraphs and section rhythm |
 | 3 | Layout and spacing | Container queries, `:has()`, intrinsic sizing, breakpoints | Width and measure, Tables, Lists, Connections-map layout, Cascade layer |
 | 4 | Accessibility | WCAG updates, ARIA patterns, focus handling, keyboard reach | Keyboard and assistive technology, Direction, zoom and growth, Links |
 | 5 | Interaction and motion | `prefers-reduced-motion`, transitions, press/hover states | Interaction states, Form follows role |
 | 6 | Pinned dependencies | Whether the pinned CDN versions have shipped fixes worth taking | Fonts, Mermaid |
+| 7 | Performance and stability | Core Web Vitals, render-blocking resources, layout shift, CSS coverage | Fonts, Mermaid, Fixtures are coverage |
 
 Sections outside the map (Filter, Unclaimed elements, Markdown coverage, Raw HTML and
-other generators, Fixtures are coverage, Repo layout, Odds and ends) are out of scope for
-this skill. Say so in one line in the report so their absence reads as a decision rather
-than an oversight.
+other generators, Repo layout, Odds and ends) are out of scope for this skill. Say so in one
+line in the report so their absence reads as a decision rather than an oversight.
 
 For each topic:
 
@@ -163,8 +163,8 @@ For each topic:
 4. **Classify each candidate finding:**
    - **New ground.** NOTES.md has no decision here at all. No conflict, propose freely.
    - **Reinforces a settled decision.** Current practice still agrees with what NOTES.md
-     already chose. Say so; a confirmed decision is worth reporting too, since it tells
-     the maintainer the repo hasn't drifted.
+     already chose. Say so. A confirmed decision is worth reporting because it shows the repo
+     has not drifted.
    - **Repeat.** Already in the previous report, nothing new behind it. One line.
    - **Declined.** In `review/declined.md`, no post-decline source. Drop it silently.
    - **Violation of a settled decision.** The payload contradicts NOTES.md. See Step 2.
@@ -191,7 +191,7 @@ wrapper) plus real markup for the component, then measure it:
   element the declaration actually targets **and** on the element the author probably meant.
 
 Measure the same page again after the patch and put both numbers in the report. A claim with
-a before-and-after pair is checkable a year later; "fixed" is not.
+a before-and-after pair is checkable a year later. "Fixed" is not.
 
 **A slot-map finding gets a probe of its own kind, not a Chromium render.** Editor themes,
 Light and dark parity: "Verify against the generated `.icls`, not the template: placeholders
@@ -205,32 +205,67 @@ meant to beat, a media query adds no specificity, and the base rule won on sourc
 arithmetic was right and the rendering was wrong. NOTES.md records the same trap twice
 already, for the `.scorecard` container query and for the `@media (hover: hover)` position.
 
+### Fixed responsive usability sweep
+
+Run this sweep on every audit. Test `samples/dark.html` and
+`samples/dark-conn-map.html` at every combination of these CSS viewport widths and heights:
+
+- Widths: 320, 375, 768, 1024, and 1280 pixels.
+- Heights: 568, 768, and 900 pixels.
+
+Record fixture, viewport, `document.documentElement.scrollWidth`,
+`document.documentElement.clientWidth`, and any intentional overflow. Check page-level
+horizontal scrolling at every size. Inspect flex and grid stacking against DOM order. Separate
+page overflow from scrolling inside documented table, code, math, and diagram hatches. Do not
+treat a long measure or known hatch as permission to narrow prose, change `--page-width`, or
+add a breakpoint override.
+
+Measure each interactive target from its rendered rectangle. Report targets smaller than
+44 x 44 CSS pixels as a usability gap. Keep this result separate from WCAG 2.2 AA: criterion
+2.5.8 has a 24 x 24 CSS pixel minimum, subject to its size or spacing exception. The 44 x 44
+check does not change that conformance result.
+
+Check visual hierarchy, heading order, and typography at each viewport. Test every loading,
+error, and empty state that the fixtures implement, and confirm that critical actions remain
+reachable in each state. If the template has no such state, report that fact. Do not invent
+states or controls. Add the viewport results and separate 44 x 44 findings under
+`## Responsive usability sweep` in the report.
+
 ### Topic 4 in particular: the WCAG conformance sweep
 
 The rest of this skill asks "has current practice moved past a settled decision." Topic 4
-additionally asks a narrower, harder question every run: **does this repo currently fail a
+also asks a narrower, harder question every run: **does this repo currently fail a
 WCAG success criterion, right now, regardless of what NOTES.md decided.** A violation is not
-a style opinion. It does not wait for a maintainer's taste; it goes in the patch like any
-other bug, unless fixing it would itself contradict a settled decision, in which case it
-becomes a Step 5 challenge instead of an ordinary finding.
+a style opinion. It goes in the patch like any other bug, unless the fix contradicts a settled decision. In
+that case, make it a Step 5 challenge instead of an ordinary finding.
 
-**First, confirm the current version.** Search for the current W3C **Recommendation**
-(not Working Draft) version of WCAG. As of the last time this skill was written that was
-WCAG 2.2 (Recommendation, 2023-10-05), with WCAG 3.0 still a Working Draft years from
-Candidate Recommendation, per Topic 4's own accessibility findings in past runs. If a newer
-version has since reached Recommendation, use its criteria numbers and note the version
-change in the report. Do not check draft-stage criteria as if they were binding; a Working
-Draft item goes in the ordinary Topic 4 findings (as `[New ground]`, informational), never
-in the sweep table below.
+**First, find the current standards.** Check the W3C WCAG standards page and W3C TR index for
+the latest WCAG **Recommendation** and its revision date. Check the latest WCAG 3.0 status
+separately. Also check the current ISO/IEC 40500 edition and ETSI EN 301 549 version and
+Official Journal status. Cite sources and the date checked. Do not infer a legal requirement or
+claim legal compliance from a standards listing.
 
-**Second, run the fixed criteria table below**, not an open-ended pass over the full WCAG
-list. The table is fixed for the same reason the NOTES.md section map is fixed: stable
-coverage run to run, and a maintainer who can see what was never in scope. It covers every
-Level A and AA criterion plausibly relevant to a static, no-build CSS and vanilla-JS
-template with one filter input and no audio, video, forms-processing, timers, or site-wide
-navigation. Criteria about content this template cannot contain (audio description, session
-timeouts, drag gestures, multi-page navigation consistency) are marked out of scope once,
-here, rather than re-justified every run.
+WCAG 2.2 became a Recommendation on October 5, 2023. W3C published a revision on December 12,
+2024. Use current W3C records to confirm these dates and whether a newer Recommendation now
+exists. If W3C has ratified a newer version, audit its applicable Level A and AA criteria, note
+which criteria changed, and update the fixed table below in the report. Do not treat the table
+below as a ceiling on the current Recommendation. Track relevant AAA criteria in a separate
+enhanced review, not as AA failures.
+
+Track WCAG 3.0 as draft work only. Record the latest Working Draft date and material changes
+since the prior audit. Do not report proposed outcomes as conformance criteria. As checked on
+2026-09-30, W3C listed a 2026-09-10 Working Draft. The 2026-03 requirements note is not the
+WCAG 3.0 Working Draft. Recheck W3C's publication history on every audit. Do not state a
+predicted Recommendation date as fact.
+
+**Second, run the relevant A and AA criteria in the fixed table below**, plus any current criteria
+that W3C added or changed. The table keeps coverage stable from run to run and shows what has not
+been checked. It covers criteria relevant to this static, no-build CSS and vanilla-JS template.
+If the current Recommendation adds or changes a relevant criterion, add it to this run's table and
+report it, even before this skill's table changes.
+This template has one filter input, no audio or video, no authentication flow, and no multi-step
+form process. Mark criteria that require absent content as `Not applicable` with a brief reason.
+Do not omit a criterion from the table just because it is not applicable.
 
 **Re-evaluate every row against whatever Step 2 found new**, not only against the parts of
 the sheet a previous run already swept. A component that has never been swept has never
@@ -243,44 +278,64 @@ passed.
 | 1.3.2 Meaningful Sequence | A | DOM order vs visual order, especially `body.conn-map`'s flex reorder and any multicol block |
 | 1.4.1 Use of Color | A | `.verdict`, `.verified`/`.unverified`/`.correction`: color never the only cue |
 | 2.1.1 Keyboard | A | Mermaid zoom button, `.table-scroll`, `pre`/`math` sideways-scroll hatch |
-| 2.1.2 No Keyboard Trap | A | The mermaid zoom dialog: Escape and backdrop click both must exit |
+| 2.1.2 No Keyboard Trap | A | The zoom dialog has a keyboard method to move focus away from it. Check Escape behavior separately as a dialog interaction |
 | 2.4.2 Page Titled | A | `<title>` present and distinct per fixture |
-| 2.4.3 Focus Order | A | Tab order follows `1.3.2`'s visual order in every layout mode |
-| 2.4.4 Link Purpose (In Context) | A | No bare "click here"; outbound-link arrow's alt text |
+| 2.4.3 Focus Order | A | Tab order preserves meaning and operability. It need not match visual order exactly |
+| 2.4.4 Link Purpose (In Context) | A | No bare "click here". The outbound-link arrow has alt text |
 | 2.5.3 Label in Name | A | Visible button text is a prefix of its `aria-label` (the zoom button) |
 | 3.1.1 Language of Page | A | `lang="en"` (or a real value) on `<html>` in every fixture |
 | 3.2.1 On Focus | A | Focusing an element never triggers a context change |
 | 3.2.2 On Input | A | The filter box never navigates or submits on input |
 | 4.1.2 Name, Role, Value | A | Custom widgets (`.table-scroll` region, mermaid dialog, zoom button) |
-| 1.4.3 Contrast (Minimum) | AA | Covered by Topic 1's dedicated palette gate; cross-reference, do not redo. Name any ground the gate cannot reach |
-| 1.4.4 Resize Text | AA | 200% zoom, reflow; NOTES.md's stated 400% exception, confirm it still holds |
+| 1.4.3 Contrast (Minimum) | AA | Topic 1's palette gate covers this. Cross-reference it and name any ground the gate cannot reach |
+| 1.4.4 Resize Text | AA | 200% zoom and reflow. Check current behavior against NOTES.md's 400% exception |
 | 1.4.10 Reflow | AA | No two-dimensional scroll at 320 CSS px / 400% zoom outside opt-in hatches. Measure `scrollWidth` against `clientWidth`, do not eyeball it |
-| 1.4.11 Non-text Contrast | AA | Focus rings, borders, `.verdict`/`.badge` outlines against their ground; the forced-colors block's component list against the sheet's actual components |
+| 1.4.11 Non-text Contrast | AA | Focus rings, borders, and `.verdict`/`.badge` outlines against their grounds. Check forced-colors rules against actual components |
 | 1.4.12 Text Spacing | AA | Layout survives user style overrides for line-height/letter-spacing/margins |
 | 1.4.13 Content on Hover or Focus | AA | Any hover-revealed content: dismissable, hoverable, persistent |
 | 2.4.6 Headings and Labels | AA | Headings and the filter label describe their section/purpose |
 | 2.4.7 Focus Visible | AA | Every interactive element has a visible focus indicator in every mode |
-| 2.4.11 Focus Not Obscured (Minimum) | AA | Sticky `thead th` against scrolled focusable content (2.2, new) |
-| 2.5.8 Target Size (Minimum) | AA | 24x24px CSS pixel floor, measured from a render. **The inline exception covers a target "in a sentence or block of text" only.** A standalone list of links (nav list, TOC) is not inline, so it needs the size or the spacing exception: center a 24px circle on each target and confirm no two intersect |
+| 2.4.11 Focus Not Obscured (Minimum) | AA | Sticky headers, overlays, and other author-created content do not fully hide focused controls |
+| 3.2.3 Consistent Navigation | AA | When repeated navigation exists, it keeps the same relative order |
+| 3.2.4 Consistent Identification | AA | Components with the same function are identified consistently |
+| 2.5.7 Dragging Movements | AA | A dragging feature has a single-pointer alternative when the criterion applies |
+| 2.5.8 Target Size (Minimum) | AA | 24 x 24 CSS pixels or a WCAG 2.2 exception. Measure from a render and check the spacing exception |
+| 3.2.6 Consistent Help | A | Repeated help mechanisms keep the same relative order |
+| 3.3.7 Redundant Entry | A | Previously entered information is available in the same process |
+| 3.3.8 Accessible Authentication (Minimum) | AA | Authentication avoids cognitive function tests unless an exception applies |
 | 4.1.3 Status Messages | AA | `filter.js`'s `role="status"` result count: `aria-live` wired correctly |
+
+For SC 2.5.8, check every exception. The inline exception covers a target in a sentence or a
+target limited by the line height of surrounding non-target text. The spacing exception passes
+only when a 24px circle centered on each undersized target touches neither another target nor the
+circle around another undersized target. Also check the equivalent-control, user-agent-control,
+and essential-presentation exceptions.
+
+**Relevant AAA criteria, tracked separately:**
+
+| Criterion | Level | Check against |
+| --- | --- | --- |
+| 2.4.12 Focus Not Obscured (Enhanced) | AAA | No part of the focused control is hidden by author-created content |
+| 2.4.13 Focus Appearance | AAA | Focus indicator area and contrast meet the criterion's enhanced requirements |
+| 2.5.5 Target Size (Enhanced) | AAA | Interactive targets meet 44 x 44 CSS pixels, subject to the criterion's exceptions. Also report the requested 44 x 44 usability target in the responsive sweep |
+| 3.3.9 Accessible Authentication (Enhanced) | AAA | Authentication avoids cognitive function tests, subject to exceptions. Mark not applicable when no authentication exists |
 
 **Out of scope, stated once:** 1.2.x (no audio/video), 2.2.x (no timers or sessions), 2.3.x
 (no flashing content), 2.4.1 Bypass Blocks and 2.4.5 Multiple Ways (single-document
-template, no repeated site-wide navigation block to bypass), 2.5.1/2.5.2/2.5.4/2.5.7
-(no custom pointer gestures, dragging, or motion-actuated controls), 3.1.2 Language of
-Parts (prose is single-language by convention; flag only if a fixture is found to mix
-languages without marking it), 3.2.3/3.2.4/3.2.6 (no multi-page site nor repeated help
-mechanism to stay consistent across), 3.3.x (the filter box has no required fields or
-submission to validate).
+template, no repeated site-wide navigation block to bypass), 2.5.1/2.5.2/2.5.4 (no custom
+pointer gestures or motion-actuated controls), and 3.1.2 Language of Parts (single-language
+prose by convention. Flag mixed-language fixtures without language markup). Criteria about
+error prevention, suggestions, and correction in 3.3.1 through 3.3.6 are not applicable
+because the filter has no form submission or required fields.
 
 **Classify every row, do not skip one silently:**
 
-- **Pass.** Currently satisfies it. State the evidence briefly; a passing sweep is worth
-  reporting, same reasoning as a `[Reinforces]` finding elsewhere in this skill.
+- **Pass.** State the evidence briefly. A passing sweep is worth reporting. This follows the
+  reasoning for a `[Reinforces]` finding elsewhere in this skill.
 - **Accepted gap.** NOTES.md already states, in prose, that this repo knowingly does not
   meet it (the 400% sideways-scroll line under Width and measure is exactly this shape).
-  Quote the passage. Confirm it still describes current behavior; if the behavior has since
-  changed, say whether the gap closed or is still open.
+  Quote the passage. Confirm it describes current behavior. If behavior has changed, state
+  whether the gap closed or remains open.
 - **Violation.** Fails the criterion and NOTES.md never said so. This is the case Topic 4
   exists to catch. State the failure concretely (a selector, a missing attribute, a
   reproducible interaction), and put a mechanical fix in the patch if one exists, exactly
@@ -288,12 +343,25 @@ submission to validate).
   decision, this becomes a Step 5 challenge instead, same rule as everywhere else in this
   skill. If the only fix available is a design judgment rather than a mechanical one, say
   so in the row and leave it out of the patch, with the reason stated.
-- **Not applicable.** Already covered by the "out of scope" list above; do not re-justify.
+- **Not applicable.** For a criterion in the sweep table, state the absent feature and reason in
+  its row. Keep the explicit out-of-scope summary for criteria outside the fixed table.
 
 Report this sweep under its own `## WCAG conformance sweep` heading in the audit report,
-as a table with one row per criterion above (Criterion, Level, Status, Evidence), separate
-from Topic 4's ordinary findings, which still cover everything this fixed table does not
-(ARIA authoring-practice shifts, WCAG 3 draft movement, and so on).
+as a table with one row per relevant criterion in the current Recommendation. Include criteria
+from the table above and any current changes. Use (Criterion, Level, Status, Evidence) columns.
+Report relevant AAA criteria in a separate table. Topic 4's ordinary findings still cover
+everything this sweep does not, including ARIA authoring-practice shifts and WCAG 3 draft
+movement.
+
+### Manual accessibility checks
+
+Do not send local or private fixture content to an external service. If automated contrast results are available, treat them as a supplement to Topic 1's palette gate and the rendered contrast checks, not as a replacement.
+
+Test keyboard navigation by hand in each appearance mode. Use Tab and Shift+Tab to visit
+each interactive element. Use Enter, Space, and Escape where the control supports them.
+Confirm every element has a visible focus indicator, and confirm that keyboard use keeps
+critical actions reachable. Report these results under `## Accessibility and keyboard checks`.
+Automated checks, when used, do not prove full WCAG conformance.
 
 ### Topic 6 in particular
 
@@ -322,11 +390,106 @@ construct. What is checkable:
   supply-chain question is whether the **npm package itself** has a provenance attestation
   (`npm view <pkg> dist.attestations` or the npm registry's provenance badge), not whether
   the CDN edge is trusted.
-- Whether self-hosting the four font files or the Mermaid bundle (checked into the repo
-  instead of fetched from a CDN) is now worth the tradeoff NOTES.md already weighed when it
-  chose a CDN pin. Read that passage before proposing self-hosting again; if NOTES.md
-  already declined it, this is a `[Repeat]` or a `review/declined.md` match, not new
-  ground.
+- Whether self-hosting the four font files or Mermaid bundle is worth the tradeoff NOTES.md
+  already weighed. Read that passage before proposing self-hosting again. If NOTES.md already
+  declined it, mark it `[Repeat]` or match `review/declined.md`. Do not call it new ground.
+
+### Topic 7 in particular: performance and stability
+
+Search current web.dev guidance for Core Web Vitals. List the queries and sources under Topic 7's
+`### Searched` heading. Verify current thresholds from web.dev on each audit. The current good
+targets are LCP at or below 2.5 seconds, INP at or below 200 milliseconds, and CLS at or below
+0.1. Cite the source and access date rather than assuming these values remain current.
+
+Lab measurements are optional. If collected, label results as lab data and record the tool,
+browser and version, fixture, viewport, device emulation, throttling, and results. Report field
+data separately by mobile and desktop at the 75th percentile. The `web-vitals` library may measure
+field data when a deployed consumer has consent and instrumentation. Do not add the library to this
+static template. Total Blocking Time is not INP. Report INP as unavailable unless valid field data
+exists. If a public deployment and user authorization are both available, PageSpeed Insights may
+supply lab results and CrUX field data. Report those data types separately. If no public URL or
+CrUX data exists, record field data as unavailable. Never send a local or private page to
+PageSpeed Insights.
+
+Check the resources that each fixture loads for render-blocking behavior. This repository inlines
+its stylesheet, so do not describe it as a separate stylesheet network request. Check images and
+embedded content for reserved width and height or an aspect ratio. The fixtures have no ad slot.
+Report ad layout shift as not applicable unless a future fixture adds one.
+
+Use browser DevTools Coverage on both fixtures, including implemented interaction and
+appearance states. Report CSS that the tested page did not exercise as a candidate only.
+A coverage result cannot show that no consumer uses a CSS rule. Compare candidates with
+consumer-facing rules in NOTES.md and all known inputs before proposing removal. Do not use
+PurgeCSS output or fixture coverage alone to remove CSS. Do not add a dependency for this
+audit. Put available metrics, render-blocking resources, layout-shift sources, and CSS
+coverage candidates under `## Topic 7: Performance and stability` in the report.
+
+## Standards and feature currency
+
+Check this section on every audit. Use the audit date as the status date. Do not reuse a prior
+report's status without checking the source again. A standard's status can change after a report.
+
+| Area | Current source to check | Report |
+| --- | --- | --- |
+| WCAG Recommendation | W3C WCAG page, W3C TR index, current Recommendation | Version, status, dates, changed criteria |
+| WCAG 3.0 | Current W3C TR draft and publication history | Latest draft type and date, changes relevant to this template, and explicit draft status |
+| ISO/IEC 40500 | Official ISO catalog | Current edition, publication status, and applicable criteria that differ from WCAG |
+| EN 301 549 | ETSI publication and work-item records, EU Official Journal | Version, date, delivery, OJ citation, criteria that differ from WCAG |
+| Baseline definition | web.dev Baseline or MDN Baseline glossary | Definition checked, status date, and date each evaluated feature became Newly available |
+
+Report this as `## Standards status`. Add `### Searched` with every query, source title, URL, and
+access date. State that the audit maps technical criteria only. Do not claim that a template
+complies with the EU Accessibility Act, Section 508, or any other law. Do not infer harmonisation
+from publication or delivery alone. WCAG 2.2 became a W3C Recommendation on October 5, 2023, and
+has 86 active success criteria. Verify the current version and count in W3C sources each run
+instead of treating either fact as permanent.
+
+### Modern CSS Baseline review
+
+Check every feature below against current MDN or web.dev data. Record one row per feature under
+`## Modern CSS Baseline review`, with its Baseline tier, Newly available date if applicable,
+current use in this stylesheet, and fallback or reason not to adopt it. Use `Not Baseline` when
+no Baseline status exists. Newly available features need an `@supports` fallback unless current
+consumer needs make the fallback unnecessary. In that case, state why. `@supports` tests syntax
+support. It does not prove full interoperability or accessibility. Widely available is a safer
+default, not a guarantee for all users. Do not propose a feature only because it crossed a
+Baseline threshold.
+
+| Feature target | CSS or platform feature |
+| --- | --- |
+| Container queries | `@container` |
+| Relational selector | `:has()` |
+| Subgrid | `grid-template-rows: subgrid` |
+| Cascade layers | `@layer` |
+| Native CSS nesting | CSS nesting |
+| Scoped styles | `@scope` |
+| Perceptual colors | `oklch()` and `color-mix()` |
+| Fluid sizing | `clamp()` |
+| Logical properties | `margin-inline`, `padding-block`, and related properties |
+| Aspect ratio | `aspect-ratio` |
+| Flexbox gap | `gap` in Flexbox |
+| Dynamic viewport units | `dvh`, `svh`, and `lvh` |
+| Scroll-driven animation | `animation-timeline: scroll()` and related timeline properties |
+| View Transitions | View Transitions API |
+| Entry animation | `@starting-style` |
+| CSS Grid Lanes | Native masonry layout |
+| Sibling index functions | `sibling-index()` and `sibling-count()` |
+| Anchor positioning | CSS Anchor Positioning |
+| Registered custom properties | `@property` |
+
+Also evaluate mobile-first authoring as a current practice. Do not treat it as a requirement to
+reverse the repository's settled layout decisions. Record current sources, queries, status dates,
+and browser Baseline dates under `### Searched` for the relevant topics. Recheck these targets on
+every audit, including targets not currently used by the stylesheet.
+
+### Step 3 report format
+
+The report has one section for each of the seven topics, followed by `## Standards status`,
+`## Modern CSS Baseline review`, `## Responsive usability sweep`, `## Accessibility tool and
+keyboard checks`, and `## WCAG conformance sweep`. Add a separate AAA table under
+`## WCAG conformance sweep`. Include every relevant A and AA criterion from the current
+Recommendation. Mark absent features not applicable with a reason. Add `### Searched` under
+each research topic and include every query and source used for the standards and feature review.
 
 ## Step 4: the ungated-rules sweep
 
@@ -341,16 +504,16 @@ Run every row. The commands are starting points, not the whole check: read the h
 
 | Rule | Source | Check | 
 | --- | --- | --- |
-| No comment in `tufte-dracula.css` or `mermaid.js`. **Both exceptions are CSS-only** (line 2's version stamp, the `/* was #rrggbb */` notes), so the correct count for `mermaid.js` is zero | AGENTS.md | `rg -n '/\*' tufte-dracula.css \| rg -v 'was #'` returns line 2 only; `rg -n -e '/\*' -e '^\s*//' mermaid.js` returns nothing |
-| Every `var(--x)` either resolves to a token the sheet declares **or carries a fallback** | NOTES.md, Progressive disclosure | Set difference, and mind two traps: a token declared on a component rather than in `:root` is still declared, so match `--x:` anywhere, not at line start; and `var(--x, fallback)` is correct for a consumer-supplied token, so exclude any reference with a comma. On `HEAD` today six references resolve outside `:root` and all six are deliberate |
+| No comment in `tufte-dracula.css` or `mermaid.js`. **Both exceptions are CSS-only** (line 2's version stamp, the `/* was #rrggbb */` notes), so `mermaid.js` must have zero comments | AGENTS.md | `rg -n '/\*' tufte-dracula.css \| rg -v 'was #'` returns line 2 only. Then `rg -n -e '/\*' -e '^\s*//' mermaid.js` returns nothing |
+| Every `var(--x)` resolves to a declared token or has a fallback | NOTES.md, Progressive disclosure | Set difference. Match `--x:` anywhere because component tokens count. Exclude references with fallback commas. Six references outside `:root` resolve on `HEAD`, and all six are deliberate |
 | Sides are logical, never physical | NOTES.md, Direction, zoom and growth | `rg -n 'border-left\|border-right\|padding-left\|padding-right\|margin-left\|margin-right' tufte-dracula.css` returns nothing, except a deliberate physical fallback stated in NOTES.md (the sidenote `float`) |
 | Every `:hover` rule sits inside `@media (hover: hover)` | NOTES.md, Interaction states | Every line number from `rg -n ':hover' tufte-dracula.css` falls inside that block's range. A selector pairing `:hover` with `:focus-visible` in one rule is the usual way this breaks |
-| Decorative pseudo-element `content` carries empty alternative text behind `@supports (content: "x" / "y")` | NOTES.md, Links | Every `::before`/`::after` with a `content:` string has an alt-text twin, and the twin sits **after** the base declaration so it wins on source order |
-| No styled class without a fixture instance | NOTES.md, Print | Every class selector in the sheet appears as markup in `scripts/build-sample.nu` |
+| Decorative pseudo-element content has an alt-text twin | NOTES.md, Links | Check each string-valued `::before` and `::after`. The twin must follow its base declaration |
+| A selector not represented in a fixture has a documented reason or remains a candidate, not presumed unused | NOTES.md, Print, and Fixtures are coverage | Compare class selectors against `scripts/build-sample.nu` and NOTES.md exceptions. Do not remove selectors only because fixtures did not exercise them |
 | Mermaid colors are hex, never `oklch()` and never `var()` | AGENTS.md | `rg -n 'oklch\|var(' mermaid.js` returns nothing in a color position |
 | Exact CDN pin, never a range | AGENTS.md | No `^`, `~` or `latest` in a jsDelivr URL |
-| Never cite a line number into a generated file | AGENTS.md | `maintain.nu check` gates the search-string form; confirm any new pointer in a doc uses it |
-| A new composited or `color-mix()` ground that `palette-check.py` cannot parse has a NOTES.md paragraph saying so | AGENTS.md, "a gate that cannot reach its subject does not get written" | Any ground that is not one of `--surface`, `--code-bg`, `--surface-alt` is either gated or documented as ungated |
+| Never cite a line number into a generated file | AGENTS.md | `maintain.nu check` gates search-string pointers. Confirm each new document pointer uses this form |
+| New composite grounds outside palette-check coverage have a NOTES.md entry | AGENTS.md | Add a gate or document grounds not covered by `--surface`, `--code-bg`, or `--surface-alt` |
 
 Status per row is `Pass`, `Violation` or `Not reachable this run` (say why). Report it under
 its own `## Ungated-rules sweep` heading.
@@ -391,49 +554,48 @@ that is a separate ask in a separate turn, and they ask for the change directly 
 normal contract flow.
 
 **Do not confuse a challenge with a violation.** A challenge says the decision may be wrong
-now. A violation says the code broke a decision that still stands. A violation goes in the
-patch; a challenge never does.
+now. A violation says the code broke a decision that still stands. A violation goes in the patch. A challenge never does.
 
-Findings that don't challenge anything settled go into the draft patch.
+Findings that do not challenge a settled decision go into the draft patch.
 
 ## Step 6: write the two artifacts
 
-Get today's date once (`date +%F`) and reuse it for both filenames. Don't call `date`
-separately for each, since a run that crosses midnight would produce mismatched pairs. A
+Get today's date once (`date +%F`) and reuse it for both filenames. Do not call `date` separately for each file. A run that crosses midnight could produce mismatched pairs. A
 second run on the same day overwrites the first: that is intended, one audit per day is
 the unit.
 
 - `review/YYYY-MM-DD-design-audit.md`: the report. A header naming **the commit range and
   commit count** from Step 2 and the previous report it read, the Step 2 delta findings, one
   section per topic, findings classified per Step 3, `### Searched` per topic, sources cited
-  inline with dates, the WCAG sweep, the ungated-rules sweep, the challenged-decisions
-  section (if any) clearly separated per Step 5, one line naming the out-of-scope NOTES.md
-  sections, and the Step 7 verification result.
+  inline with dates, the `## Standards status` report, the `## Modern CSS Baseline review`, the
+  responsive usability sweep, the accessibility tool and keyboard checks, the current WCAG
+  conformance sweep with a separate relevant AAA table, the performance and stability topic,
+  the ungated-rules sweep, the challenged-decisions section (if any) clearly separated per
+  Step 5, one line naming the out-of-scope NOTES.md sections, and the Step 7 verification result.
 - `review/YYYY-MM-DD-design-audit.patch`: a unified diff against `HEAD` covering only the
   non-challenging findings the maintainer would plausibly want. A draft to review, not
   something to apply automatically. **If there are no such findings, do not write an empty
   patch file.** Say "no patch: nothing to propose" in the report instead.
+
+The report and patch never edit `AGENTS.md` or this skill. Report audit-process gaps separately.
 
 The patch must obey every constraint in AGENTS.md: no comments added to
 `tufte-dracula.css` or `mermaid.js`, no em-dash or en-dash anywhere, hex-only in
 `mermaid.js`, the `<style>` and `<script>` wrapper contract intact. Step 7 proves that
 mechanically rather than trusting it.
 
-**The patch touches source files only.** It never carries a hunk against
-`samples/*.html` or `tokens.css`. Those are generated; Step 7 regenerates them inside a
-throwaway worktree to prove the patch survives regeneration, and the maintainer
-regenerates for real through the normal contract flow if they accept it.
+**The patch touches source files only.** It never changes `samples/*.html` or `tokens.css`.
+The generator creates those files. Step 7 regenerates them in a throwaway worktree to test the
+patch. If the maintainer accepts it, they regenerate through the normal contract flow.
 
-`NOTES.md` and `scripts/` are source files and the patch may touch both. A Step 2 finding
-that a component has no NOTES.md entry is fixed by adding the entry, and a Step 4 row that
-is cheap to mechanize is fixed by adding the gate.
+`NOTES.md` and `scripts/` are source files and the patch may touch both. Step 2 findings about undocumented components require a NOTES.md entry. Step 4 findings that a short script can check require a gate.
 
 **The easiest way to author the patch is a second worktree.** Edit there, regenerate there,
 run `check` there, then `git diff HEAD -- <source files only>` out of it. That keeps the real
 tree clean, which is this skill's hardest rule, and it means the diff you emit is the diff
 you already tested. Remove both worktrees when done.
 
-Create `review/` if it doesn't exist. Don't touch any other file in the working tree.
+Create `review/` if it does not exist. Do not touch any other file in the working tree.
 
 ## Step 7: verify the patch mechanically, or say it is unverified
 
@@ -457,7 +619,7 @@ Four things about that sequence, each of which has one way to get wrong:
 - **The worktree is at `HEAD`, so the patch must apply to `HEAD`.** Generate the diff
   against `HEAD`, not against a dirty working tree.
 - **`build-sample.nu` runs before `check`, not after.** `check` regenerates internally and
-  fails on `STALE` if the fixtures don't match the sources. A patch that changes the CSS
+  fails on `STALE` if the fixtures do not match the sources. A patch that changes the CSS
   and no fixtures always trips that. Regenerating first is what makes the staleness gate
   say something real: it now proves the patch survives regeneration.
 - **Everything happens in the worktree.** The real tree keeps its generated files
@@ -500,11 +662,12 @@ Record the outcome in the report as one of exactly three verdicts:
   gap, not a bad patch, and calling it a failure is a false report. Never write
   `Verified` for a run where `check` did not conclude.
 
-## Step 8: report back, don't act further
+## Step 8: Report Back, Then Stop
 
 End by telling the maintainer where the files landed, the verification verdict, and one
 line of counts: findings total, how many are violations of a settled decision, how many are
-new, how many are repeats, how many challenge a settled decision. Stop there.
+new, how many are repeats, how many challenge a settled decision, and how many evidence
+checks were unavailable. Stop there.
 
 Applying the patch, updating NOTES.md, appending to `review/declined.md`, bumping a CDN
 pin, or cutting a release are separate asks with their own flow (see the `release` skill
