@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.50.0 */
+    /* Dracula-Tufte (muted) v1.50.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -344,6 +344,7 @@
     .icon-list li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4);
       background: var(--code-bg); border-radius: var(--radius);
       border-inline-start: var(--accent-bar) solid var(--icon-color, var(--muted)); }
+    .icon-list strong { display: block; }
     .icon-chip { flex: none; width: 2.25em; height: 2.25em; border-radius: var(--radius-sm); display: flex;
       align-items: center; justify-content: center; font-weight: 700; color: var(--on-surface);
       background: oklch(from var(--icon-color, var(--muted)) l c h / 0.15); }

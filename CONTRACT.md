@@ -242,7 +242,7 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       `p.toc-label`, never with an `aria-label` repeating that same string. The index is a landmark,
       so it needs a name to be findable in a landmark list, and the label is already on the page:
       two copies of it make a screen reader read "On this page" twice on entry. This is the same
-      duplication the `pre.mermaid` region fixed in v1.41.0, reached from the other direction. Give
+      duplication the `pre.mermaid` region avoids, reached from the other direction. Give
       the label an `id` and point at it. Entries are `<a>` inside `<li>` inside a single `<ol>`, so
       the two-column rule and its narrow and print overrides have a list to act on (in
       `samples/dark.html`, search `class="toc" aria-labelledby`).
@@ -260,6 +260,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.50.1 | **stop using `<br>` between an `.icon-list` title and its detail**: put the `<strong>` and the `<code>` side by side and `.icon-list strong` breaks the line. Mark a file path with `<code>`, not `<cite>`, which names the title of a standalone work |
 | v1.50.0 | nothing, but three existing renders change. **A `tfoot td` takes weight 600 and a strong rule above it**, so a table that already has a `tfoot` looks different. **A `table.bar-chart` draws faint guides at 25, 50 and 75 percent and a baseline at the zero edge.** **A Mermaid pie gets a smaller title, thinner strokes and labels nearer the slice centre.** Five opt-ins are new: `.stat-strip` (a `dl` of `div` groups), `.label` inside a `figcaption` or `caption`, `.chart-takeaway` with a `.more` second line, `table.evidence-table`, and `td.bar.lead`. No new token, no new § 2 requirement (in `samples/dark-charts.html`, search `class="stat-strip"` and `class="bar lead"`) |
 | v1.49.0 | nothing. **An `.edge-list` draws a hairline between its two tracks** and **a `<span class="byline">` inside a `figcaption` or `caption` becomes a second caption tier**. The second is the only opt-in, and it is the class placement alone; a caption without one renders as before. No new class, no new token, no § 2 requirement (in `samples/dark.html`, search `class="edge-list"` and `Source: the flowchart above`) |
 | v1.48.2 | **supply `tabindex="0"`, `role="region"` and a label on any pandoc `span.math.display`**, the same three a `<math display="block">` already takes. That span has its own sideways-scroll axis, CSS cannot give it a tab stop, and Safari does not focus a scroller on its own, so a wide equation was out of keyboard reach there. The rest is self-contained: two decorative glyphs left the accessibility tree and four previously untested rules gained a fixture instance |
