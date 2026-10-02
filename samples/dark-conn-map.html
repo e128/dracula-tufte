@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.49.0 */
+    /* Dracula-Tufte (muted) v1.50.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -189,6 +189,22 @@
       vertical-align: top; font-variant-numeric: tabular-nums;
       transition: background-color 0.12s ease-out;
     }
+    table.evidence-table tbody tr + tr td { border-block-start: 1px solid var(--rule-light); }
+    table.evidence-table thead th { box-shadow: inset 0 -1px 0 var(--rule); }
+    table.evidence-table td:first-child { font-weight: 600; color: var(--on-surface); }
+    tfoot td { font-weight: 600; box-shadow: inset 0 1px 0 var(--rule); }
+    .chart-takeaway { border-inline-start: 2px solid var(--rule-light); padding-inline-start: var(--space-4); color: var(--label); }
+    .chart-takeaway strong { color: var(--on-surface); }
+    .chart-takeaway .more { display: block; font-size: 0.9em; color: var(--muted); }
+    :is(figcaption, caption) .label { display: block; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      margin: var(--space-6) 0; padding-inline-end: 1px; padding-block-end: 1px; }
+    .stat-strip > div { border: 1px solid var(--rule-light); margin-inline-end: -1px; margin-block-end: -1px;
+      padding: var(--space-3) var(--space-4); }
+    .stat-strip dt { font-size: 0.8em; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip dd { margin: 0; }
+    .stat-strip .v { font-size: 1.9em; line-height: 1.05; margin-block-start: 0.3rem; color: var(--on-surface); font-variant-numeric: tabular-nums; }
+    .stat-strip .s { font-size: 0.85em; color: var(--label); }
     th.num, td.num { text-align: end; }
     :is(th, td)[align="left"] { text-align: start; }
     :is(th, td)[align="center"] { text-align: center; }
@@ -347,8 +363,13 @@
     .step-arrow { color: var(--muted); }
     [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
     table.bar-chart td.bar { --bar-tint: oklch(from var(--data-1) l c h / 0.3);
-      background-image: linear-gradient(var(--bar-tint) 0 0); background-repeat: no-repeat;
-      background-size: var(--bar, 0) 1.1em; background-position: left center; inline-size: 12rem; }
+      --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
+      background-image: linear-gradient(var(--bar-tint) 0 0), linear-gradient(var(--rule) 0 0),
+        linear-gradient(to right, transparent calc(25% - 1px), var(--bar-guide) 0 25%, transparent 0 calc(50% - 1px),
+          var(--bar-guide) 0 50%, transparent 0 calc(75% - 1px), var(--bar-guide) 0 75%, transparent 0);
+      background-repeat: no-repeat; background-size: var(--bar, 0) 1.1em, 1px 100%, 100% 100%;
+      background-position: left center; inline-size: 12rem; }
+    table.bar-chart td.bar.lead { font-weight: 600; }
     [dir="rtl"] table.bar-chart td.bar { background-position: right center; }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
@@ -633,12 +654,14 @@
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
+      pie: { textPosition: 0.65 },
       fontFamily: mermaidFont,
       themeVariables: {
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
         pieOpacity: '1',
+        pieTitleTextSize: '1.15rem', pieStrokeWidth: '1.5px', pieOuterStrokeWidth: '1px',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });

@@ -6,7 +6,7 @@
   <title>Tufte-Dracula chart components</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.49.0 */
+    /* Dracula-Tufte (muted) v1.50.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -189,6 +189,22 @@
       vertical-align: top; font-variant-numeric: tabular-nums;
       transition: background-color 0.12s ease-out;
     }
+    table.evidence-table tbody tr + tr td { border-block-start: 1px solid var(--rule-light); }
+    table.evidence-table thead th { box-shadow: inset 0 -1px 0 var(--rule); }
+    table.evidence-table td:first-child { font-weight: 600; color: var(--on-surface); }
+    tfoot td { font-weight: 600; box-shadow: inset 0 1px 0 var(--rule); }
+    .chart-takeaway { border-inline-start: 2px solid var(--rule-light); padding-inline-start: var(--space-4); color: var(--label); }
+    .chart-takeaway strong { color: var(--on-surface); }
+    .chart-takeaway .more { display: block; font-size: 0.9em; color: var(--muted); }
+    :is(figcaption, caption) .label { display: block; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      margin: var(--space-6) 0; padding-inline-end: 1px; padding-block-end: 1px; }
+    .stat-strip > div { border: 1px solid var(--rule-light); margin-inline-end: -1px; margin-block-end: -1px;
+      padding: var(--space-3) var(--space-4); }
+    .stat-strip dt { font-size: 0.8em; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip dd { margin: 0; }
+    .stat-strip .v { font-size: 1.9em; line-height: 1.05; margin-block-start: 0.3rem; color: var(--on-surface); font-variant-numeric: tabular-nums; }
+    .stat-strip .s { font-size: 0.85em; color: var(--label); }
     th.num, td.num { text-align: end; }
     :is(th, td)[align="left"] { text-align: start; }
     :is(th, td)[align="center"] { text-align: center; }
@@ -347,8 +363,13 @@
     .step-arrow { color: var(--muted); }
     [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
     table.bar-chart td.bar { --bar-tint: oklch(from var(--data-1) l c h / 0.3);
-      background-image: linear-gradient(var(--bar-tint) 0 0); background-repeat: no-repeat;
-      background-size: var(--bar, 0) 1.1em; background-position: left center; inline-size: 12rem; }
+      --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
+      background-image: linear-gradient(var(--bar-tint) 0 0), linear-gradient(var(--rule) 0 0),
+        linear-gradient(to right, transparent calc(25% - 1px), var(--bar-guide) 0 25%, transparent 0 calc(50% - 1px),
+          var(--bar-guide) 0 50%, transparent 0 calc(75% - 1px), var(--bar-guide) 0 75%, transparent 0);
+      background-repeat: no-repeat; background-size: var(--bar, 0) 1.1em, 1px 100%, 100% 100%;
+      background-position: left center; inline-size: 12rem; }
+    table.bar-chart td.bar.lead { font-weight: 600; }
     [dir="rtl"] table.bar-chart td.bar { background-position: right center; }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
@@ -633,12 +654,14 @@
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
+      pie: { textPosition: 0.65 },
       fontFamily: mermaidFont,
       themeVariables: {
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
         pieOpacity: '1',
+        pieTitleTextSize: '1.15rem', pieStrokeWidth: '1.5px', pieOuterStrokeWidth: '1px',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });
@@ -763,31 +786,42 @@
   <main>
   <article>
     <h1>Chart Components</h1>
-    <p class="byline">table.bar-chart in CSS over ordinary markup, and a Mermaid pie fence for a part-to-whole share</p>
+    <p class="byline">table.bar-chart in CSS over ordinary markup, and a Mermaid pie fence, both using illustrative fixture data</p>
 
-    <nav>
-      <a href="#bars">Bar chart</a>
-      <a href="#pie">Pie chart</a>
-      <a href="#more">More diagram types</a>
-      <a href="#which">Which one</a>
+    <nav class="toc" aria-labelledby="toc-label">
+      <p class="toc-label" id="toc-label">On this page</p>
+      <ol>
+        <li><a href="#bars">Bar charts</a></li>
+        <li><a href="#pie">Pie chart</a></li>
+        <li><a href="#more">More diagram types</a></li>
+        <li><a href="#summary">Reading summary</a></li>
+        <li><a href="#which">Which one</a></li>
+      </ol>
     </nav>
 
     <section>
       <h2 id="bars">Bar chart</h2>
       <p>A bar chart here is a real table with a class on it. The bar is a background band inside the cell that already holds the number, sized by a <code>--bar</code> percentage the generator sets, so the value is text in the markup and the bar is a second reading of it. Nothing is added to the accessibility tree and nothing is lost when the band does not paint.</p>
+      <dl class="stat-strip">
+        <div><dt>Files</dt><dd class="v">4</dd><dd class="s">in the payload</dd></div>
+        <div><dt>Largest share</dt><dd class="v">52%</dd><dd class="s">the stylesheet</dd></div>
+        <div><dt>Smallest share</dt><dd class="v">12%</dd><dd class="s">the palette file</dd></div>
+      </dl>
       <table class="bar-chart" tabindex="0">
-        <caption>Payload bytes by file, as a share of the whole. Every bar starts at the same edge, so length is the comparison.</caption>
+        <caption><span class="label">Payload share by file</span>Illustrative shares across four files. Each value is a share of their combined total. Guides mark 25 percentage points.<span class="byline">Source: fixture data, not measured file sizes.</span></caption>
         <thead><tr><th scope="col">File</th><th scope="col">Share</th></tr></thead>
         <tbody>
-          <tr><td><code>tufte-dracula.css</code></td><td class="bar" style="--bar: 52%">52%</td></tr>
+          <tr><td><code>tufte-dracula.css</code></td><td class="bar lead" style="--bar: 52%">52%</td></tr>
           <tr><td><code>mermaid.js</code></td><td class="bar" style="--bar: 21%">21%</td></tr>
           <tr><td><code>filter.js</code></td><td class="bar" style="--bar: 15%">15%</td></tr>
           <tr><td><code>mermaid-palette.json</code></td><td class="bar" style="--bar: 12%">12%</td></tr>
         </tbody>
+        <tfoot><tr><td>Total</td><td>100%</td></tr></tfoot>
       </table>
-      <p>Every band is one hue, and the row label carries the category. Coloring each band from the <code>--data-*</code> ramp to key it to a legend was tried and measured out: at the 0.3 alpha that keeps the number on top of the band legible, the four ramp members land within Lc 2 of each other, so a band cannot carry a category at all (see NOTES.md, <em>CSS charts</em>). The table below is the other axis convention: each bar is a share of the largest value rather than of a total, which is what makes an unlabelled axis honest.</p>
+      <p class="chart-takeaway"><strong>Read:</strong> the stylesheet has the largest share in this example.<span class="more">Compare bar length for rank, and keep the percentage for exact values.</span></p>
+      <p>Every band uses one hue, and the row label carries the category. Per-row colors from the <code>--data-*</code> ramp were tried and measured out: at the 0.3 alpha that keeps each number legible, the four ramp members land within Lc 2 of each other, so color cannot identify a category (see NOTES.md, <em>CSS charts</em>). The next table uses a different scale: each bar is a share of the largest value, not a share of the total.</p>
       <table class="bar-chart" tabindex="0">
-        <caption>A synthetic single series, each bar a share of the largest value rather than of a total</caption>
+        <caption>Illustrative counts. Bar length is a share of the largest value, 480, not a share of the total. Guides mark 25 percentage points.<span class="byline">Source: fixture data.</span></caption>
         <thead><tr><th scope="col">Category</th><th scope="col">Count</th></tr></thead>
         <tbody>
           <tr><td>First category</td><td class="bar" style="--bar: 100%">480</td></tr>
@@ -796,15 +830,26 @@
           <tr><td>Fourth category</td><td class="bar" style="--bar: 4%">19</td></tr>
         </tbody>
       </table>
+      <p class="chart-takeaway"><strong>Read:</strong> the second chart compares counts to a named maximum. The printed count remains the exact value.</p>
+      <h3 id="summary">Reading summary</h3>
+      <table class="evidence-table" tabindex="0">
+        <caption>How to read the two bar tables<span class="byline">Source: illustrative fixture values.</span></caption>
+        <thead><tr><th scope="col">Finding</th><th scope="col">Evidence</th><th scope="col">Action</th></tr></thead>
+        <tbody>
+          <tr><td>First table shows shares of a whole</td><td>Four values total 100%</td><td>Compare each file's contribution.</td></tr>
+          <tr><td>Second table uses the largest value as its baseline</td><td>480 is 100%; 19 is 4%</td><td>Compare bar lengths, then read exact counts.</td></tr>
+        </tbody>
+      </table>
+      <details class="deep"><summary>Method</summary><p>The first table divides each value by the four-file total. The second divides each count by 480. Guide lines mark 25 percentage point intervals. Fixture values are illustrative, not measured repository sizes.</p></details>
     </section>
 
     <section>
       <h2 id="pie">Pie chart</h2>
       <p>A pie here is a Mermaid <code>pie showData</code> fence, themed per palette in <code>mermaid.js</code>. It paints each percentage inside its own slice, states the raw value in the legend beside it, and separates one slice from the next with a stroke of the page ground, because the four ramp members sit at one lightness and two touching slices otherwise differ in hue alone. A CSS <code>conic-gradient</code> shipped in v1.42.0 and drew the same four numbers with none of that: no percentage in any slice, no legend of its own, and a disc a reader had to measure. It was taken back out in v1.43.0.</p>
       <pre class="mermaid">pie showData
-  accTitle: Payload bytes by file
-  accDescr: Four payload files as a share of the template's bytes, each slice carrying its own percentage.
-  title Payload bytes by file
+  accTitle: Illustrative payload shares by file
+  accDescr: Four payload files as illustrative shares of a whole, each slice carrying its own percentage.
+  title Illustrative payload shares
   "tufte-dracula.css" : 52
   "mermaid.js" : 21
   "filter.js" : 15

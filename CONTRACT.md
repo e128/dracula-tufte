@@ -180,11 +180,14 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       deliberately breaks, so follow this bullet and not the fixture.**
 - [ ] `--bar` on every `td.bar` inside a `table.bar-chart`, as a percentage, with the value itself
       as text in that same cell (in `samples/dark-charts.html`, search
-      `class="bar" style="--bar: 52%`). The band is a background image, so `forced-colors: active`
+      `class="bar" style="--bar: 21%`). The band is a background image, so `forced-colors: active`
       drops it and so does a reader who prints with background graphics off: a cell whose only
       content is the band then states nothing at all, while a cell that also carries the number
       loses only the second reading of it. Say in the `<caption>` what the percentage is a share
-      of, because the component draws no axis and a bare band implies one. **The band has no color
+      of, because the component draws no axis and a bare band implies one. State the measure, the
+      denominator, the cohort and the date range there when they change how a reader reads the
+      numbers, and put the source in a `<span class="byline">`. This stays prose: no check can tell
+      a caption that states them from one that does not. **The band has no color
       property, and that is deliberate:** it is a 0.3 alpha wash of `--data-1` in every row, which
       is the alpha the number sitting on top of it needs (check 12 of `palette-check.py` measures
       that pair in all four modes). A per-row hue was measured out, because four washes at that
@@ -257,6 +260,7 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 
 | since | your generator must now |
 | --- | --- |
+| v1.50.0 | nothing, but three existing renders change. **A `tfoot td` takes weight 600 and a strong rule above it**, so a table that already has a `tfoot` looks different. **A `table.bar-chart` draws faint guides at 25, 50 and 75 percent and a baseline at the zero edge.** **A Mermaid pie gets a smaller title, thinner strokes and labels nearer the slice centre.** Five opt-ins are new: `.stat-strip` (a `dl` of `div` groups), `.label` inside a `figcaption` or `caption`, `.chart-takeaway` with a `.more` second line, `table.evidence-table`, and `td.bar.lead`. No new token, no new § 2 requirement (in `samples/dark-charts.html`, search `class="stat-strip"` and `class="bar lead"`) |
 | v1.49.0 | nothing. **An `.edge-list` draws a hairline between its two tracks** and **a `<span class="byline">` inside a `figcaption` or `caption` becomes a second caption tier**. The second is the only opt-in, and it is the class placement alone; a caption without one renders as before. No new class, no new token, no § 2 requirement (in `samples/dark.html`, search `class="edge-list"` and `Source: the flowchart above`) |
 | v1.48.2 | **supply `tabindex="0"`, `role="region"` and a label on any pandoc `span.math.display`**, the same three a `<math display="block">` already takes. That span has its own sideways-scroll axis, CSS cannot give it a tab stop, and Safari does not focus a scroller on its own, so a wide equation was out of keyboard reach there. The rest is self-contained: two decorative glyphs left the accessibility tree and four previously untested rules gained a fixture instance |
 | v1.48.0 | nothing. Nine more fence types theme correctly, and two of them need the front-matter form rather than written-inline options: **`kanban` and Mermaid's own `timeline` keyword accept `accTitle`/`accDescr` and never surface them**, and a written-inline `kanban` draws them as two junk columns, so those two take a `---` block above the diagram keyword with both keys at column 0 and keep the bare `Zoom diagram` label. `gantt` needs `tickInterval 1day`, since its default tick spacing drew every date twice. **`zenuml` still does not render**, and stays out on the same cost basis that dropped the separate ELK import in v1.47.0 (in `samples/dark-charts.html`, search `classDiagram`) |

@@ -49,12 +49,14 @@
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
+      pie: { textPosition: 0.65 },
       fontFamily: mermaidFont,
       themeVariables: {
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
         pieOpacity: '1',
+        pieTitleTextSize: '1.15rem', pieStrokeWidth: '1.5px', pieOuterStrokeWidth: '1px',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });

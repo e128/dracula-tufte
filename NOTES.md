@@ -775,6 +775,12 @@ clears the floor. **A pie needs a boundary between slices**: the ramp holds one 
 so adjacent slices had no luminance step at all (measured 1.00-1.14:1 across palettes and even under
 simulated color-blindness). Mermaid's `pieStrokeColor` (`--surface`, so slices separate by a gap not
 a line) and `pieOuterStrokeColor` (`--muted`, matching every other hairline) answer this.
+**The pie's title is `1.15rem`, its slice stroke `1.5px`, its outer ring `1px`, and its labels sit
+at `textPosition: 0.65`.** The stock 25px title outweighed the 17px labels and the pie under it, and
+the 2px seams read as heavy dark lines in the dark palette. `pieTitleTextSize`, `pieStrokeWidth` and
+`pieOuterStrokeWidth` are live `themeVariables` (`script-probe.py` asserts they reach the SVG).
+`textPosition` is a `pie` config key, not a theme variable. Do not drop the stroke below 1px: the
+gap between slices is what separates two fills of one lightness.
 **Do not drop either stroke to Mermaid's `black` default.**
 
 **The bar band paints through a background image, so print and forced-colors both need a pin,
@@ -792,6 +798,28 @@ be asked to emit correctly. The gap is deliberate.
 
 `samples/dark-charts.html` carries two bar tables (share of whole vs. share of the largest value, the
 convention that makes an unlabelled axis honest) plus a Mermaid pie of the same numbers.
+
+**Bar cells use neutral quarter guides behind the value band.** The guides show the bar scale, while
+text remains the source of each value. Do not use guides to encode categories or remove the text
+values. **Guides draw at 25, 50 and 75 percent only, faint, with a strong 1px baseline at the zero
+edge.** The axis edge and the grid carry two weights, as on a printed chart. Do not add a guide at
+100 percent (it drew a second border on the cell). **Row rules stay scoped to `.evidence-table`** so
+they structure a findings summary without changing every table: a strong rule under the header, a
+hairline between rows, and none after the last row, since the table's own bottom rule closes it. The
+first column of that table is bold. Do not add zebra stripes.
+
+**`tfoot td` takes a strong rule above it and weight 600**, so a total reads as a total in any table.
+
+**`td.bar.lead` marks one emphasis row by weight 600 only.** A different hue or a higher band alpha
+was rejected: the first is the per-row color this section already bans, and the second falls outside
+check 12, which measures one alpha. Do not add a color to `.lead`.
+
+**`.stat-strip` is a `dl` of `div` groups: `dt` label, `dd.v` value, `dd.s` gloss.** Cell borders
+overlap by 1px through negative margins, not a gap on a colored ground, because forced colors resets
+backgrounds and the dividers would vanish. Do not put a shadow or a card fill on it.
+
+**A caption's `.label` is a small-caps line naming what the figure is, above the sentence on how to
+read it.** `.chart-takeaway .more` is its second tier. Both are opt-in spans.
 
 ## Progressive disclosure
 
