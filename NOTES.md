@@ -466,9 +466,9 @@ tokens sit at 3:1 against `--surface`; the data ramp at 3.2:1.
 
 ### Tier decisions
 
-**`--label` moves toward body text; `--muted` is pinned at the contrast floor.** They used to share a
-hue/chroma and read as one tier despite co-occurring (`.scorecard`, `.byline` above `h3`); `--muted`
-couldn't get quieter, so `--label` moved.
+**`--label` moves toward body text; `--muted` is pinned at the contrast floor.** They differ in
+hue/chroma so the two tiers read apart where they co-occur (`.scorecard`, `.byline` above `h3`). `--muted`
+cannot get quieter, so `--label` is the one that moves.
 
 **The row-hover fill, `--surface-alt`, is a flat token that darkens, not a lightening `color-mix`.**
 A `color-mix` composited to a lighter row that took every accent below 4.5:1. **Do not reach for
@@ -685,9 +685,13 @@ fixed `--on-surface`, never `--icon-color`**: a same-hue glyph on its own tint m
 label (unhidden, a screen reader announces the initial and then the title right after it, twice).
 `.step-node` is the opposite case (no adjacent label) and keeps its letter as real text.
 
+**An `.icon-list` row never breaks its title from its detail with `<br>`.** `br` is for line breaks that
+are content (a poem, an address), so `.icon-list strong` is `display: block` and the CSS makes the break.
+A `cite` marks the title of a standalone work. A file path and line is `<code>`.
+
 **A step chain names its steps in the prose that introduces it, and every `.step-arrow` is
 `aria-hidden="true"`.** A node is a circle with room for one character, so the words can't go inside
-it: the fixture originally shipped bare letters (`S`, `I`, `O`, `V`) decoding to nothing for any
+it: bare letters (`S`, `I`, `O`, `V`) decode to nothing for any
 reader. **Do not answer this with a visually-hidden label class**: the sheet has none, and adding
 one turns a problem one sentence of prose already solves into a payload API.
 
@@ -1245,10 +1249,9 @@ link out to every item it names. An open subgraph still gives visual structure; 
 reduce node count (point 4 does that).
 
 **2. Switch a large map to the ELK layout engine.** As of v12.0.0 ELK ships inside core rather than
-the separate `@mermaid-js/layout-elk` module this template used to conditionally load: a
-`config: { layout: elk }` fence still opts in exactly as before, with nothing left to load
-conditionally or race against `mermaid.initialize()` (verified by rendering the explicit-ELK diagram
-with no second import present). **ELK is also the default layout for every diagram naming no
+a separate `@mermaid-js/layout-elk` module: a
+`config: { layout: elk }` fence opts in with nothing to load
+conditionally or race against `mermaid.initialize()`. **ELK is also the default layout for every diagram naming no
 `layout` at all**, as of the same release; this template accepts that default (see
 [Init config](#mermaid)).
 
@@ -1353,7 +1356,7 @@ there is nothing to fix here without patching Mermaid. See *Mermaid* for what th
 instead.
 
 **The `pre` region is named for what the container IS, not for the diagram inside it**
-(`window.mermaidRegionLabel || 'Scrollable diagram'`): it used to take the bare title, which the SVG
+(`window.mermaidRegionLabel || 'Scrollable diagram'`): the bare title would repeat what the SVG
 already exposes as its own `graphics-document` name, so a screen reader read the diagram title, the
 word "region", and the diagram title again. **The trade: several regions on one page now share a
 name** where each was once unique: weighed deliberately, since the duplication cost was paid on
@@ -1361,10 +1364,9 @@ every entry into every diagram, while the shared-name cost only hits a reader br
 below 600px, one step before a uniquely named diagram. **Do not "fix" this by putting the title back
 in the label.**
 
-**`pre.mermaid` is a labelled region only at widths where it can actually scroll**, answering two
-defects at once: `mermaid.js` used to set the tab stop unconditionally, so above 600px (measured
-`scrollWidth == clientWidth` on every fixture diagram) every diagram was a tab stop with nothing to
-scroll, carrying the duplicate-name `aria-label` above too. Two cheaper alternatives (a second
+**`pre.mermaid` is a labelled region only at widths where it can actually scroll**, because an unconditional tab stop
+would put a stop on every diagram above 600px (measured `scrollWidth == clientWidth` on every fixture
+diagram) with nothing to scroll, and it would carry a duplicate-name `aria-label`. Two cheaper alternatives (a second
 invented English string; a focusable generic) were declined for the reasons already stated above.
 `mermaid.js` matches `window.matchMedia('(max-width: 600px)')` and syncs `tabindex`/`role`/
 `aria-label` on `change`: verified by driving a real resize (region absent at 1440px, present at
@@ -1479,7 +1481,7 @@ on a light ground).
 `--mermaid-scheme: dark`, the light block overrides it. **`matchMedia` reads the host; the token
 reads the cascade**: the forced-light preview pages only work because they rewrite the `@media`
 condition, which `matchMedia` can't see but a computed custom property resolves correctly. A deleted
-token used to fail silently (`getPropertyValue` on a missing property returns `''`, not `'light'`);
+token fails silently (`getPropertyValue` on a missing property returns `''`, not `'light'`);
 check 6 now asserts all four: `:root` declares `dark`, the light block declares `light`, `mermaid.js`
 reads the token by name, and `mermaid.js` does **not** read `matchMedia`.
 
