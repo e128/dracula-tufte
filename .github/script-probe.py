@@ -136,6 +136,11 @@ DRIVER = """
         t('mermaid-rendered', ready);
         t('mermaid-no-region-when-wide', pres.every(p => !p.hasAttribute('role')));
         t('mermaid-no-tabstop-when-wide', pres.every(p => !p.hasAttribute('tabindex')));
+        const pieTitle = document.querySelector('pre.mermaid .pieTitleText');
+        const pieSlice = document.querySelector('pre.mermaid .pieCircle');
+        t('mermaid-pie-themed', Boolean(pieTitle && pieSlice)
+          && parseFloat(getComputedStyle(pieTitle).fontSize) < 20
+          && getComputedStyle(pieSlice).strokeWidth === '1.5px');
         const svg = pres[0] && pres[0].querySelector('svg');
         const overlay = document.getElementById('mermaid-zoom');
         if (svg && overlay) {
