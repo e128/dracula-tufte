@@ -20,6 +20,9 @@ behaviour. It is the only check in the repo that runs the payload rather than re
   mermaid.js  every `pre.mermaid` renders an `<svg>` and gains its own zoom button, a
               click on the live diagram opens the `<dialog>`, and the pre carries no
               `role="region"` at a width where it cannot scroll
+  layout      `nav.toc` does not overlap a floated `.sidenote`/`.marginnote` stack placed
+              immediately before it, the case where a full-width ground would otherwise
+              paint under the note. NOTES.md, Progressive disclosure
 
 Run: python3 .github/script-probe.py
 
@@ -118,6 +121,21 @@ DRIVER = """
     t('alt-tree-arrow', alt('table.tree [data-depth="1"] td:first-child', '::before'));
     t('alt-pull-quote', alt('blockquote.pull', '::before'));
     t('alt-summary-triangle', alt('details.deep > summary', '::before'));
+
+    // nav.toc paints a full-width ground, and a floated note stack that outgrows its
+    // paragraph must not paint under it (NOTES.md, Progressive disclosure). A float
+    // shortens the line boxes of a block it overlaps, never its box, so the index has
+    // to clear the stack explicitly. This is a layout claim a screenshot cannot check.
+    const toc = document.querySelector('nav.toc');
+    const precedesToc = (n) => Boolean(toc) &&
+      Boolean(n.compareDocumentPosition(toc) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const notes = [...document.querySelectorAll('.sidenote, .marginnote')].filter(precedesToc);
+    t('toc-note-stack-present', notes.length >= 3);
+    const tr = toc ? toc.getBoundingClientRect() : { left: 0, top: 0, right: 0, bottom: 0 };
+    t('toc-clears-note-stack', notes.every((n) => {
+      const r = n.getBoundingClientRect();
+      return !(r.left < tr.right && r.right > tr.left && r.top < tr.bottom && r.bottom > tr.top);
+    }));
 
     if (!window.__probeMermaid) {
       out.push('mermaid=SKIP');
@@ -245,7 +263,7 @@ def main():
     if "</body>" not in html:
         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
-    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 17, "binding")
+    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 19, "binding")
 
     # Same page, forced-colors switched on by rewriting the condition. Checked as a
     # string in the real fixture first, so a renamed or deleted query fails loudly here

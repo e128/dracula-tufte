@@ -855,6 +855,21 @@ Same `content: "…" / ""` alt-text convention as the outbound arrow.
 transparent)` lands between two measured grounds). `--muted`/`--purple-bright` clear their floor
 against both, so this is an honest, documented gap, not a check that cannot see the mix.
 
+**`nav.toc` clears the floated note column** (`clear: right; clear: inline-end`, the same value
+pair `.sidenote` already carries). The index paints a full-width ground, and a `.sidenote`/
+`.marginnote` stack taller than its anchor paragraph (three citations in one paragraph is the
+common case) extends past that paragraph into the block after it. **A float shortens the line
+boxes of a block it overlaps, never its box**, so the ground painted under the note. The index's
+`ol` escaped on its own only because `columns: 2` makes it a block formatting context; the `nav`
+box did not. Clearing drops the whole index below the stack at full width. **Rejected:
+`display: flow-root`**, which also stops the overlap but squeezes the index into a half column
+beside the note, compressing the two-column list for no reason. Every other full-width filled
+block in the sheet is already a BFC (`pre` through `overflow-x`, `.icon-list li`, `.edge-list`,
+`.recent-groups`, `.stat-strip`, `.scorecard` through their display), so `nav.toc` was the only
+one exposed. The fixture carries a three-note stack immediately before its index, and
+`.github/script-probe.py` asserts the index does not overlap it. **Do not remove the `clear` to
+recover width beside a note**, and do not move this behind a consumer opt-in.
+
 **Hover on both components sits inside `@media (hover: hover)`** (outside it, a tap on a touch device
 leaves the affordance stuck in its hover state: see Interaction states). **Both components carry a
 fixture instance**, without which no mode render and no forced-colors sweep draws them.
