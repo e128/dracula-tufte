@@ -340,6 +340,14 @@ def body [] {
     "      <a href=\"#\">Project Summary</a>"
     "    </nav>"
     ""
+    # A floated note stack immediately before the index. Three margin notes in one
+    # paragraph clear each other, so the stack is taller than its one-line paragraph
+    # and extends into nav.toc. A float shortens the line boxes of a block, never its
+    # box, so without `clear` on nav.toc its full-width ground paints under the notes.
+    # NOTES.md, Progressive disclosure; script-probe.py asserts this geometry.
+    "    <p>A note stack here spans the block that follows it.<label for=\"mn-2\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-2\" class=\"margin-toggle\"/><span class=\"marginnote\">The first margin note in the stack. It floats to the inline end, and the notes below it clear it.</span><label for=\"mn-3\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-3\" class=\"margin-toggle\"/><span class=\"marginnote\">A second margin note, clearing the first, so the pair stacks down the margin column.</span><label for=\"mn-4\" class=\"margin-toggle\">&#8853;</label><input type=\"checkbox\" id=\"mn-4\" class=\"margin-toggle\"/><span class=\"marginnote\">A third note makes the stack taller than its one-line paragraph, which is the case the index has to clear.</span></p>"
+    ""
+
     # nav.toc and details.deep shipped styled with no instance in v1.45.0, so no
     # mode render and no forced-colors sweep ever drew either one. See NOTES.md,
     # Progressive disclosure.

@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.50.1 */
+    /* Dracula-Tufte (muted) v1.50.2 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -575,7 +575,7 @@
       pre.mermaid { --surface: unset; --on-surface: unset; --code-bg: unset; --purple: unset;
         --muted: unset; background: none; padding: 0; }
     }
-    nav.toc { margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
+    nav.toc { clear: right; clear: inline-end; margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
       border-inline-start: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
     nav.toc .toc-label { font-size: 0.72rem; letter-spacing: 0.09em;
       text-transform: uppercase; color: var(--muted); margin: 0 0 0.45rem; }
@@ -799,6 +799,8 @@
       <a href="#">Reuse Candidates</a>
       <a href="#">Project Summary</a>
     </nav>
+
+    <p>A note stack here spans the block that follows it.<label for="mn-2" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-2" class="margin-toggle"/><span class="marginnote">The first margin note in the stack. It floats to the inline end, and the notes below it clear it.</span><label for="mn-3" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-3" class="margin-toggle"/><span class="marginnote">A second margin note, clearing the first, so the pair stacks down the margin column.</span><label for="mn-4" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-4" class="margin-toggle"/><span class="marginnote">A third note makes the stack taller than its one-line paragraph, which is the case the index has to clear.</span></p>
 
     <nav class="toc" aria-labelledby="toc-label">
       <p class="toc-label" id="toc-label">On this page</p>
