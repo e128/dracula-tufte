@@ -435,6 +435,11 @@ cell once read "↳ F1").
 `\A0` keeps the arrow from an orphan line. Print drops both arrow and underline (the destination is
 unreachable on paper).
 
+**Heading permalinks (`a.headerlink`, `a.anchor`) stay glyph-sized, about 10 by 20px.** WCAG 2.5.8
+passes through its spacing exception: the nearest other target sits 38px or more from each glyph's
+centre at 1280px and 320px, so no 24px circle touches another. Do not pad them toward 44px: the
+padding would push the heading's last line wider for a control that is only revealed on hover or focus.
+
 `cite` is monospace and `font-style: normal`: the browser default (italic serif) is indistinguishable
 from `<em>` in this theme.
 
@@ -455,6 +460,12 @@ since its print block swaps to an outline). **Two tokens in relative color synta
 `--highlight`) **sat outside every check** until check 10 resolved and gated both; this mattered most
 for `--purple-bright`, the one token putting purple text on `--code-bg` (accepted at 4.21:1, the
 `.hljs-type` pair).
+
+**Relative color syntax has no fallback, and the floor is stated here.** `oklch(from var(--x) l c h / a)`
+is Newly available (web-platform-dx, since 2024-09-16), and the sheet uses it for eight declarations. The
+template supports browsers from that date on. A browser without it drops the declaration and keeps the
+base fill. Do not add an `@supports` twin with a hardcoded fallback color: the twin would sit outside
+checks 9 and 10, which resolve the relative form, and it would drift from the token it copies.
 
 **`prefers-contrast: more` states `--purple-bright` explicitly, as `oklch(0.885 0.060 300.909)`**,
 because the base relative-color rule (`calc(l + 0.07)` off `--purple`) would land past the sRGB
