@@ -833,5 +833,42 @@ if not re.search(r"pieOpacity:\s*'1'", mermaid_js):
           "the --data-* ramp is gated to")
     fail = 1
 
+# 13. .claude/statusline.sh hardcodes truecolor projections of ten :root tokens, and no
+#     generator owns it: it is a harness file, not payload, so a palette edit can leave a
+#     stale hex there that nobody reviews the way a page gets reviewed. Its own comment tells
+#     the reader to recompute by hand, which is the drift this check replaces. Each constant
+#     names its token and states the hex it projects to, so both the escape and the comment
+#     are pinned, and a constant edited without its comment fails too.
+STATUSLINE_TOKENS = {
+    "PURPLE": "purple", "LINK": "link", "LABEL": "label", "MUTED": "muted",
+    "RULE": "rule-light", "GREEN": "green", "ORANGE": "orange", "RED": "red",
+    "PINK": "pink", "DATA1": "data-1",
+}
+statusline = ROOT / ".claude" / "statusline.sh"
+if not statusline.exists():
+    print("DRIFT: .claude/statusline.sh is missing, so its ten :root projections go unchecked")
+    fail = 1
+else:
+    sl = statusline.read_text()
+    for const, token in STATUSLINE_TOKENS.items():
+        m = re.search(
+            rf"^{const}='(\d+);(\d+);(\d+)'[^\n#]*#\s*--{re.escape(token)}\b\s*#([0-9a-f]{{6}})",
+            sl, re.M,
+        )
+        if not m:
+            print(f"DRIFT: .claude/statusline.sh has no {const} constant naming --{token} "
+                  f"and the hex it projects to")
+            fail = 1
+            continue
+        got = "#%02x%02x%02x" % tuple(int(v) for v in m.groups()[:3])
+        want = palette.get(token)
+        if want is None:
+            print(f"DRIFT: .claude/statusline.sh {const} names --{token}, not a :root token")
+            fail = 1
+        elif got != want or f"#{m.group(4)}" != want:
+            print(f"DRIFT: .claude/statusline.sh {const} is {got} / #{m.group(4)}, but "
+                  f"--{token} computes to {want}")
+            fail = 1
+
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)
