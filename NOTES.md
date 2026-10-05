@@ -576,7 +576,7 @@ defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs twelve checks: (1) hex projections in both Mermaid palettes; (2) the
+`.github/palette-check.py` runs thirteen checks: (1) hex projections in both Mermaid palettes; (2) the
 `classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
 stray hex in `mermaid.js`; (5) the contrast floor in all four modes against three grounds, plus rules
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
@@ -585,7 +585,13 @@ in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs;
 relative-color tokens per mode, plus `mark`'s alpha composite; (11) the pie slice label against all
 four fills in both palettes, plus `pieOpacity` pinned to `1`; (12) `--on-surface` over the
 `table.bar-chart` band at its alpha, against both grounds in every mode, plus print and forced-colors
-pins.
+pins; (13) `.claude/statusline.sh`'s ten truecolor constants against their `:root` projections.
+
+**The statusline is a derived-hex consumer no generator owns**, so it is the one place a palette
+edit can leave a stale value nothing would review: a harness file, not payload, and its own comment
+asks the reader to recompute by hand. Check 13 reads each constant's escape and the `#hex` beside
+it, and fails on either drifting. **A statusline constant is therefore edited with its comment or
+not at all.**
 
 **Check 9 also gates its own reason for existing**: `.step-node`'s role list deliberately omits
 `--data-*`, and the check says so out loud rather than leaving an untested prohibition. **A new token
