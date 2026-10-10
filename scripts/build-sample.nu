@@ -35,7 +35,7 @@ def main [] {
       "<html lang=\"en\">"
       "<head>"
       "  <meta charset=\"utf-8\"/>"
-      "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>"
+      "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\"/>"
       $"  <title>($p.2)</title>"
       "  <meta name=\"generated-by\" content=\"scripts/build-sample.nu\"/>"
       $css
@@ -558,7 +558,7 @@ def body [] {
     "        <span class=\"sc-label\">P1 Observability</span><span class=\"verdict verdict-pass\">Pass</span><span class=\"sc-note\">directly measured</span>"
     "        <span class=\"sc-label\">P2 Mechanism</span><span class=\"verdict verdict-partial\">Partial</span><span class=\"sc-note\">surrogate endpoint</span>"
     "        <span class=\"sc-label\">P3 Prediction</span><span class=\"verdict verdict-failed\">Failed</span><span class=\"sc-note\">model output, not measurement</span>"
-    "        <span class=\"sc-label\">P4 Coherence</span><span class=\"verdict verdict-neutral\">N/A</span><span class=\"sc-note\">not assessed</span>"
+    "        <span class=\"sc-label\">P4 Coherence of the profile the method inherits</span><span class=\"verdict verdict-neutral\">N/A</span><span class=\"sc-note\">not assessed</span>"
     "        <span class=\"sc-full\">Full verdict spans all three columns for a summary line.</span>"
     "      </div>"
     "      <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>See below</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>"
