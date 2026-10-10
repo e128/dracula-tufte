@@ -156,6 +156,17 @@ second axis, and italic costs the most legibility at text size on a dark surface
 copy around it. `th` can't drop its declaration (UA default is bold), so italic plus `--pink` carry
 the distinction instead.
 
+**The fixture's `placeholder` carries an example, not an instruction.** It read `Type to filter`
+through v1.50.4, which restates the `<label>` directly above it and then disappears on the first
+keystroke, so it spent a line of chrome teaching nothing. It is `Failed audit` now, one of the
+entries the box actually filters, so a reader can type it verbatim and watch the list narrow.
+**Do not delete the attribute instead.** Deleting is the cheaper fix and it was the first draft,
+but `.filter-box::placeholder` is one of the eight italic rules above and the fixture set carries
+this one `input.filter-box` (`samples/dark.html` and `samples/light.html`), so deleting the attribute
+would leave that rule with nothing to render and no gate able to notice. **Do not put a multi-term example there either:** the example has to be one query, since
+`filter.js` does a single substring match and an example like `auth, cache, deploy` would promise a
+comma-separated syntax the script does not have.
+
 ## Width and measure
 
 **Page width is one number**, `--page-width: min(90vw, 160rem)` in `:root`, shared by `body` and
@@ -287,7 +298,7 @@ Measured 2026-10-10.
 it still floored at 480px, overflowing the document below that, a real WCAG 1.4.10 failure.
 `minmax(min(30rem, 100%), 1fr)` is the standard guard against exactly this `auto-fit` trap.
 
-Item count and the "view all" link are a generator concern, not a stylesheet one. An uncategorized
+Item count and the "View all" link are a generator concern, not a stylesheet one. An uncategorized
 `.recent-group` is styled identically to a named one, one class not two.
 
 **A `.recent-group .nav-list li` is one line while the card is wide, title leading with `.count`
@@ -309,7 +320,7 @@ February 2023. Measured 2026-10-10: 0 of 120 titles clipped from 305px to 1400px
 200px of card height in two-column mode.
 
 **`.recent-group` and its `.nav-list` stretch to fill the grid row** (`flex-direction: column` plus
-`.nav-list { flex: 1 }`), so a card with fewer items doesn't leave its "view all" link at a different
+`.nav-list { flex: 1 }`), so a card with fewer items doesn't leave its "View all" link at a different
 baseline than its neighbors.
 
 ### `dl.timeline`
@@ -712,6 +723,20 @@ painting a label directly.
 `prefers-reduced-motion`'s global animation-duration zero already freezes the pulse for free. No
 print override needed (paged media runs no CSS animation regardless).
 
+**The pulse is two beats and then still, not a loop.** It ran `infinite` from v1.33.0, where
+`.live-dot` landed, through v1.50.4. WCAG 2.2.2 Pause, Stop, Hide is Level A and asks for a
+mechanism to pause, stop or hide anything that starts on its own, outlives five seconds and sits
+beside other content: an endless blink has to be stoppable, and `prefers-reduced-motion` is not that
+mechanism. It only reaches a reader who has already set it, and the criterion asks the page for the
+affordance. `animation: live-pulse 2s ease-in-out 2` runs four seconds and lands on the dot's resting
+opacity, so the criterion never engages. **`@keyframes live-pulse` ends at `opacity: 1`, not at
+`0.4`**, because an iteration that finishes on a value other than the element's own snaps when the
+animation stops, and a visible pop is a worse artefact than the loop it replaced. **Do not set the resting `opacity` to `0.4` instead**
+to dodge that snap: `--green` at 40% alpha over `--surface` drops the dot under the 3:1 graphic
+floor it currently clears at 7.36:1. **Do not restore `infinite`,** and do not reach for a pause
+button: this is decoration beside a word that already states the status, so making it finite is the
+whole fix, and a control would be a second piece of chrome for nothing.
+
 **`.icon-list`/`.icon-chip`** takes color from an inline `--icon-color` per `<li>` (the
 `--timeline-date` convention), keeping the component color-free by default. **The glyph itself is
 fixed `--on-surface`, never `--icon-color`**: a same-hue glyph on its own tint measured as low as
@@ -885,6 +910,13 @@ token without declaring it.**
 **The summary triangles are decorative and once reached the accessibility tree** (`<details>` already
 exposes its own open state, so the marker only added a spoken "black right-pointing small triangle").
 Same `content: "…" / ""` alt-text convention as the outbound arrow.
+
+**`details.deep > summary` kept `user-select: none` until v1.51.0 and does not any more.** The
+declaration arrived with `list-style: none` as the usual pair, but a `<summary>` holds the tier's
+visible label, so it made that string unselectable and stopped a drag that began on the summary from
+extending into the content it discloses. It bought nothing: removing it changes no toggle behaviour,
+because a double click fires both clicks either way. **Do not put it back**, on any element that
+carries text a reader might want to copy, and not on `details.nav-group > summary` either.
 
 **`nav.toc` paints a composited ground no gate reaches** (`color-mix(in oklab, var(--surface-alt) 60%,
 transparent)` lands between two measured grounds). `--muted`/`--purple-bright` clear their floor
@@ -1850,12 +1882,17 @@ badge rather than a visibly broken one.
 **A fixture demonstrates states. It does not simulate them.** Several details that look like filler
 are regression checks. **A cut to any of these retires the check it exists to be.**
 
-**A fixture is also the copy consumers paste, so its own strings have to be right.** Two weren't:
+**A fixture is also the copy consumers paste, so its own strings have to be right.** Four weren't:
 `.filter-empty` must not state a count (the fixture once said "Clear the filter to see all 4", wrong
 for any other list length, and `filter.js` only writes its own copy when the element is absent: so
 whatever's in the fixture is what ships and gets copied); `.verdict` text is written in sentence case
 (the class already carries `text-transform: uppercase`, so `PASS`/`SEE BELOW` baked presentation into
-copy).
+copy); the `.recent-group` link label reads `View all 12`, sentence case like every other label on the
+page, and was `view all` until v1.51.0. Its accessible name carries the same sentence case
+(`aria-label="View all 12: Category A"`), because the name is read wherever the visible text is not.
+**Do not lowercase it back**, and do not capitalize any other label to match a heading either: a
+control label is a sentence, not a title. See Italics for the fourth, the `placeholder` that stated an
+instruction where an example belonged.
 
 **A new page means five hardcoded fixture lists, not one**: the page list in
 `scripts/build-sample.nu`; the presence, style-and-script-count, and light-preview lists in
