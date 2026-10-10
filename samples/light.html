@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.50.4 */
+    /* Dracula-Tufte (muted) v1.51.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -326,8 +326,8 @@
     .tag-dot::before { content: ""; display: inline-block; width: 0.6em; height: 0.6em;
       border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle; }
     .live-dot { display: inline-block; width: 0.5em; height: 0.5em; border-radius: 50%;
-      background: var(--green); vertical-align: middle; animation: live-pulse 2s ease-in-out infinite; }
-    @keyframes live-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+      background: var(--green); vertical-align: middle; animation: live-pulse 2s ease-in-out 2; }
+    @keyframes live-pulse { 0% { opacity: 0.4; } 50%, 100% { opacity: 1; } }
     .nav-list { list-style: none; padding-inline-start: 0;
       border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
     .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
@@ -586,7 +586,7 @@
       border-block-end: 1px dotted var(--rule-light); }
     nav.toc a:focus-visible { color: var(--purple-bright); }
     details.deep { margin: 0.45rem 0 0; }
-    details.deep > summary { cursor: pointer; user-select: none; list-style: none;
+    details.deep > summary { cursor: pointer; list-style: none;
       font-size: 0.78rem; letter-spacing: 0.04em;
       color: var(--muted); padding: 0.25rem 0; }
     details.deep > summary::before { content: "\25B8\00A0"; }
@@ -930,7 +930,7 @@
 
     <section>
       <h2>Icon rows and a step chain</h2>
-      <p>A tag-dot marks a categorical value that already has a color elsewhere, never a rank. The class carries only the dot, never the label, because it paints <code>currentColor</code> and would otherwise recolor the text beside it: <span class="tag-dot" style="color: var(--data-1)"></span>Rust, <span class="tag-dot" style="color: var(--data-3)"></span>Go, <span class="tag-dot" style="color: var(--data-2)"></span>Python. A live-dot is the sheet's first animation, frozen for free under reduced motion: <span class="live-dot"></span> streaming.</p>
+      <p>A tag-dot marks a categorical value that already has a color elsewhere, never a rank. The class carries only the dot, never the label, because it paints <code>currentColor</code> and would otherwise recolor the text beside it: <span class="tag-dot" style="color: var(--data-1)"></span>Rust, <span class="tag-dot" style="color: var(--data-3)"></span>Go, <span class="tag-dot" style="color: var(--data-2)"></span>Python. A live-dot is the sheet's first animation, two beats and then still, because a loop that never ends owes the reader a way to stop it: <span class="live-dot"></span> streaming.</p>
       <ul class="icon-list" role="list">
         <li style="--icon-color: var(--orange)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Implement</strong><code>implement the functionality</code></div></li>
         <li style="--icon-color: var(--link)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Identify</strong><code>identify the bottleneck</code></div></li>
@@ -1039,7 +1039,7 @@
     <section>
       <h2>Navigation index components</h2>
       <label class="filter-label" for="nav-filter">Filter entries</label>
-      <input id="nav-filter" type="search" class="filter-box" autocomplete="off" placeholder="Type to filter&hellip;"/>
+      <input id="nav-filter" type="search" class="filter-box" autocomplete="off" placeholder="Failed audit"/>
       <p role="status">4 entries</p>
       <ul class="nav-list" role="list">
         <li><a href="#">A tappable nav-list link</a></li>
@@ -1063,10 +1063,10 @@
     <section>
       <h2>Recently updated, by category</h2>
       <div class="recent-groups">
-        <div class="recent-group"><h3>Category A</h3><ul class="nav-list" role="list"><li><a href="#" title="Item One">Item One</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="view all 12: Category A">view all 12 <span aria-hidden="true">&rarr;</span></a></div>
-        <div class="recent-group"><h3>Category B</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Two">Item Two</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="view all 533: Category B">view all 533 <span aria-hidden="true">&rarr;</span></a></div>
-        <div class="recent-group"><h3>Category C</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Three">Item Three</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="view all 36: Category C">view all 36 <span aria-hidden="true">&rarr;</span></a></div>
-        <div class="recent-group"><h3>Other</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Four">Item Four</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="view all 1689: Other">view all 1689 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Category A</h3><ul class="nav-list" role="list"><li><a href="#" title="Item One">Item One</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 12: Category A">View all 12 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Category B</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Two">Item Two</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 533: Category B">View all 533 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Category C</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Three">Item Three</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 36: Category C">View all 36 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Other</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Four">Item Four</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 1689: Other">View all 1689 <span aria-hidden="true">&rarr;</span></a></div>
       </div>
     </section>
 

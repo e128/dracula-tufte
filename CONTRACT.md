@@ -70,7 +70,10 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
 - [ ] `<main>` around the content, with `<article>` inside it
       (in `samples/dark.html`, search `<article>`).
 - [ ] A real `<label for>` on every `input.filter-box`. A placeholder is not a label
-      (in `samples/dark.html`, search `class="filter-label"`).
+      (in `samples/dark.html`, search `class="filter-label"`). If you emit a `placeholder` at all,
+      make it an **example** of what the box accepts, never an instruction: it restates the label it
+      sits under, and it disappears on the first keystroke, so an instruction there teaches nothing
+      and costs a line of chrome (in `samples/dark.html`, search `placeholder="Failed audit"`).
 - [ ] `accTitle:` and `accDescr:` inside every ` ```mermaid ` fence
       (in `samples/dark.html`, search `accTitle: Decision flow sample`).
 - [ ] `scope="col"` on table headers, and heading levels that nest with no skips
@@ -258,8 +261,14 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 **Each row states what you must do and what is still open. The reasoning behind a change lives in
 `NOTES.md`, which is where the rejected alternatives are recorded, so a row here stays short.**
 
+**Every release gets a row, including the ones whose answer is `nothing`.** Nothing checks this
+table's coverage, and a skipped row reads exactly like a release that changed nothing. v1.50.4
+shipped without one and carried a real stylesheet change.
+
 | since | your generator must now |
 | --- | --- |
+| v1.51.0 | nothing. Three self-contained repairs. **A `.live-dot` beats twice and stops** instead of looping forever: the animation runs four seconds and lands on its resting opacity, so it no longer owes the reader the pause mechanism WCAG 2.2.2 asks for past five seconds. **A `details.deep > summary` selects like ordinary text again**, so its label can be copied. The third is copy, not markup: if your generator writes its own `placeholder` on an `input.filter-box`, make it an example and not an instruction, per the label requirement in § 2. No rule added and no § 2 requirement changed |
+| v1.50.4 | nothing. Self-contained over markup you already emit, and worth a look if you carry `.recent-groups`. **Its auto-fit track floor drops from `36rem` to `30rem`**, so a 1280px window holds two 568px columns where it held one 1152px column, and **a title inside a card narrower than `40rem` wraps instead of clipping** to an ellipsis, which puts the full string back in reach of the keyboard and touch readers the pointer-only `title` attribute never served. The `title` requirement in § 2 still applies to a card wide enough not to wrap |
 | v1.50.3 | nothing. `mermaid.js` moves its pinned CDN import from `mermaid@12.0.0` to `mermaid@12.1.0`, which drops a vulnerable `lodash-es` from the bundle and fixes ELK feedback-loop routing. **`elk.orientFeedbackEdges` is now on by default, so a diagram with a feedback edge can reflow on the next render.** No stylesheet rule changed |
 | v1.50.2 | nothing. **A `nav.toc` that follows a floated `.sidenote` or `.marginnote` stack now drops below it at full width** instead of painting its `color-mix` ground under the note. The index's own `<ol>` already avoided the float; the `nav` box did not. Self-contained over markup you already emit |
 | v1.50.1 | **stop using `<br>` between an `.icon-list` title and its detail**: put the `<strong>` and the `<code>` side by side and `.icon-list strong` breaks the line. Mark a file path with `<code>`, not `<cite>`, which names the title of a standalone work |
