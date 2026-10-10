@@ -271,24 +271,42 @@ them. Getting one there costs a script or a fixed column count, and both are wor
 ### `.recent-groups`
 
 **A landing index of several category lists is `auto-fit`, not a fixed column count.**
-`repeat(auto-fit, minmax(min(36rem, 100%), 1fr))` sizes to whatever count a generator emits, unlike
+`repeat(auto-fit, minmax(min(30rem, 100%), 1fr))` sizes to whatever count a generator emits, unlike
 `.edge-list`'s fixed two columns (always an antecedent/descendant pair). This is also why it needs no
-breakpoint override where `.edge-list` does: below two 36rem tracks, `auto-fit` collapses to one
+breakpoint override where `.edge-list` does: below two 30rem tracks, `auto-fit` collapses to one
 column on its own.
 
-**A bare `minmax(36rem, 1fr)` only fixed the column count, not the surviving column's own width**:
-it still floored at 576px, overflowing the document below that, a real WCAG 1.4.10 failure.
-`minmax(min(36rem, 100%), 1fr)` is the standard guard against exactly this `auto-fit` trap.
+**The floor is 30rem, and the width it buys is why.** At 36rem a 1280px window held one 1152px
+column, which stranded a row's date about 1100px from its title. At 30rem the same window holds two
+568px columns. The floor changes nothing below roughly 1084px, where `auto-fit` collapses to one
+column at either value, and nothing above roughly 1298px, where both already give two. Running prose
+is untouched: `.recent-groups` still spans the full content width, and only its track count moves.
+Measured 2026-10-10.
+
+**A bare `minmax(30rem, 1fr)` only fixed the column count, not the surviving column's own width**:
+it still floored at 480px, overflowing the document below that, a real WCAG 1.4.10 failure.
+`minmax(min(30rem, 100%), 1fr)` is the standard guard against exactly this `auto-fit` trap.
 
 Item count and the "view all" link are a generator concern, not a stylesheet one. An uncategorized
 `.recent-group` is styled identically to a named one, one class not two.
 
-**A `.recent-group .nav-list li` is one line, title leading with `.count` trailing on the same
-row, never below it.** `a { display: block }` made the date wrap to its own line beneath the title,
-outranking it visually. Now `display: flex`: the anchor (`flex: 1 1 auto`, `min-width: 0`, ellipsis
-truncation) keeps the title from wrapping and pushing the date off the row; `.count` (`flex: none`,
-`--muted`, `0.82em`) never shrinks to make room. **Do not revert to `display: block`, and do not let
-the title wrap.**
+**A `.recent-group .nav-list li` is one line while the card is wide, title leading with `.count`
+trailing on the same row, never below it.** `a { display: block }` made the date wrap to its own
+line beneath the title, outranking it visually. Now `display: flex`: the anchor (`flex: 1 1 auto`,
+`min-width: 0`) keeps the title from wrapping and pushing the date off the row; `.count`
+(`flex: none`, `--muted`, `0.82em`) never shrinks to make room. **Do not revert to
+`display: block`.**
+
+**Below a 40rem card the title wraps, and the row keeps its shape.** A 568px track truncated 42 of
+120 titles in a real index, and 57 at 480px, with the generator's `title` attribute as the only
+reveal. That attribute is pointer-only, so a keyboard or touch reader had no route to the full
+string. `.recent-group` is now a `container-type: inline-size` context, and `@container (max-width:
+40rem)` releases `white-space: nowrap`, `overflow: hidden` and the ellipsis. The condition is the
+card's own width, not the window's: a 480px track inside a 1400px window wraps, a 1152px track does
+not. `align-items: baseline` keeps `.count` on the title's first line, so the wrap does not repeat
+the `display: block` failure above. Container size queries reached Baseline Widely available in
+February 2023. Measured 2026-10-10: 0 of 120 titles clipped from 305px to 1400px, at a cost of about
+200px of card height in two-column mode.
 
 **`.recent-group` and its `.nav-list` stretch to fill the grid row** (`flex-direction: column` plus
 `.nav-list { flex: 1 }`), so a card with fewer items doesn't leave its "view all" link at a different
