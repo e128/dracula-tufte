@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.50.3 */
+    /* Dracula-Tufte (muted) v1.50.4 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -340,13 +340,14 @@
     .edge-list > div { display: flex; flex-direction: column; padding-inline-end: var(--edge-gutter); }
     .edge-list > div > .nav-list { flex: 1; }
     .edge-list > div + div { border-inline-start: var(--edge-rule); padding-inline: var(--edge-gutter) 0; }
-    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(36rem, 100%), 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
-    .recent-group { display: flex; flex-direction: column; }
+    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
+    .recent-group { display: flex; flex-direction: column; container-type: inline-size; }
     .recent-group h3 { margin-top: 0; }
     .recent-group .nav-list { flex: 1; }
     .recent-group .nav-list li { display: flex; align-items: baseline; column-gap: 0.5rem; }
     .recent-group .nav-list li a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.82em; padding-inline-end: 0.5rem; }
+    @container (max-width: 40rem) { .recent-group .nav-list li a { white-space: normal; overflow: visible; text-overflow: clip; } }
     .icon-list { list-style: none; padding-inline-start: 0; display: grid; gap: var(--space-3); margin: var(--space-4) 0; }
     .icon-list li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4);
       background: var(--code-bg); border-radius: var(--radius);
