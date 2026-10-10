@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Tufte-Dracula component sample: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.51.0 */
+    /* Dracula-Tufte (muted) v1.51.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -413,7 +413,7 @@
       body.conn-map article > section:nth-of-type(1) {
         flex: 0 0 clamp(220px, 22vw, 300px);
         position: sticky; top: 1rem;
-        max-height: calc(100vh - 2rem); overflow-y: auto; overscroll-behavior: contain;
+        max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain;
         border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem;
       }
       body.conn-map article > section:nth-of-type(2) {
@@ -461,7 +461,7 @@
       pre.mermaid { overflow-x: auto; overscroll-behavior-x: contain; }
       pre.mermaid svg, body.conn-map pre.mermaid svg { width: var(--natural-width, auto) !important; max-width: none !important; }
     }
-    @container (max-width: 15em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @container (max-width: 38em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
     @media not all {
       :root {
         --on-surface:  oklch(1 0 0);
@@ -1019,7 +1019,7 @@
         <span class="sc-label">P1 Observability</span><span class="verdict verdict-pass">Pass</span><span class="sc-note">directly measured</span>
         <span class="sc-label">P2 Mechanism</span><span class="verdict verdict-partial">Partial</span><span class="sc-note">surrogate endpoint</span>
         <span class="sc-label">P3 Prediction</span><span class="verdict verdict-failed">Failed</span><span class="sc-note">model output, not measurement</span>
-        <span class="sc-label">P4 Coherence</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
+        <span class="sc-label">P4 Coherence of the profile the method inherits</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
         <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
       </div>
       <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>See below</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>

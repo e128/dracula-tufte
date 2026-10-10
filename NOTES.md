@@ -95,9 +95,11 @@ the inverse, and grayscale-only antialiasing thins strokes.
 
 ## Type scale
 
-The body `font-size` clamp is the **only size lever**. Every other step is em-relative to it,
-headings included. Floor `1rem` (also the iOS input-zoom threshold `.filter-box` inherits), cap
-`1.25rem`, every bound `rem` never `px`, so the page scales with a raised browser default.
+The body `font-size` clamp is the **only size lever**. Every step in the scale below is em-relative to
+it, headings included. **Three components outside the scale size in `rem` instead**: `nav.toc`, whose
+label and entries are the two steps, `details.deep > summary`, and the zoom overlay's close glyph.
+Floor `1rem` (also the iOS input-zoom threshold `.filter-box` inherits), cap `1.25rem`, every bound
+`rem` never `px`, so the page scales with a raised browser default.
 
 **Do not lower the floor past `1rem`** without a separate 16px floor on `.filter-box`.
 
@@ -600,8 +602,9 @@ the cap, to +9.3% instead of +25%, holding 4.21:1).
 unstated inherited P3 chroma drifting its vividness fraction out of band), the same treatment the
 other five accents already get.
 
-**Every hex-only consumer (Mermaid, the three editor themes) is still sRGB and now needs gamut
-mapping, not a straight conversion.** Before this, no token's chroma ever exceeded the sRGB ceiling,
+**Every hex-only consumer is still sRGB and now needs gamut mapping, not a straight conversion.**
+Mermaid and the editor themes all take a literal hex, except iTerm2's plist, which takes float
+triples. Before this, no token's chroma ever exceeded the sRGB ceiling,
 so `oklch_to_hex`'s per-channel clip was dead code. `oklch_to_hex` now reduces chroma to the sRGB
 ceiling before converting (holding `L` and hue), matching what a browser's own CSS Color 4 gamut
 mapping does. `mermaid-palette.json` and `mermaid.js`'s `primaryBorderColor`/`nodeBorder`/`pie1..4`
@@ -1312,9 +1315,12 @@ than the default layout, so a connections map and an ordinary page never shared 
 **The full-width row is `article > *`, not an allow-list**: an allow-list would let a new direct
 child (e.g. a generator-added footer) silently join the two-column flex row instead of spanning it.
 
-**The sticky column has a height ceiling** (`max-height: calc(100vh - 2rem); overflow-y: auto;
+**The sticky column has a height ceiling** (`max-height: calc(100dvh - 2rem); overflow-y: auto;
 overscroll-behavior: contain`): `position: sticky` pins nothing once the element is taller than the
-viewport; it silently scrolls with the page instead. **`tabindex="0"` is deliberately not on that
+viewport; it silently scrolls with the page instead. **`dvh`, not `vh`**: `vh` is the viewport with a
+mobile browser's chrome hidden, so on a phone the ceiling sat taller than the area a reader can see and
+the column's own scroll ran on under the toolbar. Chromium reports `dvh` equal to `vh` where no dynamic
+chrome exists, so this rests on the unit's definition rather than on a render. **`tabindex="0"` is deliberately not on that
 column**: the sideways-scroller rule exists for a `pre`/table/`math` whose overflow holds nothing
 focusable; the Links column holds links, and focusing one already scrolls it into view.
 
@@ -1490,22 +1496,45 @@ wider than the mobile breakpoint yet still has lateral insets larger than the de
 ran under the notch without this. **The `0px` `env()` fallbacks are load-bearing**: without them, a
 browser with no support makes the whole custom property invalid at computed-value time, taking the
 `width: min(...)` calc down with it. Not verified on real hardware (Chromium doesn't emulate insets).
+**The insets need `viewport-fit=cover` in the page's own viewport meta, and no rule here can supply
+it**: without that keyword every `env(safe-area-inset-*)` reads `0` on the one class of device that has
+them, so the whole feature is inert on the pages that need it and invisible everywhere else. The
+fixtures carry it and `CONTRACT.md` § 2 asks a generator for it.
 
-**A container query fixes `.scorecard` overflow under text-only zoom; a media query cannot**: `em`
+**A container query is the right instrument and a media query cannot substitute**: `em`
 inside a container query resolves against the container's own font size (correctly asking "is text
 large relative to space"), where a media query's `em` resolves against the browser's initial size and
-sees nothing at a doubled root. Two things about it are load-bearing: the `:has()` scoping (plain
-`container-type: inline-size` on every `section` would also shrink the conn-map sticky sidebar at
-zoom), and its position after the `max-width: 600px` block (container queries add no specificity, so
-source order decides).
+sees nothing at a doubled root. **The query alone is not the fix**: its threshold decides whether
+anything happens at all, and the entry below carries the number. Two things about it are load-bearing:
+the `:has()` scoping (plain `container-type: inline-size` on every `section` would also shrink the
+conn-map sticky sidebar at zoom), and its position after the `max-width: 600px` block (container
+queries add no specificity, so source order decides).
+
+**The threshold is `38em`, and `15em` sat below the width the grid stops fitting.** Measured
+2026-10-10 on the consuming corpus's rendered proof-test pages, headless Chromium. At a doubled root
+font the three-column grid holds at 1280px and 320px, and overflows on **7 of 7** pages at 600px (492px
+past the edge), at 768px (375px) and at 1024px (139px). The widest label measured 30.7em in the
+container's own font size, and a 4.9em chip with 1.8em of gutters puts the need at 37.4em, so the
+collapse has to fire below that. `15em` only ever matched a 240px container while the failure starts
+at 269px. At 320px those pages overflow for a second reason the same threshold covers: the
+`max-width: 600px` block sizes the chip's track `1fr`, the track's automatic minimum reads
+`.verdict`'s `min-width: 5.2ch` rather than the chip's own width, and a 68px chip in a 34.6px track put
+its right edge at 308px against a 305px client width. A scorecard in a container under 38em is one
+column whatever the chip inside it does, so one number fixes both. Cost, measured the same day: a
+scorecard in a container between 240px and 608px now stacks where it kept two tracks, which is every
+viewport below about 640px.
 
 Two earlier attempts failed: `minmax(0, max-content)` tracks let a track shrink to zero without the
 `.verdict` chip shrinking with it (chip spilled out); `auto` tracks plus `overflow-wrap: break-word`
 fixed only one width, since **`break-word` does not reduce a box's min-content contribution, and
-`anywhere` does.**
+`anywhere` does.** A third pair was measured 2026-10-10 and rejected: a `minmax(min-content,
+max-content)` label track with `overflow-wrap: anywhere` on `.sc-label` clears the zoom band but
+leaves 3px at 320px, and a `max-content` chip track in the 600px block lets a spanning `.sc-note`
+inflate both tracks to 1661px.
 
 **At 400% text-only zoom the page still scrolls sideways**: past what WCAG 1.4.4 asks for, and
-nobody chases it further.
+nobody chases it further. The threshold above is what keeps the 200% case clean on the pages
+measured.
 
 ## Cascade layer
 
@@ -1859,11 +1888,12 @@ clickable. Both now use the dotted form `abbr[title]` already uses.
 **`menu` joins all three list rules** (takes `list-item` children): without the indent rule the `*`
 reset left its markers hanging outside the box.
 
-**The zero-user class families stay**: `scorecard`, `edge-list`, `col-2`, `badge`, `newthought`,
-`sidenote`, `marginnote`, the filter family, `body.conn-map` have no documents in the measured lode,
-which measures the generator as much as the stylesheet: a generator that never offers a component
-guarantees no document uses it. **`sidenote`/`marginnote` are the Tufte signature and the reason the
-layout reserves a right margin at all**; the zero there is a generator gap, not a design failure.
+**A class family with no consumer stays.** `col-2` and `badge` are the only families here with no
+document in the corpus that consumes this sheet, and a zero measures the generator as much as the
+stylesheet: a generator that never offers a component guarantees no document uses it.
+**`sidenote`/`marginnote` are the Tufte signature and the reason the layout reserves a right margin
+at all.** The other families that once sat at zero found users as `CONTRACT.md` and the corpus filled
+in, so re-measure before cutting anything on the grounds that nothing uses it.
 
 **`.verdict`/`.scorecard` had the same generator gap, undocumented rather than merely unused**: a
 real proof-test page rendered every verdict as bare text, since `CONTRACT.md` had never listed the
@@ -1998,7 +2028,7 @@ line config only). `AGENTS.md` sits in the presence gate (`scripts/maintain.nu` 
 `contract-check.yml`): a deleted instruction file is the one deletion that leaves every check green
 while removing the reason the checks exist.
 
-**Python stays in the two `.github/` helpers, measured rather than argued.** Bash is not a real
+**Python stays in the three `.github/` helpers, measured rather than argued.** Bash is not a real
 alternative (no floating-point arithmetic; the Oklab matrix needs `cos`/`sin`/fractional powers, so a
 bash version would really be an awk program in a shell wrapper, trading Python for a less readable
 language). Nushell would genuinely drop a language for `palette-check.py` (the math ports exactly),
