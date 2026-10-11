@@ -139,6 +139,15 @@ jobs:
         # gate that runs only locally does not hold a merge.
         run: nu scripts/maintain.nu contract-markup
 
+      - name: Every markdown anchor must land on a heading
+        # A link of the form `[text](NOTES.md#a-heading)` promises the heading exists, and
+        # the heading set moves on every prose edit. Nothing checked, so backlog.md pointed
+        # at `NOTES.md#the-backlog-this-closed` for releases after a NOTES rewrite removed
+        # that section, and read as a working link the whole time. The step exists in the
+        # workflow rather than only in `check` because a gate that runs only locally does
+        # not hold a merge, which is the same reason `contract-markup` is a step.
+        run: nu scripts/maintain.nu markdown-links
+
       - name: Generated files must be regenerated (fails if stale vs CSS/JS)
         run: |
           # tokens.css is included here on purpose: it is a verbatim slice of the

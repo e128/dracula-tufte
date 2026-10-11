@@ -179,6 +179,8 @@ same thing. Together they verify:
 - That every generated file and every theme is freshly regenerated.
 - That every fixture pointer in [CONTRACT.md § 2](CONTRACT.md#2-emit-this-markup) still matches the
   file it names.
+- That every link from one markdown file in this repo into another still lands on a heading that
+  exists.
 - That no em-dash and no en-dash appears in any tracked file.
 
 **One check runs the payload instead of reading it.** `.github/script-probe.py` loads

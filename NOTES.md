@@ -2055,6 +2055,19 @@ a `main contract-markup` CI subcommand.
 bans, since `CONTRACT.md` tells a generator the fixture wins any disagreement. The exception is now
 named in both the intro and the bullet.
 
+### A pointer at a heading is a pointer
+
+**A `](#some-heading)` link rots on the same clock as a line number, one edit earlier.** The heading
+set moves on every prose edit, and `backlog.md` pointed at `NOTES.md#the-backlog-this-closed` for
+every release after a NOTES rewrite removed that section, reading as a working link throughout.
+`markdown-links-ok` derives every heading id from the file and resolves every link against it, with
+the same floor rule as the pointer gate.
+
+**The headings are read, never stored.** A list of valid anchors is a second copy of NOTES.md and
+would go stale the same way the link did. **Do not add one, and do not exempt a file from the scan**:
+`themes/rider/README.md` reaches `NOTES.md` through `../../`, which is why the target is resolved
+against the linking file's own directory rather than the repo root.
+
 ### The one check that runs the payload
 
 `.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives both inlined scripts,
