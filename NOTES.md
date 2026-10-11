@@ -37,6 +37,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
 | [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
 | [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the CSS pie went out, print and forced colors |
+| [Image tiles](#image-tiles) | `.hero`, the caption below the image, the reserved box, why the radius sits on the image |
 | [Progressive disclosure](#progressive-disclosure) | `nav.toc`, `details.deep`, the narrow and print column overrides |
 | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
 | [Mermaid](#mermaid) | Init config, label measurement, sizing, zoom, diagram types |
@@ -48,7 +49,8 @@ Two comments remain in the CSS. A machine reads both.
 | [Appearance modes](#appearance-modes) | High contrast, light, `--mermaid-scheme`, the mode gates |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its load-bearing decisions |
-| [Nav link separators](#nav-link-separators) | The `nav > a + a` rule and the wrapped-line artefact |
+| [Nav link separators](#nav-link-separators) | The `nav > a + a` rule, the wrapped-line artefact, the current-page marker |
+| [The index shell](#the-index-shell) | Why the shell is scoped to the index, the rail's numbers, and the filter box it cannot hold |
 | [Version stamps are not version history](#version-stamps-are-not-version-history) | Why `bump` rewrites three anchored stamps and nothing more |
 | [Unclaimed elements](#unclaimed-elements) | `mark`, `kbd`, `caption`, `figure`, `figcaption` |
 | [Markdown coverage](#markdown-coverage) | What a converter emits, and how the sheet claims it |
@@ -899,6 +901,31 @@ backgrounds and the dividers would vanish. Do not put a shadow or a card fill on
 **A caption's `.label` is a small-caps line naming what the figure is, above the sentence on how to
 read it.** `.chart-takeaway .more` is its second tier. Both are opt-in spans.
 
+## Image tiles
+
+**A tile is a card with the text below the image, never on it.** A headline painted over a
+consumer's photograph is readable only through a scrim, and the contrast that scrim yields depends
+on the file the consumer supplies, so no check in this repo can reach it. A caption under the image
+keeps every string on `--surface-alt`, a ground check 5 already measures against all three text
+tiers in all four modes. **Do not add an overlay variant**: it would want a new token pair with its
+own floors and an obligation nothing here can verify, which is the objection that keeps a `C4`
+diagram and a mood face off this palette.
+
+**The image carries the radius, not the card.** An `overflow: hidden` card is the shorter rule, but
+it clips a focus outline at its own edge and turns the card into a containment box. Rounding the
+image's top two corners costs one `calc()` and leaves the call to action's outline intact.
+
+**`aspect-ratio` is the component's whole job.** The sheet's `img { height: auto }` alone lets a tile
+collapse to zero height until the file arrives, so everything below it moves; a reserved box is what
+a hero needs and what the audit in `AGENTS.md` asks of every image and embed. `object-fit: cover`
+then crops rather than distorts, which matters because the consumer supplies the file and the sheet
+sets one `21 / 9` box for all of them. **A consumer wanting another shape overrides `aspect-ratio` in
+its own unlayered rule**, which outranks this layer, rather than reaching for a second tile class.
+
+**The `alt` is the consumer's.** A stylesheet can size an image and cannot describe one; the fixture
+carries a real one and no rule here can supply it, the same limit that leaves `accTitle` on a
+Mermaid fence to the generator.
+
 ## Progressive disclosure
 
 Two components: `nav.toc` (on-this-page index), `details.deep` (collapsed detail
@@ -1730,6 +1757,45 @@ a separator with nothing to its left. **No pure-CSS rule can suppress a border a
 wrap position isn't addressable from a selector, and flex wrapping just moves the problem). The
 alternatives (a dangling pseudo-element glyph, or no separators at all) were both worse. The fixture
 carries enough links to wrap at a phone width so the artefact stays visible.
+
+**The current page takes the accent bar on the same edge.** `nav a[aria-current="page"]` moves the
+link to `--on-surface` at weight 600 and writes a `3px` `--orange` `border-inline-start` where
+`nav > a + a` would have drawn a `1px` hairline. An attribute selector outranks that rule's three
+type selectors, so on the current link the two borders replace each other rather than stacking, and
+`0.7em` of padding matches what the separator would have given it. Weight is what survives
+`forced-colors`, where the bar and the colour both collapse to one system colour: **do not drop the
+weight and keep the colour alone**, or the marker disappears on the one class of device that
+overrides it, which is how the same mode caught `nav.toc` once before. An underline was never an
+option as the distinguishing cue, since `a` already carries one at rest.
+
+## The index shell
+
+**The shell is scoped to the index, not to the page.** `.index-shell` lays its children out as a grid
+above `900px` and leaves block flow alone below it. `body.conn-map` puts the whole `article` into two
+columns because a connection page has no running prose to protect; an index page does, so the shell
+wraps the section map and the entries and nothing else. **Do not widen the grid to the body**: a
+two-column body would narrow whatever prose a consumer puts beside the rail, which is the one thing
+the measure rule in [Width and measure](#width-and-measure) forbids, and it would put a second
+page-level layout in the sheet to keep in step with `--page-width`.
+
+**Every number is the connections-map rail's**: `clamp(220px, 22vw, 300px)`, a `2.5rem` column gap,
+`1rem` from the viewport top, `calc(100dvh - 2rem)`, `overflow-y: auto`, `overscroll-behavior:
+contain` and a `--rule-light` edge. Two rails that behave differently for no reason a reader can see
+is worse than one rail whose numbers are slightly wrong for one of its two homes.
+
+**`align-self: start` is load bearing.** A grid item stretches to its row by default, and a stretched
+item has no room to stick: the rail would scroll away with the entries, and a screenshot taken at
+the top of the page would look exactly the same either way. The rail takes its own scroll rather
+than growing, so a section map taller than the viewport keeps every entry reachable.
+
+**A filter box cannot live in the rail.** `filter.js` builds its scope by walking forward from the
+input over its **siblings**, stopping at the next filter box, and returns without binding when that
+walk finds no rows. A box placed in the rail sees only the rest of the rail and goes inert in
+silence, which is the defect [The one check that runs the payload](#the-one-check-that-runs-the-payload)
+exists to catch. **Do not move a filter box into the rail, and do not widen the scope walk to reach
+across the grid**: that walk is the behaviour `script-probe.py` mutation-tested, and a scope that
+crosses a layout boundary is a scope no reader can predict. The rail carries the section map, and
+the filter box stays a sibling of the entries it filters in the second column.
 
 ## Version stamps are not version history
 

@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.51.2 */
+    /* Dracula-Tufte (muted) v1.52.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -255,6 +255,10 @@
     figure { margin: var(--space-6) 0; }
     figcaption, caption { font-size: 0.9em; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
     figcaption { margin-top: 0.4rem; }
+    .hero { margin: var(--space-6) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); background: var(--surface-alt); }
+    .hero > img { display: block; width: 100%; aspect-ratio: 21 / 9; object-fit: cover;
+      border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; box-shadow: none; }
+    .hero > figcaption { margin: 0; padding: var(--space-4); }
     caption { font-style: italic; padding-block-end: 0.3rem; }
     :is(figcaption, caption) .byline { display: block; font-size: 1em; margin: 0.15rem 0 0; }
     table:has(caption) { box-shadow: 0 1px 0 var(--rule); }
@@ -279,6 +283,8 @@
     nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
     nav:has(> a) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.7em; row-gap: 0.2em; }
     nav > a + a { border-inline-start: 1px solid var(--rule-light); padding-inline-start: 0.7em; }
+    nav a[aria-current="page"] { color: var(--on-surface); font-weight: 600;
+      border-inline-start: 3px solid var(--orange); padding-inline-start: 0.7em; }
     footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
     :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
       padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }
@@ -335,6 +341,14 @@
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
       transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .nav-list li a:active { scale: 0.96; }
+    .index-shell { margin: var(--space-6) 0; }
+    nav.index-rail { margin: 0; }
+    @media (min-width: 900px) {
+      .index-shell { display: grid; grid-template-columns: clamp(220px, 22vw, 300px) minmax(0, 1fr); column-gap: 2.5rem; }
+      .index-shell > .index-rail { align-self: start; position: sticky; top: 1rem;
+        max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain;
+        border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem; }
+    }
     .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) 0; margin: var(--space-6) 0;
       --edge-gutter: var(--space-4); --edge-rule: 1px solid var(--rule-light); }
     .edge-list h3 { margin-top: 0; }
@@ -794,7 +808,7 @@
 
     <nav>
       <a href="#">Requirements Register</a>
-      <a href="#">Decision Log</a>
+      <a href="#" aria-current="page">Decision Log</a>
       <a href="#">Dependency Tracker</a>
       <a href="#">Spike Results</a>
       <a href="#">Findings</a>
@@ -1047,6 +1061,50 @@
       <details class="nav-group" open><summary>Subfolder group <span class="count">1</span></summary>
         <ul class="nav-list" role="list"><li><a href="#">grouped item <span class="badge badge-t2">Tier 2</span></a></li></ul>
       </details>
+    </section>
+
+    <section>
+      <h2>The index shell</h2>
+      <div class="index-shell">
+        <nav class="index-rail" aria-labelledby="rail-label">
+          <p id="rail-label">Sections</p>
+          <ul class="nav-list" role="list">
+            <li><a href="#">Antecedents</a></li>
+            <li><a href="#">Decision log</a></li>
+            <li><a href="#">Dependency tracker</a></li>
+            <li><a href="#">Findings</a></li>
+          </ul>
+        </nav>
+        <div>
+          <ul class="nav-list" role="list">
+            <li><a href="#">A long entry list scrolls past the rail <span class="badge badge-t1">Tier 1</span></a></li>
+            <li><a href="#">Antecedent records for the charge gate</a></li>
+            <li><a href="#">Antecedent records for the release gate</a></li>
+            <li><a href="#">Decision log, first quarter <span class="count">12</span></a></li>
+            <li><a href="#">Decision log, second quarter <span class="count">9</span></a></li>
+            <li><a href="#">Dependency tracker, open items</a></li>
+            <li><a href="#">Findings from the load test</a></li>
+            <li><a href="#">Findings from the recovery drill</a></li>
+            <li><a href="#">Failed audit <span class="badge badge-t3">Tier 3</span></a></li>
+            <li><a href="#">Reuse candidates for the index rail</a></li>
+            <li><a href="#">Spike results, storage tier</a></li>
+            <li><a href="#">Spike results, message bus</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Image hero tile</h2>
+      <figure class="hero">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 840 360'%3E%3Crect width='840' height='360' fill='%233a3d52'/%3E%3Cpath d='M0 300 L240 160 L430 260 L640 120 L840 280 L840 360 L0 360 Z' fill='%238a8fb0'/%3E%3Ccircle cx='690' cy='96' r='46' fill='%23bd93f9'/%3E%3C/svg%3E" alt="A wide banner illustration: layered purple hills under a single bright disc." />
+        <figcaption>
+          <span class="label">Template component</span>
+          <h3>An image tile with a headline and one call to action</h3>
+          <p>The image reserves its box through <code>aspect-ratio</code>, so nothing below it moves when the file arrives.</p>
+          <a href="#headings">See the headings and text section</a>
+        </figcaption>
+      </figure>
     </section>
 
     <section>

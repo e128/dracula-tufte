@@ -57,7 +57,7 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Twenty-six requirements. No stylesheet change can supply any of them. Most name a string to search
+Twenty-nine requirements. No stylesheet change can supply any of them. Most name a string to search
 for in a fixture, so you have a working example instead of only a sentence. The few with no fixture
 yet say so.
 
@@ -255,6 +255,28 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       the label an `id` and point at it. Entries are `<a>` inside `<li>` inside a single `<ol>`, so
       the two-column rule and its narrow and print overrides have a list to act on (in
       `samples/dark.html`, search `class="toc" aria-labelledby`).
+- [ ] An index page whose section list runs past the viewport puts its section map in a
+      `class="index-rail"` inside a `class="index-shell"`, and the rail holds its place while the
+      entries beside it scroll. The rail is a `<nav>` named with `aria-labelledby` pointing at its
+      own visible label, the naming rule `nav.toc` already follows, so it arrives in a landmark
+      list with something to say. **The filter box and the entries it filters stay siblings in the
+      second column, never inside the rail**: `filter.js` scopes a filter to the siblings that
+      follow its input, so a box moved into the rail finds nothing to filter and goes inert with
+      no error to read. Above `900px` the shell is two columns; below it the rail stacks over the
+      entries and the shell is the single column this sheet has always rendered (in
+      `samples/dark.html`, search `class="index-rail"`).
+- [ ] If a `nav` lists sibling pages and one of them is the page the reader is on, mark that link
+      `aria-current="page"`. The sheet gives it the body foreground at weight 600 and replaces the
+      `nav > a + a` hairline on its start edge with a `3px` accent bar, so the marker still reads
+      under forced colors, where the border and the colour both collapse to one system colour and
+      only the weight is left (in `samples/dark.html`, search `aria-current="page"`).
+- [ ] An image tile is `class="hero"` on a `<figure>`, with the image as its first child and the
+      headline, supporting line and call to action inside the `<figcaption>` below it, never
+      painted over the image. Text over a consumer's own image is beyond every check here, while a
+      caption on `--surface-alt` is measured in all four modes. The image carries an
+      `aspect-ratio`, so its box is reserved before the file arrives and nothing below it moves.
+      The image itself is the one part of the tile the sheet cannot write: supply a real `alt` (in
+      `samples/dark.html`, search `class="hero"`).
 
 Markdown constructs otherwise need **no classes of their own**. Do not invent any beyond what this
 section already asks for. A converter's output lands in a theme register already.
@@ -274,6 +296,7 @@ commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.52.0 | **three new opt-in components, all for a navigation page: an index shell with a sticky rail, a current-page marker for a link in a sibling `nav`, and an image tile.** Nothing you already emit changes. The shell puts a `class="index-rail"` beside its entries, two columns above `900px` and one below, and the rail takes its width from the same `clamp()` the connections-map rail uses, so the sheet has one rail convention rather than two. The current-page link takes a `3px` accent bar on its start edge where `nav > a + a` would have drawn a hairline. The tile is a `<figure class="hero">` whose caption sits below its image. **No new colour token arrives with any of them**: each reuses a value the palette checks already measure in all four modes, so a consumer pinning this release gets three components and one unchanged palette. All three are opt-in; the three § 2 requirements they carry are in that section |
 | v1.51.2 | nothing. Two self-contained layout repairs over markup you already emit, both live in `lode-html` style trees that were measuring page-level overflow. **A plain `table` is its own horizontal scroll container at every viewport width**, not only below `1000px`: a table floored at its min-content width cannot be held by `max-width: 100%` at any window width, so above the old breakpoint it pushed the whole page sideways with no cue to the reader. **A `.edge-list` holding one column collapses to one track**, via `:has(> div:only-child)`, so a section with a single list fills the measure instead of wrapping at half of it. No new § 2 requirement and no markup change |
 | v1.51.1 | **one new requirement, and it is in your `<head>`**: `viewport-fit=cover` on the viewport meta, per § 2. Without it the sheet's safe-area insets all read `0` and text runs under a notch in landscape. Otherwise nothing: **a `.scorecard` collapses to one column at a `38em` container instead of `15em`**, because the old threshold sat below the width the three-column grid stops fitting and the label track and chip ran past the page at a doubled root font. Two smaller repairs ride along: the connections-map sticky rail sizes against `100dvh`, so its own scroll no longer ends under a mobile browser's toolbar, and the fixtures name the meta keyword so you can search it |
 | v1.51.0 | nothing. Three self-contained repairs. **A `.live-dot` beats twice and stops** instead of looping forever: the animation runs four seconds and lands on its resting opacity, so it no longer owes the reader the pause mechanism WCAG 2.2.2 asks for past five seconds. **A `details.deep > summary` selects like ordinary text again**, so its label can be copied. The third is copy, not markup: if your generator writes its own `placeholder` on an `input.filter-box`, make it an example and not an instruction, per the label requirement in § 2. No rule added and no § 2 requirement changed |
