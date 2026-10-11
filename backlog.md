@@ -13,7 +13,55 @@ The narrative goes in the commit.
 
 ---
 
-## Nothing is open
+## Open
+
+Three entries filed 2026-10-11 by the corpus consumer (`e128/corpus`). Each is a
+navigation-page move that side cannot make, because the sheet owns the CSS and the
+CONTRACT.md § 2 markup obligations. Every measurement below is against v1.51.2.
+
+### A left rail for the index shell
+
+**Problem.** The sheet is single column with a 28% margin float. An index page carrying a
+hundred-entry section list has no persistent navigation, so a reader who scrolls into the
+list loses the filter box and the section map at the top.
+
+**Concrete change.** A two-column index shell: a grid rule plus a narrow-viewport override
+that collapses to the single column the sheet ships today. It must not touch `.conn-map`,
+which owns its own rail and sets its own two-column shape.
+
+**The judgment call.** Whether the sheet grows a second layout primitive at all, and what
+the rail does below the breakpoint. Collapsing to a disclosure block is one answer and
+dropping the rail is another.
+
+### A current-page treatment for nav links
+
+**Problem.** `nav > a + a` gives separators only. A reader moving between a set of sibling
+nav pages cannot see which one they are on.
+
+**Concrete change.** An `a[aria-current="page"]` rule and a colour that clears the contrast
+gates in both palettes. The graphic floor is 3:1 and body text is 4.5:1, and the corpus
+side treats those two as separate checks.
+
+**The judgment call.** The treatment itself. An underline, a leading border, and a weight
+change each read differently against the link states the sheet already paints, and one of
+them is likelier to be mistaken for `:hover`.
+
+### An image hero tile
+
+**Problem.** No image-card component exists. A landing page cannot open with a headline
+image and a call to action.
+
+**Concrete change.** New CSS, new markup, and a new § 2 requirement so the markup stays
+gated. The sheet has one check that runs its payload, so a component without a fixture is
+a component without a gate.
+
+**The judgment call.** Whether the sheet ships an image component at all, when every
+consumer on record is prose. A tile that no page adopts is a class family with no user,
+which is the shape v1.21.0 kept on a zero and v1.40.0 declined twice.
+
+---
+
+## Closed in v1.40.0
 
 v1.40.0 closed every entry that was here. Six went in and six came out, and the
 measurements moved to NOTES.md as the rule above says.
