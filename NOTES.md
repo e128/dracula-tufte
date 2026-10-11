@@ -269,6 +269,13 @@ field when a gap alone separates the columns, so the second track takes
 of a column gap. It is the same move `dl.timeline > dd` already makes: a structural hairline at
 `--rule-light`, not a box and not an accent bar.
 
+**A list with one column collapses to one track**: `.edge-list:has(> div:only-child)` sets
+`grid-template-columns: 1fr`. Two empty tracks are harmless only when the second one is occupied.
+A section whose only list sits in the left track wraps at half the measure and leaves a bare
+half-width column beside it, which reads as missing content rather than as a layout. `:has()` is the
+only selector that can ask how many children a grid received, and `:only-child` asks it at layout
+time, so no count has to be passed in.
+
 **`--edge-gutter` and `--edge-rule` exist so each collapse site resets the divider in one
 declaration rather than three.** `.edge-list` collapses to one track at 600px, and again inside
 `body.conn-map`, where the first section is a narrow link rail rather than a pair. A divider left
@@ -285,7 +292,7 @@ them. Getting one there costs a script or a fixed column count, and both are wor
 
 **A landing index of several category lists is `auto-fit`, not a fixed column count.**
 `repeat(auto-fit, minmax(min(30rem, 100%), 1fr))` sizes to whatever count a generator emits, unlike
-`.edge-list`'s fixed two columns (always an antecedent/descendant pair). This is also why it needs no
+`.edge-list`'s two fixed tracks (an antecedent/descendant pair). This is also why it needs no
 breakpoint override where `.edge-list` does: below two 30rem tracks, `auto-fit` collapses to one
 column on its own.
 
@@ -404,18 +411,22 @@ an author attribute (`data-depth`); everything else is presentation.
   behind `@supports`), or the glyph lands in the row's accessible name. **Any future decorative
   `::before` owes this.**
 
-**`width: auto; max-width: 100%`, not `width: 100%`**, or a narrow table stretches to the full page.
+**`width: fit-content; max-width: 100%`, not `width: 100%`**, or a narrow table stretches to the full
+page. `max-width` alone is not enough either: it cannot narrow a table below its min-content width.
 
-**The sideways-scroll escape hatch is `@media (max-width: 1000px)`**, pairing `display: block` with
-`width: fit-content` (block alone reinstates document-level scroll via `width: auto`; `fit-content`
-resolves correctly for both narrow and wide tables). The trigger is smaller than it looks: it starts
-at 200% text-only zoom, not 400%.
+**Every `table` is its own sideways-scroll container, at every width**: `display: block` with
+`width: fit-content` and `overflow-x: auto` sits on the base rule, unscoped. Scoping it to a viewport
+width was the earlier shape, `@media (max-width: 1000px)`, and it was wrong in the one direction
+that matters: a table's min-content width does not depend on the viewport, so `max-width: 100%`
+cannot hold a table floored at it. Above 1000px the page itself scrolled sideways, which is a WCAG
+1.4.10 failure with no cue to the reader. Block alone would reinstate document-level scroll via
+`width: auto`; `fit-content` resolves correctly for both a narrow and a wide table, so the narrow
+case still hugs its content instead of stretching to the measure.
 
-**The hatch's cost is the sticky header, inert below 1000px, deliberately**: a page that scrolls
-sideways is a WCAG 1.4.10 failure at every width it happens, and that outranks a pinned header at
-desktop width. The opt-in answer to both is `.table-scroll`. **Chromium does not strip table
-semantics on `display: block`**, measured rather than assumed; role counts are identical above and
-below the breakpoint.
+**The scroll container's cost is the sticky header**, inert wherever it engages, deliberately: a
+page that scrolls sideways is a WCAG 1.4.10 failure at every width it happens, and that outranks a
+pinned header. The opt-in answer to both is `.table-scroll`. **Chromium does not strip table
+semantics on `display: block`**, measured rather than assumed; role counts are identical.
 
 **A sticky `th` needs an opaque background** (an inset shadow, not `border-bottom`, since
 `border-collapse: collapse` would scroll the border away from the stuck header).
@@ -428,8 +439,8 @@ qualifier to stay clear of `thead`.
 **`.num` is an opt-in class, not a heuristic**: CSS can't tell a number from a label, and `:has()`
 can't match text content. Goes on the `th` too, or the header floats off its own column.
 
-**An unwrapped table takes `tabindex="0"` and a `<caption>`, never `role="region"`.** The escape
-hatch makes it a scroll container, and an unreachable one is a 2.1.1 failure Chrome papers over (with
+**An unwrapped table takes `tabindex="0"` and a `<caption>`, never `role="region"`.** Every table is
+a scroll container by the base rule, and an unreachable one is a 2.1.1 failure Chrome papers over (with
 a non-conforming ring) but Firefox and Safari do not. `role="region"` on the `<table>` overrides
 `role="table"` and takes row/column semantics with it, the same defect as `role="button"` on
 `pre.mermaid`. **This rule is gated in `scripts/maintain.nu check`** (prose alone didn't hold it):
