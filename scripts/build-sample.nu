@@ -329,10 +329,11 @@ def body [] {
     # separator is a border on the link, so a link that starts a wrapped line
     # carries a separator with nothing before it. That artefact is accepted and
     # recorded in NOTES.md; the fixture has to show it rather than hide it behind
-    # a two-link nav.
+    # a two-link nav. The second link is the current page, which takes the accent
+    # bar in place of the hairline on the same edge.
     "    <nav>"
     "      <a href=\"#\">Requirements Register</a>"
-    "      <a href=\"#\">Decision Log</a>"
+    "      <a href=\"#\" aria-current=\"page\">Decision Log</a>"
     "      <a href=\"#\">Dependency Tracker</a>"
     "      <a href=\"#\">Spike Results</a>"
     "      <a href=\"#\">Findings</a>"
@@ -589,6 +590,58 @@ def body [] {
     "      <details class=\"nav-group\" open><summary>Subfolder group <span class=\"count\">1</span></summary>"
     "        <ul class=\"nav-list\" role=\"list\"><li><a href=\"#\">grouped item <span class=\"badge badge-t2\">Tier 2</span></a></li></ul>"
     "      </details>"
+    "    </section>"
+    ""
+
+    # The shell holds the rail and the entries as two columns above 900px and one
+    # below it. The filter box deliberately stays out of the rail: filter.js scopes
+    # a filter to the siblings that follow its input, so a box moved into the rail
+    # would find no rows and go inert. See NOTES.md, The index shell.
+    "    <section>"
+    "      <h2>The index shell</h2>"
+    "      <div class=\"index-shell\">"
+    "        <nav class=\"index-rail\" aria-labelledby=\"rail-label\">"
+    "          <p id=\"rail-label\">Sections</p>"
+    "          <ul class=\"nav-list\" role=\"list\">"
+    "            <li><a href=\"#\">Antecedents</a></li>"
+    "            <li><a href=\"#\">Decision log</a></li>"
+    "            <li><a href=\"#\">Dependency tracker</a></li>"
+    "            <li><a href=\"#\">Findings</a></li>"
+    "          </ul>"
+    "        </nav>"
+    "        <div>"
+    "          <ul class=\"nav-list\" role=\"list\">"
+    "            <li><a href=\"#\">A long entry list scrolls past the rail <span class=\"badge badge-t1\">Tier 1</span></a></li>"
+    "            <li><a href=\"#\">Antecedent records for the charge gate</a></li>"
+    "            <li><a href=\"#\">Antecedent records for the release gate</a></li>"
+    "            <li><a href=\"#\">Decision log, first quarter <span class=\"count\">12</span></a></li>"
+    "            <li><a href=\"#\">Decision log, second quarter <span class=\"count\">9</span></a></li>"
+    "            <li><a href=\"#\">Dependency tracker, open items</a></li>"
+    "            <li><a href=\"#\">Findings from the load test</a></li>"
+    "            <li><a href=\"#\">Findings from the recovery drill</a></li>"
+    "            <li><a href=\"#\">Failed audit <span class=\"badge badge-t3\">Tier 3</span></a></li>"
+    "            <li><a href=\"#\">Reuse candidates for the index rail</a></li>"
+    "            <li><a href=\"#\">Spike results, storage tier</a></li>"
+    "            <li><a href=\"#\">Spike results, message bus</a></li>"
+    "          </ul>"
+    "        </div>"
+    "      </div>"
+    "    </section>"
+    ""
+
+    # A card, not an overlay: the caption sits on --surface-alt, which every text
+    # token already clears, so the tile needs no scrim and no new colour.
+    "    <section>"
+    "      <h2>Image hero tile</h2>"
+    "      <figure class=\"hero\">"
+    "        <img src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 840 360'%3E%3Crect width='840' height='360' fill='%233a3d52'/%3E%3Cpath d='M0 300 L240 160 L430 260 L640 120 L840 280 L840 360 L0 360 Z' fill='%238a8fb0'/%3E%3Ccircle cx='690' cy='96' r='46' fill='%23bd93f9'/%3E%3C/svg%3E\" alt=\"A wide banner illustration: layered purple hills under a single bright disc.\" />"
+    "        <figcaption>"
+    "          <span class=\"label\">Template component</span>"
+    "          <h3>An image tile with a headline and one call to action</h3>"
+    "          <p>The image reserves its box through <code>aspect-ratio</code>, so nothing below it moves when the file arrives.</p>"
+    "          <a href=\"#headings\">See the headings and text section</a>"
+    "        </figcaption>"
+    "      </figure>"
     "    </section>"
     ""
     "    <section>"

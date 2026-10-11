@@ -137,6 +137,22 @@ DRIVER = """
       return !(r.left < tr.right && r.right > tr.left && r.top < tr.bottom && r.bottom > tr.top);
     }));
 
+    // The index rail's stickiness is the one claim about it a byte compare cannot see:
+    // a grid item that stretches to its row has no room to stick and scrolls away with
+    // the entries, and the page looks identical either way from the top. Scroll the
+    // shell's top above the viewport and the rail must still sit at `top: 1rem`.
+    const rail = document.querySelector('.index-rail');
+    const shell = document.querySelector('.index-shell');
+    if (rail && shell) {
+      const back = window.scrollY;
+      window.scrollTo(0, Math.round(shell.getBoundingClientRect().top + back + 120));
+      const top = rail.getBoundingClientRect().top;
+      t('index-rail-sticks', top >= 12 && top <= 20);
+      window.scrollTo(0, back);
+    } else {
+      t('index-rail-sticks', false);
+    }
+
     if (!window.__probeMermaid) {
       out.push('mermaid=SKIP');
       publish();

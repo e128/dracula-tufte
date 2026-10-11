@@ -17,7 +17,7 @@ const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
 def main [] {
-  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|bump <version>|release <version>|mermaid <version>>"
+  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|markdown-links|bump <version>|release <version>|mermaid <version>>"
 }
 
 # CONTRACT.md section 2 points at a fixture for most of its requirements, so a reader
@@ -148,6 +148,75 @@ def "main contract-markup" [] {
   if not (contract-markup-ok) { exit 1 }
 }
 
+# GitHub's heading id: lowercase, punctuation dropped, spaces to hyphens. Derived from the
+# file rather than trusted, which is the point: a heading renamed in NOTES.md has to fail
+# the link that named it, and a stored id list would be a second thing to keep in step.
+def md-slugs [body: string] {
+  $body | lines | where {|l| $l =~ '^#{1,6} ' } | each {|l|
+    $l | str trim | str replace --regex '^#+\s+' '' | str lowercase
+      | str replace --all --regex '[^\p{L}\p{N} _-]' '' | str replace --all ' ' '-'
+  }
+}
+
+# A link of the form `[text](NOTES.md#a-heading)` is a promise that the heading exists, and
+# the heading set changes on every prose edit. Nothing checked it, so backlog.md pointed at
+# `NOTES.md#the-backlog-this-closed` for every release after a NOTES rewrite removed that
+# section, and read as authoritative the whole time. Only the markdown this repo tracks is
+# in scope: a consumer's own docs are not here to check, and a link out to another site is
+# not this repo's to keep alive.
+#
+# It resolves the target against the linking file's own directory, so `../../NOTES.md` from
+# themes/rider/ is the same file as `NOTES.md` from the root. A fragment-only link is checked
+# against its own file.
+def markdown-links-ok [] {
+  mut ok = true
+  let files = (^git -C $ROOT ls-files '*.md' | lines)
+  if ($files | length) < 15 {
+    print $"only ($files | length) tracked markdown files, refusing to pass vacuously"
+    return false
+  }
+  let slugs = ($files | reduce --fold {} {|f, acc|
+    $acc | insert ($ROOT | path join $f | path relative-to $ROOT) (md-slugs (open --raw ($ROOT | path join $f)))
+  })
+  let links = ($files | each {|f|
+    let dir = ($ROOT | path join $f | path dirname)
+    (open --raw ($ROOT | path join $f))
+      # Inline code is stripped first, because a link inside backticks is an example and not
+      # a link. Without this the gate fails on the paragraph that documents it, which is a
+      # poor way to learn that it works.
+      | str replace --all --regex '`[^`]*`' ''
+      # The file group is optional, so a fragment-only link is a link too. `://` is filtered
+      # out rather than excluded in the pattern: a URL happens to end in `.md` rarely enough
+      # that the pattern is the cheaper half, and a match there would fail loudly.
+      | parse --regex '\]\((?<file>[\w./-]+\.md)?#(?<anchor>[\w-]+)\)'
+      | where {|m| not (($m.file | default '') | str contains '://') }
+      | each {|m| {from: $f, file: $m.file, anchor: $m.anchor, dir: $dir} }
+  } | flatten)
+  if ($links | length) < 30 {
+    print $"found only ($links | length) intramarkdown anchor links, refusing to pass vacuously"
+    $ok = false
+  }
+  for l in $links {
+    let target = (if $l.file == null { $ROOT | path join $l.from } else { $l.dir | path join $l.file | path expand })
+    let want = ($target | path relative-to $ROOT)
+    if not ($target | path exists) {
+      print $"LINK: ($l.from) points at ($l.file), which does not exist"
+      $ok = false
+    } else if not (($slugs | get -o $want | default []) | any {|s| $s == $l.anchor }) {
+      print $"LINK: ($l.from) points at `($want)#($l.anchor)`, and ($want) has no heading with that id"
+      $ok = false
+    }
+  }
+  if $ok { print $"Markdown anchors resolve \(($links | length) links across ($files | length) files)." }
+  $ok
+}
+
+# The CI entry point, same shape as `main contract-markup`: this holds a merge only if
+# contract-check.yml runs it as its own step, so the two move together.
+def "main markdown-links" [] {
+  if not (markdown-links-ok) { exit 1 }
+}
+
 # Mirrors .github/workflows/contract-check.yml locally, step for step: ten files
 # exist, the wrapper is one line at each end, mermaid.js agrees with
 # mermaid-palette.json key by key, the hex projections still match the oklch
@@ -216,6 +285,12 @@ def "main check" [] {
   }
 
   if not (contract-markup-ok) { $ok = false }
+
+  # Documentation is part of the payload here: CONTRACT.md is what a consumer's generator
+  # is written against, and it is read through the same anchors an agent follows. A dead
+  # one sends the reader to the top of a file instead of the paragraph that answers the
+  # question, and looks the same as a working link.
+  if not (markdown-links-ok) { $ok = false }
 
   # samples/light*.html are the dark pages with the light condition forced on and the
   # contrast condition forced off. If the stylesheet renames either one,
