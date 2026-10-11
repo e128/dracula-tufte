@@ -393,6 +393,27 @@ element), so take `strong` out of any anchor a consumer wraps a link title in.
 in a pile and most of the page in whitespace; era grouping already does the coarse chunking, and
 anyone wanting a real axis wants a chart, which this stylesheet does not grow into.
 
+**A multi-era timeline routes itself.** It splits into one `<section>` per era, each opened by an
+`id`-carrying `<h2>`, and carries a page-level `<nav>` of `<a href="#id">` anchors to every group
+and to `Sources` (CONTRACT.md § 2). An ungrouped list of twenty entries is a wall: a reader cannot
+reach the century they want and a screen reader hears one unbroken definition list. **`nav.toc` was
+rejected for this role**: it indexes a whole document by its headings and folds to two columns,
+while an era router is a single row of short links with no second column to justify. **A single-era
+timeline gets neither**, and no empty wrapper stands in for them.
+
+**`Sources` is a numbered `<ol>` with an `id` per item, and every one is cited.** The `sup` links a
+reader clicks are promises the list has to keep: an id the list does not carry is a dead link, and a
+source no entry cites is a row with nothing to connect to. **A `<ul>` or a bare run of links was
+rejected**: the `sup` markers are numbers, and only an `<ol>` makes the number on screen the number
+in the list.
+
+**A date reaches the reader as human text inside a `<time>`, with the machine value in `datetime`.**
+A bare year is `<time datetime="YYYY">`, a full ISO date when the source gives one, and a full
+timestamp with hours, minutes and seconds when it does; a `c.`-qualified or ranged label stays plain
+text, since `<time>` takes one machine instant. **Printing the machine value at the reader was
+rejected**: a raw ISO instant such as `2026-10-09T23:01:18Z` is what `datetime` is for, and a
+consumer rendering it put a machine value on the surface the human date belongs on.
+
 ## Tables
 
 **No `font-family` on `table`.** Tables inherit the body serif (tabular, lining digits by
