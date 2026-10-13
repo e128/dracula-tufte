@@ -915,6 +915,15 @@ first column of that table is bold. Do not add zebra stripes.
 was rejected: the first is the per-row color this section already bans, and the second falls outside
 check 12, which measures one alpha. Do not add a color to `.lead`.
 
+**A delta column is an ordinary `td.num` beside the bar cell, not a component.** A multiple such as
+`×1.6` against a prior run is text in a right-aligned cell, so the number states the comparison and
+no reader has to subtract two bars. `th.num, td.num` already right-align, and the fixture
+(`samples/dark-charts.html`, search `Versus prior run`) rendered in dark and light with no CSS change.
+Borrowed from a source-control post whose bar figures carried a bold `×25` column at the right edge.
+**Do not add a delta class, a color for "faster" or "slower", or a second bar for the baseline.** Two
+series are the per-row color this section already bans, and a hue on the multiple invites a prose
+accent onto a neutral number.
+
 **`.stat-strip` is a `dl` of `div` groups: `dt` label, `dd.v` value, `dd.s` gloss.** Cell borders
 overlap by 1px through negative margins, not a gap on a colored ground, because forced colors resets
 backgrounds and the dividers would vanish. Do not put a shadow or a card fill on it.
@@ -1202,6 +1211,28 @@ widen a selector on the shared sheet for it.**
 
 **`sankey` and `block` render in d3's Tableau10 categorical scheme**, no config surface in front of
 it. Left alone: nothing puts a category fill beside body copy.
+
+**A dashed outline marks a node the system derives instead of stores.** It extends the dashed edge
+that already marks a conceptual connection: one line style, stated once in a legend node or in the
+sentence above the fence, never as a label on every node. The mechanism is
+`classDef derived stroke-dasharray:6 4` plus `:::derived` on the node. It sets no fill and no stroke
+color, so `CONTRACT.md` § 2's ban on `classDef` hex does not apply and one line serves both
+palettes. Verified by rendering `samples/dark-charts.html` and `samples/light-charts.html` (search
+`Stored and derived`). **Do not give the derived class a fill.** That is the hex the contract bans on
+a page that follows the reader's appearance.
+
+**Four ideas from the same post were checked and declined.**
+
+- **A monospace identifier inside a sans label.** Every diagram here is already monospace
+  (`fontFamily` in `mermaid.js`), so there is no sans to contrast against.
+- **HTML in a node label** (`<b>`, `<code>`, `<br/>`) to get that contrast anyway. Rendered, it
+  corrupted the layout: the node drew twice and the label overlapped its neighbour. The measurement
+  font and the render font diverge (see [Label measurement](#label-measurement)). Do not retry it.
+- **Rounded elbow routing.** ELK already routes orthogonal edges with rounded corners in the
+  default render, so there is nothing to set.
+- **A record card component** (a header strip, key and value rows, a muted right-aligned tag).
+  A plain `table` with `th scope="row"` and `td.num` already draws it. Rendered in dark, it needed
+  no CSS. A new class would duplicate a table.
 
 **`mindmap` was tried for the connections map and rejected.** Mermaid's own section coloring resolved
 to literal black under `theme: 'base'` with this palette's dark `primaryColor` (an `hsl(_, _, 0%)`
