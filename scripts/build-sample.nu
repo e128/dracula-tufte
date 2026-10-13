@@ -19,6 +19,7 @@ def main [] {
   let css = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right)
   let mermaid = (open --raw ($ROOT | path join "mermaid.js") | str trim --right)
   let filter = (open --raw ($ROOT | path join "filter.js") | str trim --right)
+  let highlight = (open --raw ($ROOT | path join "highlight.js") | str trim --right)
 
   tokens $css
 
@@ -41,6 +42,7 @@ def main [] {
       $css
       $mermaid
       $filter
+      $highlight
       "</head>"
       $p.1
       $p.3
@@ -174,7 +176,7 @@ def conn-map-body [] {
     "      <h3>Small map</h3>"
     "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  accTitle: Connections map for the focus topic\n  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.\n  focus[Focus Topic with a deliberately long label that must fit its own box]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
     "      <h3>Large map</h3>"
-    "      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it stays a two-<code>&lt;script&gt;</code> fixture.</p>"
+    "      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it stays a three-<code>&lt;script&gt;</code> fixture.</p>"
     "      <pre class=\"mermaid\">---\nconfig:\n  layout: elk\n  flowchart:\n    useMaxWidth: false\n  elk:\n    nodePlacementStrategy: NETWORK_SIMPLEX\n---\nflowchart TD\n  accTitle: Large connections map for the focus topic\n  accDescr: A focus topic with two eras of antecedents and descendants grouped into open subgraphs, every node individually clickable, and a legend explaining that a solid line is a technological connection and a dashed line is a conceptual one.\n  subgraph legend[\"Legend\"]\n    direction LR\n    key1((\" \")) -->|technological| key2((\" \"))\n    key3((\" \")) -.->|conceptual| key4((\" \"))\n  end\n  focus[Focus Topic]\n  subgraph pre2010[\"Antecedents, pre-2010\"]\n    a1[Antecedent A]\n    a2[Antecedent B]\n    a3[Antecedent C]\n    a4[Antecedent D]\n    a5[Antecedent E]\n    a6[Antecedent F]\n  end\n  subgraph post2010[\"Descendants, post-2010\"]\n    d1[Descendant W]\n    d2[Descendant X]\n    d3[Descendant Y]\n    d4[Descendant Z]\n  end\n  a1 --> focus\n  a2 --> focus\n  a3 --> focus\n  a4 -.-> focus\n  a5 -.-> focus\n  a6 --> focus\n  focus --> d1\n  focus --> d2\n  focus -.-> d3\n  focus --> d4</pre>"    "    </section>"
     "  </article>"
     "  </main>"
@@ -390,6 +392,8 @@ def body [] {
     "      <pre tabindex=\"0\" role=\"region\" aria-label=\"Code block\"><code>def greet [name: string] {\n    print $\"hello ($name)\"\n}</code></pre>"
     "      <p>A highlighted block takes the same slot map the editor themes use: keywords pink, strings green, numbers orange, comments muted, functions link, types purple, fields label.</p>"
     "      <pre tabindex=\"0\" role=\"region\" aria-label=\"Highlighted code block\"><code class=\"language-csharp hljs\"><span class=\"hljs-comment\">// highlighter classes, not hand-written spans</span>\n<span class=\"hljs-keyword\">public</span> <span class=\"hljs-type\">Result</span> <span class=\"hljs-title hljs-function\">Parse</span>(<span class=\"hljs-type\">string</span> <span class=\"hljs-params\">source</span>) {\n    <span class=\"hljs-keyword\">var</span> <span class=\"hljs-variable\">count</span> = <span class=\"hljs-number\">42</span>;\n    <span class=\"hljs-keyword\">return</span> <span class=\"hljs-keyword\">new</span> <span class=\"hljs-type\">Result</span>(<span class=\"hljs-string\">\"ok\"</span>, <span class=\"hljs-variable\">count</span>);\n}</code></pre>"
+    "      <p>An unhighlighted block that names its language is highlighted in the browser by <code>highlight.js</code>. Emit <code>pre &gt; code.language-python</code> and nothing else: the script skips a block that already carries <code>hljs</code> spans, and a block with no <code>language-</code> class stays plain.</p>"
+    "      <pre tabindex=\"0\" role=\"region\" aria-label=\"Runtime-highlighted code block\"><code class=\"language-python\"># highlighted in the browser, not by the generator\ndef parse(source: str) -&gt; Result:\n    count = 42\n    return Result(\"ok\", total=count)</code></pre>"
     "      <p>Pygments names the same slots one and two letters, so Sphinx, MkDocs, Quarto and a notebook export land in the same registers.</p>"
     "      <div class=\"highlight\"><pre tabindex=\"0\" role=\"region\" aria-label=\"Pygments code block\"><span class=\"c1\"># pygments classes, not hand-written spans</span>\n<span class=\"k\">def</span> <span class=\"nf\">parse</span><span class=\"p\">(</span><span class=\"n\">source</span><span class=\"p\">:</span> <span class=\"kt\">str</span><span class=\"p\">)</span> <span class=\"o\">-&gt;</span> <span class=\"nc\">Result</span><span class=\"p\">:</span>\n    <span class=\"n\">count</span> <span class=\"o\">=</span> <span class=\"mi\">42</span>\n    <span class=\"k\">return</span> <span class=\"nc\">Result</span><span class=\"p\">(</span><span class=\"s2\">&quot;ok&quot;</span><span class=\"p\">,</span> <span class=\"na\">total</span><span class=\"o\">=</span><span class=\"n\">count</span><span class=\"p\">)</span></pre></div>"
     "    </section>"

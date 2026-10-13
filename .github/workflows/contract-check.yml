@@ -14,7 +14,7 @@ jobs:
 
       - name: Verify the twelve contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md; do
+          for f in tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
           echo "All 12 contract files present."
@@ -64,7 +64,7 @@ jobs:
         run: |
           # tufte-dracula.css/mermaid.js/filter.js are contracts that already carry
           # their own <style>/<script> wrapper, and scripts/build-sample.nu inlines them
-          # verbatim into each fixture -- so exactly one <style> and two <script>
+          # verbatim into each fixture -- so exactly one <style> and three <script>
           # blocks are expected. More means a hand-rolled block was added alongside
           # the canonical ones.
           # grep -o, not grep -c: -c counts matching *lines*, so a second block
@@ -73,7 +73,7 @@ jobs:
             n=$(grep -o "<style" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <style> block (canonical CSS), found $n"; exit 1; }
             n=$(grep -o "<script" "$f" | wc -l | tr -d ' ')
-            [ "$n" -eq 2 ] || { echo "$f: expected exactly 2 <script> blocks (canonical mermaid.js + filter.js), found $n"; exit 1; }
+            [ "$n" -eq 3 ] || { echo "$f: expected exactly 3 <script> blocks (canonical mermaid.js + filter.js + highlight.js), found $n"; exit 1; }
           done
           echo "No hand-rolled style/script blocks."
 

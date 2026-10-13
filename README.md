@@ -44,8 +44,9 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.54.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.55.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
+| `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
 | `tokens.css` | Palette reference. Generated from the `:root` block. Do not edit it by hand. |
@@ -62,13 +63,13 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.54.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.55.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
 
 1. What to inline (§ 1).
-2. The thirty-two markup requirements a generator owes (§ 2), each pointing at a string to search
+2. The thirty-three markup requirements a generator owes (§ 2), each pointing at a string to search
    for in a fixture rather than at a line number.
 3. What changed in each release (§ 3).
 4. How to detect a stale artifact (§ 4).
@@ -184,7 +185,7 @@ same thing. Together they verify:
 - That no em-dash and no en-dash appears in any tracked file.
 
 **One check runs the payload instead of reading it.** `.github/script-probe.py` loads
-`samples/dark.html` in headless Chrome, drives `filter.js` and `mermaid.js`, and asserts what a
+`samples/dark.html` in headless Chrome, drives `filter.js`, `mermaid.js` and `highlight.js`, and asserts what a
 reader would see. Everything else counts blocks, compares bytes or measures colors, and none of
 that asks whether a handler attaches to anything: the fixture shipped an inert `input.filter-box`
 for six releases with every other check green. It also renders the page with `forced-colors`

@@ -17,6 +17,8 @@ behaviour. It is the only check in the repo that runs the payload rather than re
               the query, the no-matches line appears and goes away again, the
               `[role="status"]` count tracks, and clearing the query restores the
               authored count and the authored open state
+  highlight.js  a `pre > code.language-x` block gains `hljs` and token spans, and a `pre > code`
+              with no `language-` class stays plain
   mermaid.js  every `pre.mermaid` renders an `<svg>` and gains its own zoom button, a
               click on the live diagram opens the `<dialog>`, and the pre carries no
               `role="region"` at a width where it cannot scroll
@@ -31,7 +33,7 @@ ponytail: no node, no jsdom, no playwright. The same headless Chrome
 `--screenshot`, and a driver script appended to a scratch copy of the fixture. The
 driver writes its results into the DOM, so reading them back is one regex.
 
-The mermaid half needs the pinned CDN, which is the one thing here that can be
+The mermaid and highlight halves need the pinned CDN, which is the one thing here that can be
 unavailable rather than broken. Reachability is probed first and reported as a SKIP,
 never folded into a pass: a gate that goes quiet when the network does is worse than no
 gate, so the skip is loud and the exit code stays honest about what ran.
@@ -163,11 +165,15 @@ DRIVER = """
         const ready = pres.length > 0 && pres.every(
           p => p.querySelector('svg') && p.querySelector('.mermaid-zoom')
         );
-        if (!ready && Date.now() < deadline) {
+        const hlReady = Boolean(document.querySelector('code.language-python .hljs-keyword'));
+        if (!(ready && hlReady) && Date.now() < deadline) {
           setTimeout(poll, 250);
           return;
         }
         t('mermaid-rendered', ready);
+        const hl = document.querySelector('code.language-python');
+        t('highlight-runtime', Boolean(hl && hl.classList.contains('hljs') && hl.querySelector('.hljs-keyword')));
+        t('highlight-plain-untouched', Boolean(document.querySelector('pre > code:not([class])') && !document.querySelector('pre > code:not([class]) .hljs-keyword')));
         t('mermaid-no-region-when-wide', pres.every(p => !p.hasAttribute('role')));
         t('mermaid-no-tabstop-when-wide', pres.every(p => !p.hasAttribute('tabindex')));
         const pieTitle = document.querySelector('pre.mermaid .pieTitleText');
