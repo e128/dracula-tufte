@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.55.0 */
+    /* Dracula-Tufte (muted) v1.56.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -139,6 +139,12 @@
       font-size: 0.9em;
     }
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
+    .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
+      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin: -0.5rem -0.5rem 0 0.5rem;
+      padding: 0; background: var(--code-bg); color: var(--label); border: 1px solid var(--rule);
+      border-radius: var(--radius-sm); cursor: pointer; }
+    .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
+    .copy-code:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
       .kw, .cf, .op, .bu, .k, .kc, .kd, .kn, .kp, .kr, .o, .ow,

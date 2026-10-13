@@ -174,6 +174,8 @@ DRIVER = """
         const hl = document.querySelector('code.language-python');
         t('highlight-runtime', Boolean(hl && hl.classList.contains('hljs') && hl.querySelector('.hljs-keyword')));
         t('highlight-plain-untouched', Boolean(document.querySelector('pre > code:not([class])') && !document.querySelector('pre > code:not([class]) .hljs-keyword')));
+        t('copy-button-on-code', Boolean(hl && hl.parentElement.firstElementChild.matches('button.copy-code') && hl.parentElement.querySelector('.copy-code svg')));
+        t('copy-button-not-on-mermaid', !document.querySelector('pre.mermaid .copy-code'));
         t('mermaid-no-region-when-wide', pres.every(p => !p.hasAttribute('role')));
         t('mermaid-no-tabstop-when-wide', pres.every(p => !p.hasAttribute('tabindex')));
         const pieTitle = document.querySelector('pre.mermaid .pieTitleText');
