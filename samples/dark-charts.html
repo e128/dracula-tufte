@@ -6,7 +6,7 @@
   <title>Tufte-Dracula chart components</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.55.0 */
+    /* Dracula-Tufte (muted) v1.56.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -146,6 +146,12 @@
       font-size: 0.9em;
     }
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
+    .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
+      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin: -0.5rem -0.5rem 0 0.5rem;
+      padding: 0; background: var(--code-bg); color: var(--label); border: 1px solid var(--rule);
+      border-radius: var(--radius-sm); cursor: pointer; }
+    .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
+    .copy-code:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
       .kw, .cf, .op, .bu, .k, .kc, .kd, .kn, .kp, .kr, .o, .ow,
@@ -798,6 +804,31 @@
     });
   </script>
   <script type="module">
+    const icons = {
+      copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+      done: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+    };
+    const paint = (button, name) => {
+      button.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
+    };
+    if (navigator.clipboard) {
+      document.querySelectorAll('pre:not(.mermaid)').forEach(pre => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-code';
+        button.setAttribute('aria-label', 'Copy code');
+        paint(button, 'copy');
+        button.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(pre.textContent);
+          } catch { return; }
+          paint(button, 'done');
+          button.setAttribute('aria-label', 'Copied');
+          setTimeout(() => { paint(button, 'copy'); button.setAttribute('aria-label', 'Copy code'); }, 1500);
+        });
+        pre.prepend(button);
+      });
+    }
     const blocks = document.querySelectorAll('pre > code[class*="language-"]:not(.hljs)');
     if (blocks.length) {
       const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/es/highlight.min.js');

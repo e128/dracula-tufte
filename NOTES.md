@@ -1977,6 +1977,13 @@ output**, so Pygments, skylighting and a prior `highlight.js` pass are never re-
 theme CSS loads**: the sheet's selectors are the theme, and a second theme would fight them. Unlike
 Mermaid, a CDN failure leaves a readable block, so this is not a hard-offline dependency.
 
+**Every `pre` except `pre.mermaid` gets a copy button, built in `highlight.js`.** It rides the existing script because a
+fourth inlined script costs a new fixture check and a new contract line. The button is a sticky `float: inline-end` first
+child of the `pre`, so it stays at the visible edge while the block scrolls sideways, and it copies `pre.textContent`, which
+covers converters that emit no `code` child. The icon is an inline SVG (`currentColor`) swapped to a check for 1.5s. Nothing is
+added when `navigator.clipboard` is missing. **No wrapper element around `pre`**: it would move the margin rhythm and the
+`pre > code` selectors. The button is 2.25rem, above the 24px AA minimum and below the 44px usability target.
+
 **Chroma was declined on a namespace argument that turned out to silently exclude Pygments.** Hugo
 defaults `noClasses = true` (inline color, mostly moot), but Pygments emits classes by default and is
 the highlighter behind Sphinx, MkDocs, Quarto, `nbconvert`. Chroma copies Pygments' class names, so
