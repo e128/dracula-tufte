@@ -83,7 +83,7 @@ def contract-markup-ok [] {
   let words = {15: Fifteen, 16: Sixteen, 17: Seventeen, 18: Eighteen, 19: Nineteen, 20: Twenty,
                21: "Twenty-one", 22: "Twenty-two", 23: "Twenty-three", 24: "Twenty-four",
                25: "Twenty-five", 26: "Twenty-six", 27: "Twenty-seven", 28: "Twenty-eight",
-               29: "Twenty-nine", 30: Thirty, 31: "Thirty-one", 32: "Thirty-two"}
+               29: "Twenty-nine", 30: Thirty, 31: "Thirty-one", 32: "Thirty-two", 33: "Thirty-three"}
   let want = ($words | get -o ($bullets | length | into string))
   if $want == null {
     print $"CONTRACT: ($bullets | length) requirements is outside the spelled-out range this check knows. Extend the map in scripts/maintain.nu."
@@ -230,7 +230,7 @@ def "main markdown-links" [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] {
+  for f in [tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] {
     if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -281,7 +281,7 @@ def "main check" [] {
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
-    if $scripts != 2 { print $"($f): expected 2 <script> blocks, found ($scripts)"; $ok = false }
+    if $scripts != 3 { print $"($f): expected 3 <script> blocks, found ($scripts)"; $ok = false }
   }
 
   if not (contract-markup-ok) { $ok = false }

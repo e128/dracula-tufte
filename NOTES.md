@@ -1694,7 +1694,7 @@ needing its own gate. **The net change after deleting it is fewer rules than bef
 
 **A scheme flip with no reload leaves the diagram stale**: the token is read once, at init; a live
 re-theme means a re-init, a re-render from source, and a fresh `MutationObserver` race. **An in-page
-toggle was asked for and refused**: the fixtures carry exactly one `<style>` and two `<script>`
+toggle was asked for and refused**: the fixtures carry exactly one `<style>` and three `<script>`
 blocks, both gated, so a toggle would need a second theming convention or a fourth inlined script.
 Take it only as a deliberate public-API decision if a consumer asks for a manual override as a
 feature.
@@ -1965,6 +1965,17 @@ body serif, and a bump would re-scale math inside `h3`/`td` too.
 **TeX is not rendered**: KaTeX/MathJax would be a second hard-offline dependency (Mermaid's kind)
 for a construct that may never appear; the sheet styles the containers so a consumer adding KaTeX
 gets block layout free.
+
+**Runtime highlighting is `highlight.js`, opted into by `pre > code.language-NAME`, and it degrades to plain
+code offline.** The slot map above already styled the emitter classes, so the one missing piece was
+something to emit them. `highlight.js` is the third inlined script, behind a pinned
+`@highlightjs/cdn-assets` ESM import of the common bundle. **Its selector is the markup every converter
+already writes** (`language-NAME` on a `code` inside a `pre`), so this adds no class of our own, which
+keeps the rule above. **Never auto-detect**: a block with no `language-` class stays plain, since a
+guessed language paints a wrong register with confidence. **`:not(.hljs)` skips server-highlighted
+output**, so Pygments, skylighting and a prior `highlight.js` pass are never re-run. **No `highlight.js`
+theme CSS loads**: the sheet's selectors are the theme, and a second theme would fight them. Unlike
+Mermaid, a CDN failure leaves a readable block, so this is not a hard-offline dependency.
 
 **Chroma was declined on a namespace argument that turned out to silently exclude Pygments.** Hugo
 defaults `noClasses = true` (inline color, mostly moot), but Pygments emits classes by default and is

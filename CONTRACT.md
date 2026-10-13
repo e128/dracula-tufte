@@ -19,13 +19,14 @@ them. That bullet is the one place to follow this file and not the fixture, and 
 
 ## 1. Inline the payload
 
-Three files. Each one carries its own wrapper tag.
+Four files. Each one carries its own wrapper tag.
 
 | file | when | wrapper |
 | --- | --- | --- |
 | `tufte-dracula.css` | always | `<style>` |
 | `mermaid.js` | only when the document holds a ` ```mermaid ` fence | `<script type="module">` |
 | `filter.js` | only when the document holds an `input.filter-box` | `<script type="module">` |
+| `highlight.js` | only when the document holds a `pre > code` whose class starts `language-` | `<script type="module">` |
 
 Two supported modes. Pick one and hold it:
 
@@ -57,7 +58,7 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Thirty-two requirements. No stylesheet change can supply any of them. Most name a string to search
+Thirty-three requirements. No stylesheet change can supply any of them. Most name a string to search
 for in a fixture, so you have a working example instead of only a sentence. The few with no fixture
 yet say so.
 
@@ -94,6 +95,16 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       it. An unwrapped table takes `tabindex="0"` alone, named by its own `<caption>`
       (in `samples/dark.html`, search `<caption>Table caption: annotation register`), because the
       stylesheet hands it a sideways-scroll axis of its own below 1000px.
+- [ ] A code block you want highlighted in the browser is `<pre><code class="language-NAME">` with
+      the source as escaped text, and nothing else (in `samples/dark.html`, search
+      `<code class="language-python">`). The `language-` class on a `code` inside a `pre` is the
+      opt-in: `highlight.js` skips a `code` with no such class, never guesses a language, and
+      skips a block that already carries `hljs` spans from a server-side highlighter (in
+      `samples/dark.html`, search `class="language-csharp hljs"`). The block still takes the
+      `tabindex`, `role` and label from the scroll requirement above. Name a language the pinned
+      `highlight.js` common bundle ships. The script loads from a CDN, so an offline reader sees the
+      same block as plain, readable code. Use no class of your own, and inline `highlight.js` only on
+      a page that holds one.
 - [ ] `--timeline-date` on an ancestor when a page carries **more than one** `dl.timeline`, set in
       `ch` against the widest date label in the whole document (in `samples/dark-timeline.html`,
       search `--timeline-date: 16ch`). Each
@@ -318,6 +329,7 @@ commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.55.0 | **one new opt-in payload file and one new § 2 requirement.** Inline `highlight.js` (§ 1) on a page that holds a `<pre><code class="language-NAME">` block and the browser highlights it with the Dracula slot map the stylesheet already carried. Nothing you already emit changes, and a block with no `language-` class stays plain. The fixtures now carry three `<script>` blocks |
 | v1.54.0 | nothing, and no payload change. **Two optional conventions, both stated in `NOTES.md` and shown in `samples/dark-charts.html`.** A multiple such as `×1.6` beside a `table.bar-chart` goes in a plain `td.num`, so the comparison is text. A Mermaid node the system derives instead of stores takes `classDef derived stroke-dasharray:6 4`, which sets no color and so passes the `classDef` hex rule on a page that follows the reader's appearance. |
 | v1.53.0 | **three new § 2 requirements, all for a timeline page, and no payload change.** A timeline that covers more than one era splits into one `<section>` per group, each opened by an `id`-carrying `<h2>`, and carries a page-level `<nav>` routing to every group and to `Sources`. Its `Sources` is a numbered `<ol>` with an `id` per item, every one cited by a `sup`. A reader-facing date moves into a `<time>` whose `datetime` holds the machine value, a year, a full ISO date or a timestamp, so a raw ISO instant is never printed at the reader. Nothing you inline changes: the stylesheet already supplies all three |
 | v1.52.0 | **three new opt-in components, all for a navigation page: an index shell with a sticky rail, a current-page marker for a link in a sibling `nav`, and an image tile.** Nothing you already emit changes. The shell puts a `class="index-rail"` beside its entries, two columns above `900px` and one below, and the rail takes its width from the same `clamp()` the connections-map rail uses, so the sheet has one rail convention rather than two. The current-page link takes a `3px` accent bar on its start edge where `nav > a + a` would have drawn a hairline. The tile is a `<figure class="hero">` whose caption sits below its image. **No new colour token arrives with any of them**: each reuses a value the palette checks already measure in all four modes, so a consumer pinning this release gets three components and one unchanged palette. All three are opt-in; the three § 2 requirements they carry are in that section |

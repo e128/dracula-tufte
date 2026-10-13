@@ -6,7 +6,7 @@
   <title>Tufte-Dracula chart components</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.54.0 */
+    /* Dracula-Tufte (muted) v1.55.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -796,6 +796,13 @@
         if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
       });
     });
+  </script>
+  <script type="module">
+    const blocks = document.querySelectorAll('pre > code[class*="language-"]:not(.hljs)');
+    if (blocks.length) {
+      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/es/highlight.min.js');
+      blocks.forEach(block => hljs.highlightElement(block));
+    }
   </script>
 </head>
 <body>

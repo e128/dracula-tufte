@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.54.0 */
+    /* Dracula-Tufte (muted) v1.55.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -797,6 +797,13 @@
       });
     });
   </script>
+  <script type="module">
+    const blocks = document.querySelectorAll('pre > code[class*="language-"]:not(.hljs)');
+    if (blocks.length) {
+      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/es/highlight.min.js');
+      blocks.forEach(block => hljs.highlightElement(block));
+    }
+  </script>
 </head>
 <body>
   <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog>
@@ -855,6 +862,11 @@
     <span class="hljs-keyword">var</span> <span class="hljs-variable">count</span> = <span class="hljs-number">42</span>;
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-type">Result</span>(<span class="hljs-string">"ok"</span>, <span class="hljs-variable">count</span>);
 }</code></pre>
+      <p>An unhighlighted block that names its language is highlighted in the browser by <code>highlight.js</code>. Emit <code>pre &gt; code.language-python</code> and nothing else: the script skips a block that already carries <code>hljs</code> spans, and a block with no <code>language-</code> class stays plain.</p>
+      <pre tabindex="0" role="region" aria-label="Runtime-highlighted code block"><code class="language-python"># highlighted in the browser, not by the generator
+def parse(source: str) -&gt; Result:
+    count = 42
+    return Result("ok", total=count)</code></pre>
       <p>Pygments names the same slots one and two letters, so Sphinx, MkDocs, Quarto and a notebook export land in the same registers.</p>
       <div class="highlight"><pre tabindex="0" role="region" aria-label="Pygments code block"><span class="c1"># pygments classes, not hand-written spans</span>
 <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="kt">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Result</span><span class="p">:</span>
