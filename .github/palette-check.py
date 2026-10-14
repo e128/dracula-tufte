@@ -325,7 +325,7 @@ for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_t
 #    row, so the hover fill is not a ground a category fill ever lands on.
 #
 #    DATA is the diagram-category ramp, and it is a non-text boundary like a rule
-#    rather than text: a pie slice or a classDef fill has to be tellable from the
+#    rather than text: a chart mark or a classDef fill has to be tellable from the
 #    card it sits on. It is checked against BOTH grounds because a diagram is drawn
 #    on --code-bg while a bare SVG lands on --surface. Through v1.24.0 this ramp had
 #    no light or print override and measured 1.69 to 2.15:1 there, which NOTES.md
@@ -520,6 +520,21 @@ for mode, triples_for_mode in resolved.items():
             )
             fail = 1
 
+#    In light mode the five accents that float elsewhere are held to one band, so a
+#    status green does not shout over an h2 purple. Dark mode already spreads 45 to 61%
+#    and high contrast and print are compressed by design, so none of them is pinned.
+LIGHT_ACCENTS = ("orange", "purple", "pink", "green", "link")
+LIGHT_BAND = (0.55, 0.65)
+light_mode = "prefers-color-scheme: light"
+for name in LIGHT_ACCENTS:
+    L, C, h = resolved[light_mode][name]
+    ceiling = max_chroma_p3(L, h) if name in P3_WIDENED else max_chroma(L, h)
+    got = C / ceiling
+    if not LIGHT_BAND[0] <= got <= LIGHT_BAND[1]:
+        print(f"VIVIDNESS: light --{name} is {got * 100:.1f}% of its ceiling, outside the "
+              f"{LIGHT_BAND[0] * 100:.0f} to {LIGHT_BAND[1] * 100:.0f}% accent band")
+        fail = 1
+
 # 9. An accent used as a BACKGROUND is a pair no check above ever looks at. Check 5
 #    only ever puts a token in the foreground, on --surface, --code-bg or
 #    --surface-alt. Three components invert that: `.verdict-*`, `.step-node` and
@@ -707,84 +722,8 @@ for name in ("purple-bright", "highlight"):
         )
         fail = 1
 
-# 11. A pie slice label is the one place a themeVariable lands ON another
-#     themeVariable, so check 5 cannot see it: it measures every token against
-#     --surface, --code-bg and --surface-alt, and a slice is none of those. Mermaid
-#     draws `.slice { fill: pieSectionTextColor }` over `.pieCircle { fill: pieN }`,
-#     and its stock single `textColor` cannot serve both palettes, because the fills
-#     are pale in dark mode and mid-tone in light. Measured before this check existed:
-#     a dark-mode slice label was #f8f8f2 on a pale fill at 1.81:1 flat.
-#
-#     `pieOpacity` is pinned to '1' in the same breath. Mermaid defaults it to 0.7, and
-#     a slice composited at 0.7 measured 2.15 to 2.22:1 against the light card even
-#     after the --data-* ramp cleared 3.2:1 flat, so the opacity is what the ramp's own
-#     floor depends on. It is not a color, so nothing else in this file or in
-#     contract-check.yml would notice it going back to the default.
-for section, source, lch_for in (
-    ("init", palette, triples),
-    ("initLight", light_palette, light_triples),
-):
-    label = pal.get(section, {}).get("pieSectionTextColor")
-    if label is None:
-        print(f"DRIFT: {section} declares no pieSectionTextColor, so a slice label falls "
-              f"back to mermaid's single textColor, which one palette always fails")
-        fail = 1
-        continue
-    text = lch_for[label["from"].lstrip("-")]
-    for i in (1, 2, 3, 4):
-        slice_from = pal[section][f"pie{i}"]["from"].lstrip("-")
-        got = contrast(text, lch_for[slice_from])
-        if got + 0.005 < 4.5:
-            print(
-                f"CONTRAST: {section} pieSectionTextColor ({label['from']}) on a pie{i} "
-                f"slice (--{slice_from}) is {got:.2f}:1, below 4.5"
-            )
-            fail = 1
-#     Mermaid bakes its hex at init and print is a media query with no re-render, so a
-#     diagram themed for a dark page keeps painting its own colours while @media print
-#     turns --surface white. Everything the diagram draws on the page ground rather than
-#     on a node fill then went white on white, about 1.0:1 on paper. The fix is to give
-#     the diagram back the ground it was themed for, so --diagram-ground in the print
-#     block has to BE the default --surface: a drift between them repaints the ground in
-#     a colour the SVG was never themed against, and nothing else here reads printed
-#     output. `print-color-adjust: exact` is what makes it survive Chrome's default
-#     "background graphics off", verified against a PDF rendered with backgrounds
-#     suppressed, so it is pinned too.
-print_ground = relative_decls("")  # placeholder, kept so the shape below reads plainly
-frozen = re.search(r"@media print \{.*?\n      pre\.mermaid \{(.*?)\n      \}", stylesheet, re.S)
-if not frozen:
-    print("DRIFT: the @media print block has no `pre.mermaid` rule, so a dark-themed "
-          "diagram prints its own colors against white paper")
-    fail = 1
-else:
-    got = {
-        name: (float(L), float(C), float(h))
-        for name, L, C, h in re.findall(
-            r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", frozen.group(1)
-        )
-    }
-    # Every token any pre.mermaid or .mermaid-overlay rule resolves through. A token used
-    # there but not frozen resolves to the paper palette instead, which is how the packet
-    # title and the byte labels first came out dark on the dark ground.
-    for name in ("surface", "on-surface", "code-bg", "purple", "muted"):
-        if name not in got:
-            print(f"DRIFT: @media print pre.mermaid does not freeze --{name}, so it resolves "
-                  f"to the paper palette inside a diagram themed against the default one")
-            fail = 1
-        elif got[name] != triples[name]:
-            print(f"DRIFT: @media print pre.mermaid freezes --{name} at {got[name]}, but the "
-                  f"SVG is themed against the default {triples[name]}")
-            fail = 1
-for pin in ("print-color-adjust: exact", "-webkit-print-color-adjust: exact",
-            "background: var(--surface); padding: var(--space-3) 0"):
-    if pin not in stylesheet:
-        print(f"DRIFT: tufte-dracula.css no longer carries `{pin}` on pre.mermaid in print, so the "
-              f"diagram loses its ground in print")
-        fail = 1
-if "@media print and (prefers-color-scheme: light) {" not in stylesheet:
-    print("DRIFT: no `@media print and (prefers-color-scheme: light)` block, so a "
-          "light-themed diagram gets a dark ground it was never themed for")
-    fail = 1
+# 11. Retired with the Mermaid pie, which was the only text painted on a data fill.
+#     The number stays unused so that 12 and 13 keep the names NOTES.md uses.
 
 # 12. The bar chart puts a --data-* member somewhere no check above looks: it is an
 #     alpha wash of --data-1 painted UNDER the number in the same
@@ -825,12 +764,6 @@ pin = "table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact;"
 if pin not in stylesheet:
     print(f"DRIFT: tufte-dracula.css no longer carries `{pin}`, so a bar band and a "
           f"legend dot print blank")
-    fail = 1
-
-if not re.search(r"pieOpacity:\s*'1'", mermaid_js):
-    print("DRIFT: mermaid.js does not pin pieOpacity to '1'. Mermaid's 0.7 default "
-          "composites every slice toward the card and drops it under the 3:1 floor "
-          "the --data-* ramp is gated to")
     fail = 1
 
 # 13. .claude/statusline.sh hardcodes truecolor projections of ten :root tokens, and no

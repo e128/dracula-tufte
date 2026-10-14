@@ -15,8 +15,12 @@ The narrative goes in the commit.
 
 ## Open
 
-Nothing open. The three entries filed 2026-10-11 by the corpus consumer (`e128/corpus`)
-closed in v1.52.0.
+| entry | why open | where the reasoning is |
+| --- | --- | --- |
+| A dot plot beside `td.bar` | Unbuilt, not refused. A dot in its own text-free cell with the value in the next cell passes the sparkline rule. Build it when a page needs one | [Tufte's chart rules](NOTES.md#tuftes-chart-rules) |
+| A shared scale for the alpha tints | The tints run 0.08, 0.15, 0.3, 0.35 and 0.92, each tuned to its own job. A shared scale needs a measurement per tint, so it waits for a visible mismatch | [Form follows role](NOTES.md#form-follows-role) |
+
+The three entries filed 2026-10-11 by the corpus consumer (`e128/corpus`) closed in v1.52.0.
 
 ---
 
@@ -48,7 +52,6 @@ measurements moved to NOTES.md as the rule above says.
 | --- | --- | --- |
 | No gate asks whether an inlined script binds | Taken. `.github/script-probe.py`, eighteen driven assertions | [The one check that runs the payload](NOTES.md#the-one-check-that-runs-the-payload) |
 | A light twin for the `classdef` fills | Taken. `classdefLight`, plus the emit-time rule that was the real blocker | [The data ramp](NOTES.md#the-data-ramp) |
-| Pie slice opacity and the dark-mode slice label | Taken. `pieOpacity: '1'` and `pieSectionTextColor` per palette, with a `pie` fence to measure it | [Diagram types](NOTES.md#diagram-types) |
 | The mermaid `pre` region announces its name twice | Taken. The region now exists only where the `pre` can scroll | [Keyboard and assistive technology](NOTES.md#keyboard-and-assistive-technology) |
 | `pre.mermaid` is a focusable region where it cannot scroll | Taken by the same change | [Keyboard and assistive technology](NOTES.md#keyboard-and-assistive-technology) |
 | Two § 2 requirements cannot be gated | Split. `.step-node` is gated in the fixtures; the `quadrantChart` label stays prose | [What is gated, and what is open](NOTES.md#what-is-gated-and-what-is-open) |
@@ -63,8 +66,6 @@ the pattern worth carrying forward rather than the entries themselves.
 - The conditional region was declined on needing a resize listener or a `matchMedia` the
   palette check banned. A media-query listener is not resize-stale, and the ban was
   aimed at `prefers-color-scheme` rather than at the function.
-- The pie fix was declined partly on needing a seventh `!important` against Mermaid's own
-  stylesheet. Both values are real `themeVariables`, confirmed against the pinned chunk.
 
 **A decline is a cost estimate with a date on it.** Re-price one before repeating it.
 

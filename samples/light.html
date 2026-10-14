@@ -6,17 +6,17 @@
   <title>Tufte-Dracula component sample: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.56.0 */
+    /* Dracula-Tufte (muted) v1.57.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
-      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
     }
     @font-face {
       font-family: 'Source Serif 4'; font-style: italic; font-weight: 200 900;
       font-display: swap;
-      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
     }
     @font-face {
       font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800;
@@ -77,11 +77,6 @@
       overflow-wrap: break-word;
       scrollbar-color: var(--rule) var(--surface-alt);
     }
-    body::before {
-      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.05%22/%3E%3C/svg%3E');
-      mix-blend-mode: overlay; opacity: 0.5;
-    }
     h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
@@ -122,7 +117,7 @@
       a[href^="http"]::after { content: "\A0↗" / ""; }
     }
     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
-    strong { font-weight: 600; color: var(--orange); }
+    strong { font-weight: 600; }
     del, s { color: var(--muted); }
     :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
     samp { font-family: var(--mono-font); font-size: 0.9em; }
@@ -147,10 +142,9 @@
     }
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
-      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin: -0.5rem -0.5rem 0 0.5rem;
+      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin-block: -0.5rem 0; margin-inline: 0.5rem -0.5rem;
       padding: 0; background: var(--code-bg); color: var(--label); border: 1px solid var(--rule);
       border-radius: var(--radius-sm); cursor: pointer; }
-    .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
     .copy-code:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
@@ -395,6 +389,19 @@
       background-position: left center; inline-size: 12rem; }
     table.bar-chart td.bar.lead { font-weight: 600; }
     [dir="rtl"] table.bar-chart td.bar { background-position: right center; }
+    .spark { display: inline-flex; align-items: flex-end; gap: 1px; block-size: 1.2em; vertical-align: text-bottom;
+      margin-inline-end: var(--space-2); border-block-end: 1px solid var(--rule); }
+    .spark > i { inline-size: 0.45em; block-size: var(--h, 0); background: var(--data-1); }
+    .spark > i:last-child { background: var(--on-surface); }
+    .spark.fit { border-block-end-style: dashed; }
+    .multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+      gap: var(--space-6); margin: var(--space-6) 0; }
+    .multiples { --multiples-label: 8rem; }
+    .multiples > table { margin: 0; }
+    .multiples > table caption { display: block; }
+    .multiples > table:first-child :is(th, td):first-child { inline-size: var(--multiples-label); }
+    .multiples > table + table { margin-inline-start: var(--multiples-label); width: auto;
+      max-inline-size: calc(100% - var(--multiples-label)); }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
@@ -456,6 +463,7 @@
       .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
       pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
       .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
+      .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
     }
     ::selection { background: var(--purple); color: var(--surface); }
     @media (max-width: 1000px) {
@@ -517,13 +525,13 @@
         --label:       oklch(0.470 0.054 275.492);
         --muted:       oklch(0.530 0.055 275);
         --rule-light:  oklch(0.600 0.032 277.832);
-        --link:        oklch(0.520 0.064 216.782);
-        --orange:      oklch(0.535 0.115 61.444);
+        --link:        oklch(0.520 0.056 216.782);
+        --orange:      oklch(0.535 0.085 61.444);
         --red:         oklch(0.545 0.216 21.457);
-        --purple:      oklch(0.535 0.134 300.909);
+        --purple:      oklch(0.535 0.178 300.909);
         --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
         --pink:        oklch(0.545 0.150 349.392);
-        --green:       oklch(0.515 0.125 155.397);
+        --green:       oklch(0.515 0.105 155.397);
         --data-1:      oklch(0.624 0.158 255.000);
         --data-2:      oklch(0.643 0.173 340.000);
         --data-3:      oklch(0.613 0.109 165.000);
@@ -536,8 +544,7 @@
       code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
       pre code { border: none; }
       table, th, td { border: 1px solid currentColor; }
-      .tag-dot::before, .live-dot { background: CanvasText; }
-      body::before { display: none; }
+      .tag-dot::before, .live-dot, .spark > i { background: CanvasText; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
@@ -567,7 +574,6 @@
       }
       mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       body { width: auto; max-width: none; padding: 1rem; }
-      body::before { display: none; }
       .table-scroll { max-height: none; overflow: visible; }
       .mermaid-zoom { display: none; }
       pre.mermaid {
@@ -580,6 +586,7 @@
         print-color-adjust: exact; -webkit-print-color-adjust: exact;
       }
       table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .spark > i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
@@ -605,7 +612,6 @@
     nav.toc li { margin: 0.18rem 0; font-size: 0.86rem; break-inside: avoid; }
     nav.toc a { color: var(--on-surface); text-decoration: none;
       border-block-end: 1px dotted var(--rule-light); }
-    nav.toc a:focus-visible { color: var(--purple-bright); }
     details.deep { margin: 0.45rem 0 0; }
     details.deep > summary { cursor: pointer; list-style: none;
       font-size: 0.78rem; letter-spacing: 0.04em;
@@ -616,7 +622,6 @@
       details.deep > summary::before { content: "\25B8\00A0" / ""; }
       details.deep[open] > summary::before { content: "\25BE\00A0" / ""; }
     }
-    details.deep > summary:focus-visible { color: var(--purple-bright); }
     details.deep > summary::-webkit-details-marker { display: none; }
     @media (max-width: 600px) {
       nav.toc ol { columns: 1; }
@@ -627,7 +632,7 @@
     }
   </style>
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.1.0/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs';
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
     const mermaidDark = {
@@ -648,43 +653,64 @@
       noteBorderColor:     '#707388',
       archEdgeColor:       '#979fc4',
       archGroupBorderColor: '#707388',
-      pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
-      pieSectionTextColor: '#282a36',
-      pieStrokeColor: '#282a36', pieOuterStrokeColor: '#979fc4',
+      xyChart: {
+        backgroundColor: '#282a36',
+        titleColor: '#b7bfe4',
+        dataLabelColor: '#f8f8f2',
+        legendTextColor: '#f8f8f2',
+        xAxisLabelColor: '#f8f8f2',
+        yAxisLabelColor: '#f8f8f2',
+        xAxisTitleColor: '#f8f8f2',
+        yAxisTitleColor: '#f8f8f2',
+        xAxisTickColor: '#979fc4',
+        yAxisTickColor: '#979fc4',
+        xAxisLineColor: '#979fc4',
+        yAxisLineColor: '#979fc4',
+        plotColorPalette: '#96bef0',
+      },
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
       mainBkg:             '#f0f1f9',
       primaryColor:        '#f0f1f9',
       primaryTextColor:    '#161616',
-      primaryBorderColor:  '#7b58ae',
+      primaryBorderColor:  '#804cc2',
       lineColor:           '#626a8c',
       textColor:           '#161616',
       secondaryColor:      '#efefea',
       clusterBkg:          '#f0f1f9',
       clusterBorder:       '#7b7f94',
-      nodeBorder:          '#7b58ae',
+      nodeBorder:          '#804cc2',
       edgeLabelBackground: '#f0f1f9',
       noteBkgColor:        '#f0f1f9',
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
       archEdgeColor:       '#626a8c',
       archGroupBorderColor: '#7b7f94',
-      pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
-      pieSectionTextColor: '#161616',
-      pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
+      xyChart: {
+        backgroundColor: '#fcfcf8',
+        titleColor: '#525879',
+        dataLabelColor: '#161616',
+        legendTextColor: '#161616',
+        xAxisLabelColor: '#161616',
+        yAxisLabelColor: '#161616',
+        xAxisTitleColor: '#161616',
+        yAxisTitleColor: '#161616',
+        xAxisTickColor: '#626a8c',
+        yAxisTickColor: '#626a8c',
+        xAxisLineColor: '#626a8c',
+        yAxisLineColor: '#626a8c',
+        plotColorPalette: '#3c88e4',
+      },
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
-      pie: { textPosition: 0.65 },
       fontFamily: mermaidFont,
       themeVariables: {
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
-        pieOpacity: '1',
-        pieTitleTextSize: '1.15rem', pieStrokeWidth: '1.5px', pieOuterStrokeWidth: '1px',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });
@@ -831,7 +857,7 @@
     }
     const blocks = document.querySelectorAll('pre > code[class*="language-"]:not(.hljs)');
     if (blocks.length) {
-      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/es/highlight.min.js');
+      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/highlight.min.js');
       blocks.forEach(block => hljs.highlightElement(block));
     }
   </script>
@@ -878,7 +904,7 @@
       <h4>Fourth level: body size, label tier</h4>
       <h5>Fifth level: body size, muted tier</h5>
       <h6>Sixth level: muted and italic</h6>
-      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (orange)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <code>src/theme/tokens.css:14</code>, and inline <code>code()</code>.</p>
+      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (weight 600)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <code>src/theme/tokens.css:14</code>, and inline <code>code()</code>.</p>
       <p>Status spans: <span class="verified">verified</span>, <span class="unverified">unverified</span>, <span class="correction">correction</span>.</p>
       <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd>, a ringed chip distinct from inline <code>code()</code>.</p>
       <p>Markdown inline output: <del>struck through</del> drops to the muted tier, <samp>program output</samp> takes the mono face without the code chip, an <abbr title="HyperText Markup Language">HTML</abbr> abbreviation carries a dotted rule, and H<sub>2</sub>O sits beside 10<sup>3</sup> without opening the line. An emoji image <img class="emoji" alt="&#128578;" title=":slightly_smiling_face:" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23e6c84f%22/%3E%3Ccircle cx=%225.5%22 cy=%226.5%22 r=%221%22/%3E%3Ccircle cx=%2210.5%22 cy=%226.5%22 r=%221%22/%3E%3Cpath d=%22M5 10q3 2.5 6 0%22 fill=%22none%22 stroke=%22%23000%22/%3E%3C/svg%3E"> sets at text size with no frame.</p>
@@ -1229,15 +1255,6 @@ def parse(source: str) -&gt; Result:
   end
   Reader --> Read
   Read ..> : include Zoom</pre>
-      <p>The pie chart is the only diagram type that paints text directly onto a <code>--data-*</code> fill, so it carries its own <code>pieSectionTextColor</code> per palette and pins <code>pieOpacity</code> to <code>1</code>. Mermaid's stock 0.7 composited every slice toward the card, and its single <code>textColor</code> is the wrong end of the ramp in one palette or the other (see NOTES.md, Diagram types).</p>
-      <pre class="mermaid">pie showData
-  accTitle: Pie chart sample
-  accDescr: Four payload files as a share of the template's bytes, drawn from the data ramp, with each slice's percentage painted inside the slice.
-  title Payload bytes by file
-  "tufte-dracula.css" : 52
-  "mermaid.js" : 21
-  "filter.js" : 15
-  "mermaid-palette.json" : 12</pre>
     </section>
 
     <hr/>

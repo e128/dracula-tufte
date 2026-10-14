@@ -1,5 +1,5 @@
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.1.0/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs';
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
     const mermaidDark = {
@@ -20,43 +20,64 @@
       noteBorderColor:     '#707388',
       archEdgeColor:       '#979fc4',
       archGroupBorderColor: '#707388',
-      pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
-      pieSectionTextColor: '#282a36',
-      pieStrokeColor: '#282a36', pieOuterStrokeColor: '#979fc4',
+      xyChart: {
+        backgroundColor: '#282a36',
+        titleColor: '#b7bfe4',
+        dataLabelColor: '#f8f8f2',
+        legendTextColor: '#f8f8f2',
+        xAxisLabelColor: '#f8f8f2',
+        yAxisLabelColor: '#f8f8f2',
+        xAxisTitleColor: '#f8f8f2',
+        yAxisTitleColor: '#f8f8f2',
+        xAxisTickColor: '#979fc4',
+        yAxisTickColor: '#979fc4',
+        xAxisLineColor: '#979fc4',
+        yAxisLineColor: '#979fc4',
+        plotColorPalette: '#96bef0',
+      },
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
       mainBkg:             '#f0f1f9',
       primaryColor:        '#f0f1f9',
       primaryTextColor:    '#161616',
-      primaryBorderColor:  '#7b58ae',
+      primaryBorderColor:  '#804cc2',
       lineColor:           '#626a8c',
       textColor:           '#161616',
       secondaryColor:      '#efefea',
       clusterBkg:          '#f0f1f9',
       clusterBorder:       '#7b7f94',
-      nodeBorder:          '#7b58ae',
+      nodeBorder:          '#804cc2',
       edgeLabelBackground: '#f0f1f9',
       noteBkgColor:        '#f0f1f9',
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
       archEdgeColor:       '#626a8c',
       archGroupBorderColor: '#7b7f94',
-      pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
-      pieSectionTextColor: '#161616',
-      pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
+      xyChart: {
+        backgroundColor: '#fcfcf8',
+        titleColor: '#525879',
+        dataLabelColor: '#161616',
+        legendTextColor: '#161616',
+        xAxisLabelColor: '#161616',
+        yAxisLabelColor: '#161616',
+        xAxisTitleColor: '#161616',
+        yAxisTitleColor: '#161616',
+        xAxisTickColor: '#626a8c',
+        yAxisTickColor: '#626a8c',
+        xAxisLineColor: '#626a8c',
+        yAxisLineColor: '#626a8c',
+        plotColorPalette: '#3c88e4',
+      },
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
-      pie: { textPosition: 0.65 },
       fontFamily: mermaidFont,
       themeVariables: {
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
-        pieOpacity: '1',
-        pieTitleTextSize: '1.15rem', pieStrokeWidth: '1.5px', pieOuterStrokeWidth: '1px',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });

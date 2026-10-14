@@ -148,6 +148,17 @@ jobs:
         # not hold a merge, which is the same reason `contract-markup` is a step.
         run: nu scripts/maintain.nu markdown-links
 
+      - name: Every CDN dependency must be pinned to an exact version
+        # AGENTS.md pins each to MAJOR.MINOR.PATCH and never a range. The step is in the
+        # workflow and not only in `check` because a gate that runs only locally does not
+        # hold a merge.
+        run: nu scripts/maintain.nu cdn-pins
+
+      - name: Every hover rule must sit inside the hover media query
+        # An unguarded :hover applies on tap and sticks on touch. The copy button shipped one
+        # in v1.56.0 with every other check green.
+        run: nu scripts/maintain.nu hover-guard
+
       - name: Generated files must be regenerated (fails if stale vs CSS/JS)
         run: |
           # tokens.css is included here on purpose: it is a verbatim slice of the
