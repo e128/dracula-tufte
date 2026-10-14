@@ -6,17 +6,17 @@
   <title>Tufte-Dracula chart components: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.56.0 */
+    /* Dracula-Tufte (muted) v1.57.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
       font-display: swap;
-      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/files/source-serif-4-latin-wght-normal.woff2') format('woff2');
     }
     @font-face {
       font-family: 'Source Serif 4'; font-style: italic; font-weight: 200 900;
       font-display: swap;
-      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.0/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
     }
     @font-face {
       font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800;
@@ -77,11 +77,6 @@
       overflow-wrap: break-word;
       scrollbar-color: var(--rule) var(--surface-alt);
     }
-    body::before {
-      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.05%22/%3E%3C/svg%3E');
-      mix-blend-mode: overlay; opacity: 0.5;
-    }
     h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
     .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
@@ -122,7 +117,7 @@
       a[href^="http"]::after { content: "\A0↗" / ""; }
     }
     cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
-    strong { font-weight: 600; color: var(--orange); }
+    strong { font-weight: 600; }
     del, s { color: var(--muted); }
     :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
     samp { font-family: var(--mono-font); font-size: 0.9em; }
@@ -147,10 +142,9 @@
     }
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
-      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin: -0.5rem -0.5rem 0 0.5rem;
+      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin-block: -0.5rem 0; margin-inline: 0.5rem -0.5rem;
       padding: 0; background: var(--code-bg); color: var(--label); border: 1px solid var(--rule);
       border-radius: var(--radius-sm); cursor: pointer; }
-    .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
     .copy-code:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
@@ -395,6 +389,19 @@
       background-position: left center; inline-size: 12rem; }
     table.bar-chart td.bar.lead { font-weight: 600; }
     [dir="rtl"] table.bar-chart td.bar { background-position: right center; }
+    .spark { display: inline-flex; align-items: flex-end; gap: 1px; block-size: 1.2em; vertical-align: text-bottom;
+      margin-inline-end: var(--space-2); border-block-end: 1px solid var(--rule); }
+    .spark > i { inline-size: 0.45em; block-size: var(--h, 0); background: var(--data-1); }
+    .spark > i:last-child { background: var(--on-surface); }
+    .spark.fit { border-block-end-style: dashed; }
+    .multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+      gap: var(--space-6); margin: var(--space-6) 0; }
+    .multiples { --multiples-label: 8rem; }
+    .multiples > table { margin: 0; }
+    .multiples > table caption { display: block; }
+    .multiples > table:first-child :is(th, td):first-child { inline-size: var(--multiples-label); }
+    .multiples > table + table { margin-inline-start: var(--multiples-label); width: auto;
+      max-inline-size: calc(100% - var(--multiples-label)); }
     .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
     .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
     .mermaid-overlay[open] {
@@ -456,6 +463,7 @@
       .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
       pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
       .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
+      .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
     }
     ::selection { background: var(--purple); color: var(--surface); }
     @media (max-width: 1000px) {
@@ -517,13 +525,13 @@
         --label:       oklch(0.470 0.054 275.492);
         --muted:       oklch(0.530 0.055 275);
         --rule-light:  oklch(0.600 0.032 277.832);
-        --link:        oklch(0.520 0.064 216.782);
-        --orange:      oklch(0.535 0.115 61.444);
+        --link:        oklch(0.520 0.056 216.782);
+        --orange:      oklch(0.535 0.085 61.444);
         --red:         oklch(0.545 0.216 21.457);
-        --purple:      oklch(0.535 0.134 300.909);
+        --purple:      oklch(0.535 0.178 300.909);
         --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
         --pink:        oklch(0.545 0.150 349.392);
-        --green:       oklch(0.515 0.125 155.397);
+        --green:       oklch(0.515 0.105 155.397);
         --data-1:      oklch(0.624 0.158 255.000);
         --data-2:      oklch(0.643 0.173 340.000);
         --data-3:      oklch(0.613 0.109 165.000);
@@ -536,8 +544,7 @@
       code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
       pre code { border: none; }
       table, th, td { border: 1px solid currentColor; }
-      .tag-dot::before, .live-dot { background: CanvasText; }
-      body::before { display: none; }
+      .tag-dot::before, .live-dot, .spark > i { background: CanvasText; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
@@ -567,7 +574,6 @@
       }
       mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
       body { width: auto; max-width: none; padding: 1rem; }
-      body::before { display: none; }
       .table-scroll { max-height: none; overflow: visible; }
       .mermaid-zoom { display: none; }
       pre.mermaid {
@@ -580,6 +586,7 @@
         print-color-adjust: exact; -webkit-print-color-adjust: exact;
       }
       table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .spark > i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
@@ -605,7 +612,6 @@
     nav.toc li { margin: 0.18rem 0; font-size: 0.86rem; break-inside: avoid; }
     nav.toc a { color: var(--on-surface); text-decoration: none;
       border-block-end: 1px dotted var(--rule-light); }
-    nav.toc a:focus-visible { color: var(--purple-bright); }
     details.deep { margin: 0.45rem 0 0; }
     details.deep > summary { cursor: pointer; list-style: none;
       font-size: 0.78rem; letter-spacing: 0.04em;
@@ -616,7 +622,6 @@
       details.deep > summary::before { content: "\25B8\00A0" / ""; }
       details.deep[open] > summary::before { content: "\25BE\00A0" / ""; }
     }
-    details.deep > summary:focus-visible { color: var(--purple-bright); }
     details.deep > summary::-webkit-details-marker { display: none; }
     @media (max-width: 600px) {
       nav.toc ol { columns: 1; }
@@ -627,7 +632,7 @@
     }
   </style>
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.1.0/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs';
     const mermaidLight = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === 'light';
     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
     const mermaidDark = {
@@ -648,43 +653,64 @@
       noteBorderColor:     '#707388',
       archEdgeColor:       '#979fc4',
       archGroupBorderColor: '#707388',
-      pie1: '#96bef0', pie2: '#ec80cb', pie3: '#4bd1a0', pie4: '#bcc267',
-      pieSectionTextColor: '#282a36',
-      pieStrokeColor: '#282a36', pieOuterStrokeColor: '#979fc4',
+      xyChart: {
+        backgroundColor: '#282a36',
+        titleColor: '#b7bfe4',
+        dataLabelColor: '#f8f8f2',
+        legendTextColor: '#f8f8f2',
+        xAxisLabelColor: '#f8f8f2',
+        yAxisLabelColor: '#f8f8f2',
+        xAxisTitleColor: '#f8f8f2',
+        yAxisTitleColor: '#f8f8f2',
+        xAxisTickColor: '#979fc4',
+        yAxisTickColor: '#979fc4',
+        xAxisLineColor: '#979fc4',
+        yAxisLineColor: '#979fc4',
+        plotColorPalette: '#96bef0',
+      },
     };
     const mermaidLightVars = {
       background:          '#f0f1f9',
       mainBkg:             '#f0f1f9',
       primaryColor:        '#f0f1f9',
       primaryTextColor:    '#161616',
-      primaryBorderColor:  '#7b58ae',
+      primaryBorderColor:  '#804cc2',
       lineColor:           '#626a8c',
       textColor:           '#161616',
       secondaryColor:      '#efefea',
       clusterBkg:          '#f0f1f9',
       clusterBorder:       '#7b7f94',
-      nodeBorder:          '#7b58ae',
+      nodeBorder:          '#804cc2',
       edgeLabelBackground: '#f0f1f9',
       noteBkgColor:        '#f0f1f9',
       noteTextColor:       '#161616',
       noteBorderColor:     '#7b7f94',
       archEdgeColor:       '#626a8c',
       archGroupBorderColor: '#7b7f94',
-      pie1: '#3c88e4', pie2: '#cf5cae', pie3: '#349874', pie4: '#878c48',
-      pieSectionTextColor: '#161616',
-      pieStrokeColor: '#fcfcf8', pieOuterStrokeColor: '#626a8c',
+      xyChart: {
+        backgroundColor: '#fcfcf8',
+        titleColor: '#525879',
+        dataLabelColor: '#161616',
+        legendTextColor: '#161616',
+        xAxisLabelColor: '#161616',
+        yAxisLabelColor: '#161616',
+        xAxisTitleColor: '#161616',
+        yAxisTitleColor: '#161616',
+        xAxisTickColor: '#626a8c',
+        yAxisTickColor: '#626a8c',
+        xAxisLineColor: '#626a8c',
+        yAxisLineColor: '#626a8c',
+        plotColorPalette: '#3c88e4',
+      },
     };
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
-      pie: { textPosition: 0.65 },
       fontFamily: mermaidFont,
       themeVariables: {
         darkMode: !mermaidLight,
         fontFamily: mermaidFont,
         fontSize:   '1rem',
-        pieOpacity: '1',
-        pieTitleTextSize: '1.15rem', pieStrokeWidth: '1.5px', pieOuterStrokeWidth: '1px',
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });
@@ -831,7 +857,7 @@
     }
     const blocks = document.querySelectorAll('pre > code[class*="language-"]:not(.hljs)');
     if (blocks.length) {
-      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/es/highlight.min.js');
+      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/highlight.min.js');
       blocks.forEach(block => hljs.highlightElement(block));
     }
   </script>
@@ -845,13 +871,15 @@
   <main>
   <article>
     <h1>Chart Components</h1>
-    <p class="byline">table.bar-chart in CSS over ordinary markup, and a Mermaid pie fence, both using illustrative fixture data</p>
+    <p class="byline">table.bar-chart, a column sparkline and small multiples in CSS over ordinary markup, and a Mermaid line chart, all using illustrative fixture data</p>
 
     <nav class="toc" aria-labelledby="toc-label">
       <p class="toc-label" id="toc-label">On this page</p>
       <ol>
         <li><a href="#bars">Bar charts</a></li>
-        <li><a href="#pie">Pie chart</a></li>
+        <li><a href="#spark">Sparklines</a></li>
+        <li><a href="#multiples">Small multiples</a></li>
+        <li><a href="#line">Line chart</a></li>
         <li><a href="#derived">Stored and derived</a></li>
         <li><a href="#more">More diagram types</a></li>
         <li><a href="#summary">Reading summary</a></li>
@@ -904,17 +932,82 @@
     </section>
 
     <section>
-      <h2 id="pie">Pie chart</h2>
-      <p>A pie here is a Mermaid <code>pie showData</code> fence, themed per palette in <code>mermaid.js</code>. It paints each percentage inside its own slice, states the raw value in the legend beside it, and separates one slice from the next with a stroke of the page ground, because the four ramp members sit at one lightness and two touching slices otherwise differ in hue alone. A CSS <code>conic-gradient</code> shipped in v1.42.0 and drew the same four numbers with none of that: no percentage in any slice, no legend of its own, and a disc a reader had to measure. It was taken back out in v1.43.0.</p>
-      <pre class="mermaid">pie showData
-  accTitle: Illustrative payload shares by file
-  accDescr: Four payload files as illustrative shares of a whole, each slice carrying its own percentage.
-  title Illustrative payload shares
-  "tufte-dracula.css" : 52
-  "mermaid.js" : 21
-  "filter.js" : 15
-  "mermaid-palette.json" : 12</pre>
-      <p>The cost is a CDN request, and offline that request fails, so the fence renders as its own source text and every number in it stays readable. Four slices is still the ceiling, because the ramp has four members and each one is contrast-checked against the card it sits on. A fifth category has no color left that clears the floor, and a page that reaches for one is telling you it wanted a bar chart. Give every fence an <code>accTitle</code> and an <code>accDescr</code>, and state the same numbers in the prose or a table, because a reader who cannot see the slices needs them either way.</p>
+      <h2 id="spark">Sparklines</h2>
+      <p>A sparkline is a word-sized graphic that sits in a table cell or a sentence and shows the shape of a series next to the numbers that state it. Here it is a row of <code>i</code> columns inside <code>span.spark</code>, each sized by a <code>--h</code> percentage the generator sets. Every column stands on one zero baseline, so a falling series looks like a fall and never like a stretched range, and the final column is drawn in <code>--on-surface</code> so the latest value is the one mark a reader finds first. The first and latest values are text in the cells that flank the sparkline, and the whole series is a <code>data-values</code> attribute, so the shape is a second reading and the numbers stay the source. Order rows by the latest value unless the rows have a natural order of their own.</p>
+      <table class="bar-chart" tabindex="0">
+        <caption><span class="label">Payload share across six releases</span>Each column is a file's share of the combined total in one release, oldest on the left. Full height is 60 percent for every row, so the rows compare with each other.<span class="byline">Source: fixture data.</span></caption>
+        <thead><tr><th scope="col">File</th><th scope="col" class="num">First</th><th scope="col">Trend</th><th scope="col" class="num">Latest</th></tr></thead>
+        <tbody>
+          <tr><td><code>tufte-dracula.css</code></td><td class="num">30%</td><td><span class="spark" data-values="30%, 34%, 38%, 44%, 49%, 52%"><i style="--h: 50%"></i><i style="--h: 57%"></i><i style="--h: 63%"></i><i style="--h: 73%"></i><i style="--h: 82%"></i><i style="--h: 87%"></i></span></td><td class="num">52%</td></tr>
+          <tr><td><code>mermaid.js</code></td><td class="num">40%</td><td><span class="spark" data-values="40%, 36%, 32%, 27%, 24%, 21%"><i style="--h: 67%"></i><i style="--h: 60%"></i><i style="--h: 53%"></i><i style="--h: 45%"></i><i style="--h: 40%"></i><i style="--h: 35%"></i></span></td><td class="num">21%</td></tr>
+          <tr><td><code>filter.js</code></td><td class="num">20%</td><td><span class="spark" data-values="20%, 19%, 18%, 17%, 16%, 15%"><i style="--h: 33%"></i><i style="--h: 32%"></i><i style="--h: 30%"></i><i style="--h: 28%"></i><i style="--h: 27%"></i><i style="--h: 25%"></i></span></td><td class="num">15%</td></tr>
+          <tr><td><code>mermaid-palette.json</code></td><td class="num">10%</td><td><span class="spark" data-values="10%, 11%, 12%, 12%, 11%, 12%"><i style="--h: 17%"></i><i style="--h: 18%"></i><i style="--h: 20%"></i><i style="--h: 20%"></i><i style="--h: 18%"></i><i style="--h: 20%"></i></span></td><td class="num">12%</td></tr>
+        </tbody>
+      </table>
+      <p class="chart-takeaway"><strong>Read:</strong> the stylesheet's share climbs every release while the Mermaid script's falls.<span class="more">Compare the shapes for direction and the first and latest values for size.</span></p>
+      <p>A sparkline also reads inside a sentence. The stylesheet's share rose from 30% to 52% <span class="spark" data-values="30%, 34%, 38%, 44%, 49%, 52%"><i style="--h: 50%"></i><i style="--h: 57%"></i><i style="--h: 63%"></i><i style="--h: 73%"></i><i style="--h: 82%"></i><i style="--h: 87%"></i></span> across the six releases.<label for="mn-spark" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-spark" class="margin-toggle"/><span class="marginnote">The Mermaid script fell from 40% to 21% <span class="spark fit" data-values="40%, 36%, 32%, 27%, 24%, 21%"><i style="--h: 100%"></i><i style="--h: 81%"></i><i style="--h: 62%"></i><i style="--h: 38%"></i><i style="--h: 24%"></i><i style="--h: 10%"></i></span> stretched to its own range, with a dashed baseline.</span> The same graphic fits a margin note, which is where Tufte set small figures beside the text they support. Add <code>fit</code> when the shape matters more than the size: the columns stretch from the series' lowest to its highest value, and the dashed baseline tells a reader that the bottom is not zero.</p>
+    </section>
+
+    <section>
+      <h2 id="multiples">Small multiples</h2>
+      <p>Small multiples repeat one chart design across a series of cases, so a reader learns the encoding once and spends the rest of the page comparing. <code>div.multiples</code> lays ordinary <code>table.bar-chart</code> children in a grid that wraps by available width. Every panel must share one scale, and the shared scale belongs in the paragraph above the grid. The first panel carries the row labels once, and each later panel keeps only its caption, its bars and its source. Every panel lists the same rows in the same order, and a later panel is indented by the label column so its bars line up with the first.</p>
+      <div class="multiples">
+        <table class="bar-chart" tabindex="0">
+          <caption><span class="label">Release 1</span>Share of the combined total. Guides mark 25 percentage points.</caption>
+          <thead><tr><th scope="col">File</th><th scope="col">Share</th></tr></thead>
+          <tbody>
+            <tr><td>Stylesheet</td><td class="bar" style="--bar: 30%">30%</td></tr>
+            <tr><td>Mermaid</td><td class="bar" style="--bar: 40%">40%</td></tr>
+            <tr><td>Filter</td><td class="bar" style="--bar: 20%">20%</td></tr>
+            <tr><td>Palette</td><td class="bar" style="--bar: 10%">10%</td></tr>
+          </tbody>
+        </table>
+        <table class="bar-chart" tabindex="0">
+          <caption><span class="label">Release 3</span>Share of the combined total. Guides mark 25 percentage points.</caption>
+          <thead><tr><th scope="col">Share</th></tr></thead>
+          <tbody>
+            <tr><td class="bar" style="--bar: 38%">38%</td></tr>
+            <tr><td class="bar" style="--bar: 32%">32%</td></tr>
+            <tr><td class="bar" style="--bar: 18%">18%</td></tr>
+            <tr><td class="bar" style="--bar: 12%">12%</td></tr>
+          </tbody>
+        </table>
+        <table class="bar-chart" tabindex="0">
+          <caption><span class="label">Release 6</span>Share of the combined total. Guides mark 25 percentage points.</caption>
+          <thead><tr><th scope="col">Share</th></tr></thead>
+          <tbody>
+            <tr><td class="bar" style="--bar: 52%">52%</td></tr>
+            <tr><td class="bar" style="--bar: 21%">21%</td></tr>
+            <tr><td class="bar" style="--bar: 15%">15%</td></tr>
+            <tr><td class="bar" style="--bar: 12%">12%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="chart-takeaway"><strong>Read:</strong> every panel is a share of its own release total on the same 0 to 100 percent scale.<span class="more">Read across the panels for change and down one panel for rank.</span></p>
+    </section>
+
+    <section>
+      <h2 id="line">Line chart</h2>
+      <p>A time series is a line chart: one hue, no legend, no gridlines, and the axes drawn in the muted rule color so the data is the heaviest ink on the page. It is a Mermaid <code>xychart</code> fence with a single <code>line</code> series, themed per palette in <code>mermaid.js</code>. A line may start above zero because it shows shape, but this one stands on zero so it shares the scale of the sparklines above. Draw one only beside a table that states every value, the same rule as the radar chart below.</p>
+      <pre class="mermaid">---
+accTitle: Stylesheet share by release
+accDescr: The stylesheet share of the combined payload rises from 30 percent in release 1 to 52 percent in release 6.
+config:
+  xyChart:
+    height: 360
+---
+xychart
+  title "Stylesheet share of the combined payload"
+  x-axis [r1, r2, r3, r4, r5, r6]
+  y-axis "Share (%)" 0 --> 60
+  line [30, 34, 38, 44, 49, 52]</pre>
+      <table tabindex="0">
+        <caption><span class="label">Values behind the line</span>Share of the combined payload by release.<span class="byline">Source: fixture data.</span></caption>
+        <thead><tr><th scope="col">Release</th><th scope="col" class="num">Share</th></tr></thead>
+        <tbody>
+          <tr><td>Release 1</td><td class="num">30%</td></tr><tr><td>Release 2</td><td class="num">34%</td></tr><tr><td>Release 3</td><td class="num">38%</td></tr><tr><td>Release 4</td><td class="num">44%</td></tr><tr><td>Release 5</td><td class="num">49%</td></tr><tr><td>Release 6</td><td class="num">52%</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <section>
@@ -988,6 +1081,7 @@ kanban
   accDescr: One series scored across three axes.
   axis a["Speed"], b["Cost"], c["Quality"]
   curve x["Current"]{3,4,2}</pre>
+      <p>A radar chart asks a reader to compare areas and angles, which readers judge poorly, and the area changes with the order of the axes. Draw one only beside a table that states every value on every axis.</p>
       <h3>Git graph</h3>
       <pre class="mermaid">gitGraph
   accTitle: Git graph sample
@@ -1004,6 +1098,7 @@ kanban
   "Root"
     "A": 10
     "B": 20</pre>
+      <p>A treemap compares rectangle areas, which readers judge poorly. Draw one only beside a table of the same values, and prefer a bar chart for a ranking.</p>
       <h3>Timeline</h3>
       <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types). Three release years, each naming the versions that shipped that year: 2024 shipped v1.20.0 and v1.30.0, 2025 shipped v1.40.0 and v1.47.0, and 2026 shipped v1.48.0.</p>
       <pre class="mermaid">---
@@ -1048,12 +1143,14 @@ timeline
 
     <section>
       <h2 id="which">Which one</h2>
-      <p><strong>Reach for the bar chart first, and for a plain table before either.</strong> Tufte's objection to the pie is that it asks a reader to compare angles and areas, which readers do badly: the 21 and the 15 slice above are a coin toss by eye, while the same two bars are ranked at a glance. The template themes a pie anyway, because a part-to-whole share of a few categories is a real thing to draw. It themes one pie, not two: the Mermaid fence prints the number in the slice, which is the rule that makes a pie defensible, and <strong>every value is in the markup as text</strong> either way.</p>
+      <p><strong>Reach for the bar chart first, and for a plain table before either.</strong> A bar ranks at a glance where an angle or an area is a coin toss by eye, and <strong>every value is in the markup as text</strong> whichever form you draw.</p>
       <ul>
         <li>Ranking or comparing magnitudes: bar chart.</li>
-        <li>One part-to-whole split, four categories or fewer: a Mermaid <code>pie showData</code> fence.</li>
+        <li>A part-to-whole split: a bar chart whose bars are each share of the total, as in the first table above.</li>
         <li>Five or more categories, two series, or a value a reader will want to read exactly: a table. The bar chart is a table, so this is the same answer twice.</li>
-        <li>A trend over time: neither. Nothing here draws a line chart, and a Mermaid <code>xychart-beta</code> fence is not themeable (see NOTES.md, Diagram types).</li>
+        <li>A trend inside a table row or a sentence: a column sparkline, with the first and latest values as text beside it.</li>
+        <li>The same chart across several cases: small multiples on one shared scale.</li>
+        <li>A full time series: a Mermaid <code>xychart</code> fence with one <code>line</code> series, beside a table of its values.</li>
       </ul>
     </section>
   </article>

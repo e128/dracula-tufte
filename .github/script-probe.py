@@ -39,6 +39,7 @@ never folded into a pass: a gate that goes quiet when the network does is worse 
 gate, so the skip is loud and the exit code stays honest about what ran.
 """
 import importlib.util
+import json
 import pathlib
 import re
 import subprocess
@@ -59,6 +60,7 @@ find_chrome = _rm.find_chrome
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FIXTURE = ROOT / "samples/dark.html"
+CHARTS = ROOT / "samples/dark-charts.html"
 
 # The width the driver runs at. Above the (max-width: 600px) block, so `pre.mermaid` is
 # `overflow: visible` and mermaid.js must NOT have made it a region: that is the
@@ -178,11 +180,6 @@ DRIVER = """
         t('copy-button-not-on-mermaid', !document.querySelector('pre.mermaid .copy-code'));
         t('mermaid-no-region-when-wide', pres.every(p => !p.hasAttribute('role')));
         t('mermaid-no-tabstop-when-wide', pres.every(p => !p.hasAttribute('tabindex')));
-        const pieTitle = document.querySelector('pre.mermaid .pieTitleText');
-        const pieSlice = document.querySelector('pre.mermaid .pieCircle');
-        t('mermaid-pie-themed', Boolean(pieTitle && pieSlice)
-          && parseFloat(getComputedStyle(pieTitle).fontSize) < 20
-          && getComputedStyle(pieSlice).strokeWidth === '1.5px');
         const svg = pres[0] && pres[0].querySelector('svg');
         const overlay = document.getElementById('mermaid-zoom');
         if (svg && overlay) {
@@ -233,9 +230,80 @@ FORCED_DRIVER = """
     t('fc-block-code-not-outlined', border(document.querySelector('pre > code')) === 'none');
     t('fc-pre-keeps-its-bar',
       getComputedStyle(document.querySelector('pre')).borderInlineStartStyle === 'solid');
-    // The film grain is decorative and forced colors is a legibility mode.
-    t('fc-grain-off',
-      getComputedStyle(document.body, '::before').display === 'none');
+    const el = document.createElement('pre');
+    el.id = 'script-probe';
+    el.textContent = out.join('\\n');
+    document.body.append(el);
+  </script>
+"""
+
+# A bar that disagrees with its own number is a lie factor above 1, and nothing else in this
+# repo reads the pair. A cell ending in `%` states its bar outright. A bare count states a share
+# of the column maximum. A sparkline states its whole series in `data-values`, every column must
+# draw its own value on one shared scale, and a row's first and latest cells must match the label's ends. This reaches the
+# fixture only: a consumer's page is never read here.
+FIDELITY_DRIVER = """
+  <script type="module">
+    const out = [];
+    const t = (name, cond) => out.push(name + '=' + (cond ? 'PASS' : 'FAIL'));
+    const series = el => el.getAttribute('data-values').split(',').map(parseFloat);
+    const pct = el => parseFloat(el.style.getPropertyValue('--bar') || el.style.getPropertyValue('--h'));
+    let bars = 0, sparks = 0, bad = [];
+    for (const table of document.querySelectorAll('table.bar-chart')) {
+      const cells = [...table.querySelectorAll('td.bar')];
+      const nums = cells.map(c => parseFloat(c.textContent));
+      const max = Math.max(...nums);
+      cells.forEach((c, i) => {
+        bars++;
+        const want = c.textContent.trim().endsWith('%') ? nums[i] : nums[i] / max * 100;
+        if (Math.abs(pct(c) - want) > 1) bad.push(c.textContent.trim() + ' drew ' + pct(c) + '%');
+      });
+      for (const row of table.querySelectorAll('tr')) {
+        const spark = row.querySelector('.spark');
+        const nn = [...row.querySelectorAll('td.num')].map(c => parseFloat(c.textContent));
+        if (!spark || nn.length !== 2) continue;
+        const v = series(spark);
+        if (v[0] !== nn[0] || v[v.length - 1] !== nn[1]) bad.push('spark ends ' + nn.join('->') + ' vs label ' + v.join(','));
+      }
+    }
+    let scale = 0, inline = 0;
+    for (const spark of document.querySelectorAll('.spark')) {
+      sparks++;
+      const v = series(spark), h = [...spark.children].map(pct);
+      if (v.length !== h.length) { bad.push('spark values'); continue; }
+      const fit = spark.classList.contains('fit');
+      if (fit && spark.closest('table.bar-chart')) bad.push('fit spark inside a shared-scale table');
+      const lo = Math.min(...v), hi = Math.max(...v);
+      h.forEach((x, i) => {
+        if (!(x >= 0 && x <= 100)) bad.push('spark column outside 0-100');
+        if (fit) {
+          if (Math.abs(x - (10 + 90 * (v[i] - lo) / (hi - lo))) > 1) bad.push('fit column ' + v[i] + ' drew ' + x + '%');
+          return;
+        }
+        scale ||= x / v[i];
+        if (Math.abs(x - v[i] * scale) > 1) bad.push('spark column ' + v[i] + ' drew ' + x + '%');
+      });
+      if (!spark.closest('td')) {
+        inline++;
+        const lh = parseFloat(getComputedStyle(spark.parentElement).lineHeight);
+        if (spark.getBoundingClientRect().height > lh) bad.push('inline spark taller than its line');
+      }
+    }
+    t('fidelity-spark-inline', inline >= 2);
+    t('fidelity-bars-found', bars >= 20 && sparks >= 4);
+    t('fidelity-bars-match-numbers', bad.length === 0);
+    if (bad.length) console.error(bad.join('; '));
+    if (window.__probeMermaid) {
+      const xy = await new Promise(done => {
+        const stop = Date.now() + 15000;
+        (function poll() {
+          const found = document.querySelector('svg[aria-roledescription="xychart"]');
+          if (found || Date.now() > stop) done(found); else setTimeout(poll, 250);
+        })();
+      });
+      const line = xy && xy.querySelector('path[stroke]');
+      t('fidelity-xychart-themed', Boolean(line) && __XY__.includes(line.getAttribute('stroke').toLowerCase()));
+    }
     const el = document.createElement('pre');
     el.id = 'script-probe';
     el.textContent = out.join('\\n');
@@ -287,7 +355,7 @@ def main():
     if "</body>" not in html:
         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
-    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 19, "binding")
+    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 18, "binding")
 
     # Same page, forced-colors switched on by rewriting the condition. Checked as a
     # string in the real fixture first, so a renamed or deleted query fails loudly here
@@ -295,7 +363,13 @@ def main():
     if f"{FORCED_CONDITION} {{" not in html:
         sys.exit(f"{FIXTURE.name} has no `{FORCED_CONDITION} {{`, so that block is unreachable.")
     forced = html.replace(FORCED_CONDITION, "@media all", 1)
-    results += run(forced.replace("</body>", FORCED_DRIVER + "\n</body>", 1), 8, "forced-colors")
+    results += run(forced.replace("</body>", FORCED_DRIVER + "\n</body>", 1), 7, "forced-colors")
+
+    charts = CHARTS.read_text()
+    plots = json.loads((ROOT / "mermaid-palette.json").read_text())
+    xy = json.dumps([plots[k]["plotColorPalette"]["hex"] for k in ("init", "initLight")])
+    driver = FIDELITY_DRIVER.replace("__XY__", xy)
+    results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 4 if mermaid else 3, "fidelity")
 
     fail = 0
     for line in results:

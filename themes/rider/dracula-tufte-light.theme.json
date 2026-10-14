@@ -16,13 +16,13 @@
     "hover": "#e2e3e4",
     "pressed": "#c8cad0",
     "selection": "#fbfbff",
-    "selectionSoft": "#d1dede",
-    "link": "#397281",
-    "orange": "#9c5b15",
+    "selectionSoft": "#d3dddd",
+    "link": "#41717e",
+    "orange": "#916136",
     "red": "#d00932",
-    "purple": "#7b58ae",
+    "purple": "#804cc2",
     "pink": "#ad447d",
-    "green": "#057c47",
+    "green": "#29794d",
     "data1": "#3c88e4",
     "data2": "#cf5cae",
     "data3": "#349874",
@@ -73,8 +73,8 @@
       "disabledBorderColor": "rule",
       "focusedBorderColor": "link",
       "default": {
-        "startBackground": "#e2dbe9",
-        "endBackground": "#e2dbe9",
+        "startBackground": "#e3d9ed",
+        "endBackground": "#e3d9ed",
         "startBorderColor": "purple",
         "endBorderColor": "purple",
         "foreground": "onSurface",
@@ -91,7 +91,7 @@
       "errorFocusColor": "red",
       "inactiveErrorFocusColor": "#f0b8c1",
       "warningFocusColor": "orange",
-      "inactiveWarningFocusColor": "#e1cfb8",
+      "inactiveWarningFocusColor": "#ded1c2",
       "infoForeground": "muted"
     },
 
@@ -118,7 +118,7 @@
     "TextArea": { "background": "codeBg", "foreground": "onSurface" },
     "FormattedTextField": { "background": "codeBg", "foreground": "onSurface" },
     "SearchField": { "background": "codeBg" },
-    "SearchMatch": { "startBackground": "#dac4a9", "endBackground": "#dac4a9" },
+    "SearchMatch": { "startBackground": "#d7c6b4", "endBackground": "#d7c6b4" },
 
     "Editor": {
       "background": "surface",
@@ -253,7 +253,7 @@
     "ValidationTooltip": {
       "errorBackground": "#f3cbd0",
       "errorBorderColor": "red",
-      "warningBackground": "#e9dccb",
+      "warningBackground": "#e7ddd1",
       "warningBorderColor": "orange"
     },
 
@@ -269,7 +269,7 @@
         "informativeBackground": "#d6e5f4",
         "informativeBorderColor": "data1",
         "informativeForeground": "onSurface",
-        "warningBackground": "#e9dccb",
+        "warningBackground": "#e7ddd1",
         "warningBorderColor": "orange",
         "warningForeground": "onSurface",
         "errorBackground": "#f3cbd0",
@@ -281,7 +281,7 @@
     "Banner": {
       "errorBackground": "#f3cbd0",
       "errorBorderColor": "red",
-      "warningBackground": "#e9dccb",
+      "warningBackground": "#e7ddd1",
       "warningBorderColor": "orange",
       "infoBackground": "#d6e5f4",
       "infoBorderColor": "data1",
@@ -373,10 +373,10 @@
     "FileColor": {
       "Blue": "#e9f0f6",
       "Green": "#e8f2eb",
-      "Orange": "#f2ece1",
+      "Orange": "#f1ede5",
       "Yellow": "#f0f1e6",
       "Rose": "#f8e4e4",
-      "Violet": "#efecf1",
+      "Violet": "#f0eaf3",
       "Gray": "#ededec"
     },
 
@@ -408,7 +408,7 @@
       "areaBackground": "codeBg",
       "areaForeground": "onSurface",
       "borderColor": "purple",
-      "rowBackground": "#d1dede"
+      "rowBackground": "#d3dddd"
     },
 
     "Debugger": {
@@ -448,9 +448,9 @@
   "icons": {
     "ColorPalette": {
       "Actions.Red": "#d00932",
-      "Actions.Yellow": "#9c5b15",
-      "Actions.Green": "#057c47",
-      "Actions.Blue": "#397281",
+      "Actions.Yellow": "#916136",
+      "Actions.Green": "#29794d",
+      "Actions.Blue": "#41717e",
       "Actions.Grey": "#525879",
       "Actions.GreyInline": "#626a8c",
       "Actions.GreyInline.Dark": "#626a8c",
@@ -459,20 +459,20 @@
       "Objects.Red": "#d00932",
       "Objects.Pink": "#ad447d",
       "Objects.Yellow": "#878c48",
-      "Objects.YellowDark": "#9c5b15",
-      "Objects.Green": "#057c47",
+      "Objects.YellowDark": "#916136",
+      "Objects.Green": "#29794d",
       "Objects.GreenAndroid": "#349874",
       "Objects.Blue": "#3c88e4",
-      "Objects.Purple": "#7b58ae",
+      "Objects.Purple": "#804cc2",
       "Objects.BlackText": "#fcfcf8",
       "Checkbox.Background.Default": "#f0f1f9",
-      "Checkbox.Background.Selected": "#7b58ae",
+      "Checkbox.Background.Selected": "#804cc2",
       "Checkbox.Border.Default": "#7b7f94",
-      "Checkbox.Border.Selected": "#7b58ae",
+      "Checkbox.Border.Selected": "#804cc2",
       "Checkbox.Foreground.Selected": "#fcfcf8",
-      "Checkbox.Focus.Thin.Default": "#397281",
-      "Checkbox.Focus.Thin.Selected": "#397281",
-      "Checkbox.Focus.Wide": "#397281",
+      "Checkbox.Focus.Thin.Default": "#41717e",
+      "Checkbox.Focus.Thin.Selected": "#41717e",
+      "Checkbox.Focus.Wide": "#41717e",
       "Checkbox.Background.Disabled": "#efefea",
       "Checkbox.Border.Disabled": "#d5d7da",
       "Checkbox.Foreground.Disabled": "#7b7f94",

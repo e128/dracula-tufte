@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 # maintain.nu does regular upkeep: local contract check (mirrors CI without a
-# push round-trip), release-gate selftest, template-version bump across all 5
-# sites, CI-gated release tagging, mermaid CDN pin bump.
-# Run: `nu maintain.nu check|selftest|bump <version>|release <version>|mermaid <version>`
+# push round-trip), release-gate selftest, template-version bump across the
+# version stamps, CI-gated release tagging, mermaid and highlight.js CDN pin bumps.
+# Run: `nu maintain.nu check|selftest|bump <version>|release <version>|mermaid <version>|highlight <version>`
 #
 # ponytail: wraps existing build-sample.nu + string replace, no new build
 # system. bump/mermaid stop short of commit, and that stays manual. `release` does
@@ -16,8 +16,59 @@
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
+# The fixtures are the dark pages and the light pages generated from them. Every
+# loop below names this list instead of repeating it, so a new fixture is added once.
+const DARK_FIXTURES = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html]
+const LIGHT_FIXTURES = [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html]
+const FIXTURES = $DARK_FIXTURES ++ $LIGHT_FIXTURES
+
+def read-root [file: string] {
+  open --raw ($ROOT | path join $file)
+}
+
+# The version the stylesheet stamps on its line 2, which is the one the release tags.
+def stamped-version [] {
+  read-root tufte-dracula.css | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0
+}
+
+# bump, release and mermaid all take a version and rewrite files or push a tag from it,
+# so a typo such as `v1.57` is refused before anything is touched.
+def require-semver [version: string] {
+  if not ($version =~ '^\d+\.\d+\.\d+$') {
+    error make { msg: $"($version) is not a MAJOR.MINOR.PATCH version, for example 1.57.0" }
+  }
+}
+
+# A count in words for the house style, 0 to 99, capitalised. Null outside that range, so a
+# caller fails loudly rather than comparing against a word it cannot read.
+def count-word [n: int] {
+  let ones = [zero one two three four five six seven eight nine ten eleven twelve thirteen
+              fourteen fifteen sixteen seventeen eighteen nineteen]
+  let tens = [null null twenty thirty forty fifty sixty seventy eighty ninety]
+  if $n < 0 or $n > 99 { return null }
+  let word = if $n < 20 {
+    $ones | get $n
+  } else if ($n mod 10) == 0 {
+    $tens | get ($n // 10)
+  } else {
+    $"($tens | get ($n // 10))-($ones | get ($n mod 10))"
+  }
+  $word | str capitalize
+}
+
+# Tracked files that carry an em-dash or an en-dash, with how many lines. The patterns are
+# `\u{...}` escapes because this file is tracked and a literal character would trip the
+# gate it implements. rg exits 1 on no match, which is the passing case, so the exit code
+# is read rather than trusted.
+def dash-files [] {
+  ^git -C $ROOT ls-files | lines | each {|f|
+    let hits = (^rg -c --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete)
+    if $hits.exit_code == 0 { {file: $f, count: ($hits.stdout | str trim)} }
+  } | compact
+}
+
 def main [] {
-  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|markdown-links|bump <version>|release <version>|mermaid <version>>"
+  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|markdown-links|cdn-pins|hover-guard|bump <version>|release <version>|mermaid <version>|highlight <version>>"
 }
 
 # CONTRACT.md section 2 points at a fixture for most of its requirements, so a reader
@@ -77,16 +128,11 @@ def contract-markup-ok [] {
     }
   }
 
-  # Spelled out, because the house style writes a count in words. The map covers the
-  # plausible range and fails loudly outside it rather than passing on a word it cannot
-  # read, which is the rule every vacuity floor here follows.
-  let words = {15: Fifteen, 16: Sixteen, 17: Seventeen, 18: Eighteen, 19: Nineteen, 20: Twenty,
-               21: "Twenty-one", 22: "Twenty-two", 23: "Twenty-three", 24: "Twenty-four",
-               25: "Twenty-five", 26: "Twenty-six", 27: "Twenty-seven", 28: "Twenty-eight",
-               29: "Twenty-nine", 30: Thirty, 31: "Thirty-one", 32: "Thirty-two", 33: "Thirty-three"}
-  let want = ($words | get -o ($bullets | length | into string))
+  # Spelled out, because the house style writes a count in words. `count-word` returns null
+  # outside 0 to 99 and this fails loudly there rather than passing on a word it cannot read.
+  let want = (count-word ($bullets | length))
   if $want == null {
-    print $"CONTRACT: ($bullets | length) requirements is outside the spelled-out range this check knows. Extend the map in scripts/maintain.nu."
+    print $"CONTRACT: ($bullets | length) requirements is outside the 0 to 99 range `count-word` spells out."
     $ok = false
   } else if not ($section2 | str starts-with $"\n\n($want) requirements.") {
     print $"CONTRACT: section 2 has ($bullets | length) bullets, so it must open `($want) requirements.`"
@@ -105,8 +151,8 @@ def contract-markup-ok [] {
   # the predicate. `role="region"` on the table itself is the separate defect the same
   # contract line bans: it overrides `role="table"` and takes the row and column
   # semantics with it.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
-    let body = (open --raw ($ROOT | path join $f))
+  for f in $FIXTURES {
+    let body = (read-root $f)
     let unwrapped = ($body | str replace --all --regex '(?s)<div class="table-scroll"[^>]*>\s*<table[^>]*>' '')
     for t in ($unwrapped | parse --regex '<table(?<attrs>[^>]*)>') {
       if not ($t.attrs =~ 'tabindex="0"') {
@@ -128,8 +174,8 @@ def contract-markup-ok [] {
   # on that fill, which measures 3.45 to 3.53:1 in light mode, under the text floor.
   # This catches the repo's own fixtures only. It cannot reach a consumer, and that is
   # stated in CONTRACT.md rather than pretended away here.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
-    let body = (open --raw ($ROOT | path join $f))
+  for f in $FIXTURES {
+    let body = (read-root $f)
     for n in ($body | parse --regex '<span class="step-node"(?<attrs>[^>]*)>') {
       if ($n.attrs =~ '--icon-color:\s*var\(--data-') {
         print $"($f): a .step-node takes --icon-color from the --data-* ramp, which CONTRACT.md section 2 bans"
@@ -217,10 +263,66 @@ def "main markdown-links" [] {
   if not (markdown-links-ok) { exit 1 }
 }
 
-# Mirrors .github/workflows/contract-check.yml locally, step for step: ten files
-# exist, the wrapper is one line at each end, mermaid.js agrees with
+# A :hover rule outside the guarded block applies on tap and sticks on touch (NOTES.md,
+# Interaction states). The block is one run from its opener to the next four-space close.
+def hover-guard-ok [] {
+  let css = (read-root tufte-dracula.css | lines | enumerate)
+  let opener = ($css | where {|r| $r.item =~ '@media \(hover: hover\) \{'})
+  if ($opener | is-empty) {
+    print "tufte-dracula.css has no `@media (hover: hover) {` block."
+    return false
+  }
+  let first = ($opener | first | get index)
+  let last = ($css | skip $first | where {|r| $r.item == "    }"} | first | get index)
+  let loose = ($css | where {|r| ($r.item | str contains ":hover") and ($r.index < $first or $r.index > $last)})
+  if ($loose | is-not-empty) {
+    $loose | each {|r| print $"HOVER: tufte-dracula.css line ($r.index + 1) is outside @media \(hover: hover\)" }
+    return false
+  }
+  print "Every :hover rule sits inside @media (hover: hover)."
+  true
+}
+
+def "main hover-guard" [] {
+  if not (hover-guard-ok) { exit 1 }
+}
+
+# Every dependency that loads from a CDN, and the package each one is. AGENTS.md pins each to
+# an exact version, never a range, and a bump that leaves one behind or loosens it is the
+# drift this keeps visible. Add a package here when an inlined file starts loading one.
+const CDN_FILES = [tufte-dracula.css mermaid.js filter.js highlight.js]
+const CDN_PACKAGES = [mermaid @highlightjs/cdn-assets @fontsource-variable/source-serif-4 @fontsource-variable/jetbrains-mono]
+
+def cdn-pins-ok [] {
+  mut ok = true
+  let urls = ($CDN_FILES | each {|f|
+    read-root $f | parse --regex r#'(?<url>https://cdn\.jsdelivr\.net/npm/[^\s'")]+)'# | get url
+      | each {|u| {file: $f, url: $u} }
+  } | flatten)
+  for u in $urls {
+    if not ($u.url =~ '/npm/(@[\w-]+/)?[\w.-]+@\d+\.\d+\.\d+/') {
+      print $"PIN: ($u.file) loads ($u.url), which is not pinned to an exact MAJOR.MINOR.PATCH"
+      $ok = false
+    }
+  }
+  for pkg in $CDN_PACKAGES {
+    if not ($urls | any {|u| $u.url | str contains $"/npm/($pkg)@" }) {
+      print $"PIN: no inlined file loads ($pkg), so its pin is not tracked. Update CDN_PACKAGES in scripts/maintain.nu."
+      $ok = false
+    }
+  }
+  if $ok { print $"CDN pins are exact \(($urls | length) URLs, ($CDN_PACKAGES | length) packages)." }
+  $ok
+}
+
+def "main cdn-pins" [] {
+  if not (cdn-pins-ok) { exit 1 }
+}
+
+# Mirrors .github/workflows/contract-check.yml locally, step for step: the payload
+# files exist, the wrapper is one line at each end, mermaid.js agrees with
 # mermaid-palette.json key by key, the hex projections still match the oklch
-# source, all four palettes hold their contrast floor, exactly one <style> and two
+# source, all four palettes hold their contrast floor, exactly one <style> and three
 # <script> per fixture, each appearance mode paints its own surface, generated
 # files match the current CSS/JS.
 #
@@ -230,7 +332,7 @@ def "main markdown-links" [] {
 def "main check" [] {
   mut ok = true
 
-  for f in [tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] {
+  for f in ([tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] ++ $FIXTURES) {
     if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -239,7 +341,7 @@ def "main check" [] {
 
   # Wrapper must stay one line at each end, because consumers slice the bare body with
   # `sed '1d;$d'` and that is a promise, not an accident.
-  let css_lines = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right | lines)
+  let css_lines = (read-root tufte-dracula.css | str trim --right | lines)
   if ($css_lines | first) != "  <style>" { print "tufte-dracula.css line 1 must be exactly '  <style>'"; $ok = false }
   if ($css_lines | last) != "  </style>" { print "tufte-dracula.css last line must be exactly '  </style>'"; $ok = false }
 
@@ -258,7 +360,7 @@ def "main check" [] {
   # gate lived only in CI, which meant a themeVariable set to some other palette
   # colour passed here and failed on the push.
   let palette_json = (open ($ROOT | path join "mermaid-palette.json"))
-  let js = (open --raw ($ROOT | path join "mermaid.js"))
+  let js = (read-root mermaid.js)
   for section in [init initLight] {
     let entries = ($palette_json | get $section | transpose key entry | where key != "_comment")
     if ($entries | length) < 20 {
@@ -276,8 +378,8 @@ def "main check" [] {
 
   # Count occurrences, not matching lines. `grep -c` reports lines, so a second
   # block opened on a line that already has one reads as 1 and passes.
-  for f in [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
-    let body = (open --raw ($ROOT | path join $f))
+  for f in $FIXTURES {
+    let body = (read-root $f)
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
@@ -300,8 +402,8 @@ def "main check" [] {
   # file, which is what a hand-edit would get past the generator. It matters more now
   # that the filename says `light` instead of `preview-`: nothing but this check and
   # the in-page banner distinguishes it from its dark twin in the same folder.
-  for f in [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html] {
-    let body = (open --raw ($ROOT | path join $f))
+  for f in $LIGHT_FIXTURES {
+    let body = (read-root $f)
     if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {`: the light palette is not on"; $ok = false }
     if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {`: the contrast block is still live"; $ok = false }
     if ($body | str replace --all --regex '(?s)<p>This page forces.*?</p>' '') =~ 'prefers-color-scheme' {
@@ -329,7 +431,7 @@ def "main check" [] {
   # reader would see. It skips its mermaid half loudly when the pinned CDN is
   # unreachable, rather than passing quietly.
   let probe = (^python3 ($ROOT | path join ".github/script-probe.py") | complete)
-  print ($probe.stdout | lines | last)
+  print ($probe.stdout | lines | last 1 | str join)
   if $probe.exit_code != 0 {
     print ($probe.stdout | lines | where {|l| $l | str starts-with "BINDING" } | str join "\n")
     print ($probe.stderr | str trim)
@@ -340,10 +442,10 @@ def "main check" [] {
   # git: build-sample.nu git-adds what it writes, so `git diff` is always empty
   # (the gate never fires), and `git diff HEAD` would flag work-in-progress edits
   # that are legitimately uncommitted. CI, with a clean tree, uses `git diff HEAD`.
-  let generated = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html tokens.css]
-  let before = ($generated | each {|f| open --raw ($ROOT | path join $f) })
+  let generated = ($FIXTURES ++ [tokens.css])
+  let before = ($generated | each {|f| read-root $f })
   nu ($SCRIPTS | path join "build-sample.nu")
-  let after = ($generated | each {|f| open --raw ($ROOT | path join $f) })
+  let after = ($generated | each {|f| read-root $f })
   let stale = ($generated | enumerate
     | where {|e| ($before | get $e.index) != ($after | get $e.index) }
     | get item)
@@ -368,10 +470,7 @@ def "main check" [] {
   # reaches for the character by default. `git ls-files` rather than a glob, so the
   # scan covers exactly what ships and never a scratch file. rg exits 1 on no match,
   # which is the passing case, so the exit code is read rather than trusted.
-  let dashes = (^git -C $ROOT ls-files | lines | each {|f|
-    let hits = (^rg -c --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete)
-    if $hits.exit_code == 0 { {file: $f, count: ($hits.stdout | str trim)} }
-  })
+  let dashes = (dash-files)
   if ($dashes | is-not-empty) {
     $dashes | each {|d| print $"DASH: ($d.file) carries ($d.count) em-dash or en-dash line\(s\)" }
     print "AGENTS.md bans both. Use a period, comma, colon, parentheses or a plain hyphen."
@@ -379,6 +478,9 @@ def "main check" [] {
   } else {
     print "No em-dash or en-dash."
   }
+
+  if not (hover-guard-ok) { $ok = false }
+  if not (cdn-pins-ok) { $ok = false }
 
   if $ok {
     print "Contract OK."
@@ -416,15 +518,13 @@ def "main bump" [version: string] {
   # unwinding all of it. AGENTS.md bans the character; this is the point in the flow
   # where it is cheapest to enforce. Patterns are `\u{...}` escapes because this file
   # is tracked and a literal one would trip the gate it implements.
-  let dashes = (^git -C $ROOT ls-files | lines | where {|f|
-    (^rg -q --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete).exit_code == 0
-  })
+  require-semver $version
+  let dashes = (dash-files | get file)
   if ($dashes | is-not-empty) {
     error make { msg: $"bump refuses: ($dashes | str join ', ') carry an em-dash or en-dash, which AGENTS.md bans. Fix them, then bump." }
   }
 
-  let current = (open --raw ($ROOT | path join "tufte-dracula.css")
-    | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
+  let current = (stamped-version)
   print $"Bumping v($current) -> v($version)"
 
   for stamp in $STAMPS {
@@ -503,6 +603,7 @@ def check-missing [checks: list] {
 }
 
 def "main release" [version: string] {
+  require-semver $version
   let tag = $"v($version)"
   # Every git call is pinned to $ROOT and gh to the slug read from its origin.
   # Bare `git` and gh's {owner}/{repo} both resolve against the cwd, so running
@@ -510,7 +611,7 @@ def "main release" [version: string] {
   # HEAD and push a tag there, while validating this one's version stamp.
   let sha = (^git -C $ROOT rev-parse HEAD | str trim)
   let slug = (^git -C $ROOT remote get-url origin | str trim
-    | parse --regex '[:/](?<owner>[^/:]+)/(?<repo>[^/]+?)(:?\.git)?$'
+    | parse --regex '[:/](?<owner>[^/:]+)/(?<repo>[^/]+?)(?:\.git)?$'
     | get 0 | $"($in.owner)/($in.repo)")
 
   if (^git -C $ROOT status --porcelain | str trim) != "" {
@@ -529,8 +630,7 @@ def "main release" [version: string] {
   }
   # The tag has to name what the stylesheet says it is, or consumers pin a
   # version that disagrees with the payload they inline.
-  let stamped = (open --raw ($ROOT | path join "tufte-dracula.css")
-    | lines | get 1 | parse --regex 'v(?<v>[\d.]+)' | get v.0)
+  let stamped = (stamped-version)
   if $stamped != $version {
     print $"tufte-dracula.css is stamped v($stamped), not v($version)."
     print $"  Run `nu maintain.nu bump ($version)` and commit first."
@@ -708,11 +808,26 @@ def "main selftest" [] {
   }
 }
 
-# Bump the mermaid CDN pin to an exact version, regenerate fixtures so the pin
-# lands in the samples/ pages too.
-def "main mermaid" [version: string] {
-  let path = ($ROOT | path join "mermaid.js")
-  open --raw $path | str replace --regex 'mermaid@[\d.]+' $"mermaid@($version)" | save -f $path
+# Bump a CDN pin in one inlined file to an exact version, then regenerate the fixtures so
+# the pin lands in the samples/ pages too. A pin that is not there to rewrite is an error:
+# a silent no-op would leave the old version in place while the caller believes it moved.
+def bump-pin [file: string, pkg: string, version: string] {
+  require-semver $version
+  let path = ($ROOT | path join $file)
+  let before = (open --raw $path)
+  let pattern = $"($pkg)@[\\d.]+"
+  if not ($before =~ $pattern) {
+    error make { msg: $"($file) carries no `($pkg)@<version>` pin to rewrite" }
+  }
+  $before | str replace --regex $pattern $"($pkg)@($version)" | save -f $path
   nu ($SCRIPTS | path join "build-sample.nu")
-  print $"mermaid.js pinned to ($version). Review + commit."
+  print $"($file) pinned to ($pkg)@($version). Review + commit."
+}
+
+def "main mermaid" [version: string] {
+  bump-pin mermaid.js mermaid $version
+}
+
+def "main highlight" [version: string] {
+  bump-pin highlight.js @highlightjs/cdn-assets $version
 }

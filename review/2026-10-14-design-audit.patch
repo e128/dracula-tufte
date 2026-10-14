@@ -1,0 +1,66 @@
+diff --git a/NOTES.md b/NOTES.md
+index 59cfbda..3fee586 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -1478,6 +1478,7 @@ rule doesn't fail to apply on touch: it applies at the wrong time and sticks: th
+ **The block's position, immediately before `::selection`, is load-bearing**: a media query adds no
+ specificity, so placed after `prefers-contrast: more` instead, `.nav-list li a:hover` would tie and
+ win on source order, stripping that mode's underline from hovered nav links.
++**`nu scripts/maintain.nu check` gates this**: it fails on any `:hover` line outside that one block, and the copy button's rule was the case it caught. A rule that pairs `:hover` with another state in one selector still has to move whole.
+ 
+ **`pre.mermaid:hover` gets an instant, untransitioned 1px ring, for a pointer only**: hover is
+ high-frequency and doesn't want motion. **Do not describe it as the touch affordance**: a hover rule
+diff --git a/scripts/maintain.nu b/scripts/maintain.nu
+index 3cd4b02..fed4716 100644
+--- a/scripts/maintain.nu
++++ b/scripts/maintain.nu
+@@ -380,6 +380,25 @@ def "main check" [] {
+     print "No em-dash or en-dash."
+   }
+ 
++  # A :hover rule outside the guarded block applies on tap and sticks on touch (NOTES.md,
++  # Interaction states). The block is one run from its opener to the next four-space close.
++  let css = (open --raw ($ROOT | path join "tufte-dracula.css") | lines | enumerate)
++  let opener = ($css | where {|r| $r.item =~ '@media \(hover: hover\) \{'})
++  if ($opener | is-empty) {
++    print "tufte-dracula.css has no `@media (hover: hover) {` block."
++    $ok = false
++  } else {
++    let first = ($opener | first | get index)
++    let last = ($css | skip $first | where {|r| $r.item == "    }"} | first | get index)
++    let loose = ($css | where {|r| ($r.item | str contains ":hover") and ($r.index < $first or $r.index > $last)})
++    if ($loose | is-not-empty) {
++      $loose | each {|r| print $"HOVER: tufte-dracula.css line ($r.index + 1) is outside @media \(hover: hover\)" }
++      $ok = false
++    } else {
++      print "Every :hover rule sits inside @media (hover: hover)."
++    }
++  }
++
+   if $ok {
+     print "Contract OK."
+   } else {
+diff --git a/tufte-dracula.css b/tufte-dracula.css
+index cd61aca..252e82d 100644
+--- a/tufte-dracula.css
++++ b/tufte-dracula.css
+@@ -140,10 +140,9 @@
+     }
+     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
+     .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
+-      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin: -0.5rem -0.5rem 0 0.5rem;
++      display: grid; place-items: center; inline-size: 2.25rem; block-size: 2.25rem; margin-block: -0.5rem 0; margin-inline: 0.5rem -0.5rem;
+       padding: 0; background: var(--code-bg); color: var(--label); border: 1px solid var(--rule);
+       border-radius: var(--radius-sm); cursor: pointer; }
+-    .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
+     .copy-code:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+     :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
+     :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
+@@ -449,6 +448,7 @@
+       .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
+       pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
+       .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
++      .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
+     }
+     ::selection { background: var(--purple); color: var(--surface); }
+     @media (max-width: 1000px) {

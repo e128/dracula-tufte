@@ -36,7 +36,8 @@ Two comments remain in the CSS. A machine reads both.
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Grounds, floors, the data ramp, gamut, forced colors |
 | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
 | [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
-| [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the CSS pie went out, print and forced colors |
+| [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the pie went out, print and forced colors |
+| [Tufte's chart rules](#tuftes-chart-rules) | sparkline, small multiples, fidelity probe, declined forms |
 | [Image tiles](#image-tiles) | `.hero`, the caption below the image, the reserved box, why the radius sits on the image |
 | [Progressive disclosure](#progressive-disclosure) | `nav.toc`, `details.deep`, the narrow and print column overrides |
 | [Editor themes](#editor-themes) | Why the Rider slot map differs from the prose one |
@@ -386,8 +387,7 @@ recorded for the measure cap. **A container query was rejected**: `container-typ
 `<article>` would apply layout containment to every consumer's whole document for one component's
 breakpoint.
 
-**A `strong` inside an `<a>` repaints the link** (`strong { color: var(--orange) }` wins on the inner
-element), so take `strong` out of any anchor a consumer wraps a link title in.
+**`strong` carries weight 600 and no hue.** It was `--orange` until v1.57.0, which made a bold word read as a caution beside `.unverified` and `.verdict-partial`, and repainted a link it sat inside. **Do not give `strong` a color**: emphasis by weight is the Tufte form, and orange is left to the aside bar, the highlight and the status roles.
 
 **Nothing in `dl.timeline` encodes elapsed time, by design.** A proportional axis buries most content
 in a pile and most of the page in whitespace; era grouping already does the coarse chunking, and
@@ -576,12 +576,6 @@ they co-occur in one diagram. The ramp carries its own light and print values (a
 declaration once drew dark-ground fills on a light page). Each member holds a stated fraction of
 maximum in-gamut chroma at its lightness and hue; check 8 pins those fractions.
 
-**A pie slice renders the token.** Check 5 always asserted the token cleared the
-non-text floor (governing a `classDef` fill, a legend swatch, any direct `var(--data-2)` use) but
-said nothing about what a `pie` fence itself rendered at Mermaid's default 0.7 `pieOpacity`.
-`pieOpacity: '1'` closes that gap; check 11 measures the label that lands on it. See
-[Diagram types](#mermaid).
-
 **`--data-2` sits close to `--pink`, `--data-3` close to `--green`, left alone**: nothing in a
 diagram puts a category fill beside body copy, and a move means two more hex projections to
 recompute.
@@ -615,6 +609,8 @@ mode blocks each, re-measuring every ratio and both Mermaid projections, worth i
 but not for "`h2` calmer on paper". **A table of five that's true beats a table of ten that's
 aspirational.**
 
+**Light mode holds `--orange`, `--purple`, `--pink`, `--green` and `--link` to 55 to 65 percent of their ceiling (v1.57.0).** Measured against the same ruler check 8 uses, light mode spread them from 45 percent (`--purple`) to 81 percent (`--orange`), so a status green or an orange warning outshouted an `h2` purple. Dark mode spreads 45 to 61 percent and stays unpinned, and high contrast and print are compressed by design. The light chromas moved to `--orange` 0.085, `--purple` 0.178, `--green` 0.105 and `--link` 0.056 at unchanged lightness, which holds every contrast floor (check 5 passes). **Do not widen the band, and do not pin dark mode to match**: dark is already even, and a pin there means re-measuring every dark pair for no visible change. The band is a check, mutated to confirm it fails when `--orange` returns to 0.115.
+
 ### P3 gamut for six vivid accents
 
 **`--red`, `--orange`, `--purple`, `--pink`, `--green` and the `--data-*` ramp hold a wider,
@@ -641,7 +637,7 @@ Mermaid and the editor themes all take a literal hex, except iTerm2's plist, whi
 triples. Before this, no token's chroma ever exceeded the sRGB ceiling,
 so `oklch_to_hex`'s per-channel clip was dead code. `oklch_to_hex` now reduces chroma to the sRGB
 ceiling before converting (holding `L` and hue), matching what a browser's own CSS Color 4 gamut
-mapping does. `mermaid-palette.json` and `mermaid.js`'s `primaryBorderColor`/`nodeBorder`/`pie1..4`
+mapping does. `mermaid-palette.json` and `mermaid.js`'s `primaryBorderColor`/`nodeBorder`
 literals were recomputed to match; every other Mermaid hex was already in-gamut.
 
 **Percent of maximum chroma is the wrong yardstick across lightness: it works only across hue.**
@@ -659,8 +655,7 @@ stray hex in `mermaid.js`; (5) the contrast floor in all four modes against thre
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
 and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for every parsed token
 in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
-relative-color tokens per mode, plus `mark`'s alpha composite; (11) the pie slice label against all
-four fills in both palettes, plus `pieOpacity` pinned to `1`; (12) `--on-surface` over the
+relative-color tokens per mode, plus `mark`'s alpha composite; (11) retired with the pie; (12) `--on-surface` over the
 `table.bar-chart` band at its alpha, against both grounds in every mode, plus print and forced-colors
 pins; (13) `.claude/statusline.sh`'s ten truecolor constants against their `:root` projections.
 
@@ -682,11 +677,11 @@ a `pre.mermaid` fence, diagram source) stays prose: the fixture's own two overlo
 only instance in the repo and exist to exercise `overflow: visible` (see Diagram sizing), so a length
 gate would have to exempt its only subject and assert nothing. **Some obligations stay prose**: writing a gate that skips its only subject reports green about a question it never asked.
 
-**Three things stay open, none a measurement**: `--orange` carries eight roles (`strong`, the `mark`
+**Three things stay open, none a measurement**: `--orange` carries seven roles (the `mark`
 wash, syntax numerals/constants, the `aside`/alert bar, `.markdown-alert-title`, `.unverified`,
 `.verdict-partial`, `:target`): every alternative trades one hue collision for another, and a move
 would break the "orange arrival cue reads distinct from the link-blue focus ring" reasoning
-elsewhere. Five accents let their chroma fraction float (above). The high-contrast set is
+elsewhere. Five accents let their chroma fraction float in dark, high contrast and print (above); light mode is banded. The high-contrast set is
 gamut-compressed and text mitigates it (above).
 
 ### Forced colors
@@ -708,9 +703,8 @@ Fills inside a table still flatten, left alone deliberately: the mode restores t
 **This block's coverage is structural, not a color, so a pixel check cannot see it.** `render-modes.py`'s pixel assertion (checking
 `--surface` painted) can't transfer here, since forced colors means the sheet's colors stop deciding
 anything. So it's gated on **structure** instead, in `.github/script-probe.py`: the condition is
-rewritten to `@media all` in a scratch copy, and eight assertions read computed styles an edit here
-actually breaks (chip outlined, table/cell outlined, block `code` not outlined, `pre` keeps its bar,
-the grain is off). **A mode whose correctness is not a color needs a structural gate, not a pixel
+rewritten to `@media all` in a scratch copy, and seven assertions read computed styles an edit here
+actually breaks (chip outlined, table/cell outlined, block `code` not outlined, `pre` keeps its bar). **A mode whose correctness is not a color needs a structural gate, not a pixel
 one.**
 
 ## Form follows role
@@ -731,8 +725,10 @@ identically to `details`/`.nav-group`/`.nav-list`/`.filter-box`/`.mermaid-zoom`,
 a button read as one kind of object. `.scorecard` now takes `border-inline-start`. **Every remaining
 bordered box in the sheet is something you can click, type in, or open.**
 
+**`--green` carries two reading roles, accepted:** inline `code`, which ties to the green strings of the editor themes (see the slot map decision), and the status roles `.verified`, the passing verdict and the tip alert. Form separates them: code sits on a chip, status is spelled out. **Focus is one cue everywhere, the `--link` outline**; hover may add a color, but focus adds none.
+
 **Three prose accents carry two or three roles each, accepted:** `--pink` (h1, th), `--purple` (h2,
-`pre` bar, `::selection`), `--orange` (`strong`, aside bar, `.unverified`). Only `--orange`'s overlap
+`pre` bar, `::selection`), `--orange` (aside bar, `.unverified`, `.verdict-partial`). Only `--orange`'s overlap
 is visible to a reader; the other two pairs are separated by form (a heading vs. an italic small
 header; a heading vs. a 3px bar and a selection fill).
 
@@ -806,11 +802,7 @@ and its node on the next with no visible connector.
 default `blockquote` is used densely for citations. Decorative, so it takes the same alt-text
 convention as the outbound arrow.
 
-**`body::before` paints a fixed, full-viewport film grain** (an inline SVG `feTurbulence` filter,
-low opacity, `mix-blend-mode: overlay`), carrying no hue of its own so it crosses dark/light/print
-cleanly. `pointer-events: none` and `z-index: -1` (still paints above `body`'s own background, per
-CSS stacking order). **Switched off in print and `forced-colors: active`**: ink has no blend-mode
-equivalent, and a reader in that mode shouldn't see pure texture.
+**The film grain was removed in v1.57.0.** `body::before` painted a fixed, full-viewport `feTurbulence` texture on every page. It carried no data and no structure, which makes it the purest non-data ink in the sheet, and a reader checking a chart against its numbers gains nothing from it. **Do not restore a page-wide texture, behind a token or a class.** A decorative layer under every chart is the thing the Tufte data-ink rule exists to refuse.
 
 **Four more factory.strongdm.ai patterns were measured against this repo's own decisions and left
 out, not missed**: a `.cta-button` hover sheen/lift (this repo already decided hover wants no motion,
@@ -832,17 +824,14 @@ background required) already rules it out; blur over an opaque layer is a no-op.
 ## CSS charts
 
 One component draws a chart from ordinary markup, `table.bar-chart`: CSS only, no script, no CDN, no
-build step. A pie is a Mermaid `pie showData` fence instead (the existing hard-offline CDN exception).
-A second CSS pie was tried for one release and removed; see below.
+build step. A time series is a Mermaid `xychart` line (the existing hard-offline CDN exception).
 
-**Values are text in the markup, always**: what makes shipping a pie chart defensible despite
-Tufte's objection that readers compare angles and areas badly: the template themes one anyway because
-a part-to-whole share of a few categories is real, provided the chart is always a second reading of a
-number the page already states (`CONTRACT.md` § 2 obligation). A ranking, a magnitude comparison, or
-five-plus categories is `table.bar-chart`.
+**The pie was removed in v1.57.0, and a Mermaid `pie` fence now renders in Mermaid's own colors.** Tufte's objection stands: a reader compares angles and areas badly, a four-slice ceiling is all the ramp's lightness could carry, and Mermaid's legend cannot be replaced by direct labels per diagram. The theme variables, two checks and fixtures that held it up cost more than a part-to-whole share is worth when `table.bar-chart` draws the same shares as ranked bars with every value in the cell. **Do not restore a pie theme, behind a token or a class.** The radar and the treemap stay as second readings of a table (see Tufte's chart rules).
+
+**Values are text in the markup, always**: a chart is a second reading of numbers the page already states (`CONTRACT.md` § 2 obligation). A ranking, a part-to-whole share or a magnitude comparison is `table.bar-chart`.
 
 **The bar chart is a table with a class, and the band paints inside the cell holding the number**
-(an empty cell was rejected: it would make the graphic the only carrier of the value).
+(an empty cell was rejected: it would make the graphic the only carrier of the value). **A text-free graphic cell is allowed only when its end values sit as text beside it and the whole series sits in the markup** (`data-values`), which is how the sparkline stays inside this rule.
 
 - **The band is a 0.3-alpha wash of `--data-1`, never full strength** (full strength under text is
   the `.step-node` trap; text on it measures about 3.5:1). Check 12 measures the actual composite
@@ -861,44 +850,18 @@ five-plus categories is `table.bar-chart`.
 - **Direction costs one override**: `[dir="rtl"]` flips the gradient's `background-position`, since
   neither a gradient nor `background-position` takes a logical direction keyword.
 
-**The pie is a Mermaid `pie showData` fence; a CSS pie was built, rendered beside it, and removed**,
-after the comparison: the Mermaid pie drew in-slice percentages, a
-legend, a title; the CSS `conic-gradient` had none of that (nothing inside it was text, forcing a
-`role="img"` plus an `aria-label` plus a caption legend: three restatements of the numbers to draw a
-shape still unreadable). Mermaid draws the label in the slice and themes every slice from
-`--data-*`, at the cost of a CDN request. **The offline case is `table.bar-chart`, not a second CSS
-pie**: keeping one alive to cover Mermaid's offline failure cost a component, a § 2 requirement, a
-print pin, a forced-colors rule, and a check, for the one chart shape Tufte objects to, in the one
-form that can't carry its own numbers.
-
-**Four slices stays the ceiling**: the ramp has four members, and a fifth has no color left that
-clears the floor. **A pie needs a boundary between slices**: the ramp holds one lightness by design,
-so adjacent slices had no luminance step at all (measured 1.00-1.14:1 across palettes and even under
-simulated color-blindness). Mermaid's `pieStrokeColor` (`--surface`, so slices separate by a gap not
-a line) and `pieOuterStrokeColor` (`--muted`, matching every other hairline) answer this.
-**The pie's title is `1.15rem`, its slice stroke `1.5px`, its outer ring `1px`, and its labels sit
-at `textPosition: 0.65`.** The stock 25px title outweighed the 17px labels and the pie under it, and
-the 2px seams read as heavy dark lines in the dark palette. `pieTitleTextSize`, `pieStrokeWidth` and
-`pieOuterStrokeWidth` are live `themeVariables` (`script-probe.py` asserts they reach the SVG).
-`textPosition` is a `pie` config key, not a theme variable. Do not drop the stroke below 1px: the
-gap between slices is what separates two fills of one lightness.
-**Do not drop either stroke to Mermaid's `black` default.**
-
 **The bar band paints through a background image, so print and forced-colors both need a pin,
 verified by rendering rather than reasoning.** Print drops background graphics by default (verified
 via `print_background=False`), so `table.bar-chart td.bar` takes `print-color-adjust: exact` (check
 12 holds it). **`.tag-dot::before` needed the same pin**: a legend's dots vanished on paper without
 it, costing the legend's whole key, found by reading a printed PDF. `forced-colors: active` computes
-`background-image: none` on its own (verified), so the bar table needs no rule; the CSS pie did, and
-it's gone with the component. **Never answer a forced-colors case with `forced-color-adjust: none`**: it overrides the reader's own accessibility setting for a graphic whose numbers the page already
+`background-image: none` on its own (verified), so the bar table needs no rule. **Never answer a forced-colors case with `forced-color-adjust: none`**: it overrides the reader's own accessibility setting for a graphic whose numbers the page already
 states.
 
-**Nothing here draws a line chart.** A Mermaid `xychart-beta` fence can't be themed (see
-[Diagram types](#mermaid)), and a pure-CSS line chart needs hand-authored SVG paths a generator can't
-be asked to emit correctly. The gap is deliberate.
+**A time series is a Mermaid `xychart` line, and a sparkline is the word-sized answer (see Tufte's chart rules).** Nothing in CSS draws a line. The old reason, that `xychart` could not be themed, was wrong (see [Diagram types](#mermaid)).
 
 `samples/dark-charts.html` carries two bar tables (share of whole vs. share of the largest value, the
-convention that makes an unlabelled axis honest) plus a Mermaid pie of the same numbers.
+convention that makes an unlabelled axis honest) plus the sparkline, small multiples and line chart.
 
 **Bar cells use neutral quarter guides behind the value band.** The guides show the bar scale, while
 text remains the source of each value. Do not use guides to encode categories or remove the text
@@ -930,6 +893,56 @@ backgrounds and the dividers would vanish. Do not put a shadow or a card fill on
 
 **A caption's `.label` is a small-caps line naming what the figure is, above the sentence on how to
 read it.** `.chart-takeaway .more` is its second tier. Both are opt-in spans.
+
+## Tufte's chart rules
+
+**This section records which of Tufte's chart principles the template follows, which it adds, and
+which it declines, each with a reason.** The prose-measure decision is separate and closed (see Width
+and measure).
+
+**Followed.** Chart marks use `--data-1` only (the bar band, the sparkline, the `xychart` line); `--data-2` to `--data-4` serve `classDef` fills and legend dots, and a chart that needs a second hue has to earn it. Values are text in the markup, so the graphic is a second reading. Guides use two
+weights, faint grid and strong baseline. Row rules are scoped to `.evidence-table`, with no zebra
+stripes, shadow or card fill on a chart. A caption names the figure, states what the number is a share
+of, and carries a source line.
+
+**A bar that disagrees with its number is a lie factor above 1, so the probe reads the pair.**
+`.github/script-probe.py` (the `fidelity` run, on `samples/dark-charts.html`) checks that a `td.bar`
+cell ending in `%` draws exactly that `--bar`, and that a bare count draws its share of the column
+maximum. **It reaches the fixture only.** A consumer's page is never read, so `CONTRACT.md` § 2 stays
+the consumer obligation. The probe was mutated (a wrong `--bar`, a wrong `--h`) to confirm each
+fails.
+
+**`span.spark` is the sparkline: `i` columns sized by `--h`, one zero baseline, one hue.** It answers
+trend over time inside a table row, where a Tufte word-sized graphic belongs. **Columns, not a line**:
+CSS draws a column from one number, and a line needs path coordinates. The full time series is the `xychart` line. **In a table every column stands on zero and every row shares one
+scale**, stated in the caption, because a min-to-max stretch turns noise into a cliff. **`span.spark.fit` is the opt-in that does stretch**, for a sparkline outside a shared-scale table (a sentence, a margin note). Its columns run from 10 percent at the series minimum to 100 percent at the maximum, the 10 keeping the lowest column visible, and its baseline turns dashed so a reader sees the bottom is not zero. The probe checks the stretch and refuses a `fit` inside `table.bar-chart`. Use it when shape matters more than size. **The final
+column is `--on-surface`, a neutral**, so the latest value is the mark found first without a second
+hue. The graphic carries no text, so full-strength `--data-1` is allowed here (the `.step-node` trap
+needs text on the fill). **The whole series is a `data-values` attribute**, a comma list the probe reads, so a middle point is checked and not trusted. Screen-reader naming is out of scope for this repo. The first and latest values flank the sparkline in `td.num` cells (First, Trend, Latest), so the end value sits at the line's end. The probe checks every column against its label on one shared scale, and the ends against the cells.
+**`block-size` is `1.2em`**, so the graphic fits a line box inside a sentence and inside a `.marginnote` (line height 1.4). At `1.5em` it grew the margin-note line, which the probe now asserts. **Order rows by the latest value unless the rows have a natural order.** **Do not add a per-column color, a gradient, or a value label inside the
+columns.** The final column stays `--on-surface`, a neutral, and is deliberately the loudest ink in the cell. Forced colors sets the fill to `CanvasText`, print takes the same `print-color-adjust`
+pin as the bar band.
+
+**`div.multiples` is small multiples: a wrapping grid of ordinary `table.bar-chart` children.** The
+shared scale is stated once above the grid. **The first panel carries the row labels, and later panels have none**: their `File` header and label cells are deleted, and each later panel takes `margin-inline-start: var(--multiples-label)` (8rem, the first panel's label column) so its bars line up with the first. Every panel keeps a `Share` header, so the header rows match in height. Captions are `display: block` here, so a caption wraps at the panel's width rather than the narrow bar column. Each panel keeps its own caption, values and source. A label longer than 8rem wraps in the first panel. **A panel is not self-standing, by decision**: Tufte labels once. **Do not restore the labels as hidden or transparent text.**
+**Do not add a panel class, a shared legend component, or a per-panel color.** Panels differ by data,
+never by hue.
+
+**A radar chart or a treemap is a second reading of numbers the page states, the same rule as any chart:
+the values are text.** Both ask a reader to compare angles or areas, and a radar's area changes with axis order. The
+fixture says so beside each fence, and `CONTRACT.md` § 2 requires a table of the same values.
+
+**Declined, with the cost recorded:**
+
+- **Slopegraph.** Its point is a shared vertical axis across every row. A per-row mini-slope in a table
+  cell loses that axis, so it would draw direction and imply a magnitude. A sparkline plus a
+  `td.num` delta states the same before and after.
+- **Range-frame and dot-dash axes.** They need axis ticks placed at data values on a drawn axis. The
+  template draws no axis (a bar's guides are fixed at 25, 50 and 75 percent), so there is nothing to
+  frame. Authoring the ticks needs SVG a generator cannot emit.
+- **Dot plot variant of `td.bar`.** A full-strength dot under a short value (4 percent sits beneath
+  its own number) is the `.step-node` text-on-fill trap, and a 0.3-alpha dot is too faint to read. A dot in its own text-free cell, with the value in the next cell, avoids the trap and is allowed by the sparkline rule. It is unbuilt, not refused: add it when a page needs one.
+- **A line sparkline in inline SVG.** Mermaid `xychart` draws the full time series, so a second line form would need its own CSS, forced-colors rule, print pin and probe for a gain of a few pixels.
 
 ## Image tiles
 
@@ -1089,7 +1102,7 @@ so no diagram renders at all. Values mirror `mermaid-palette.json`, CI-enforced.
 `classic` to `neo` and its default layout from `dagre` to a bundled ELK. `theme: 'base'` stays
 explicit so colors don't move; `look` is pinned rather than left to follow the new default. Rendered
 side by side, `neo` adds a `filter: drop-shadow(...)` and a brighter stroke halo on every node, ink
-carrying no data, declined for the same reason the CSS pie lost its `conic-gradient`. **Layout is
+carrying no data, declined as ink that carries no data. **Layout is
 left unset**: every diagram now lays out with ELK by default, an upstream default this template
 accepts rather than pinning `layout: 'dagre'` to hold the old geometry (see [Large maps](#connections-map-layout)
 for what changed on the one fixture that already used ELK deliberately). **Mermaid v12 also raises
@@ -1105,10 +1118,9 @@ diagram with the import removed: both render with no layout-loader error.
 `config.themeVariables` to `base.getThemeVariables()`, so a root-level `darkMode` never reaches the
 theme and every derived color computes light-mode.
 
-**`fontFamily`, `fontSize`, `pieOpacity` are the only non-color `themeVariables`**, none mirrored
+**`fontFamily` and `fontSize` are the only non-color `themeVariables`**, none mirrored
 into `mermaid-palette.json` (nothing there to catch). `fontSize: '1rem'` tracks the reader's root
-size (Mermaid defaults to a hardcoded 16px); `pieOpacity: '1'` is pinned by check 11 instead, since it
-changes a measured contrast pair. **`background` is inert** (swept across twelve diagram types,
+size (Mermaid defaults to a hardcoded 16px). **`background` is inert** (swept across twelve diagram types,
 never reaches output): correct by intent, not load-bearing.
 
 **Theme the `note*` family explicitly**, or `Note over` renders at Mermaid's stock yellow, the only
@@ -1117,7 +1129,7 @@ light surface on a dark page. **`actorTextColor` is not needed and is deliberate
 with no direct text child to paint. **Probe a `tspan`, not its parent `text`**, before adding this
 back; a no-op themeVariable still costs two CI gates to keep in step.
 
-**Pin the CDN to an exact version, never a range.**
+**Pin the CDN to an exact version, never a range.** `nu scripts/maintain.nu cdn-pins` gates it for every inlined file and fails when a package named in `CDN_PACKAGES` is no longer loaded. `maintain.nu mermaid <version>` and `maintain.nu highlight <version>` rewrite the two script pins and regenerate. The font pins are edited by hand in the stylesheet.
 
 ### Label measurement
 
@@ -1157,7 +1169,7 @@ been painting into the page gutter. The zoom overlay doesn't rescue it either: i
 the SVG's own width, so the escape scales with the zoom (measured 69-105px lost at a 640px viewport): only shrinking the SVG helps, which would shrink every zoomed diagram, the one thing the overlay
 exists not to do. **This is a consumer constraint, stated in `CONTRACT.md` § 2**, not a stylesheet
 defect: the fixture's two overlong point labels exist to exercise this; realistic labels lose nothing
-above 601px. Same defect class as `packet`/`xyChart` (a Mermaid viewBox bug): take it when Mermaid
+above 601px. Same defect class as `packet` (a Mermaid viewBox bug): take it when Mermaid
 fixes it.
 
 **A JS `refit()` growing the viewBox to `getBBox()` was tried and reverted**: fired from a
@@ -1204,10 +1216,7 @@ convenient: id-scoping beats a page-level class rule regardless of source order)
 mermaid override by rendered pixels, never by reading the exported SVG's own `<style>`**, which
 doesn't change even when an override is visually in effect.
 
-**`xyChart` cannot be fixed here.** Same inert-config defect as `packet`, but no CSS door: bars and
-line are plain `<rect>`/`<path>` with a literal fill/stroke and **no class attribute at all**. Take
-it when Mermaid ships a fix, or use a per-diagram `<style>` scoped by a hand-added `id`. **Never
-widen a selector on the shared sheet for it.**
+**The `xychart` title is `--label`, the same tier as a `figcaption .label`**, so a bar chart and a line chart name themselves alike. **`xychart` is themed through `themeVariables.xyChart`, and the old "cannot be fixed" entry was wrong.** The nested `xyChart` object reaches the SVG: `plotColorPalette`, the title, axis label, axis title, tick and line colors, `dataLabelColor`, `legendTextColor` and `backgroundColor` all took effect when rendered on the pinned Mermaid. Both keywords, `xychart` and `xychart-beta`, rendered the same. The fixture and the docs use `xychart`, which is the keyword the current Mermaid page uses. **`plotColorPalette` carries one color, `--data-1`.** A second series would fall outside the palette and a legend is the only key Mermaid draws, so the chart is a single `line`, the Tufte case, beside a table of its values. The keys sit flat in `mermaid-palette.json` and nested in `mermaid.js`, which the existing key-by-key gate reads as written. `script-probe.py` asserts the line stroke is the palette hex (mutated to confirm it fails without the theme). **Size the chart so the y-axis ticks have room.** Mermaid draws a tick every 5 units on a 0 to 60 axis whatever the height, and at 300px tall the labels touched. The fixture sets `height: 360` in the fence frontmatter, which leaves about 22px per label. A shorter chart needs a wider range (0 to 100 ticks every 10). **Do not shrink the label font to fit**: the tick count stays and the labels turn illegible. **Do not give the chart a second palette entry, a legend, or a bar series beside the line.**
 
 **`sankey` and `block` render in d3's Tableau10 categorical scheme**, no config surface in front of
 it. Left alone: nothing puts a category fill beside body copy.
@@ -1256,7 +1265,7 @@ coverage.
 **`C4Context`/`Container`/`Component`/`Dynamic`/`Deployment` are not themeable here, and no fixture
 exists for any of them.** A probe render found `Person()`/`System()` painted with Mermaid's hardcoded
 C4 defaults (`#08427B`, `#1168BD`) regardless of theme, since the C4 renderer sets fill/stroke as a
-literal shape attribute: same defect class as `xyChart`. A relationship label rendered at `#444444`,
+literal shape attribute: same defect class as `packet`. A relationship label rendered at `#444444`,
 failing contrast on this dark ground outright. A CSS door does exist (the `!important` route
 `packet`/ELK clusters use), but C4's several shape tiers (`person`, `external_person`, `system`,
 `external_system`, `system_db`, `system_queue`, `container`/`component` tiers) are too much surface to
@@ -1265,8 +1274,7 @@ consumer adding a C4 diagram on this dark palette should verify contrast themsel
 
 **Diagram text on the page ground (not a node fill) was invisible in print**: Mermaid bakes hex into
 the SVG at init, and print is a media query with no re-render, so a dark-page-themed diagram kept
-painting `textColor` at `#f8f8f2` while `@media print` turned `--surface` white (measured: pie
-title/legend, `quadrantChart` axis labels, every `sequenceDiagram` message label at about 1.0:1).
+painting `textColor` at `#f8f8f2` while `@media print` turned `--surface` white (measured: `quadrantChart` axis labels, every `sequenceDiagram` message label at about 1.0:1).
 **Recoloring the measured classes was the first fix and it covered only the diagram types the
 fixtures carried.** Giving the diagram back its own palette covers every type with no per-class
 enumeration.
@@ -1286,19 +1294,6 @@ properties inherit, so every `var()` inside the diagram resolves correctly with 
   `@media print and (prefers-color-scheme: light)` block `unset`s all five (falling back to the
   inherited paper palette), sitting after `@media print` on purpose since source order, not
   specificity, is what lets it win.
-
-**`pie` paints text directly onto a `--data-*` fill and took two coupled fixes**, both found by
-rendering rather than reading tokens. `pieOpacity` is now `1` (Mermaid's 0.7 default composited every
-slice toward the card, undoing the ramp's own contrast work). `pieSectionTextColor` is per palette
-and inverts (`--surface` in the pale dark ramp, `--on-surface` in the mid-tone light ramp: one value
-can't serve both). Both are real `themeVariables` in mermaid 11.17.2; no `!important` was needed.
-**Both pie strokes are themed too** (`pieStrokeColor: --surface` so slices separate by a gap not a
-line; `pieOuterStrokeColor: --muted` matching every other hairline): Mermaid defaults both to
-literal `black`, not a palette color in any mode. **Do not drop either stroke back to Mermaid's
-default.**
-
-`samples/dark.html` carries a `pie showData` fence; its absence is why the above went unmeasured
-(see [Fixtures are coverage](#fixtures-are-coverage)).
 
 **Nine more diagram types theme correctly with no code change, verified by rendering each against
 both palettes and reading `getComputedStyle` on every colored element, not by reading the exported
@@ -1340,7 +1335,7 @@ defect, and a chart option rather than a `themeVariable` is what fixed it:** at 
 spacing Mermaid drew every date twice, thirteen labels for seven days, so `tickInterval 1day` in
 the fence is what makes the axis print each date once. **`gantt`'s `today` marker stays Mermaid's
 literal red on purpose:** it is a "you are here" signal, not a category, the same reasoning that
-keeps the pie and cluster strokes off any accent this template already assigns a meaning
+keeps the cluster strokes off any accent this template already assigns a meaning
 (see the settled decision on `--data-1..4` above). Setting it would cost a new gamut-clipped
 hex for a signal that already reads correctly. **The trade: no fixture renders that marker**, since
 the sample's axis sits months away from the current date and the marker lands at x=47252 in a
@@ -1440,7 +1435,7 @@ not merely narrower.
 
 **ELK clusters ignore `clusterBkg`/`clusterBorder` outright**: isolated against dagre with an
 identical subgraph and `theme: 'base'`, ELK hardcodes Mermaid's stock `#ffffde` fill, `#aaaa33`
-stroke, `#333` label text regardless of `themeVariables`. Same defect class as `packet`/`xyChart`, so
+stroke, `#333` label text regardless of `themeVariables`. Same defect class as `packet`, so
 `tufte-dracula.css` overrides it the same way: `pre.mermaid .cluster rect` and
 `pre.mermaid .cluster-label :is(p, span)` with `!important` (Mermaid's injected rule is id-scoped).
 Verified by rendered pixels in both dark and forced-light, not by reading the exported SVG's own
@@ -1478,6 +1473,7 @@ rule doesn't fail to apply on touch: it applies at the wrong time and sticks: th
 **The block's position, immediately before `::selection`, is load-bearing**: a media query adds no
 specificity, so placed after `prefers-contrast: more` instead, `.nav-list li a:hover` would tie and
 win on source order, stripping that mode's underline from hovered nav links.
+**`nu scripts/maintain.nu check` gates this**: it fails on any `:hover` line outside that one block, and the copy button's rule was the case it caught. A rule that pairs `:hover` with another state in one selector still has to move whole.
 
 **`pre.mermaid:hover` gets an instant, untransitioned 1px ring, for a pointer only**: hover is
 high-frequency and doesn't want motion. **Do not describe it as the touch affordance**: a hover rule
@@ -2044,7 +2040,7 @@ in, so re-measure before cutting anything on the grounds that nothing uses it.
 
 **`.verdict`/`.scorecard` had the same generator gap, undocumented rather than merely unused**: a
 real proof-test page rendered every verdict as bare text, since `CONTRACT.md` had never listed the
-markup for a generator to discover. Fixed by adding it (`CONTRACT.md` § 2, v1.31.0 row of § 3).
+markup for a generator to discover. Fixed by adding it (`CONTRACT.md` § 2).
 
 **`.verdict` was missing `display: inline-block`, and `min-width` had been silently dead outside
 `.scorecard`'s grid the whole time**: a grid item's computed `display` blockifies regardless of the
@@ -2082,12 +2078,8 @@ Specific fixture details and what they catch: `samples/dark-timeline.html`'s len
 era groups exercise `--timeline-date`'s multi-list case; citation density is where floated sidenotes
 fail; the enlarged marker hit area and `:target` outline were measured against it). The sequence
 diagram and quadrant chart sit beside the flowchart because a flowchart shows neither
-label-measurement bug (its labels are browser-measured `foreignObject` HTML). The `pie` fence is the
-only one putting text on a `--data-*` fill (its absence hid two real contrast defects for four
-releases) and the only one depending on a non-color `themeVariable`. `samples/dark-charts.html`
-carries both bar tables (no other coverage exists for `table.bar-chart`, and its background-image
-band is exactly what print/forced-colors take away) plus a Mermaid pie of the same numbers, so the
-CSS-chart-vs-pie guidance is checkable by eye. The conn-map focus node's long label is the only place
+label-measurement bug (its labels are browser-measured `foreignObject` HTML). `samples/dark-charts.html` carries both bar tables (no other coverage exists for `table.bar-chart`, and its background-image
+band is exactly what print/forced-colors take away), the sparkline, the small multiples and the line chart, so the guidance on which form to reach for is checkable by eye. The conn-map focus node's long label is the only place
 a mis-sized node box lands in a *constrained* column. The filter's `role="status"` and
 `.filter-empty` lines are the only reference copy for both: **nothing hand-written into a fixture
 may restate a runtime value the reader controls** (a count can be checked against the page; a quoted

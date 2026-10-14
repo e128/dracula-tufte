@@ -26,7 +26,7 @@ GitHub Pages renders these four from `main`. There is no build step.
 - [samples/dark.html](https://e128.github.io/dracula-tufte/samples/dark.html): component sample
 - [samples/dark-conn-map.html](https://e128.github.io/dracula-tufte/samples/dark-conn-map.html): connections-map layout
 - [samples/dark-timeline.html](https://e128.github.io/dracula-tufte/samples/dark-timeline.html): timeline layout, real content
-- [samples/dark-charts.html](https://e128.github.io/dracula-tufte/samples/dark-charts.html): the bar chart and the Mermaid pie
+- [samples/dark-charts.html](https://e128.github.io/dracula-tufte/samples/dark-charts.html): the bar chart, sparkline, small multiples and line chart
 
 Those four follow your system appearance. A dark-mode reader therefore never sees the light
 palette. Four more pages force it:
@@ -44,7 +44,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.56.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.57.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -54,7 +54,7 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 | `samples/dark.html` | Living style fixture, and the executable specification. Generated. Do not edit it by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. It uses `<body class="conn-map">` with the sections in Links-then-Graph order. Generated. |
 | `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Generated. |
-| `samples/dark-charts.html` | Chart fixture: `table.bar-chart` and a Mermaid `pie showData` fence for the same four numbers, a delta column, a stored-and-derived flowchart, the guidance on which chart to draw, and twelve more Mermaid fence types verified against this palette. Generated. |
+| `samples/dark-charts.html` | Chart fixture: `table.bar-chart`, a column sparkline, small multiples, a Mermaid `xychart` line, a delta column, a stored-and-derived flowchart, the guidance on which chart to draw, and twelve more Mermaid fence types verified against this palette. Generated. |
 | `CONTRACT.md` | The consumer checklist. It stays imperative and short, because a consumer's agent reads it on every bump. |
 
 The four light previews are deliberately **not** contract files. The rest of the repo splits by
@@ -63,15 +63,15 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.56.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.57.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
 
 1. What to inline (§ 1).
-2. The thirty-three markup requirements a generator owes (§ 2), each pointing at a string to search
+2. The thirty-seven markup requirements a generator owes (§ 2), each pointing at a string to search
    for in a fixture rather than at a line number.
-3. What changed in each release (§ 3).
+3. What changed in the last ten releases (§ 3).
 4. How to detect a stale artifact (§ 4).
 5. What each pin mode costs (§ 5).
 
@@ -205,7 +205,7 @@ its correctness is not a color.
 8. The vividness bands.
 9. The inverted pairs, where an accent is the ground and `--surface` is the text.
 10. The two relative-color tokens.
-11. The pie slice label against every slice fill, and `pieOpacity`.
+11. Retired with the pie.
 12. The number that sits on a `table.bar-chart` band, and the two pins that keep a CSS chart
     visible in print and out of the way in forced colors.
 
