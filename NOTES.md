@@ -505,6 +505,12 @@ passes through its spacing exception: the nearest other target sits 38px or more
 centre at 1280px and 320px, so no 24px circle touches another. Do not pad them toward 44px: the
 padding would push the heading's last line wider for a control that is only revealed on hover or focus.
 
+**The copy button and the Mermaid zoom button meet the 44 by 44 usability target; the heading
+permalinks deliberately do not.** The copy button is `2.75rem` square and the zoom button carries
+`min-height: 44px`. `script-probe.py` asserts both from the rendered rectangle, mutated to confirm
+each fails at the old size. The permalinks stay glyph-sized on the spacing exception above, because
+padding them would widen the heading's last line for a control revealed only on hover or focus.
+
 `cite` is monospace and `font-style: normal`: the browser default (italic serif) is indistinguishable
 from `<em>` in this theme.
 
@@ -649,7 +655,7 @@ defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs thirteen checks: (1) hex projections in both Mermaid palettes; (2) the
+`.github/palette-check.py` runs fourteen checks: (1) hex projections in both Mermaid palettes; (2) the
 `classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
 stray hex in `mermaid.js`; (5) the contrast floor in all four modes against three grounds, plus rules
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
@@ -657,7 +663,8 @@ and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for
 in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
 relative-color tokens per mode, plus `mark`'s alpha composite; (11) retired with the pie; (12) `--on-surface` over the
 `table.bar-chart` band at its alpha, against both grounds in every mode, plus print and forced-colors
-pins; (13) `.claude/statusline.sh`'s ten truecolor constants against their `:root` projections.
+pins; (13) `.claude/statusline.sh`'s ten truecolor constants against their `:root` projections; (14)
+the composite `nav.toc` ground, re-derived from the rule in every mode.
 
 **The statusline is a derived-hex consumer no generator owns**, so it is the one place a palette
 edit can leave a stale value nothing would review: a harness file, not payload, and its own comment
@@ -1002,9 +1009,17 @@ extending into the content it discloses. It bought nothing: removing it changes 
 because a double click fires both clicks either way. **Do not put it back**, on any element that
 carries text a reader might want to copy, and not on `details.nav-group > summary` either.
 
-**`nav.toc` paints a composited ground no gate reaches** (`color-mix(in oklab, var(--surface-alt) 60%,
-transparent)` lands between two measured grounds). `--muted`/`--purple-bright` clear their floor
-against both, so this is an honest, documented gap, not a check that cannot see the mix.
+**`nav.toc` paints a composited ground, and check 14 gates it**: the index background is
+`color-mix(in oklab, var(--surface-alt) 60%, transparent)` over `--surface`, which lands between two
+measured grounds. Earlier releases left it as prose, because `--muted` cleared its floor against both
+ingredients and the gap was honest rather than a check that could not see the mix. Check 14 now reads
+the fraction and the token out of the rule and re-derives the composite in every mode, in the same
+gamma-encoded space checks 10 and 12 use; the tightest pair is light `--muted` at 4.83:1 against the
+4.5 floor. The model reproduces the rendered pixel (`#22232e` in dark, measured on a canvas). **Do not
+replace this with a hand measurement**: a later nudge to the fraction or to either token moves the
+pair under its floor with nothing re-deriving it. Hover text on this ground is `--purple-bright`,
+whose floor against `--surface-alt` check 10 already holds, and the composite sits between
+`--surface` and `--surface-alt`.
 
 **`nav.toc` clears the floated note column** (`clear: right; clear: inline-end`, the same value
 pair `.sidenote` already carries). The index paints a full-width ground, and a `.sidenote`/
@@ -1347,15 +1362,17 @@ found not to exist on this diagram's edges at all (no `<marker>` in the render),
 Both diagrams carry a fixture in `samples/dark-charts.html` (search `Gantt chart` and
 `Architecture diagram`).
 
-**`kanban` and `timeline` accept `accTitle`/`accDescr` and never surface them, and the inline form
-corrupts `kanban`.** Written inside the fence body, `kanban` reads both lines as column names and
-draws two junk columns, `accTitle: Kanban board sample` and `accDescr: ...`, ahead of the real
-ones; `timeline` drops both in silence. Neither type puts the text into an SVG `<title>`, which is
-the one place the zoom button reads a diagram name from (see *Keyboard and assistive technology*),
-so a button over either diagram keeps the bare `Zoom diagram` label and a page with several
-diagrams gets that repeated name back. The fixture writes both keys as front matter instead, which
-both types parse without drawing anything, and a sentence above each fence carries the text
-alternative. Fixed in `samples/dark-charts.html` (search `A kanban board`).
+**`xychart`, `kanban` and `timeline` accept `accTitle`/`accDescr` and never surface them, and the
+inline form corrupts `kanban`.** Written inside the fence body, `kanban` reads both lines as column
+names and draws two junk columns, `accTitle: Kanban board sample` and `accDescr: ...`, ahead of the
+real ones; `timeline` drops both in silence; `xychart` renders only its visible `title` directive,
+never an SVG `<title>`. None of the three puts the text into an SVG `<title>`, which is where the zoom
+button and a screen reader read a name from. **`mermaid.js` now reads `accTitle`/`accDescr` off the
+fence before `mermaid.initialize()` renders it, and injects an SVG `<title>` (and `<desc>`) only when
+the render left none**, so those three types gain the accessible name every other type already emits.
+The fixture writes both keys as front matter, which all three parse without drawing anything.
+`script-probe.py` asserts every `pre.mermaid` svg carries a `<title>`, mutated to confirm it fails
+before the shim. **Do not move the keys into the fence body**: `kanban` draws them as columns.
 
 **`journey` renders empty on roughly one load in five, and no gate in this repo can see it.** The
 fence parses, `data-processed` is set, an `<svg>` element exists, and the `<svg>` is empty: the
@@ -1522,12 +1539,10 @@ for isn't a state worth watching happen. **Focus returns to the opening button f
 `close()`'s native restore.
 
 **The zoom button is named from the diagram (`accTitle` → SVG `<title>`), not a hardcoded constant**: a page with several diagrams would otherwise get several identically named buttons. `aria-label` is
-`label + ': ' + title`; the overlay takes the same name on open. **The trade: `kanban` and
-`timeline` never produce that `<title>`**, whatever form `accTitle`/`accDescr` take, so their
-buttons read the bare `Zoom diagram` and a page carrying several of them is back to repeated
-names. Mermaid's own renderers are the reason and this template inlines the built bundle, so
-there is nothing to fix here without patching Mermaid. See *Mermaid* for what the fixture does
-instead.
+`label + ': ' + title`; the overlay takes the same name on open. `xychart`, `kanban` and `timeline`
+drop the `<title>` Mermaid emits for other types, so `mermaid.js` supplies it from the fence's
+`accTitle` before naming the button (see *Mermaid*). Every diagram in the fixtures now carries a name,
+and `script-probe.py` asserts it.
 
 **The `pre` region is named for what the container IS, not for the diagram inside it**
 (`window.mermaidRegionLabel || 'Scrollable diagram'`): the bare title would repeat what the SVG
@@ -1978,7 +1993,7 @@ fourth inlined script costs a new fixture check and a new contract line. The but
 child of the `pre`, so it stays at the visible edge while the block scrolls sideways, and it copies `pre.textContent`, which
 covers converters that emit no `code` child. The icon is an inline SVG (`currentColor`) swapped to a check for 1.5s. Nothing is
 added when `navigator.clipboard` is missing. **No wrapper element around `pre`**: it would move the margin rhythm and the
-`pre > code` selectors. The button is 2.25rem, above the 24px AA minimum and below the 44px usability target.
+`pre > code` selectors. The button is 2.75rem square, meeting the 44 by 44 usability target. `script-probe.py` asserts it and the Mermaid zoom button from the rendered rectangle, so a future size edit that drops below 44 fails rather than shipping quietly.
 
 **Chroma was declined on a namespace argument that turned out to silently exclude Pygments.** Hugo
 defaults `noClasses = true` (inline color, mostly moot), but Pygments emits classes by default and is

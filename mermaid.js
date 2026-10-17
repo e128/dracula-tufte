@@ -81,6 +81,14 @@
         ...(mermaidLight ? mermaidLightVars : mermaidDark),
       },
     });
+    const sourceMeta = new WeakMap();
+    const accField = (text, key) => {
+      const match = text.match(new RegExp('^\\s*' + key + ':\\s*(.+?)\\s*$', 'im'));
+      return match ? match[1].replace(/^["']|["']$/g, '') : '';
+    };
+    document.querySelectorAll('pre.mermaid').forEach(pre => {
+      sourceMeta.set(pre, { title: accField(pre.textContent, 'accTitle'), descr: accField(pre.textContent, 'accDescr') });
+    });
     const overlay = document.getElementById('mermaid-zoom');
     if (!overlay) throw new Error('mermaid.js requires <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog> as the first child of <body>');
     const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
@@ -127,6 +135,19 @@
       new MutationObserver(() => {
         const svg = pre.querySelector('svg');
         if (!svg) return;
+        if (!svg.querySelector('title')) {
+          const meta = sourceMeta.get(pre);
+          if (meta && meta.title) {
+            if (meta.descr) {
+              const desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+              desc.textContent = meta.descr;
+              svg.prepend(desc);
+            }
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            title.textContent = meta.title;
+            svg.prepend(title);
+          }
+        }
         if (!zoomBound.has(svg)) {
           zoomBound.add(svg);
           svg.addEventListener('click', e => { if (!e.target.closest('a')) zoom(svg); });
