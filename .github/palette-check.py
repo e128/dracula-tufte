@@ -803,5 +803,35 @@ else:
                   f"--{token} computes to {want}")
             fail = 1
 
+# 14. nav.toc sits on the one composite ground outside every check above: its background
+#     is color-mix(in oklab, var(--surface-alt) 60%, transparent) painted over --surface,
+#     and its two text tiers (--on-surface for links, --muted for the label) were named in
+#     NOTES.md and measured by hand for several releases. A hand measurement is not a gate:
+#     a later edit to the fraction or to either token can move the pair under its floor with
+#     nothing re-deriving it. The fraction and the token are read out of the rule, and the
+#     composite is re-derived in every mode here, in the same gamma-encoded space check 10
+#     and 12 use for their alpha washes.
+nav = re.search(
+    r"nav\.toc \{[^}]*background:\s*color-mix\(in oklab, var\(--([\w-]+)\) ([\d.]+)%, transparent\)",
+    stylesheet,
+)
+if not nav:
+    print("DRIFT: nav.toc no longer declares a color-mix background of --surface-alt over "
+          "--surface, so its composite ground is left unmeasured")
+    fail = 1
+else:
+    mix_token, mix_alpha = nav.group(1), float(nav.group(2)) / 100
+    for mode, triples_for_mode in resolved.items():
+        composite = over(triples_for_mode[mix_token], triples_for_mode["surface"], mix_alpha)
+        for name in ("on-surface", "muted"):
+            got = contrast_lin(oklch_to_linear(*triples_for_mode[name]), composite)
+            if got + 0.005 < MODES[mode][1]:
+                print(
+                    f"CONTRAST: {mode} --{name} on nav.toc "
+                    f"({mix_alpha:g} of --{mix_token} over --surface) is {got:.2f}:1, "
+                    f"below the {MODES[mode][1]} floor for this mode"
+                )
+                fail = 1
+
 print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
 sys.exit(fail)

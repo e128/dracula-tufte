@@ -60,11 +60,19 @@ def count-word [n: int] {
 # `\u{...}` escapes because this file is tracked and a literal character would trip the
 # gate it implements. rg exits 1 on no match, which is the passing case, so the exit code
 # is read rather than trusted.
+#
+# One rg over every tracked file, not one per file: the per-file form spawned a process
+# for each of the ~300 tracked files on every `check` and every `bump`, which dominated
+# the runtime of both. `--with-filename` is explicit because rg prints a bare count when
+# it is handed a single path, and the parse below expects the `path:count` shape.
 def dash-files [] {
-  ^git -C $ROOT ls-files | lines | each {|f|
-    let hits = (^rg -c --no-messages -e '\u{2014}' -e '\u{2013}' ($ROOT | path join $f) | complete)
-    if $hits.exit_code == 0 { {file: $f, count: ($hits.stdout | str trim)} }
-  } | compact
+  let files = (^git -C $ROOT ls-files | lines)
+  if ($files | is-empty) { return [] }
+  let hits = (^rg -c --with-filename --no-messages -e '\u{2014}' -e '\u{2013}'
+    ...($files | each {|f| $ROOT | path join $f }) | complete)
+  if $hits.exit_code != 0 { return [] }
+  $hits.stdout | lines | parse --regex '^(?<file>.+):(?<count>\d+)$'
+    | each {|r| {file: ($r.file | path relative-to $ROOT), count: $r.count} }
 }
 
 def main [] {
@@ -221,12 +229,17 @@ def markdown-links-ok [] {
     print $"only ($files | length) tracked markdown files, refusing to pass vacuously"
     return false
   }
+  # Read each tracked file once: the heading pass and the link pass both need the same
+  # text, and the earlier form opened every markdown file twice.
+  let contents = ($files | reduce --fold {} {|f, acc|
+    $acc | insert $f (open --raw ($ROOT | path join $f))
+  })
   let slugs = ($files | reduce --fold {} {|f, acc|
-    $acc | insert ($ROOT | path join $f | path relative-to $ROOT) (md-slugs (open --raw ($ROOT | path join $f)))
+    $acc | insert ($ROOT | path join $f | path relative-to $ROOT) (md-slugs ($contents | get $f))
   })
   let links = ($files | each {|f|
     let dir = ($ROOT | path join $f | path dirname)
-    (open --raw ($ROOT | path join $f))
+    ($contents | get $f)
       # Inline code is stripped first, because a link inside backticks is an example and not
       # a link. Without this the gate fails on the paragraph that documents it, which is a
       # poor way to learn that it works.

@@ -178,6 +178,10 @@ DRIVER = """
         t('highlight-plain-untouched', Boolean(document.querySelector('pre > code:not([class])') && !document.querySelector('pre > code:not([class]) .hljs-keyword')));
         t('copy-button-on-code', Boolean(hl && hl.parentElement.firstElementChild.matches('button.copy-code') && hl.parentElement.querySelector('.copy-code svg')));
         t('copy-button-not-on-mermaid', !document.querySelector('pre.mermaid .copy-code'));
+        const meets44 = e => { const r = e.getBoundingClientRect(); return r.width >= 44 && r.height >= 44; };
+        const copies = [...document.querySelectorAll('.copy-code')];
+        t('copy-buttons-meet-44', copies.length > 0 && copies.every(meets44));
+        t('zoom-buttons-meet-44', pres.every(p => { const b = p.querySelector('.mermaid-zoom'); return Boolean(b) && meets44(b); }));
         t('mermaid-no-region-when-wide', pres.every(p => !p.hasAttribute('role')));
         t('mermaid-no-tabstop-when-wide', pres.every(p => !p.hasAttribute('tabindex')));
         const svg = pres[0] && pres[0].querySelector('svg');
@@ -304,6 +308,13 @@ FIDELITY_DRIVER = """
       const line = xy && xy.querySelector('path[stroke]');
       t('fidelity-xychart-themed', Boolean(line) && __XY__.includes(line.getAttribute('stroke').toLowerCase()));
     }
+    // Every top-level diagram must carry an accessible name. Mermaid emits a <title>
+    // for most types but drops it for xychart, kanban and timeline, so mermaid.js reads
+    // accTitle/accDescr off the fence and injects both when the render leaves none.
+    t('fidelity-diagrams-named', [...document.querySelectorAll('pre.mermaid')].every(p => {
+      const s = p.querySelector('svg');
+      return Boolean(s && s.querySelector('title'));
+    }));
     const el = document.createElement('pre');
     el.id = 'script-probe';
     el.textContent = out.join('\\n');
@@ -355,7 +366,7 @@ def main():
     if "</body>" not in html:
         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
-    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 18, "binding")
+    results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 20, "binding")
 
     # Same page, forced-colors switched on by rewriting the condition. Checked as a
     # string in the real fixture first, so a renamed or deleted query fails loudly here
@@ -369,7 +380,7 @@ def main():
     plots = json.loads((ROOT / "mermaid-palette.json").read_text())
     xy = json.dumps([plots[k]["plotColorPalette"]["hex"] for k in ("init", "initLight")])
     driver = FIDELITY_DRIVER.replace("__XY__", xy)
-    results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 4 if mermaid else 3, "fidelity")
+    results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 5 if mermaid else 3, "fidelity")
 
     fail = 0
     for line in results:

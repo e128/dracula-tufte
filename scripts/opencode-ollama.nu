@@ -1,31 +1,17 @@
 #!/usr/bin/env nu
 
 # Launch opencode with an Ollama backend, default model qwen3.8:27b-mlx.
-# Usage: opencode-ollama.nu [--model <model>] [message ...]
-# No message: opens the interactive TUI. Message given: one-shot `opencode run`.
+# Usage: opencode-ollama.nu [--model <model>] [opencode args ...]
+# No args: opens the interactive TUI. Its model comes from the opencode config
+# (~/.config/opencode/opencode.json): v2.0.31 has no top-level model flag, and an
+# unknown `--model` only prints help. `--model` applies to `opencode run` only.
+# Args given: one-shot `opencode run`. Pass opencode's own flags after `--`,
+# e.g. `opencode-ollama.nu -- --agent build`.
 
-def main [...args: string] {
-    mut model = "qwen3.8:27b-mlx"
-    mut rest = []
-    mut i = 0
-
-    while $i < ($args | length) {
-        let arg = $args | get $i
-        if $arg == "--model" {
-            $model = $args | get ($i + 1)
-            $i = $i + 2
-        } else if ($arg | str starts-with "--model=") {
-            $model = $arg | str replace "--model=" ""
-            $i = $i + 1
-        } else {
-            $rest = $rest ++ [$arg]
-            $i = $i + 1
-        }
-    }
-
+def main [--model: string = "qwen3.8:27b-mlx", ...rest: string] {
     if ($rest | is-empty) {
-        ^opencode --model $"ollama/($model)"
+        ^opencode
     } else {
-        ^opencode run --model $"ollama/($model)" ($rest | str join ' ')
+        ^opencode run --model $"ollama/($model)" ...$rest
     }
 }
