@@ -14,12 +14,11 @@ maintainer to read and decide on. Manual invocation only: nothing schedules this
 check that this repo's hand-tuned decisions haven't fallen behind current practice, backed
 by real sources rather than a model's unstated priors.
 
-**Two kinds of finding come out of a run, and the second one turned out to matter more.**
+**Two kinds of finding come out of a run, and the second one matters more.**
 The field moving past a settled decision is rare and slow. The payload drifting away from a
 decision NOTES.md already records is common and fast, because most edits here are made by an
-agent that did not read NOTES.md first. Step 2 and Step 4 exist for the second kind, and on
-the 2026-09-08 run they produced every actionable finding while the six research topics
-produced none.
+agent that did not read NOTES.md first. Step 2 and Step 4 exist for the second kind; treat their
+findings as the primary output and the research topics as the slower background check.
 
 ## Step 1: load the decision set and the last audit
 
@@ -112,11 +111,9 @@ like any other bug, and the report quotes the NOTES.md passage it broke.
 ### Re-check the previous report's own non-repeat claims
 
 Any claim in the previous report that named a file, a selector, or an owner is checkable.
-Check the ones this run's delta touches. On 2026-09-07 the report attributed two
-`font-family: var(--sans)` declarations to a consumer's generator. The declarations already
-appeared in `tufte-dracula.css`, shipped in v1.45.0 a day earlier. Under the repeat rule alone,
-a wrong verdict stays wrong forever because the next run is told not to re-argue it. Correct it
-in the new report and say which report it corrects.
+Check the ones this run's delta touches. Under the repeat rule alone, a wrong verdict stays
+wrong forever because the next run is told not to re-argue it. Correct it in the new report and
+say which report it corrects.
 
 ## Step 3: run one topic at a time
 
@@ -199,11 +196,11 @@ hide which hex actually lands." Run `scripts/create-themes.nu` and `.github/pale
 --dump` in the scratchpad, and quote the resolved hex per slot, before and after any patch
 touching a `themes/**/*.in` file.
 
-**A fix is not verified until the probe shows it.** On 2026-09-08 the first version of a
-narrow-width column override was inert: the override sat in a media block above the rule it
-meant to beat, a media query adds no specificity, and the base rule won on source order. The
-arithmetic was right and the rendering was wrong. NOTES.md records the same trap twice
-already, for the `.scorecard` container query and for the `@media (hover: hover)` position.
+**A fix is not verified until the probe shows it.** A narrow-width column override is inert
+when it sits in a media block above the rule it means to beat: a media query adds no
+specificity, so the base rule wins on source order. The arithmetic can be right while the
+rendering is wrong. NOTES.md records the same trap for the `.scorecard` container query and
+for the `@media (hover: hover)` position.
 
 ### Fixed responsive usability sweep
 
@@ -360,7 +357,7 @@ Do not send local or private fixture content to an external service. If automate
 Test keyboard navigation by hand in each appearance mode. Use Tab and Shift+Tab to visit
 each interactive element. Use Enter, Space, and Escape where the control supports them.
 Confirm every element has a visible focus indicator, and confirm that keyboard use keeps
-critical actions reachable. Report these results under `## Accessibility and keyboard checks`.
+critical actions reachable. Report these results under `## Accessibility tool and keyboard checks`.
 Automated checks, when used, do not prove full WCAG conformance.
 
 ### Topic 6 in particular
@@ -520,8 +517,8 @@ its own `## Ungated-rules sweep` heading.
 
 ### A finding a gate could catch should become a gate
 
-The first two rows of that table are mechanically decidable in a few lines of Nushell, and
-they caught two real defects on the 2026-09-08 run. **This skill may put a `maintain.nu`
+The first two rows of that table are mechanically decidable in a few lines of Nushell.
+**This skill may put a `maintain.nu`
 gate in the patch**, and should when a row is cheap to mechanize: `scripts/` is a source
 file, the patch already touches source files, and Step 7 regenerates and runs `check` in a
 worktree so a broken gate fails there rather than in the maintainer's tree.
