@@ -322,7 +322,7 @@ orientation only. Delete `.claude/` and this repo still works exactly as written
 
 ### Claude Code
 
-Claude Code reads `AGENTS.md` directly from v2.1.277 on, with no `CLAUDE.md` beside it. Two skills
+Claude Code reads `AGENTS.md` directly, with no `CLAUDE.md` beside it. Two skills
 live in `.claude/skills/`, and they are available to Claude Code only. Each one packages a flow that
 this file states in full as plain shell, so a harness without skills loses an entry point and no
 capability.

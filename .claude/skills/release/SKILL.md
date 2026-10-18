@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a tagged, verified release of the Dracula-Tufte template: bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip, the VS Code vsix, and the themes zip. Use when the user says "make a release", "create a new release", "cut a release", "ship a release", "release this", "tag a release", or names a version to release. Also use when asked to check or repair a release that shipped without its assets.
+description: Cut a tagged, verified release of the Dracula-Tufte template: bump the version, land it through a PR so the required check gates it, tag the merged commit, and publish the Rider plugin zip, the VS Code vsix, and the themes zip. Use when the user asks to cut, ship, tag, check, or repair a release, or names a version to release.
 ---
 
 # Release the template
