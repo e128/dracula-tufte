@@ -22,9 +22,9 @@ behaviour. It is the only check in the repo that runs the payload rather than re
   mermaid.js  every `pre.mermaid` renders an `<svg>` and gains its own zoom button, a
               click on the live diagram opens the `<dialog>`, and the pre carries no
               `role="region"` at a width where it cannot scroll
-  layout      `nav.toc` does not overlap a floated `.sidenote`/`.marginnote` stack placed
-              immediately before it, the case where a full-width ground would otherwise
-              paint under the note. NOTES.md, Progressive disclosure
+  layout      `nav.toc` respects its 38rem cap on wide screens and clears a floated
+              note stack placed before it, so the panel stays compact and avoids overlap
+              (NOTES.md, Progressive disclosure)
 
 Run: python3 .github/script-probe.py
 
@@ -136,6 +136,8 @@ DRIVER = """
     const notes = [...document.querySelectorAll('.sidenote, .marginnote')].filter(precedesToc);
     t('toc-note-stack-present', notes.length >= 3);
     const tr = toc ? toc.getBoundingClientRect() : { left: 0, top: 0, right: 0, bottom: 0 };
+    const maxTocWidth = 38 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    t('toc-width-capped', Boolean(toc) && window.innerWidth > maxTocWidth && tr.width <= maxTocWidth + 1);
     t('toc-clears-note-stack', notes.every((n) => {
       const r = n.getBoundingClientRect();
       return !(r.left < tr.right && r.right > tr.left && r.top < tr.bottom && r.bottom > tr.top);
