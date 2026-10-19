@@ -1021,20 +1021,7 @@ pair under its floor with nothing re-deriving it. Hover text on this ground is `
 whose floor against `--surface-alt` check 10 already holds, and the composite sits between
 `--surface` and `--surface-alt`.
 
-**`nav.toc` clears the floated note column** (`clear: right; clear: inline-end`, the same value
-pair `.sidenote` already carries). The index paints a full-width ground, and a `.sidenote`/
-`.marginnote` stack taller than its anchor paragraph (three citations in one paragraph is the
-common case) extends past that paragraph into the block after it. **A float shortens the line
-boxes of a block it overlaps, never its box**, so the ground painted under the note. The index's
-`ol` escaped on its own only because `columns: 2` makes it a block formatting context; the `nav`
-box did not. Clearing drops the whole index below the stack at full width. **Rejected:
-`display: flow-root`**, which also stops the overlap but squeezes the index into a half column
-beside the note, compressing the two-column list for no reason. Every other full-width filled
-block in the sheet is already a BFC (`pre` through `overflow-x`, `.icon-list li`, `.edge-list`,
-`.recent-groups`, `.stat-strip`, `.scorecard` through their display), so `nav.toc` was the only
-one exposed. The fixture carries a three-note stack immediately before its index, and
-`.github/script-probe.py` asserts the index does not overlap it. **Do not remove the `clear` to
-recover width beside a note**, and do not move this behind a consumer opt-in.
+**`nav.toc` clears floated notes and caps its width at `38rem`.** A `.sidenote` or `.marginnote` stack can extend past its anchor paragraph into the next block. A float shortens line boxes, not the block box, so the index must clear the stack. Its `ol` forms a block formatting context because `columns: 2`; `nav` does not. **Rejected: `display: flow-root`**, which would let the index sit beside a note and compress its two-column list. Keep both `clear` declarations and the width cap. Do not add auto inline margins, expand the ground across the article, or make this a consumer opt-in. The fixture has floated notes before the index, and `.github/script-probe.py` checks width and clearance.
 
 **Hover on both components sits inside `@media (hover: hover)`** (outside it, a tap on a touch device
 leaves the affordance stuck in its hover state: see Interaction states). **Both components carry a
