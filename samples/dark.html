@@ -380,6 +380,30 @@
       background: var(--icon-color, var(--muted)); }
     .step-arrow { color: var(--muted); }
     [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
+    table.matrix thead th { text-align: center; font-style: normal; vertical-align: bottom; }
+    table.matrix td { text-align: center; white-space: nowrap; }
+    table.matrix td.none { color: var(--muted); }
+    table.matrix tbody th { font-style: normal; font-weight: 450; color: var(--on-surface); text-align: start;
+      position: sticky; inset-inline-start: 0; background: var(--surface); }
+    table.matrix thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
+    table.matrix tbody tr + tr > * { box-shadow: inset 0 1px 0 var(--rule-light); }
+    table.matrix .tag-dot { color: var(--purple); }
+    .layer-stack { list-style: none; padding: 0; margin: var(--space-6) 0; display: grid; gap: var(--space-6); }
+    .layer { position: relative; display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: flex-start;
+      margin: 0; padding: var(--space-4); border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); }
+    .layer-stack > .layer + .layer::before { content: "\2193"; content: "\2193" / ""; position: absolute;
+      inset-block-start: calc(-1 * var(--space-6)); inset-inline: 0; line-height: var(--space-6);
+      text-align: center; color: var(--muted); }
+    .layer-name { flex: 1 1 10rem; }
+    .layer-name strong { display: block; }
+    .layer-name span { display: block; color: var(--muted); font-size: 0.9em; }
+    .layer-cards { flex: 3 1 18rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--space-3); }
+    .layer-card { border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+    .layer-card strong { display: block; }
+    .layer-card span { display: block; color: var(--label); font-size: 0.9em; }
+    .layer-card.optional { border-style: dashed; }
+    .layer.layer-end { background: var(--on-surface); color: var(--surface); border-color: var(--on-surface); }
+    .layer.layer-end .layer-name span { color: inherit; }
     table.bar-chart td.bar { --bar-tint: oklch(from var(--data-1) l c h / 0.3);
       --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
       background-image: linear-gradient(var(--bar-tint) 0 0), linear-gradient(var(--rule) 0 0),
@@ -541,7 +565,7 @@
       }
     }
     @media (forced-colors: active) {
-      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
+      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node, .layer-end { border: 1px solid currentColor; }
       pre code { border: none; }
       table, th, td { border: 1px solid currentColor; }
       .tag-dot::before, .live-dot, .spark > i { background: CanvasText; }
@@ -587,6 +611,7 @@
       }
       table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .spark > i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .layer-end { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
@@ -1044,6 +1069,28 @@ def parse(source: str) -&gt; Result:
         <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--link)">I</span></span>
         <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--purple)">O</span></span>
         <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--green)">V</span></span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Layer stack and coverage matrix</h2>
+      <p>A layer stack draws a path that a request crosses in order. Each <code>li.layer</code> holds a name, a caption, and one or more <code>.layer-card</code> children. A dashed <code>.optional</code> card says so in its text, because a dashed border alone fails in forced-colors mode. The CSS draws the arrow between layers, and <code>.layer-end</code> inverts the last one.</p>
+      <ol class="layer-stack" role="list">
+        <li class="layer"><div class="layer-name"><strong>On the network</strong><span>the company web security service</span></div><div class="layer-cards"><div class="layer-card"><strong>Network check</strong><span>Stops requests (in the path)</span></div></div></li>
+        <li class="layer"><div class="layer-name"><strong>In the app</strong><span>the software that sends the request</span></div><div class="layer-cards"><div class="layer-card"><strong>Platform hook</strong><span>Stops requests (in the path)</span></div><div class="layer-card optional"><strong>Check the app calls</strong><span>Optional. Gives an answer; the app decides</span></div></div></li>
+        <li class="layer layer-end"><div class="layer-name"><strong>The AI model</strong><span>reads the request and answers</span></div></li>
+      </ol>
+      <p>A coverage matrix is a <code>table.matrix</code> in a <code>.table-scroll</code> wrapper. Each cell holds a dot and a count, or a muted <code>&middot;</code> when none is documented. The first column stays pinned while the rest scrolls. The count is never summed across a row.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Checks that reach each kind of AI">
+        <table class="matrix">
+          <thead><tr><th>Kind of AI</th><th>Admission gate</th><th>Browser extension</th><th>Endpoint agent</th><th>AI gateway</th><th>Response after detection</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Cloud AI services</th><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td></tr>
+            <tr><th scope="row">Self-hosted models</th><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td><td><span class="tag-dot"></span>13</td><td class="none">&middot;</td></tr>
+            <tr><th scope="row">Coding assistants</th><td class="none">&middot;</td><td><span class="tag-dot"></span>3</td><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td></tr>
+            <tr><th scope="row">Agents on platforms</th><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td><span class="tag-dot"></span>2</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 

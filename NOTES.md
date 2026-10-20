@@ -805,6 +805,8 @@ permitted set, `CONTRACT.md` § 2 states the consumer obligation. **Every node b
 wrapped with its leading arrow in one `.step-hop`**, so a flex-wrap can't strand an arrow on one line
 and its node on the next with no visible connector.
 
+**`.layer-stack` is an ordered path of layers, and `table.matrix` is a coverage grid.** A `.layer` holds a name column and a `.layer-cards` column in one `flex-wrap` row, so a narrow measure stacks the name over the cards with no breakpoint. The CSS draws the arrow between layers in the grid gap. **An optional card is dashed and also says "Optional" in its text**: a dashed border alone does not survive forced-colors mode. `.layer-end` inverts `--on-surface` and `--surface` and carries an explicit `print-color-adjust`, because a print background that drops leaves `--surface` text on white. In `table.matrix`, an empty cell holds a real muted `·` rather than a blank, the first column sticks, and the dot takes a prose accent. **Do not shade a matrix cell by its count**: a shade reads as a score, and the counts are never summed across a row. A magnitude belongs in `table.bar-chart`. **Do not rotate matrix headers** at five or six columns, because wrapping is enough. A grid wide enough to need rotation is a separate component, not a `table.matrix` option.
+
 **`blockquote.pull`** adds a large faint opening quote over the existing accent bar, opt-in since the
 default `blockquote` is used densely for citations. Decorative, so it takes the same alt-text
 convention as the outbound arrow.
