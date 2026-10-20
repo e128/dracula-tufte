@@ -58,7 +58,7 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Forty requirements. No stylesheet change can supply any of them. Most name a string to search
+Forty-one requirements. No stylesheet change can supply any of them. Most name a string to search
 for in a fixture, so you have a working example instead of only a sentence. The few with no fixture
 yet say so.
 
@@ -149,6 +149,18 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       page; three near-identical citations for one fact, stacked in that column because a
       generator re-emitted the same source three times in one paragraph, spend it three times over
       for a single piece of corroboration.
+- [ ] A page that cites sources from running prose cites them as `sup` links into one numbered
+      `Sources` section at the foot of the page, not as a stack of `.sidenote` down the margin.
+      The section is `<h2 id="sources">` over a `<div class="col-2">` that holds the numbered
+      `<ol>`, two columns above `600px` and one below, with one `<li id="src-N">` per source and
+      every one reached by at least one `sup` (in `tufte-dracula.css`, search `columns: 2`). A
+      `.sidenote` floats 28% wide at its own anchor, so ten sources cited through prose become ten
+      disconnected notes down one edge, each in sync with its paragraph and none with the rest. A
+      numbered list puts every source in one place, keeps the number on screen the number in the
+      list, and gives a reader one block to scan. **Do not reuse `.footnotes` for it**: that class
+      is the converter's footnote block, hairline and annotation register included. `.sidenote` and
+      `.marginnote` stay for an aside the sentence needs beside it.
+      No fixture demonstrates this yet.
 - [ ] `.verdict` plus one of `.verdict-pass`, `.verdict-partial`, `.verdict-failed` or
       `.verdict-neutral` on a `<span>` around a verdict token, wherever a page grades a claim: a
       `<table>` cell, a heading, prose, or a bulleted claim summary (a "What You Need to Know"
