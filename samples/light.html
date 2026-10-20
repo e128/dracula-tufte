@@ -388,6 +388,25 @@
     table.matrix thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
     table.matrix tbody tr + tr > * { box-shadow: inset 0 1px 0 var(--rule-light); }
     table.matrix .tag-dot { color: var(--purple); }
+    table.heatmap { border-collapse: separate; border-spacing: 0.2rem; }
+    table.heatmap thead th { text-align: center; font-style: normal; vertical-align: bottom; padding: 0.2rem 0; box-shadow: none; }
+    table.heatmap thead th.col > span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+    table.heatmap thead th.band { font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); text-align: start; padding-inline: 0.2rem;
+      box-shadow: inset 0 -1px 0 var(--rule-light); }
+    table.heatmap thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
+    table.heatmap tbody th { font-style: normal; font-weight: 450; color: var(--on-surface); text-align: start; box-shadow: none;
+      position: sticky; inset-inline-start: 0; background: var(--surface); }
+    table.heatmap tbody th[colspan] { font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); font-weight: 400; padding-block-start: var(--space-3); }
+    table.heatmap td { padding: 0; text-align: center; vertical-align: middle; }
+    table.heatmap td.score { padding-inline: var(--space-3); text-align: end; white-space: nowrap;
+      background: linear-gradient(var(--purple) 0 0) no-repeat left bottom / var(--bar, 0) 0.2em; }
+    .hm { display: block; inline-size: 1.6rem; block-size: 1.6rem; margin: auto; border-radius: var(--radius-sm);
+      background: linear-gradient(var(--purple) 0 0) no-repeat bottom / 100% var(--h, 0), var(--code-bg); }
+    .hm.full { --h: 100%; }
+    .hm.part { --h: 40%; }
+    .hm.hatch { background: repeating-linear-gradient(135deg, var(--purple) 0 2px, transparent 2px 5px), var(--code-bg);
+      box-shadow: inset 0 0 0 1px var(--purple); }
+    .hm.ring { box-shadow: inset 0 0 0 2px var(--on-surface); }
     .layer-stack { list-style: none; padding: 0; margin: var(--space-6) 0; display: grid; gap: var(--space-6); }
     .layer { position: relative; display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: flex-start;
       margin: 0; padding: var(--space-4); border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); }
@@ -566,6 +585,7 @@
     }
     @media (forced-colors: active) {
       code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node, .layer-end { border: 1px solid currentColor; }
+      .hm { border: 1px solid CanvasText; }
       pre code { border: none; }
       table, th, td { border: 1px solid currentColor; }
       .tag-dot::before, .live-dot, .spark > i { background: CanvasText; }
@@ -611,7 +631,7 @@
       }
       table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .spark > i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-      .layer-end { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .layer-end, .hm, table.heatmap td.score { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
@@ -1093,6 +1113,24 @@ def parse(source: str) -&gt; Result:
             <tr><th scope="row">Self-hosted models</th><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td><td><span class="tag-dot"></span>13</td><td class="none">&middot;</td></tr>
             <tr><th scope="row">Coding assistants</th><td class="none">&middot;</td><td><span class="tag-dot"></span>3</td><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td></tr>
             <tr><th scope="row">Agents on platforms</th><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td><span class="tag-dot"></span>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>A heatmap is a <code>table.heatmap</code> in a <code>.table-scroll</code> wrapper. A <code>span.hm</code> is one square. <code>full</code> fills it, <code>part</code> fills the lower part, <code>hatch</code> stripes it, and <code>ring</code> outlines it, so no state rests on color alone. Column headers read bottom to top, and a band row above them names each group. A score cell draws a bar under its number. A row never sums its squares.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Coverage heatmap by kind of AI">
+        <table class="heatmap">
+          <thead>
+            <tr><th rowspan="2">Kind of AI</th><th rowspan="2">Score</th><th class="band" colspan="3">On the device</th><th class="band" colspan="2">Existing tool</th><th class="band" colspan="3">Off the device</th></tr>
+            <tr><th class="col"><span>EDR sensor</span></th><th class="col"><span>IDE plugin</span></th><th class="col"><span>Browser extension</span></th><th class="col"><span>Existing EDR data</span></th><th class="col"><span>Telemetry export</span></th><th class="col"><span>Network or DNS</span></th><th class="col"><span>Platform APIs</span></th><th class="col"><span>Audit logs</span></th></tr>
+          </thead>
+          <tbody>
+            <tr><th colspan="10">Top group</th></tr>
+            <tr><th scope="row">Agents on platforms</th><td class="score" style="--bar: 75.0%">75.0</td><td><span class="hm "></span></td><td><span class="hm "></span></td><td><span class="hm hatch"></span></td><td><span class="hm "></span></td><td><span class="hm "></span></td><td><span class="hm full"></span></td><td><span class="hm part"></span></td><td><span class="hm full"></span></td></tr>
+            <tr><th scope="row">Remote MCP servers</th><td class="score" style="--bar: 71.7%">71.7</td><td><span class="hm part"></span></td><td><span class="hm hatch"></span></td><td><span class="hm part"></span></td><td><span class="hm part"></span></td><td><span class="hm part"></span></td><td><span class="hm full"></span></td><td><span class="hm part"></span></td><td><span class="hm part"></span></td></tr>
+            <tr><th colspan="10">Next</th></tr>
+            <tr><th scope="row">Cloud AI services</th><td class="score" style="--bar: 68.3%">68.3</td><td><span class="hm "></span></td><td><span class="hm "></span></td><td><span class="hm "></span></td><td><span class="hm "></span></td><td><span class="hm "></span></td><td><span class="hm full"></span></td><td><span class="hm part"></span></td><td><span class="hm part"></span></td></tr>
+            <tr><th scope="row">Self-hosted models</th><td class="score" style="--bar: 66.7%">66.7</td><td><span class="hm ring"></span></td><td><span class="hm part"></span></td><td><span class="hm "></span></td><td><span class="hm full"></span></td><td><span class="hm full"></span></td><td><span class="hm full"></span></td><td><span class="hm "></span></td><td><span class="hm "></span></td></tr>
           </tbody>
         </table>
       </div>
