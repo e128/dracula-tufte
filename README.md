@@ -69,7 +69,7 @@ run `git submodule update --remote external/dracula-tufte` and then commit the p
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
 
 1. What to inline (§ 1).
-2. The thirty-seven markup requirements a generator owes (§ 2), each pointing at a string to search
+2. The forty markup requirements a generator owes (§ 2), each pointing at a string to search
    for in a fixture rather than at a line number.
 3. What changed in the last ten releases (§ 3).
 4. How to detect a stale artifact (§ 4).
