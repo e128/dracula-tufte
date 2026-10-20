@@ -58,7 +58,7 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Thirty-seven requirements. No stylesheet change can supply any of them. Most name a string to search
+Forty-one requirements. No stylesheet change can supply any of them. Most name a string to search
 for in a fixture, so you have a working example instead of only a sentence. The few with no fixture
 yet say so.
 
@@ -149,6 +149,18 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       page; three near-identical citations for one fact, stacked in that column because a
       generator re-emitted the same source three times in one paragraph, spend it three times over
       for a single piece of corroboration.
+- [ ] A page that cites sources from running prose cites them as `sup` links into one numbered
+      `Sources` section at the foot of the page, not as a stack of `.sidenote` down the margin.
+      The section is `<h2 id="sources">` over a `<div class="col-2">` that holds the numbered
+      `<ol>`, two columns above `600px` and one below, with one `<li id="src-N">` per source and
+      every one reached by at least one `sup` (in `tufte-dracula.css`, search `columns: 2`). A
+      `.sidenote` floats 28% wide at its own anchor, so ten sources cited through prose become ten
+      disconnected notes down one edge, each in sync with its paragraph and none with the rest. A
+      numbered list puts every source in one place, keeps the number on screen the number in the
+      list, and gives a reader one block to scan. **Do not reuse `.footnotes` for it**: that class
+      is the converter's footnote block, hairline and annotation register included. `.sidenote` and
+      `.marginnote` stay for an aside the sentence needs beside it.
+      No fixture demonstrates this yet.
 - [ ] `.verdict` plus one of `.verdict-pass`, `.verdict-partial`, `.verdict-failed` or
       `.verdict-neutral` on a `<span>` around a verdict token, wherever a page grades a claim: a
       `<table>` cell, a heading, prose, or a bulleted claim summary (a "What You Need to Know"
@@ -332,6 +344,27 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       The image itself is the one part of the tile the sheet cannot write: supply a real `alt` (in
       `samples/dark.html`, search `class="hero"`).
 
+- [ ] A `.layer-stack` is an `<ol>` carrying `role="list"`, one `li.layer` per layer in the order a
+      request crosses them, each holding a `div.layer-name` and a `div.layer-cards`, and the last
+      layer takes `layer-end` only when it ends the path (in `samples/dark.html`, search
+      `class="layer-stack"`). An optional card carries `class="layer-card optional"` and the word
+      "Optional" in its own text: a dashed border alone disappears under forced colors. The
+      stylesheet draws the arrow between layers, so emit none of your own.
+- [ ] A coverage grid is `<table class="matrix">` inside a `.table-scroll` wrapper, with a label
+      cell as `<th scope="row">` in the first column and `<span class="tag-dot"></span>N` where N
+      counts what the row shares with the column (in `samples/dark.html`, search `class="matrix"`).
+      A cell with nothing documented is `<td class="none">&middot;</td>`, never an empty cell,
+      because a blank reads as missing data rather than as zero. Never shade a cell by its count:
+      a shade reads as a score, and the values are never summed across a row.
+- [ ] A `.heatmap` is the wide grid: `<table class="heatmap">` inside a `.table-scroll` wrapper, a
+      first `<thead>` row of `th.band` cells spanning the columns they group, rotated column names
+      in `th.col > span`, and one `span.hm` per cell (in `samples/dark.html`, search
+      `class="heatmap"`). Give every square `role="img"` and an `aria-label` naming its state, one
+      of `Full`, `Partial`, `Striped`, `Outlined` or `None` (in `samples/dark.html`, search
+      `aria-label="Striped"`). A blank square conveys data, so the state needs a text equivalent.
+      Never carry a state by hue alone, never sum a row's squares, and never add arrow-key movement
+      without the full APG grid contract.
+
 **Rules that outlive their release row.** § 3 keeps only the last ten releases, and each rule below
 used to be carried by an older row. They bind every page whatever your pin.
 
@@ -377,6 +410,7 @@ release that changed nothing: add the row in the release commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.58.0 | **three new opt-in components, and nothing you already emit changes.** A `.layer-stack` draws an ordered path of layers, `table.matrix` draws a coverage grid, and `table.heatmap` draws a grid with one shaped square per cell. Each carries a § 2 requirement, and none adds a color token: every component reuses a pair the palette gate already measures. A heatmap square also takes `role="img"` and an `aria-label` naming its state, so a page that emits one owes a text equivalent per square |
 | v1.57.3 | The CSS caps `nav.toc` at `38rem`. Regenerate pages whose inline stylesheet predates this payload. No markup change |
 | v1.57.0 | nothing, unless you want them. **The page-wide film grain is gone**, so every page loses its noise texture (nothing to remove from your markup). Four opt-ins are new: `span.spark` (a column sparkline), `div.multiples` (small multiples of `table.bar-chart`), and two § 2 rules that put a table beside a radar or a treemap fence (in `samples/dark-charts.html`, search `class="spark"`). A `td.bar` or `.spark` column that disagrees with its printed number now fails the fixture probe. **Two colors changed.** `strong` is now weight 600 in the body color instead of orange, and light mode redrew `--orange`, `--purple`, `--green` and `--link` at lower or higher chroma (same lightness). **The pie is gone.** A Mermaid `pie` fence now renders in Mermaid's own colors, so redraw the share as a `table.bar-chart`. **Three changes touch markup you may already emit.** In `div.multiples`, only the first panel carries row labels.  A `span.spark` now takes a `data-values` list, and its table order is First, Trend, Latest. A Mermaid `xychart` fence now takes the palette (one `--data-1` line), so a page with an `xychart` fence changes color |
 | v1.56.0 | nothing, and no § 2 requirement changed. A page that inlines `highlight.js` now gets a copy button on every `pre` except `pre.mermaid`. The script injects it as a sticky inline-end float, so the markup you emit does not change, and nothing is added when `navigator.clipboard` is missing |
@@ -386,7 +420,6 @@ release that changed nothing: add the row in the release commit itself.
 | v1.52.0 | **three new opt-in components, all for a navigation page: an index shell with a sticky rail, a current-page marker for a link in a sibling `nav`, and an image tile.** Nothing you already emit changes. The shell puts a `class="index-rail"` beside its entries, two columns above `900px` and one below, and the rail takes its width from the same `clamp()` the connections-map rail uses, so the sheet has one rail convention rather than two. The current-page link takes a `3px` accent bar on its start edge where `nav > a + a` would have drawn a hairline. The tile is a `<figure class="hero">` whose caption sits below its image. **No new colour token arrives with any of them**: each reuses a value the palette checks already measure in all four modes, so a consumer pinning this release gets three components and one unchanged palette. All three are opt-in; the three § 2 requirements they carry are in that section |
 | v1.51.2 | nothing. Two self-contained layout repairs over markup you already emit, both live in `lode-html` style trees that were measuring page-level overflow. **A plain `table` is its own horizontal scroll container at every viewport width**, not only below `1000px`: a table floored at its min-content width cannot be held by `max-width: 100%` at any window width, so above the old breakpoint it pushed the whole page sideways with no cue to the reader. **A `.edge-list` holding one column collapses to one track**, via `:has(> div:only-child)`, so a section with a single list fills the measure instead of wrapping at half of it. No new § 2 requirement and no markup change |
 | v1.51.1 | **one new requirement, and it is in your `<head>`**: `viewport-fit=cover` on the viewport meta, per § 2. Without it the sheet's safe-area insets all read `0` and text runs under a notch in landscape. Otherwise nothing: **a `.scorecard` collapses to one column at a `38em` container instead of `15em`**, because the old threshold sat below the width the three-column grid stops fitting and the label track and chip ran past the page at a doubled root font. Two smaller repairs ride along: the connections-map sticky rail sizes against `100dvh`, so its own scroll no longer ends under a mobile browser's toolbar, and the fixtures name the meta keyword so you can search it |
-| v1.51.0 | nothing. Three self-contained repairs. **A `.live-dot` beats twice and stops** instead of looping forever: the animation runs four seconds and lands on its resting opacity, so it no longer owes the reader the pause mechanism WCAG 2.2.2 asks for past five seconds. **A `details.deep > summary` selects like ordinary text again**, so its label can be copied. The third is copy, not markup: if your generator writes its own `placeholder` on an `input.filter-box`, make it an example and not an instruction, per the label requirement in § 2. No rule added and no § 2 requirement changed |
 ## 4. Regenerate on a byte compare, not a version string
 
 A version comment is not a staleness signal. A generated file can carry a current comment over
