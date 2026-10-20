@@ -6,7 +6,7 @@
   <title>Tufte-Dracula timeline layout</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.57.3 */
+    /* Dracula-Tufte (muted) v1.58.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -380,6 +380,49 @@
       background: var(--icon-color, var(--muted)); }
     .step-arrow { color: var(--muted); }
     [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
+    table.matrix thead th { text-align: center; font-style: normal; vertical-align: bottom; }
+    table.matrix td { text-align: center; white-space: nowrap; }
+    table.matrix td.none { color: var(--muted); }
+    table.matrix tbody th { font-style: normal; font-weight: 450; color: var(--on-surface); text-align: start;
+      position: sticky; inset-inline-start: 0; background: var(--surface); }
+    table.matrix thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
+    table.matrix tbody tr + tr > * { box-shadow: inset 0 1px 0 var(--rule-light); }
+    table.matrix .tag-dot { color: var(--purple); }
+    table.heatmap { border-collapse: separate; border-spacing: 0.2rem; }
+    table.heatmap thead th { text-align: center; font-style: normal; vertical-align: bottom; padding: 0.2rem 0; box-shadow: none; }
+    table.heatmap thead th.col > span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+    table.heatmap thead th.band { font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); text-align: start; padding-inline: 0.2rem;
+      box-shadow: inset 0 -1px 0 var(--rule-light); }
+    table.heatmap thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
+    table.heatmap tbody th { font-style: normal; font-weight: 450; color: var(--on-surface); text-align: start; box-shadow: none;
+      position: sticky; inset-inline-start: 0; background: var(--surface); }
+    table.heatmap tbody th[colspan] { font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); font-weight: 400; padding-block-start: var(--space-3); }
+    table.heatmap td { padding: 0; text-align: center; vertical-align: middle; }
+    table.heatmap td.score { padding-inline: var(--space-3); text-align: end; white-space: nowrap;
+      background: linear-gradient(var(--purple) 0 0) no-repeat left bottom / var(--bar, 0) 0.2em; }
+    .hm { display: block; inline-size: 1.6rem; block-size: 1.6rem; margin: auto; border-radius: var(--radius-sm);
+      background: linear-gradient(var(--purple) 0 0) no-repeat bottom / 100% var(--h, 0), var(--code-bg); }
+    .hm.full { --h: 100%; }
+    .hm.part { --h: 40%; }
+    .hm.hatch { background: repeating-linear-gradient(135deg, var(--purple) 0 2px, transparent 2px 5px), var(--code-bg);
+      box-shadow: inset 0 0 0 1px var(--purple); }
+    .hm.ring { box-shadow: inset 0 0 0 2px var(--on-surface); }
+    .layer-stack { list-style: none; padding: 0; margin: var(--space-6) 0; display: grid; gap: var(--space-6); }
+    .layer { position: relative; display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: flex-start;
+      margin: 0; padding: var(--space-4); border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); }
+    .layer-stack > .layer + .layer::before { content: "\2193"; content: "\2193" / ""; position: absolute;
+      inset-block-start: calc(-1 * var(--space-6)); inset-inline: 0; line-height: var(--space-6);
+      text-align: center; color: var(--muted); }
+    .layer-name { flex: 1 1 10rem; }
+    .layer-name strong { display: block; }
+    .layer-name span { display: block; color: var(--muted); font-size: 0.9em; }
+    .layer-cards { flex: 3 1 18rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--space-3); }
+    .layer-card { border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+    .layer-card strong { display: block; }
+    .layer-card span { display: block; color: var(--label); font-size: 0.9em; }
+    .layer-card.optional { border-style: dashed; }
+    .layer.layer-end { background: var(--on-surface); color: var(--surface); border-color: var(--on-surface); }
+    .layer.layer-end .layer-name span { color: inherit; }
     table.bar-chart td.bar { --bar-tint: oklch(from var(--data-1) l c h / 0.3);
       --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
       background-image: linear-gradient(var(--bar-tint) 0 0), linear-gradient(var(--rule) 0 0),
@@ -541,7 +584,8 @@
       }
     }
     @media (forced-colors: active) {
-      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node { border: 1px solid currentColor; }
+      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node, .layer-end { border: 1px solid currentColor; }
+      .hm { border: 1px solid CanvasText; }
       pre code { border: none; }
       table, th, td { border: 1px solid currentColor; }
       .tag-dot::before, .live-dot, .spark > i { background: CanvasText; }
@@ -587,6 +631,7 @@
       }
       table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .spark > i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .layer-end, .hm, table.heatmap td.score { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       a { color: inherit; text-decoration: none; }
       a[href^="http"]::after { content: ""; }
       h1, h2, h3, h4, h5, h6 { break-after: avoid; }
