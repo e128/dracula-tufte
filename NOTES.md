@@ -446,6 +446,14 @@ cannot hold a table floored at it. Above 1000px the page itself scrolled sideway
 `width: auto`; `fit-content` resolves correctly for both a narrow and a wide table, so the narrow
 case still hugs its content instead of stretching to the measure.
 
+**A `table.bar-chart` is the one table that leaves the scroll container.** `fit-content` sizes it
+to its two columns, and the bar column was pinned at `12rem`, so an index page carried a 300px
+chart on a 1200px measure and the bars read as a legend rather than a chart. It takes
+`display: table`, `inline-size: 100%`, and `table-layout: fixed` with a 30% label column, and a long
+label wraps instead of widening the table. The scroll-container argument does not reach it: a
+two-column chart's min-content width is a label and a number, so it has no min-content floor to
+overflow. Every other table keeps the base rule.
+
 **The scroll container's cost is the sticky header**, inert wherever it engages, deliberately: a
 page that scrolls sideways is a WCAG 1.4.10 failure at every width it happens, and that outranks a
 pinned header. The opt-in answer to both is `.table-scroll`. **Chromium does not strip table
