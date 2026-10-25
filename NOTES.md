@@ -99,11 +99,11 @@ the inverse, and grayscale-only antialiasing thins strokes.
 
 ## Type scale
 
-The body `font-size` clamp is the **only fluid size lever**. The sheet sets five steps and no other
-size. Headings that scale with body copy stay in `em`; the two small steps are in `rem`, so a nested
-ratio cannot compound into a sixth size. Floor `1rem` (also the iOS input-zoom threshold `.filter-box`
-inherits), cap `1.25rem`, every bound `rem` never `px`, so the page scales with a raised browser
-default.
+The body `font-size` clamp is the **only fluid size lever**. The sheet sets five text steps and no
+other text size. Headings that scale with body copy stay in `em`; the two small steps are in `rem`,
+so a nested ratio cannot compound into a sixth size. Floor `1rem` (also the iOS input-zoom
+threshold `.filter-box` inherits), cap `1.25rem`, every bound `rem` never `px`, so the page scales
+with a raised browser default.
 
 **Do not lower the floor past `1rem`** without a separate 16px floor on `.filter-box`.
 
@@ -114,8 +114,12 @@ default.
 1rem       structural and annotation: table, aside, nav, .scorecard, .nav-list li,
            .byline, .sidenote, cite, code, pre, footer
 0.8125rem  small: .badge, .verdict, sup/sub, the outbound arrow, nav.toc,
-           counts, the zoom overlay's close glyph
+           counts
 ```
+
+**Two decorative glyphs sit outside the scale**: `blockquote.pull::before`'s opening quote
+(`2.5em`) and `.mermaid-overlay::after`'s close mark (`1.75rem`). They are marks, not text, and
+nothing inherits their size.
 
 **`text-wrap: balance` sits on `h1`, `h2`, `h3` only.** They're short blocks where a stray last-line
 word is the defect; `h4`-`h6` render at body size with no wider measure to justify it.
@@ -132,9 +136,12 @@ Nested ratios compound. Check the parent before adding a step. Three paid-for tr
 **Do not write a `pt` or `px` floor.** An earlier `max(Xem, 12pt)` scale pinned nine elements to one
 size, made body copy the smallest text on a phone, and ignored the reader's own setting.
 
-**`h1`/`h2` sit at weight 400. `h3` is 500**, the one heading at text size, since 400 would render
-lighter than the paragraph beneath it. **Nothing at text size may go lighter than body copy**: h3-h6,
-`summary`, `th`.
+**`h1`/`h2` sit at weight 400. `h3` through `h6` share the body step, so weight is the ladder: 650,
+550, 450, then 450 italic on `h6`.** 400 would render a heading lighter than the paragraph beneath it,
+which is why the ladder starts at 650: at one size, a parent must never render lighter than its child.
+**Nothing at text size may go lighter than body copy**: h3-h6, `summary`, `th`. **Do not collapse two
+adjacent levels onto the same weight**, and do not flip the order: they then differ only by margin,
+which no reader sees.
 
 **That rule now covers color too: `h5`/`h6` sit at `--label`, not `--muted`.** At body size, weight
 is the only other axis marking them as headings; on `--muted` a heading was the dimmest thing in its
@@ -2237,9 +2244,12 @@ a scroll to an edge chains into the page behind it.
 **`scrollbar-gutter: stable both-edges` sits on `html`, and nowhere else.** `body` centres against
 the html content box, so a classic scrollbar on one edge only shifts the whole page left by half the
 track: Chromium measured 72px left against 88px right at a 1440px window, a 16px track. A gutter
-reserved on both edges takes the track out of the comparison and the two margins agree. It changes no
-measure: `--page-width` and `--gutter` keep their values, and it can only narrow the frame, never the
-prose inside it.
+reserved on both edges takes the track out of the comparison and the two margins agree. It narrows the
+frame by one track per edge, and centred body copy inside it loses that width on each side, so prose
+runs slightly narrower than it otherwise would. **That cost is accepted**: symmetric margins are worth
+a slightly narrower column, and the alternative is the half-track shift above. `--page-width` and
+`--gutter` keep their values, so nothing else reinterprets the layout. **Do not compensate for the loss
+in the width formula, and do not add a second gutter.**
 
 **`--ring` is a token because the `img` hairline was the one color declared twice as a literal**: as a token it flips in print with the other overrides. Deliberately not a palette color (white at
 10% over an arbitrary image is a translucent veil, not a hue), so its alpha-slash form doesn't match
