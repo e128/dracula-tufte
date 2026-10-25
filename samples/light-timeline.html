@@ -6,7 +6,7 @@
   <title>Tufte-Dracula timeline layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.58.2 */
+    /* Dracula-Tufte (muted) v1.58.3 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -424,6 +424,8 @@
     .layer-card.optional { border-style: dashed; }
     .layer.layer-end { background: var(--on-surface); color: var(--surface); border-color: var(--on-surface); }
     .layer.layer-end .layer-name span { color: inherit; }
+    table.bar-chart { display: table; inline-size: 100%; table-layout: fixed; }
+    table.bar-chart :is(th, td):first-child { inline-size: 30%; }
     table.bar-chart td.bar { --bar-tint: oklch(from var(--data-1) l c h / 0.3);
       --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
       background-image: linear-gradient(var(--bar-tint) 0 0), linear-gradient(var(--rule) 0 0),
