@@ -2216,6 +2216,13 @@ scrollbar. **`overscroll-behavior: contain` goes on every scroll container the s
 (`.table-scroll`, the mermaid overlay, narrow-viewport `pre.mermaid`, the conn-map sticky column), or
 a scroll to an edge chains into the page behind it.
 
+**`scrollbar-gutter: stable both-edges` sits on `html`, and nowhere else.** `body` centres against
+the html content box, so a classic scrollbar on one edge only shifts the whole page left by half the
+track: Chromium measured 72px left against 88px right at a 1440px window, a 16px track. A gutter
+reserved on both edges takes the track out of the comparison and the two margins agree. It changes no
+measure: `--page-width` and `--gutter` keep their values, and it can only narrow the frame, never the
+prose inside it.
+
 **`--ring` is a token because the `img` hairline was the one color declared twice as a literal**: as a token it flips in print with the other overrides. Deliberately not a palette color (white at
 10% over an arbitrary image is a translucent veil, not a hue), so its alpha-slash form doesn't match
 `palette-check.py`'s token regex, leaving the parsed token count unaffected.
