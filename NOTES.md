@@ -459,6 +459,12 @@ page that scrolls sideways is a WCAG 1.4.10 failure at every width it happens, a
 pinned header. The opt-in answer to both is `.table-scroll`. **Chromium does not strip table
 semantics on `display: block`**, measured rather than assumed; role counts are identical.
 
+**A `.table-scroll` shows its edge shadow only where content is hidden.** The four background layers
+split by attachment: two `--surface` covers scroll with the content (`local`), and two `--rule`
+shadows stay fixed to the box (`scroll`). At the left edge the cover hides its shadow, so the reader
+sees a shadow only on the side they can scroll toward, and both clear once the table fits. Print
+turns the layers off with the rest of the container.
+
 **A sticky `th` needs an opaque background** (an inset shadow, not `border-bottom`, since
 `border-collapse: collapse` would scroll the border away from the stuck header).
 
