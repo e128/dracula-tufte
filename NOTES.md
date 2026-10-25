@@ -98,22 +98,23 @@ the inverse, and grayscale-only antialiasing thins strokes.
 
 ## Type scale
 
-The body `font-size` clamp is the **only fluid size lever**. The sheet sets five steps and no other
-size. Headings that scale with body copy stay in `em`; the two small steps are in `rem`, so a nested
-ratio cannot compound into a sixth size. Floor `1rem` (also the iOS input-zoom threshold `.filter-box`
-inherits), cap `1.25rem`, every bound `rem` never `px`, so the page scales with a raised browser
-default.
+The body `font-size` clamp is the **only size lever**. Every step in the scale below is em-relative to
+it, headings included. **Three components outside the scale size in `rem` instead**: `nav.toc`, whose
+label and entries are the two steps, `details.deep > summary`, and the zoom overlay's close glyph.
+Floor `1rem` (also the iOS input-zoom threshold `.filter-box` inherits), cap `1.25rem`, every bound
+`rem` never `px`, so the page scales with a raised browser default.
 
 **Do not lower the floor past `1rem`** without a separate 16px floor on `.filter-box`.
 
 ```
-1.75em     display: h1, .stat-strip .v
-1.2em      section heading and lead: h2, .newthought
-1em        body copy, prose li, .filter-box, h3-h6, pre code
-1rem       structural and annotation: table, aside, nav, .scorecard, .nav-list li,
-           .byline, .sidenote, cite, code, pre, footer
-0.8125rem  small: .badge, .verdict, sup/sub, the outbound arrow, nav.toc,
-           counts, the zoom overlay's close glyph
+1.75em  h1  ┐ headings in em so they track the body clamp, not the fixed root
+1.35em  h2  │
+1.12em  h3  ┘
+1em     body copy, prose li, .filter-box
+0.95em  structural: table, aside, nav, .scorecard, .nav-list li
+0.9em   annotation: .byline, .sidenote, cite, code, pre, footer
+0.8em   chips: .badge, .verdict
+0.75em  the outbound arrow
 ```
 
 **`text-wrap: balance` sits on `h1`, `h2`, `h3` only.** They're short blocks where a stray last-line
@@ -123,10 +124,9 @@ Nested ratios compound. Check the parent before adding a step. Three paid-for tr
 
 - **Headings are `em`, not `rem`.** Anchored to the root they'd diverge from body copy, which grows
   on a vw clamp, and h3 would render smaller than its own paragraphs.
-- **`.verdict`/`.badge` size in `rem`, not `em`.** They nest inside a table or a heading, and an em
-  step compounded under a smaller parent into a size below the five-step scale. Re-check both if the
-  small step moves.
-- **`pre code` is `font-size: 1em`** to halt the compounding; `code`/`pre` each carry `1rem`.
+- **`.verdict`/`.badge` sit at 0.8em, not 0.75em.** They nest inside a 0.95em parent, and 0.75em
+  lands under the 12px floor. Re-check both if the body floor moves.
+- **`pre code` is `font-size: 1em`** to halt the compounding; `code`/`pre` each carry 0.9em.
 
 **Do not write a `pt` or `px` floor.** An earlier `max(Xem, 12pt)` scale pinned nine elements to one
 size, made body copy the smallest text on a phone, and ignored the reader's own setting.
@@ -142,11 +142,11 @@ contrast floor; `--label` moves toward body text, so that's where a heading belo
 `--label`, not `--on-surface`**: both are already larger or heavier, so size and weight do the work
 color alone has to do at h5.
 
-**`code`/`cite` sit at `1rem`**, x-height-matched against the mono stack.
+**`code`/`cite` sit at 0.9em**, x-height-matched against the mono stack.
 
-**`li` carries no `font-size` of its own.** A smaller step read a bulleted list as subordinate to
-body copy, and `nav > ul > li` compounded to the smallest text on the page. `.nav-list li` and `nav`
-ask for `1rem` themselves instead.
+**`li` carries no `font-size` of its own.** At 0.95em a bulleted list read subordinate to body copy,
+and `nav > ul > li` compounded to the smallest text on the page. `.nav-list li` and `nav` ask for
+0.95em themselves instead.
 
 ## Italics
 
@@ -429,7 +429,7 @@ an author attribute (`data-depth`); everything else is presentation.
   into `calc()` with useful support; a per-row custom property pushes styling into the generator. A
   level-4 row degrades to flat, not wrong.
 - **Depth de-emphasizes with `--label` at levels 2-3, not smaller type** (nested ratios compound, and
-  the table already sits at `1rem`).
+  the table already sits at 0.95em).
 - **The `↳` needs the same alt-text treatment as the outbound arrow** (`content: "\21B3\A0" / ""`
   behind `@supports`), or the glyph lands in the row's accessible name. **Any future decorative
   `::before` owes this.**
@@ -1897,9 +1897,9 @@ one register, so a caption naming what it shows and then where it came from ran 
 sentences of the same weight. `.byline` inside `:is(figcaption, caption)` becomes a block: the
 annotation tier the sheet already has, italic and muted, one line under the caption it belongs to.
 No new class and no new token, since the hue budget is spent and the tier exists. **Its
-`font-size: 1em` is load-bearing, not cosmetic**: `.byline` and a caption both carry `1rem`, so
-without the reset the source line compounds to a size below the five-step scale, the trap this file
-records under Type scale. Nested inside a `caption` it also loses the italic that distinguishes it there, since
+`font-size: 1em` is load-bearing, not cosmetic**: `.byline` carries 0.9em and a caption carries
+0.9em, so without the reset the source line compounds to 0.81em, the trap this file records under
+Type scale. Nested inside a `caption` it also loses the italic that distinguishes it there, since
 `caption` is already italic, and colour alone carries the tier.
 
 ## Markdown coverage

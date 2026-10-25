@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.59.0 */
+    /* Dracula-Tufte (muted) v1.58.3 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -80,12 +80,12 @@
     }
     h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
     h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
-    .byline { font-size: 1rem; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
-    .kicker { display: inline-block; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.12em;
+    .byline { font-size: 0.9em; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
+    .kicker { display: inline-block; font-size: 0.75em; font-weight: 600; letter-spacing: 0.12em;
       text-transform: uppercase; color: var(--link); padding: 0.25em 0.7em; margin-bottom: 0.5rem;
       border-radius: 999px; background: oklch(from var(--link) l c h / 0.08); }
-    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.2em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
-    h3 { font-weight: 500; line-height: 1.3; font-size: 1em; color: var(--label); margin: var(--space-6) 0 0.4rem; text-wrap: balance; }
+    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.35em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
+    h3 { font-weight: 500; line-height: 1.3; font-size: 1.12em; color: var(--label); margin: var(--space-6) 0 0.4rem; text-wrap: balance; }
     h4 { font-weight: 600; line-height: 1.35; font-size: 1em; color: var(--label); margin: var(--space-4) 0 0.3rem; }
     h5, h6 { font-weight: 500; line-height: 1.4; font-size: 1em; color: var(--label); margin: var(--space-3) 0 0.3rem; }
     h6 { font-style: italic; }
@@ -97,14 +97,14 @@
     input.margin-toggle { display: none; }
     label.margin-toggle:not(.sidenote-number) { display: none; }
     .sidenote-number { counter-increment: sidenote-counter; }
-    .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.8125rem;
+    .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.75em;
       position: relative; top: -0.4em; line-height: 0; color: var(--muted); }
     .sidenote, .marginnote { float: right; float: inline-end; clear: right; clear: inline-end; width: 28%;
-      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 1rem; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto;
+      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 0.9em; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto;
       font-variant-caps: normal; font-weight: 400; letter-spacing: normal; }
-    .newthought :is(.sidenote, .marginnote) { font-size: 0.8125rem; }
+    .newthought :is(.sidenote, .marginnote) { font-size: 0.75em; }
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
-    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8125rem;
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8em;
       text-decoration: none; margin-inline-start: 0.35em; transition: opacity 0.15s ease-out; }
     :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
@@ -113,24 +113,24 @@
     li:target, dl.timeline > dt:target + dd { outline: 2px solid var(--orange);
       outline-offset: 3px; border-radius: var(--radius-sm); }
     dl.timeline > dt:target { color: var(--orange); }
-    a[href^="http"]::after { content: "\A0↗"; font-size: 0.8125rem; color: var(--muted); }
+    a[href^="http"]::after { content: "\A0↗"; font-size: 0.75em; color: var(--muted); }
     @supports (content: "x" / "y") {
       a[href^="http"]::after { content: "\A0↗" / ""; }
     }
-    cite { font-family: var(--mono-font); font-style: normal; font-size: 1rem; color: var(--muted); overflow-wrap: break-word; }
+    cite { font-family: var(--mono-font); font-style: normal; font-size: 0.9em; color: var(--muted); overflow-wrap: break-word; }
     strong { font-weight: 600; }
     del, s { color: var(--muted); }
     :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
-    samp { font-family: var(--mono-font); font-size: 1rem; }
-    sub, sup { line-height: 0; font-size: 0.8125rem; }
+    samp { font-family: var(--mono-font); font-size: 0.9em; }
+    sub, sup { line-height: 0; font-size: 0.75em; }
     abbr[title] { text-decoration: underline dotted var(--muted); text-underline-offset: 0.2em; cursor: help; }
     mark { background: var(--highlight); color: var(--on-surface); padding: .05em .2em; border-radius: var(--radius-sm); }
-    kbd { font-family: var(--mono-font); font-size: 1rem; color: var(--on-surface);
+    kbd { font-family: var(--mono-font); font-size: 0.9em; color: var(--on-surface);
       background: var(--code-bg); padding: .1em .35em; border-radius: var(--radius-sm);
       box-shadow: inset 0 0 0 1px var(--rule), 0 1px 0 var(--rule); }
     code {
       font-family: var(--mono-font);
-      font-size: 1rem; color: var(--green);
+      font-size: 0.9em; color: var(--green);
       background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
       overflow-wrap: break-word;
     }
@@ -139,7 +139,7 @@
       background: var(--code-bg); color: var(--on-surface);
       padding: 1rem; overflow-x: auto; margin-block: var(--space-3);
       border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
-      font-size: 1rem;
+      font-size: 0.9em;
     }
     pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
     .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
@@ -175,7 +175,7 @@
     table {
       box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
       border-collapse: collapse; margin: 0.5rem 0;
-      font-size: 1rem;
+      font-size: 0.95em;
       display: block; width: fit-content; max-width: 100%; overflow-x: auto;
     }
     th {
@@ -197,16 +197,16 @@
     tfoot td { font-weight: 600; box-shadow: inset 0 1px 0 var(--rule); }
     .chart-takeaway { border-inline-start: 2px solid var(--rule-light); padding-inline-start: var(--space-4); color: var(--label); }
     .chart-takeaway strong { color: var(--on-surface); }
-    .chart-takeaway .more { display: block; font-size: 1rem; color: var(--muted); }
+    .chart-takeaway .more { display: block; font-size: 0.9em; color: var(--muted); }
     :is(figcaption, caption) .label { display: block; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
     .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
       margin: var(--space-6) 0; padding-inline-end: 1px; padding-block-end: 1px; }
     .stat-strip > div { border: 1px solid var(--rule-light); margin-inline-end: -1px; margin-block-end: -1px;
       padding: var(--space-3) var(--space-4); }
-    .stat-strip dt { font-size: 0.8125rem; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip dt { font-size: 0.8em; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
     .stat-strip dd { margin: 0; }
-    .stat-strip .v { font-size: 1.75em; line-height: 1.05; margin-block-start: 0.3rem; color: var(--on-surface); font-variant-numeric: tabular-nums; }
-    .stat-strip .s { font-size: 1rem; color: var(--label); }
+    .stat-strip .v { font-size: 1.9em; line-height: 1.05; margin-block-start: 0.3rem; color: var(--on-surface); font-variant-numeric: tabular-nums; }
+    .stat-strip .s { font-size: 0.85em; color: var(--label); }
     th.num, td.num { text-align: end; }
     :is(th, td)[align="left"] { text-align: start; }
     :is(th, td)[align="center"] { text-align: center; }
@@ -226,7 +226,7 @@
     details[open] summary { margin-bottom: 0.5rem; }
     aside, .markdown-alert {
       border-inline-start: var(--accent-bar) solid var(--orange); padding: .5rem 1rem;
-      margin: var(--space-6) 0; color: var(--label); font-size: 1rem;
+      margin: var(--space-6) 0; color: var(--label); font-size: 0.95em;
     }
     .markdown-alert-title { font-weight: 600; color: var(--orange); }
     .markdown-alert-note { border-inline-start-color: var(--link); }
@@ -254,7 +254,7 @@
     :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }
     img.emoji { box-shadow: none; width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
     figure { margin: var(--space-6) 0; }
-    figcaption, caption { font-size: 1rem; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
+    figcaption, caption { font-size: 0.9em; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
     figcaption { margin-top: 0.4rem; }
     .hero { margin: var(--space-6) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); background: var(--surface-alt); }
     .hero > img { display: block; width: 100%; aspect-ratio: 21 / 9; object-fit: cover;
@@ -281,14 +281,14 @@
     li input[type="checkbox"] { accent-color: var(--purple); font-size: 1em; width: 1em; height: 1em;
       margin-inline-end: 0.45em; vertical-align: -0.08em; }
     :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
-    nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 1rem; }
+    nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 0.95em; }
     nav:has(> a) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.7em; row-gap: 0.2em; }
     nav > a + a { border-inline-start: 1px solid var(--rule-light); padding-inline-start: 0.7em; }
     nav a[aria-current="page"] { color: var(--on-surface); font-weight: 600;
       border-inline-start: 3px solid var(--orange); padding-inline-start: 0.7em; }
-    footer { margin-top: var(--space-12); color: var(--label); font-size: 1rem; }
+    footer { margin-top: var(--space-12); color: var(--label); font-size: 0.9em; }
     :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
-      padding-top: var(--space-3); font-size: 1rem; color: var(--label); }
+      padding-top: var(--space-3); font-size: 0.9em; color: var(--label); }
     :is(.footnotes, .footnote) p { margin-block: 0.2rem; }
     :is(.footnotes, .footnote) > hr:first-child { display: none; }
     .footnote-backref { text-decoration: none; }
@@ -300,19 +300,19 @@
     section:has(> .scorecard) { container-type: inline-size; }
     .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
       gap: 0.3rem 0.9rem; align-items: baseline; margin: var(--space-3) 0 1.25rem;
-      font-size: 1rem;
+      font-size: 0.95em;
       border-inline-start: var(--accent-bar) solid var(--rule-light); padding: .5rem 1rem; }
     .scorecard .sc-label { color: var(--on-surface); }
-    .scorecard .sc-note { color: var(--muted); font-size: 1rem; }
+    .scorecard .sc-note { color: var(--muted); font-size: 0.92em; }
     .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
-    .verdict { display: inline-block; justify-self: start; font-size: 0.8125rem; font-weight: 600; font-style: normal;
+    .verdict { display: inline-block; justify-self: start; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
       letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
     .verdict-pass { background: var(--green); }
     .verdict-partial { background: var(--orange); }
     .verdict-failed { background: var(--red); }
     .verdict-neutral { background: var(--muted); }
-    .filter-label { display: block; margin-top: var(--space-4); color: var(--label); font-size: 1rem; }
+    .filter-label { display: block; margin-top: var(--space-4); color: var(--label); font-size: 0.95em; }
     .filter-label + .filter-box { margin-top: 0.3rem; }
     .filter-box {
       width: 100%; margin: var(--space-4) 0 var(--space-6); padding: 0.65rem 0.85rem;
@@ -321,14 +321,14 @@
       border: 1px solid var(--rule); border-radius: var(--radius);
     }
     .filter-box::placeholder { color: var(--muted); font-style: italic; }
-    .filter-box ~ [role="status"] { color: var(--label); font-size: 1rem; }
+    .filter-box ~ [role="status"] { color: var(--label); font-size: 0.95em; }
     .filter-hidden { display: none !important; }
     .filter-empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; }
     details.nav-group { border: 1px solid var(--rule-light); border-radius: var(--radius); margin: 0.6rem 0; padding: 0.2rem 0.85rem; }
     details.nav-group > summary { font-style: italic; color: var(--link); padding: 0.6rem 0; }
-    details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.8125rem; margin-inline-start: 0.4em; }
+    details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.82em; margin-inline-start: 0.4em; }
     details.nav-group .nav-list { border: none; padding: 0; }
-    .badge { display: inline-block; font-size: 0.8125rem; font-weight: 600; font-style: normal;
+    .badge { display: inline-block; font-size: 0.8em; font-weight: 600; font-style: normal;
       padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle;
       color: var(--label); box-shadow: inset 0 0 0 1px currentColor; }
     .tag-dot::before { content: ""; display: inline-block; width: 0.6em; height: 0.6em;
@@ -338,7 +338,7 @@
     @keyframes live-pulse { 0% { opacity: 0.4; } 50%, 100% { opacity: 1; } }
     .nav-list { list-style: none; padding-inline-start: 0;
       border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
-    .nav-list li { padding: 0; font-size: 1rem; line-height: 1.4; }
+    .nav-list li { padding: 0; font-size: 0.95em; line-height: 1.4; }
     .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
       transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .nav-list li a:active { scale: 0.96; }
@@ -363,7 +363,7 @@
     .recent-group .nav-list { flex: 1; }
     .recent-group .nav-list li { display: flex; align-items: baseline; column-gap: 0.5rem; }
     .recent-group .nav-list li a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.8125rem; padding-inline-end: 0.5rem; }
+    .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.82em; padding-inline-end: 0.5rem; }
     @container (max-width: 40rem) { .recent-group .nav-list li a { white-space: normal; overflow: visible; text-overflow: clip; } }
     .icon-list { list-style: none; padding-inline-start: 0; display: grid; gap: var(--space-3); margin: var(--space-4) 0; }
     .icon-list li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4);
@@ -416,11 +416,11 @@
       text-align: center; color: var(--muted); }
     .layer-name { flex: 1 1 10rem; }
     .layer-name strong { display: block; }
-    .layer-name span { display: block; color: var(--muted); font-size: 1rem; }
+    .layer-name span { display: block; color: var(--muted); font-size: 0.9em; }
     .layer-cards { flex: 3 1 18rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--space-3); }
     .layer-card { border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
     .layer-card strong { display: block; }
-    .layer-card span { display: block; color: var(--label); font-size: 1rem; }
+    .layer-card span { display: block; color: var(--label); font-size: 0.9em; }
     .layer-card.optional { border-style: dashed; }
     .layer.layer-end { background: var(--on-surface); color: var(--surface); border-color: var(--on-surface); }
     .layer.layer-end .layer-name span { color: inherit; }
@@ -471,7 +471,7 @@
     pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
     pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
     .mermaid-zoom { display: block; margin: var(--space-3) auto 0; min-height: 44px; padding: 0.5rem 0.9rem;
-      font: inherit; font-family: var(--body-font); font-size: 1rem; color: var(--link); background: none; cursor: zoom-in;
+      font: inherit; font-family: var(--body-font); font-size: 0.9em; color: var(--link); background: none; cursor: zoom-in;
       border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation;
       transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
     .mermaid-zoom:active { scale: 0.96; }
@@ -655,15 +655,15 @@
     nav.toc { clear: right; clear: inline-end; max-inline-size: 38rem;
       margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
       border-inline-start: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
-    nav.toc .toc-label { font-size: 0.8125rem; letter-spacing: 0.09em;
+    nav.toc .toc-label { font-size: 0.72rem; letter-spacing: 0.09em;
       text-transform: uppercase; color: var(--muted); margin: 0 0 0.45rem; }
     nav.toc ol { margin: 0; padding-inline-start: 1.3rem; columns: 2; column-gap: 2.4rem; }
-    nav.toc li { margin: 0.18rem 0; font-size: 0.8125rem; break-inside: avoid; }
+    nav.toc li { margin: 0.18rem 0; font-size: 0.86rem; break-inside: avoid; }
     nav.toc a { color: var(--on-surface); text-decoration: none;
       border-block-end: 1px dotted var(--rule-light); }
     details.deep { margin: 0.45rem 0 0; }
     details.deep > summary { cursor: pointer; list-style: none;
-      font-size: 0.8125rem; letter-spacing: 0.04em;
+      font-size: 0.78rem; letter-spacing: 0.04em;
       color: var(--muted); padding: 0.25rem 0; }
     details.deep > summary::before { content: "\25B8\00A0"; }
     details.deep[open] > summary::before { content: "\25BE\00A0"; }
