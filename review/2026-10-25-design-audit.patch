@@ -1,0 +1,48 @@
+diff --git a/NOTES.md b/NOTES.md
+index 07388a7..930f32b 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -99,11 +99,11 @@ the inverse, and grayscale-only antialiasing thins strokes.
+ 
+ ## Type scale
+ 
+-The body `font-size` clamp is the **only fluid size lever**. The sheet sets five steps and no other
+-size. Headings that scale with body copy stay in `em`; the two small steps are in `rem`, so a nested
+-ratio cannot compound into a sixth size. Floor `1rem` (also the iOS input-zoom threshold `.filter-box`
+-inherits), cap `1.25rem`, every bound `rem` never `px`, so the page scales with a raised browser
+-default.
++The body `font-size` clamp is the **only fluid size lever**. The sheet sets five text steps and no
++other text size. Headings that scale with body copy stay in `em`; the two small steps are in `rem`,
++so a nested ratio cannot compound into a sixth size. Floor `1rem` (also the iOS input-zoom
++threshold `.filter-box` inherits), cap `1.25rem`, every bound `rem` never `px`, so the page scales
++with a raised browser default.
+ 
+ **Do not lower the floor past `1rem`** without a separate 16px floor on `.filter-box`.
+ 
+@@ -114,9 +114,13 @@ default.
+ 1rem       structural and annotation: table, aside, nav, .scorecard, .nav-list li,
+            .byline, .sidenote, cite, code, pre, footer
+ 0.8125rem  small: .badge, .verdict, sup/sub, the outbound arrow, nav.toc,
+-           counts, the zoom overlay's close glyph
++           counts
+ ```
+ 
++**Two decorative glyphs sit outside the scale**: `blockquote.pull::before`'s opening quote
++(`2.5em`) and `.mermaid-overlay::after`'s close mark (`1.75rem`). They are marks, not text, and
++nothing inherits their size.
++
+ **`text-wrap: balance` sits on `h1`, `h2`, `h3` only.** They're short blocks where a stray last-line
+ word is the defect; `h4`-`h6` render at body size with no wider measure to justify it.
+ 
+diff --git a/tufte-dracula.css b/tufte-dracula.css
+index 2efb6d8..732d91f 100644
+--- a/tufte-dracula.css
++++ b/tufte-dracula.css
+@@ -626,6 +626,7 @@
+       }
+       mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+       body { width: auto; max-width: none; padding: 1rem; }
++      table { background: none; }
+       .table-scroll { max-height: none; overflow: visible; background: none; }
+       .mermaid-zoom { display: none; }
+       pre.mermaid {
