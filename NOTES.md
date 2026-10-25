@@ -1,7 +1,8 @@
 # NOTES.md: the decisions behind the stylesheet
 
-Every generated HTML file carries `tufte-dracula.css`, `mermaid.js` and `filter.js` verbatim. Those
-files therefore carry no comments. See `AGENTS.md`. This file holds what those comments would say.
+Every generated HTML file inlines `tufte-dracula.css`, `mermaid.js`, `filter.js` and `highlight.js`.
+Those files therefore carry no comments. See `AGENTS.md`. This file holds what those comments would
+say.
 
 **This file states decisions and prohibitions. It does not carry the measurements behind them.**
 Chromium measured every number. Those measurements live in git history and in the gates.
@@ -18,7 +19,7 @@ Two comments remain in the CSS. A machine reads both.
   `scripts/build-sample.nu` reads it to stamp `tokens.css`. `scripts/maintain.nu bump` rewrites it.
   Strip that line and regeneration dies. The failure is silent through a pipe, and it leaves stale
   fixtures that look correct.
-- **The `/* was #rrggbb */` notes on ten `:root` tokens.** Check 3 of `.github/palette-check.py`
+- **The `/* was #rrggbb */` notes on six `:root` tokens.** Check 3 of `.github/palette-check.py`
   fails when a stated hex disagrees with its `oklch()`.
 
 ## Contents
@@ -1716,7 +1717,7 @@ blocks, both gated, so a toggle would need a second theming convention or a four
 Take it only as a deliberate public-API decision if a consumer asks for a manual override as a
 feature.
 
-**Two generated preview pages carry the light palette to the web instead**, rewriting the light
+**Four generated preview pages carry the light palette to the web instead**, rewriting the light
 condition to `@media all` and the contrast condition to `@media not all` (forcing light alone isn't
 enough: it would leave the contrast block's non-token rules live). **The generator raises when the
 rewrite no-ops**, or Pages would serve a dark page called light while regeneration still compares
@@ -2088,12 +2089,12 @@ page, and was `view all` until v1.51.0. Its accessible name carries the same sen
 control label is a sentence, not a title. See Italics for the fourth, the `placeholder` that stated an
 instruction where an example belonged.
 
-**A new page means five hardcoded fixture lists, not one**: the page list in
+**A new page means six hardcoded fixture lists, not one**: the page list in
 `scripts/build-sample.nu`; the presence, style-and-script-count, and light-preview lists in
 `scripts/maintain.nu`; the staleness list there plus `FIXTURES` in `.github/render-modes.py`. **Miss
 the `render-modes.py` one and the new page renders in no appearance mode while `check` still prints
-`Contract OK`**: that list drives the image count rather than deriving from the directory (four
-fixtures times three modes is twelve images, the tell).
+`Contract OK`**: that list drives the image count rather than deriving from the directory (the
+four dark fixtures times three modes is twelve images, the tell).
 
 Specific fixture details and what they catch: `samples/dark-timeline.html`'s length is the point (four
 era groups exercise `--timeline-date`'s multi-list case; citation density is where floated sidenotes
@@ -2153,22 +2154,24 @@ against the linking file's own directory rather than the repo root.
 
 ### The one check that runs the payload
 
-`.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives both inlined scripts,
-and asserts what a reader would see (eighteen assertions over `filter.js` scope/counts/group-state,
-`mermaid.js` rendering/zoom-binding/conditional-region, plus eight over the forced-colors block).
-Everything else in CI counts blocks, compares bytes, or measures colors: **none of that asks "does
-this handler attach to anything."** Two real defects proved the gap: the fixture shipped an inert
-`input.filter-box` for five releases, and a diagram click opened nothing for several more (see
-[Zoom](#mermaid)).
+`.github/script-probe.py` loads `samples/dark.html` in headless Chrome, drives all three inlined
+scripts, and asserts what a reader would see: thirty-two binding assertions over `filter.js`
+scope/counts/group-state, `mermaid.js` rendering/zoom-binding/conditional-region, `highlight.js`
+runtime and copy button, and the accessibility markup; seven over the forced-colors block; and five
+over the chart-fidelity pair. Everything else in CI counts blocks, compares bytes, or measures
+colors: **none of that asks "does this handler attach to anything."** Two real defects proved the
+gap: the fixture shipped an inert `input.filter-box` for six releases, and a diagram click opened
+nothing for several more (see [Zoom](#mermaid)).
 
 **It needs no new dependency**: reuses `render-modes.py`'s same headless Chrome binary with
 `--dump-dom` instead of `--screenshot`, a driver script appended to a scratch copy writing results
 into the DOM for a one-regex readback (this sat in `backlog.md` for releases on a stated Node/jsdom
 cost that was never actually required). **The mermaid half is network-dependent and says so out
 loud**: the pinned CDN is probed for reachability first and reported as a `SKIP`, never folded into
-a pass. **It refuses to pass on fewer than 13 binding assertions and 8 forced-colors ones**, and both
-halves were mutation-tested (moving `filter.js`'s scope walk up one level, and making the mermaid
-region unconditional, each turned the gate red on the exact assertion naming them).
+a pass. **It refuses to pass on fewer than 20 binding assertions, 7 forced-colors ones and 5
+fidelity ones** (3 when the CDN is unreachable), and the binding and forced-colors halves were
+mutation-tested (moving `filter.js`'s scope walk up one level, and making the mermaid region
+unconditional, each turned the gate red on the exact assertion naming them).
 
 ## Repo layout
 

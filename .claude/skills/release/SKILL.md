@@ -116,8 +116,8 @@ Write it from the diff, normal prose, not caveman. What changed and why it
 changed. The repo's history is the design record for anything not in NOTES.md.
 Subject line: `feat: vX.Y.Z - <summary>` (or `fix:` / `chore:`).
 
-**No email address anywhere in the message.** Not the maintainer's, not a
-co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
+The no-email rule for the message is stated in [AGENTS.md](../../../AGENTS.md),
+Writing rules.
 
 ## Rules with no exception
 
@@ -130,8 +130,8 @@ co-author trailer's. Name-only `Co-Authored-By: Claude` or omit it.
 - **Never `--no-verify`. Never force-move a pushed tag.** Consumers pin through a
   submodule; a moved tag silently changes what they resolve to.
 - **Annotated tags only.** `scripts/maintain.nu release` does this; do not hand-tag.
-- Do not hand-edit `samples/dark.html`, `samples/dark-conn-map.html` or `tokens.css`. Ever.
-  They are generated, and `check` fails if regeneration is not a no-op.
+- Do not hand-edit `samples/*.html` or `tokens.css`. Ever. They are generated, and `check`
+  fails if regeneration is not a no-op.
 
 ## Tooling-only changes
 

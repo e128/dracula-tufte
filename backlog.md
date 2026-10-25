@@ -4,8 +4,8 @@ This file holds the open decisions and the deferred work for the Tufte-Dracula t
 Each entry states the problem, the concrete change, and what makes it a judgment call
 rather than a bug. The bugs get fixed. These wait for a call.
 
-This file is not a contract artifact. Consumers inline `tufte-dracula.css` and
-`mermaid.js`, and nothing reads this file.
+This file is not a contract artifact. Consumers inline the payload files, and nothing reads this
+file.
 
 A closed entry leaves this file. It does not collect here. Its measurements and its
 rejected alternatives go to [NOTES.md](NOTES.md), which is the file a future agent reads.
@@ -50,7 +50,7 @@ measurements moved to NOTES.md as the rule above says.
 
 | entry | outcome | where the reasoning went |
 | --- | --- | --- |
-| No gate asks whether an inlined script binds | Taken. `.github/script-probe.py`, eighteen driven assertions | [The one check that runs the payload](NOTES.md#the-one-check-that-runs-the-payload) |
+| No gate asks whether an inlined script binds | Taken. `.github/script-probe.py`, a driven script probe | [The one check that runs the payload](NOTES.md#the-one-check-that-runs-the-payload) |
 | A light twin for the `classdef` fills | Taken. `classdefLight`, plus the emit-time rule that was the real blocker | [The data ramp](NOTES.md#the-data-ramp) |
 | The mermaid `pre` region announces its name twice | Taken. The region now exists only where the `pre` can scroll | [Keyboard and assistive technology](NOTES.md#keyboard-and-assistive-technology) |
 | `pre.mermaid` is a focusable region where it cannot scroll | Taken by the same change | [Keyboard and assistive technology](NOTES.md#keyboard-and-assistive-technology) |
