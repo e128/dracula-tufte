@@ -13,7 +13,8 @@ reading, and **a second instruction file beside this one is a regression**: see 
 
 ## Read [NOTES.md](NOTES.md) first
 
-**Before you change `tufte-dracula.css` or `mermaid.js`, read [NOTES.md](NOTES.md).** It holds
+**Before you change `tufte-dracula.css`, `mermaid.js`, `filter.js` or `highlight.js`, read
+[NOTES.md](NOTES.md).** It holds
 the reasoning that used to live in those files as comments. It records every current decision,
 every rejected alternative, and every prohibition this repo already paid for.
 
@@ -59,19 +60,23 @@ Use whatever the sentence actually needs instead:
 rather than trusted. The commit-subject convention is `feat: vX.Y.Z - <summary>` with a hyphen.
 Commits in history keep the old em-dash form. No rewrite changes them.
 
+**No email address anywhere in a commit message.** Not the maintainer's, not a co-author
+trailer's. Name-only `Co-Authored-By: Claude`, or omit the trailer.
+
 The rule exists because 186 em-dashes across 22 files read as one voice tic rather than as
 punctuation, and because a gate is the only thing that keeps a prose rule alive in a repo where
 most edits are made by an agent.
 
 ## NEVER write comments in files that get inlined into HTML
 
-Every generated HTML file carries a verbatim copy of `tufte-dracula.css` and `mermaid.js`. A
-comment here is not written once. Every page a consumer renders carries a copy of it, forever.
+Every generated HTML file inlines `tufte-dracula.css`, `mermaid.js`, `filter.js` and
+`highlight.js`. A comment here is not written once. Every page a consumer renders carries a copy
+of it, forever.
 
 **Rules:**
 
-- **Do not add comments to `tufte-dracula.css` or `mermaid.js`.** No block comments, no
-  end-of-line comments, and no single line that explains a magic number.
+- **Do not add comments to `tufte-dracula.css`, `mermaid.js`, `filter.js` or `highlight.js`.**
+  No block comments, no end-of-line comments, and no single line that explains a magic number.
 - The same rule covers any future file that a consumer inlines instead of links. If a consumer
   copies the file into output, the file carries no comments.
 - `mermaid-palette.json` already has `_comment` keys. Do not add more.
@@ -103,15 +108,17 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
 
 ## Regeneration and the contract
 
-- `scripts/build-sample.nu` generates `samples/dark.html`, `samples/dark-conn-map.html` and `tokens.css`. Never edit
-  them by hand. Change `tufte-dracula.css`, `mermaid.js` or `scripts/build-sample.nu`, then regenerate.
+- `scripts/build-sample.nu` generates `tokens.css` and all eight fixtures in `samples/`. Never edit
+  them by hand. Change `tufte-dracula.css`, `mermaid.js`, `filter.js`, `highlight.js` or
+  `scripts/build-sample.nu`, then regenerate.
 - Run `nu scripts/maintain.nu check` after every change. It mirrors CI: file presence, the palette
-  hex-against-oklch gate, exactly one `<style>` and one `<script>` per fixture, and a staleness
-  check that proves regeneration changes nothing. It must print `Contract OK`.
+  hex-against-oklch gate, exactly one `<style>` and three `<script>` blocks per fixture, and a
+  staleness check that proves regeneration changes nothing. It must print `Contract OK`.
 - The first line of `tufte-dracula.css` must be exactly `  <style>`. The last line must be
   exactly `  </style>`. Consumers slice the body out with `sed '1d;$d'`. This is a contract.
-- `tufte-dracula.css` carries its own `<style>` wrapper, and `mermaid.js` carries its own
-  `<script>` wrapper. Do not add a second wrapper.
+- `tufte-dracula.css` carries its own `<style>` wrapper, and `mermaid.js`, `filter.js` and
+  `highlight.js` each carry their own `<script type="module">` wrapper. Do not add a second
+  wrapper.
 - **Never cite a line number into a generated file.** Any document that points at
   `samples/`, `tokens.css` or any other generated artifact points at a **string to search for**,
   never at a line. A fixture is rewritten on every payload edit, so a line number rots on a change
@@ -167,7 +174,7 @@ for every workflow that a commit fires, including the workflows GitHub generates
 `pages-build-deployment` alone contributes `build`, `deploy` and `report-build-status`. None of
 them say anything about the payload. A gate on *every* check once held a tag for a full timeout
 because a Pages deploy stalled on GitHub's side, and then refused the tag outright, because a
-non-success conclusion stays attached to that SHA. `REQUIRED_CHECKS` near the top of
+non-success conclusion stays attached to that SHA. `REQUIRED_CHECKS` in
 `scripts/maintain.nu` is the list. Keep it in step with the required checks configured on `main`,
 and add to that list rather than widen the gate back to every check.
 
@@ -188,7 +195,7 @@ request was explicitly to release.
 
 ## Constraints that shape every decision
 
-- **No build step.** Consumers inline two files verbatim. Anything that needs compilation,
+- **No build step.** Consumers inline four files verbatim. Anything that needs compilation,
   bundling, or a preprocessor is out of scope.
 - **Output renders locally, and often offline.** A CDN dependency must degrade well: the webfont
   falls back to a system serif and the text still renders. Mermaid is the existing exception,
@@ -214,10 +221,10 @@ gamma-encoded sRGB, not linear. Otherwise, a contrast ratio reads several tenths
 
 **When a claim rests on a mitigation, test the mitigation too, not just the defect.**
 
-**A behavioural claim about `mermaid.js` or `filter.js` is not verified until the script has run.**
-`.github/script-probe.py` drives both of them in the real fixture through the same headless Chrome.
-Add an assertion there when you change either file, and mutate the change to confirm the assertion
-fails without it. Every other check in this repo reads the payload. This is the only check that runs it. The probe exists because the fixture shipped an inert `input.filter-box` for six releases and a diagram nobody could click for several more. Other checks missed both defects.
+**A behavioural claim about `mermaid.js`, `filter.js` or `highlight.js` is not verified until the
+script has run.** `.github/script-probe.py` drives all three of them in the real fixture through the
+same headless Chrome. Add an assertion there when you change any of them, and mutate the change to
+confirm the assertion fails without it. Every other check in this repo reads the payload. This is the only check that runs it. The probe exists because the fixture shipped an inert `input.filter-box` for six releases and a diagram nobody could click for several more. Other checks missed both defects.
 
 **Re-price a decline before you repeat it.** Three entries sat in `backlog.md` for releases on
 costs that were simply wrong: a jsdom dependency the repo did not need, a resize listener a media
@@ -229,7 +236,8 @@ decline is a cost estimate with a date on it, not a verdict.
 Every design audit includes performance, responsive usability, accessibility, and standards currency.
 For each check, report measured results, limits, and missing inputs. Never report an unrun check as a pass. Recheck current W3C, ISO/IEC, ETSI, and Baseline sources on each run. Add
 newly ratified applicable criteria to that audit's report, even if this file and the skill have not
-changed. Update either instruction file only through a separate maintainer-authorized change.
+changed. Update this file or the design-audit skill only through a separate maintainer-authorized
+change.
 
 ### Performance and Stability
 
@@ -345,8 +353,8 @@ report a person reads, and `review/` holds the prior ones as precedent whatever 
   not let a rule come to rest only inside a skill: a harness without skills must lose an entry
   point, never a rule. If a skill's instructions and this file disagree, this file is right and the
   skill is a bug.
-- **No skill edits `tufte-dracula.css` or `mermaid.js` without a render.** *Verify a rendered claim
-  by rendering it* applies to skill-driven edits exactly as it does to direct ones.
+- **No skill edits a payload file without the render or script probe it needs.** *Verify a rendered
+  claim by rendering it* applies to skill-driven edits exactly as it does to direct ones.
 - **`.claude/settings.json` configures the status line and nothing about the payload.** Do not put
   repo policy there. Policy goes in this file, where every harness can read it.
 - **A second instruction file beside this one is a regression.** Claude Code's default

@@ -74,7 +74,7 @@ this repo did, and it is where the findings are.
 PREV=<the SHA named in the previous report's header>
 git log --oneline "$PREV..HEAD"
 git diff --stat "$PREV..HEAD"
-git diff "$PREV..HEAD" -- tufte-dracula.css mermaid.js filter.js NOTES.md scripts/ .github/ 'themes/**/*.in'
+git diff "$PREV..HEAD" -- tufte-dracula.css mermaid.js filter.js highlight.js NOTES.md scripts/ .github/ 'themes/**/*.in'
 ```
 
 If the previous report names no SHA, fall back to the tag for the version it says it read
@@ -89,7 +89,7 @@ its effort on Step 4 instead.
 ### Every added payload line gets four questions
 
 Read the diff, not a summary of it. For each added or changed line in `tufte-dracula.css`,
-`mermaid.js`, `filter.js`, or a `themes/**/*.in` slot-map template:
+`mermaid.js`, `filter.js`, `highlight.js`, or a `themes/**/*.in` slot-map template:
 
 1. **Does NOTES.md document it?** AGENTS.md: "When you make a new decision worth keeping,
    add it to NOTES.md as a decision plus its prohibition." A new component with no NOTES.md
@@ -366,7 +366,7 @@ Automated checks, when used, do not prove full WCAG conformance.
 versions out of the files rather than from memory:
 
 ```bash
-rg -o '[a-z0-9@/-]+@[0-9.]+' tufte-dracula.css mermaid.js | sort -u
+rg -o '[a-z0-9@/-]+@[0-9.]+' tufte-dracula.css mermaid.js highlight.js | sort -u
 ```
 
 For each, report the current release (`npm view <pkg> version time.modified`), whether
@@ -375,7 +375,7 @@ taking. **Do not put a Mermaid bump in the patch:** `nu scripts/maintain.nu merm
 is the supported path and it touches generated files. Name the command in the report and stop
 that part there.
 
-**Also check provenance, not only freshness.** Every jsDelivr URL in the two files above
+**Also check provenance, not only freshness.** Every jsDelivr URL in the three files above
 loads through a mechanism with no `integrity` attribute available to it: `@font-face src:
 url()` has no SRI hook in any browser, and a bare-specifier ESM `import` of a remote URL has
 no `integrity` hook either, current npm-package or import-map metadata aside. State this
@@ -501,7 +501,7 @@ Run every row. The commands are starting points, not the whole check: read the h
 
 | Rule | Source | Check | 
 | --- | --- | --- |
-| No comment in `tufte-dracula.css` or `mermaid.js`. **Both exceptions are CSS-only** (line 2's version stamp, the `/* was #rrggbb */` notes), so `mermaid.js` must have zero comments | AGENTS.md | `rg -n '/\*' tufte-dracula.css \| rg -v 'was #'` returns line 2 only. Then `rg -n -e '/\*' -e '^\s*//' mermaid.js` returns nothing |
+| No comment in any inlined payload file. **Both exceptions are CSS-only** (line 2's version stamp, the `/* was #rrggbb */` notes), so `mermaid.js`, `filter.js` and `highlight.js` must have zero comments | AGENTS.md | `rg -n '/\*' tufte-dracula.css \| rg -v 'was #'` returns line 2 only. Then `rg -n -e '/\*' -e '^\s*//' mermaid.js filter.js highlight.js` returns nothing |
 | Every `var(--x)` resolves to a declared token or has a fallback | NOTES.md, Progressive disclosure | Set difference. Match `--x:` anywhere because component tokens count. Exclude references with fallback commas. Six references outside `:root` resolve on `HEAD`, and all six are deliberate |
 | Sides are logical, never physical | NOTES.md, Direction, zoom and growth | `rg -n 'border-left\|border-right\|padding-left\|padding-right\|margin-left\|margin-right' tufte-dracula.css` returns nothing, except a deliberate physical fallback stated in NOTES.md (the sidenote `float`) |
 | Every `:hover` rule sits inside `@media (hover: hover)` | NOTES.md, Interaction states | Every line number from `rg -n ':hover' tufte-dracula.css` falls inside that block's range. A selector pairing `:hover` with `:focus-visible` in one rule is the usual way this breaks |
@@ -576,9 +576,9 @@ the unit.
 
 The report and patch never edit `AGENTS.md` or this skill. Report audit-process gaps separately.
 
-The patch must obey every constraint in AGENTS.md: no comments added to
-`tufte-dracula.css` or `mermaid.js`, no em-dash or en-dash anywhere, hex-only in
-`mermaid.js`, the `<style>` and `<script>` wrapper contract intact. Step 7 proves that
+The patch must obey every constraint in AGENTS.md: no comments added to an inlined payload
+file, no em-dash or en-dash anywhere, hex-only in `mermaid.js`, the `<style>` and `<script>`
+wrapper contract intact. Step 7 proves that
 mechanically rather than trusting it.
 
 **The patch touches source files only.** It never changes `samples/*.html` or `tokens.css`.
@@ -633,7 +633,7 @@ rg -c -e '\u{2014}' -e '\u{2013}' review/$D-design-audit.*   # must find nothing
 ```
 
 The second covers the rule with no gate behind it. **`maintain.nu check` does not detect a
-comment added to `tufte-dracula.css` or `mermaid.js`.** A patch that adds one passes
+comment added to an inlined payload file.** A patch that adds one passes
 `Contract OK` and ships a comment into every page every consumer ever renders, which is the
 single hardest prohibition in AGENTS.md. Read every added line of the patch yourself:
 
@@ -672,8 +672,8 @@ and AGENTS.md's regeneration section). This skill does not chain into any of the
 
 ## Rules with no exception
 
-- **Never edit `tufte-dracula.css`, `mermaid.js`, `filter.js`, `samples/*.html` or
-  `tokens.css` in the working tree.** The only place this skill applies a change is a
+- **Never edit `tufte-dracula.css`, `mermaid.js`, `filter.js`, `highlight.js`, `samples/*.html`
+  or `tokens.css` in the working tree.** The only place this skill applies a change is a
   throwaway worktree it removes in the same step.
 - **A challenged decision never enters the patch.** See Step 5. A violated decision always
   does.
