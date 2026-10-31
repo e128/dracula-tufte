@@ -75,7 +75,8 @@ Literata, Newsreader, Lora and Petrona were rejected: Lora carries Georgia's old
 figures, and none of the five ship `smcp`, so `.newthought` small caps stay synthesized either way.
 
 **The fallback path is a real downgrade, not an equivalence, and the repo accepts it.** Offline the
-stack falls to Georgia (no 450, proportional figures, tables lose alignment), then Noto Serif
+stack falls to Georgia (no 450, proportional figures, tables lose alignment, and no 550 or 650
+either, so both steps map to 700 and `h3` and `h4` render alike), then Noto Serif
 (Android/ChromeOS), then DejaVu Serif (Linux). Charter and Palatino are deliberately absent: both
 exist only where Georgia already does. `font-display: swap` keeps text visible during load.
 
