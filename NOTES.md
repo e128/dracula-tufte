@@ -371,8 +371,14 @@ no emitter is a guess about markup this repo doesn't control.
 **Cite a timeline entry with a `sup` link into a numbered source list instead**: better at density
 too, since a margin column loses sync with its anchors down a long page.
 
-**`white-space: nowrap` on the date releases below 600px**, where the collapsed layout has no track
+**`white-space: nowrap` on the date releases below 760px**, where the collapsed layout has no track
 left to protect and nowrap would be the one thing pushing the page wider than the viewport.
+
+**Entry separation comes from a `dd + dt` margin, not from the grid row gap.** One row gap served
+both the date-to-body rhythm and the entry-to-entry break, so a long timeline read as a single run
+of text. `dl.timeline > dd + dt` takes `--space-4` in the two-column layout and `0` below 760px,
+where the `dd` already carries `margin-block-end`. **Do not move entry spacing back into
+`row-gap`**: it re-couples the two rhythms, and the collapsed layout then over-separates entries.
 
 **A deep link's arrival cue is an `outline`, not the `--highlight` wash** (which takes link text
 under 4.5:1). It costs no layout shift, reads distinct from the link-blue focus ring by hue, and
