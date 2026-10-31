@@ -245,7 +245,9 @@ FORCED_DRIVER = """
 
 # A bar that disagrees with its own number is a lie factor above 1, and nothing else in this
 # repo reads the pair. A cell ending in `%` states its bar outright. A bare count states a share
-# of the column maximum. A sparkline states its whole series in `data-values`, every column must
+# of the column maximum. A `td.dot` states its value in the following `td.num` on the same scale,
+# and its own cell must hold no text. A `dl.meter` states the same percent in `dd.v` that its
+# `--bar` carries, and its band must actually paint at that width. A sparkline states its whole series in `data-values`, every column must
 # draw its own value on one shared scale, and a row's first and latest cells must match the label's ends. This reaches the
 # fixture only: a consumer's page is never read here.
 FIDELITY_DRIVER = """
@@ -254,7 +256,7 @@ FIDELITY_DRIVER = """
     const t = (name, cond) => out.push(name + '=' + (cond ? 'PASS' : 'FAIL'));
     const series = el => el.getAttribute('data-values').split(',').map(parseFloat);
     const pct = el => parseFloat(el.style.getPropertyValue('--bar') || el.style.getPropertyValue('--h'));
-    let bars = 0, sparks = 0, bad = [];
+    let bars = 0, sparks = 0, dots = 0, bad = [];
     for (const table of document.querySelectorAll('table.bar-chart')) {
       const cells = [...table.querySelectorAll('td.bar')];
       const nums = cells.map(c => parseFloat(c.textContent));
@@ -264,6 +266,20 @@ FIDELITY_DRIVER = """
         const want = c.textContent.trim().endsWith('%') ? nums[i] : nums[i] / max * 100;
         if (Math.abs(pct(c) - want) > 1) bad.push(c.textContent.trim() + ' drew ' + pct(c) + '%');
       });
+      const dotCells = [...table.querySelectorAll('td.dot')];
+      if (dotCells.length) {
+        const dnums = dotCells.map(c => parseFloat(c.nextElementSibling && c.nextElementSibling.textContent));
+        const dmax = Math.max(...dnums);
+        dotCells.forEach((c, i) => {
+          dots++;
+          if (c.textContent.trim() !== '') bad.push('dot cell carries text');
+          const num = c.nextElementSibling;
+          if (!num || !num.classList.contains('num')) { bad.push('dot without a following td.num'); return; }
+          const want = num.textContent.trim().endsWith('%') ? dnums[i] : dnums[i] / dmax * 100;
+          if (isNaN(dnums[i])) bad.push('dot value cell is not a number');
+          else if (Math.abs(pct(c) - want) > 1) bad.push('dot at ' + pct(c) + '% vs value ' + num.textContent.trim());
+        });
+      }
       for (const row of table.querySelectorAll('tr')) {
         const spark = row.querySelector('.spark');
         const nn = [...row.querySelectorAll('td.num')].map(c => parseFloat(c.textContent));
@@ -272,6 +288,36 @@ FIDELITY_DRIVER = """
         if (v[0] !== nn[0] || v[v.length - 1] !== nn[1]) bad.push('spark ends ' + nn.join('->') + ' vs label ' + v.join(','));
       }
     }
+    let meters = 0;
+    for (const meter of document.querySelectorAll('dl.meter')) {
+      meters++;
+      const bar = parseFloat(meter.style.getPropertyValue('--bar'));
+      const v = meter.querySelector('.v');
+      if (isNaN(bar)) bad.push('meter without --bar');
+      else if (!v || !v.textContent.includes('%')) bad.push('meter value missing a percent');
+      else if (Math.abs(parseFloat(v.textContent) - bar) > 1) bad.push('meter value ' + v.textContent.trim() + ' vs --bar ' + bar + '%');
+      const size = getComputedStyle(meter, '::after').backgroundSize.split(' ')[0];
+      if (size.endsWith('%')) {
+        if (Math.abs(parseFloat(size) - bar) > 1) bad.push('meter band ' + size + ' vs --bar ' + bar + '%');
+      } else {
+        const box = meter.clientWidth - 2;
+        if (Math.abs(parseFloat(size) - box * bar / 100) > 2) bad.push('meter band ' + size + 'px vs --bar ' + bar + '%');
+      }
+    }
+    t('fidelity-meters-found', meters >= 3);
+    t('fidelity-meter-band-paints', meters >= 3 && !bad.some(b => b.startsWith('meter band')));
+    const groups = new Map();
+    for (const meter of document.querySelectorAll('dl.meter')) {
+      const key = meter.parentElement;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(meter);
+    }
+    t('fidelity-meter-columns-align', [...groups.values()].every(group => {
+      const xs = group.map(m => m.querySelector('.v')).filter(Boolean)
+        .map(v => Math.round(v.getBoundingClientRect().right));
+      return xs.length < 2 || new Set(xs).size === 1;
+    }));
+    t('fidelity-dots-found', dots >= 3);
     let scale = 0, inline = 0;
     for (const spark of document.querySelectorAll('.spark')) {
       sparks++;
@@ -382,7 +428,7 @@ def main():
     plots = json.loads((ROOT / "mermaid-palette.json").read_text())
     xy = json.dumps([plots[k]["plotColorPalette"]["hex"] for k in ("init", "initLight")])
     driver = FIDELITY_DRIVER.replace("__XY__", xy)
-    results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 5 if mermaid else 3, "fidelity")
+    results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 9 if mermaid else 7, "fidelity")
 
     fail = 0
     for line in results:

@@ -11,7 +11,7 @@ any.
 
 Two limits on that, and both are stated where they apply rather than left for you to discover.
 **Most requirements below are modelled in `samples/dark.html`, six only in
-`samples/dark-timeline.html`, five only in `samples/dark-charts.html`, and four that no fixture
+`samples/dark-timeline.html`, seven only in `samples/dark-charts.html`, and four that no fixture
 demonstrates**, which each of those four says in its own bullet.
 **One requirement the fixture deliberately breaks:** its `quadrantChart` carries
 two overlong point labels on purpose, as the stress case for a stylesheet rule that has to survive
@@ -58,7 +58,7 @@ nothing after it.
 
 ## 2. Emit this markup
 
-Forty-one requirements. No stylesheet change can supply any of them. Most name a string to search
+Forty-three requirements. No stylesheet change can supply any of them. Most name a string to search
 for in a fixture, so you have a working example instead of only a sentence. The few with no fixture
 yet say so.
 
@@ -240,6 +240,16 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       that pair in all four modes). A per-row hue was measured out, because four washes at that
       alpha land within Lc 2 of each other and cannot carry a category. Put the category in the row
       label.
+- [ ] A `dl.meter` for a value against a known limit: the label in `<dt>`, the percent as text in
+      `dd.v`, an optional gloss in `dd.s`, and `--bar` on the `dl` stating the same number the text
+      states (in `samples/dark-charts.html`, search `class="meter"`). The band is a background
+      image, so forced colors and a background-off print drop it and the text carries the value
+      alone. A meter states a percent; a bare number with no limit belongs in `.stat-strip` or a
+      plain table instead. The band carries one hue and no state: spell "full" or "paused" beside
+      the value, and compose an existing `.verdict` chip where a page wants a state pill, rather
+      than recoloring any band (per-row chart color is refused). Say in the surrounding prose what
+      the percent is a share of, because the track carries no scale of its own, and compare each
+      fill only against its own track when several meters with different limits share a page.
 - [ ] A `span.spark` holds only empty `<i style="--h: NN%">` columns, oldest first, and carries
       a `data-values` attribute listing every value, comma separated, which the fixture probe checks
       each column against (in `samples/dark-charts.html`, search `class="spark"`). In a table, put the first and latest
@@ -250,6 +260,12 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       `table.bar-chart`. Scale every column to zero and every row of
       one table to one maximum, and say the maximum in the `<caption>`. A series stretched from its
       minimum draws noise as a cliff. The columns carry no text, so the numbers must sit beside them.
+- [ ] A `td.dot` inside a `table.bar-chart` holds no text, states `--bar` as the value's position on
+      the table's shared scale, and is followed by a `td.num` carrying the value (in
+      `samples/dark-charts.html`, search `class="dot"`). The dot paints at full strength `--data-1`,
+      the sparkline's allowance, because no text sits under it. The position is the same share of a
+      named scale that `--bar` states on a bar cell, so the `<caption>` names the denominator the
+      same way. The probe reads the pair and refuses text in the dot cell.
 - [ ] A Mermaid `xychart` fence holds one `line` series, no legend and no second series, beside a table
       that states every value (in `samples/dark-charts.html`, search `xychart`). Use the keyword
       `xychart`. The palette themes one color, so a second series would draw outside it. Set `height: 360` in the
@@ -410,6 +426,7 @@ release that changed nothing: add the row in the release commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.60.0 | **two new opt-in chart components, and nothing you already emit changes.** A `dl.meter` draws a value against a known limit, and `td.dot` draws the dot plot variant of the bar chart. Each carries a § 2 requirement, and neither adds a token: the meter's band and the dot both paint `--data-1` at full strength, the ramp member and the allowance the palette gate already measures. A page that emits neither owes nothing; regenerate pages whose inline stylesheet predates this payload |
 | v1.59.3 | nothing. **A table shows a soft edge shadow while it hides content.** The base `table` rule and `.table-scroll` both carry four background layers: two `--surface` covers ride the content (`background-attachment: local`) and two `--rule` shadows stay put (`scroll`), so the shadow appears only on the side the reader can scroll toward and clears at either end. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
 | v1.59.2 | nothing. **A `.table-scroll` shows a soft edge shadow while it hides content.** Two `--surface` covers ride the content (`background-attachment: local`) and two `--rule` shadows stay put (`scroll`), so the shadow appears only on the side the reader can scroll toward and clears at either end. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
 | v1.59.1 | nothing. **A recut of the v1.59.0 payload.** v1.59.0 reached `main` by direct push, so this release reissued the same bytes from a commit that landed through a pull request with the contract check green. Only the version stamp and the generated files change: regenerate pages whose inline stylesheet predates this payload |
@@ -418,7 +435,6 @@ release that changed nothing: add the row in the release commit itself.
 | v1.58.2 | nothing. **The sheet reserves the scrollbar track on both edges** (`scrollbar-gutter: stable both-edges` on `html`), so a page short enough to fit and one long enough to scroll share one centred frame instead of shifting left by half a classic scrollbar. No markup change, no new token, and no measure change: `--page-width` and `--gutter` keep their values, so regenerate pages whose inline stylesheet predates this payload and nothing else |
 | v1.58.1 | **one new § 2 requirement, and the layer stack, coverage matrix and heatmap gain their requirements.** A page that cites sources from running prose now cites them as `sup` links into one numbered `Sources` section at the foot of the page, `<h2 id="sources">` over a `<div class="col-2">` holding the `<ol>`, rather than a stack of `.sidenote` down the margin. No fixture demonstrates it yet. The three components v1.58.0 introduced carried fixtures and NOTES.md decisions but no stated requirement until this release, so a page that already emits none of them owes nothing. No payload byte changes |
 | v1.58.0 | **three new opt-in components, and nothing you already emit changes.** A `.layer-stack` draws an ordered path of layers, `table.matrix` draws a coverage grid, and `table.heatmap` draws a grid with one shaped square per cell. Each carries a § 2 requirement, and none adds a color token: every component reuses a pair the palette gate already measures. A heatmap square also takes `role="img"` and an `aria-label` naming its state, so a page that emits one owes a text equivalent per square |
-| v1.57.3 | The CSS caps `nav.toc` at `38rem`. Regenerate pages whose inline stylesheet predates this payload. No markup change |
 | v1.57.2 | nothing. **Instruction files and the design-audit skill only.** Dated prompt text came out of `AGENTS.md` and `.claude/skills/design-audit/`, and the release skill names its triggers by intent instead of quoted phrases. `tufte-dracula.css` changes in the version stamp alone and the other three payload files do not change at all, so a page needs no edit: regenerate only to move the stamp |
 ## 4. Regenerate on a byte compare, not a version string
 

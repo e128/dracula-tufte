@@ -37,7 +37,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Color and the contrast budget](#color-and-the-contrast-budget) | Grounds, floors, the data ramp, gamut, forced colors |
 | [Form follows role](#form-follows-role) | Filled and outlined chips, bars and boxes, the hue budget |
 | [Borrowed components](#borrowed-components) | `.kicker`, `.tag-dot`, `.live-dot`, `.icon-list`, `.step-chain`/`.step-hop`, `blockquote.pull` |
-| [CSS charts](#css-charts) | `table.bar-chart`, the alpha under the number, why the pie went out, print and forced colors |
+| [CSS charts](#css-charts) | `table.bar-chart`, the meter, the dot plot, the alpha under the number, why the pie went out, print and forced colors |
 | [Tufte's chart rules](#tuftes-chart-rules) | sparkline, small multiples, fidelity probe, declined forms |
 | [Image tiles](#image-tiles) | `.hero`, the caption below the image, the reserved box, why the radius sits on the image |
 | [Progressive disclosure](#progressive-disclosure) | `nav.toc`, `details.deep`, the narrow and print column overrides |
@@ -865,7 +865,8 @@ background required) already rules it out; blur over an opaque layer is a no-op.
 ## CSS charts
 
 One component draws a chart from ordinary markup, `table.bar-chart`: CSS only, no script, no CDN, no
-build step. A time series is a Mermaid `xychart` line (the existing hard-offline CDN exception).
+build step. Two more share its rules: `dl.meter` draws a value against a limit, and `td.dot` draws
+the dot plot variant. A time series is a Mermaid `xychart` line (the existing hard-offline CDN exception).
 
 **The pie was removed in v1.57.0, and a Mermaid `pie` fence now renders in Mermaid's own colors.** Tufte's objection stands: a reader compares angles and areas badly, a four-slice ceiling is all the ramp's lightness could carry, and Mermaid's legend cannot be replaced by direct labels per diagram. The theme variables, two checks and fixtures that held it up cost more than a part-to-whole share is worth when `table.bar-chart` draws the same shares as ranked bars with every value in the cell. **Do not restore a pie theme, behind a token or a class.** The radar and the treemap stay as second readings of a table (see Tufte's chart rules).
 
@@ -891,6 +892,52 @@ build step. A time series is a Mermaid `xychart` line (the existing hard-offline
 - **Direction costs one override**: `[dir="rtl"]` flips the gradient's `background-position`, since
   neither a gradient nor `background-position` takes a logical direction keyword.
 
+**`dl.meter` is the progress gauge: a value against a known limit, drawn on the list itself.** The
+label is `dt`, the value is text in `dd.v`, an optional gloss in `dd.s`, and `::after` draws a
+0.375rem track ringed in `--rule` with the fill sized by the same `--bar` convention `td.bar` uses.
+
+- **The fill is full strength `--data-1`, and no state hue exists.** No text sits on the band (the
+  sparkline's allowance). A state such as full or paused is data the text already carries, and the
+  per-row chart color ban covers meters: spell the state beside the value, and compose the existing
+  `.verdict` chip where a page wants a state pill. **Do not recolor the band per meter.**
+- **The track is a 1px `--rule` ring, and a `--code-bg` track was rejected**: the extent is required
+  information, the thing that makes a fill readable as a share of a whole, and the rule tokens are
+  the ones held at the 3:1 graphic floor. `--code-bg` sits under it against `--surface`.
+- **The band sits on the `dl`'s own `::after`, not inside the value cell.** The meter is not a table
+  cell, and the value stays text in `dd.v`, the sparkline's exception shape: a text-free graphic
+  with the number beside it. The probe reads the pair and the painted width.
+- **`--bar` states its `0%` fallback in the reference**, the consumer-supplied token rule.
+- **Stacked meters align by construction, and a container was tried and deleted.** Every
+  `dl.meter` is a full width grid with `[1fr | max-content]` tracks, so the value track hugs the
+  same right edge in every sibling without any wrapper. A `div.meters` container with shared or
+  subgridded tracks rendered identical to the plain stack and added a second component surface, so
+  neither shipped. The probe asserts the alignment of sibling meters.
+- **Forced colors needs no rule**: the band drops exactly like `td.bar`'s, the value is text, and
+  the track's own 1px border survives as CanvasText, the same structural story `.hm`'s added
+  border tells. Print takes the `print-color-adjust` pin, same as the bar band and the sparkline.
+
+**`td.dot` is the dot plot variant, the entry Tufte's chart rules once recorded as unbuilt.** Same
+`table.bar-chart`; the dot draws full strength at the value's position on the shared scale, in its
+own text-free cell, and the value states itself in the next cell as `td.num`.
+
+- **The dot is a radial gradient positioned by `--dot-x`, not a `background-position`
+  percentage.** A percentage position resolves against box minus image, so a fixed-size dot at
+  `var(--bar)` lands short of its value by up to the dot's own width. A gradient's own `at` resolves
+  against the box, so the center is exact.
+- **The scale is inset by the dot's radius** (`background-size: calc(100% - 0.48em)` positioned
+  `0.24em`). On the raw cell, a dot at 0% or 100% clipped half outside the cell edge, rendered and
+  rejected; the inset keeps every position whole, and the skew it costs at the quarter guides is
+  under the dot's own width.
+- **RTL flips one custom property and the position list**: `--dot-x: calc(100% - var(--bar, 0%))`
+  and the zero rule moves to the right edge, the same shape as `td.bar`'s override. The guides are
+  symmetric and need no flip.
+- **The guides and the zero edge are `td.bar`'s, verbatim**, so both readings share one scale
+  language. `--bar-guide` is redeclared on `td.dot` rather than inherited through a widened
+  selector, so the settled `td.bar` rule stays untouched.
+- **Full strength is the sparkline's allowance** (no text under the mark), and the text-free cell is
+  the same exception (the value sits beside it). The probe reads the pair and refuses text in the
+  dot cell.
+
 **The bar band paints through a background image, so print and forced-colors both need a pin,
 verified by rendering rather than reasoning.** Print drops background graphics by default (verified
 via `print_background=False`), so `table.bar-chart td.bar` takes `print-color-adjust: exact` (check
@@ -902,7 +949,8 @@ states.
 **A time series is a Mermaid `xychart` line, and a sparkline is the word-sized answer (see Tufte's chart rules).** Nothing in CSS draws a line. The old reason, that `xychart` could not be themed, was wrong (see [Diagram types](#mermaid)).
 
 `samples/dark-charts.html` carries two bar tables (share of whole vs. share of the largest value, the
-convention that makes an unlabelled axis honest) plus the sparkline, small multiples and line chart.
+convention that makes an unlabelled axis honest) plus the meter, the dot plot, the sparkline, small
+multiples and line chart.
 
 **Bar cells use neutral quarter guides behind the value band.** The guides show the bar scale, while
 text remains the source of each value. Do not use guides to encode categories or remove the text
@@ -949,8 +997,12 @@ of, and carries a source line.
 **A bar that disagrees with its number is a lie factor above 1, so the probe reads the pair.**
 `.github/script-probe.py` (the `fidelity` run, on `samples/dark-charts.html`) checks that a `td.bar`
 cell ending in `%` draws exactly that `--bar`, and that a bare count draws its share of the column
-maximum. **It reaches the fixture only.** A consumer's page is never read, so `CONTRACT.md` § 2 stays
-the consumer obligation. The probe was mutated (a wrong `--bar`, a wrong `--h`) to confirm each
+maximum; that a `td.dot` states the same pair with its following `td.num` and holds no text itself;
+that a `dl.meter`'s `--bar` equals its `dd.v` percent and its band paints at that width; and that
+sibling meters align their value columns. **It reaches the fixture only.** A consumer's page is
+never read, so `CONTRACT.md` § 2 stays
+the consumer obligation. The probe was mutated (a wrong `--bar`, a wrong `--h`, a wrong dot
+position, a wrong meter band, a broken meter grid) to confirm each
 fails.
 
 **`span.spark` is the sparkline: `i` columns sized by `--h`, one zero baseline, one hue.** It answers
@@ -981,8 +1033,6 @@ fixture says so beside each fence, and `CONTRACT.md` § 2 requires a table of th
 - **Range-frame and dot-dash axes.** They need axis ticks placed at data values on a drawn axis. The
   template draws no axis (a bar's guides are fixed at 25, 50 and 75 percent), so there is nothing to
   frame. Authoring the ticks needs SVG a generator cannot emit.
-- **Dot plot variant of `td.bar`.** A full-strength dot under a short value (4 percent sits beneath
-  its own number) is the `.step-node` text-on-fill trap, and a 0.3-alpha dot is too faint to read. A dot in its own text-free cell, with the value in the next cell, avoids the trap and is allowed by the sparkline rule. It is unbuilt, not refused: add it when a page needs one.
 - **A line sparkline in inline SVG.** Mermaid `xychart` draws the full time series, so a second line form would need its own CSS, forced-colors rule, print pin and probe for a gain of a few pixels.
 
 ## Image tiles
