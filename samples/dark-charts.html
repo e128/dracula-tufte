@@ -6,7 +6,7 @@
   <title>Tufte-Dracula chart components</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.59.5 */
+    /* Dracula-Tufte (muted) v1.59.6 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -284,6 +284,7 @@
       font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--on-surface); }
     dl.timeline > dd { margin-inline-start: 0; margin-bottom: 0; color: var(--on-surface);
       border-inline-start: 1px solid var(--rule-light); padding-inline-start: var(--space-4); }
+    dl.timeline > dd + dt { margin-top: var(--space-4); }
     ul, ol, menu { padding-inline-start: 1.5rem; }
     :where(ul, ol, menu):where(:not(.nav-list)) { margin-block: var(--space-3); }
     li > :is(ul, ol, menu) { margin-block: 0; }
@@ -532,6 +533,7 @@
       dl.timeline > dt { text-align: start; white-space: normal; }
       dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
         margin-block-end: var(--space-4); }
+      dl.timeline > dd + dt { margin-top: 0; }
     }
     @media (max-width: 600px) {
       :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
