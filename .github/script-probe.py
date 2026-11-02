@@ -346,8 +346,8 @@ FIDELITY_DRIVER = """
     t('fidelity-bars-match-numbers', bad.length === 0);
     if (bad.length) console.error(bad.join('; '));
     if (window.__probeMermaid) {
+      const stop = Date.now() + 20000;
       const xy = await new Promise(done => {
-        const stop = Date.now() + 15000;
         (function poll() {
           const found = document.querySelector('svg[aria-roledescription="xychart"]');
           if (found || Date.now() > stop) done(found); else setTimeout(poll, 250);
@@ -355,14 +355,20 @@ FIDELITY_DRIVER = """
       });
       const line = xy && xy.querySelector('path[stroke]');
       t('fidelity-xychart-themed', Boolean(line) && __XY__.includes(line.getAttribute('stroke').toLowerCase()));
+      // Mermaid renders the fences asynchronously. The first chart does not prove
+      // that later diagrams or their accessibility metadata have finished rendering.
+      const named = await new Promise(done => {
+        (function poll() {
+          const pres = [...document.querySelectorAll('pre.mermaid')];
+          const ready = pres.length > 0 && pres.every(p => {
+            const s = p.querySelector('svg');
+            return Boolean(s && s.querySelector('title'));
+          });
+          if (ready || Date.now() > stop) done(ready); else setTimeout(poll, 250);
+        })();
+      });
+      t('fidelity-diagrams-named', named);
     }
-    // Every top-level diagram must carry an accessible name. Mermaid emits a <title>
-    // for most types but drops it for xychart, kanban and timeline, so mermaid.js reads
-    // accTitle/accDescr off the fence and injects both when the render leaves none.
-    t('fidelity-diagrams-named', [...document.querySelectorAll('pre.mermaid')].every(p => {
-      const s = p.querySelector('svg');
-      return Boolean(s && s.querySelector('title'));
-    }));
     const el = document.createElement('pre');
     el.id = 'script-probe';
     el.textContent = out.join('\\n');
@@ -377,7 +383,8 @@ def cdn_reachable():
     try:
         with urllib.request.urlopen(CDN, timeout=10) as r:
             return r.status == 200
-    except (urllib.error.URLError, OSError):
+    except (urllib.error.URLError, OSError) as error:
+        print(f"SKIP: CDN precheck failed: {error}")
         return False
 
 
@@ -408,7 +415,7 @@ def run(body, floor, what):
 def main():
     mermaid = cdn_reachable()
     if not mermaid:
-        print(f"SKIP: {CDN} is unreachable, so the mermaid.js half cannot run.")
+        print(f"SKIP: The precheck for {CDN} did not pass. Mermaid and Highlight.js checks did not run.")
 
     html = FIXTURE.read_text()
     if "</body>" not in html:
