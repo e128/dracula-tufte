@@ -444,6 +444,9 @@ def "main check" [] {
   # reader would see. It skips its mermaid half loudly when the pinned CDN is
   # unreachable, rather than passing quietly.
   let probe = (^python3 ($ROOT | path join ".github/script-probe.py") | complete)
+  for warning in ($probe.stdout | lines | where {|l| $l | str starts-with "SKIP:" }) {
+    print $warning
+  }
   print ($probe.stdout | lines | last 1 | str join)
   if $probe.exit_code != 0 {
     print ($probe.stdout | lines | where {|l| $l | str starts-with "BINDING" } | str join "\n")
