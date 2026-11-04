@@ -58,12 +58,19 @@ const ROOT = $SCRIPTS | path dirname
 # which palette bare placeholders resolve against; every row not naming one defaults
 # to dark, which is every row that predates light/dark parity.
 #
-# Rider, VS Code and Ghostty ship light and dark as two rows pointing at two
-# templates (an IDE theme or a terminal theme is one appearance per file in all
-# three formats); Zed ships both from the one row above, its own template holding
-# both appearances already (see the placeholder comment above). iTerm2 has no `.in`
-# template at all, so it is not in this list; see `render-itermcolors` below.
+# Rider, VS Code, Ghostty and CotEditor ship light and dark as two rows pointing at
+# two templates (an IDE, terminal or syntax-editor theme is one appearance per file
+# in all four formats); Zed ships both from the one row above, its own template
+# holding both appearances already (see the placeholder comment above). iTerm2 has
+# no `.in` template at all, so it is not in this list; see `render-itermcolors`
+# below.
+#
+# CotEditor pairs themes by name: two files whose names differ only by a trailing
+# " (Dark)" or " (Light)" switch together when the window appearance changes. The
+# space matters. Keep both names in that shape or the pair silently stops pairing.
 const THEMES = [
+  {template: "themes/coteditor/Dracula-Tufte (Dark).cottheme.in", output: "themes/coteditor/Dracula-Tufte (Dark).cottheme", scheme: "dark"}
+  {template: "themes/coteditor/Dracula-Tufte (Light).cottheme.in", output: "themes/coteditor/Dracula-Tufte (Light).cottheme", scheme: "light"}
   {template: "themes/ghostty/dracula-tufte.in", output: "themes/ghostty/dracula-tufte", scheme: "dark"}
   {template: "themes/ghostty/dracula-tufte-light.in", output: "themes/ghostty/dracula-tufte-light", scheme: "light"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte.json", scheme: "dark"}

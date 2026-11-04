@@ -1143,8 +1143,8 @@ hex actually lands.
 
 ### Light and dark parity
 
-**Rider, Zed, Ghostty, iTerm2 and VS Code ship a light variant**, projected from the same
-`prefers-color-scheme: light` override the page itself uses. opencode and tmux stay dark only:
+**Rider, Zed, Ghostty, iTerm2, VS Code and CotEditor ship a light variant**, projected from the
+same `prefers-color-scheme: light` override the page itself uses. opencode and tmux stay dark only:
 neither format has an appearance-switch mechanism to project a second palette into. `.github/palette-check.py --dump`
 returns `{dark: {...}, light: {...}}` rather than one flat map, and `scripts/create-themes.nu`'s
 `render`/`resolve` pick a palette per placeholder: bare `{{token}}` resolves against a template's
@@ -1152,9 +1152,9 @@ default scheme, `{{light:token}}` (or `dark:`) overrides that one placeholder re
 
 **Two shapes cover every format, chosen by whether the format's own schema holds more than one
 appearance per file.** A format that does not (Rider's `theme.json`/`.icls`, VS Code's
-`color-theme.json`, Ghostty's theme file, iTerm2's `.itermcolors`) gets a second, separately
-generated `-light` file: same template rendered a second time with `--scheme light`, so every bare
-placeholder in it resolves to light with no per-placeholder prefix. A format whose schema already
+`color-theme.json`, Ghostty's theme file, iTerm2's `.itermcolors`, CotEditor's `.cottheme`) gets a
+second, separately generated file: same template rendered a second time with `--scheme light`, so
+every bare placeholder in it resolves to light with no per-placeholder prefix. A format whose schema already
 holds several appearances in one document (Zed's `themes` array) keeps one file: the dark theme
 object renders unchanged and the light one, alongside it in the same template, prefixes every
 placeholder with `light:`. Do not invent a third shape for a future target before checking which of
