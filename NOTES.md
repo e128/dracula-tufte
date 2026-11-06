@@ -67,6 +67,20 @@ Two comments remain in the CSS. A machine reads both.
 
 **The body face is Source Serif 4.** Variable, pinned to an exact jsDelivr version, roman and italic.
 
+**The body face loads the `opsz` files, not the `wght` files.** The pinned package ships both. The
+`opsz` pair keeps the full 200-900 weight range and adds the optical-size axis, which Chromium maps
+from the rendered size with `font-optical-sizing: auto`. The `h1` and `h2` display sizes then draw
+with finer strokes and tighter spacing, and body copy sets slightly narrower. Do not set
+`font-optical-sizing: none` or a `font-variation-settings: "opsz"` value: the default is the point.
+Do not switch back to the `wght` files to save the extra bytes. The fallback stack has no such axis,
+which the fallback path below already accepts.
+
+**No face-specific `size-adjust` on JetBrains Mono.** Code sits at `1rem` while body copy runs 16px
+to 20px on the clamp, so one descriptor value matches the two x-heights at one body size only
+(about 18px) and misses by roughly 10 percent at each end. Do not add it, and do not add
+`font-size-adjust: from-font` to `body` or `code`: that inherited property shrank mono by about 10
+percent in a render. The Source Serif files carry no `GRAD` axis, so no grade tuning applies.
+
 **The webfont exists for the weight axis.** Every system serif ships only 400 and 700. Nothing else
 renders the 450 that light-on-dark body copy wants, or the real 600 on `.newthought`, `strong` and `dt`.
 
