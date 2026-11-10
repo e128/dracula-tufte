@@ -11,8 +11,7 @@
 
 # path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
-# SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
-# chain in Nushell, because the second step has to read a name that is already bound.
+# SCRIPTS is kept separate because the verbs below spawn sibling scripts by path.
 const SCRIPTS = path self | path dirname
 const ROOT = $SCRIPTS | path dirname
 
@@ -596,6 +595,11 @@ def "main bump" [version: string] {
 # Keep this list in step with the required checks on `main`.
 const REQUIRED_CHECKS = [contract]
 
+# The row shape `gh api` returns for one check run. Declared once because the three
+# predicates below and the poll loop in `release` all pass the same list, and a typo in a
+# column name is otherwise a silent `null` rather than a signature error.
+type Check = record<name: string, status: string, conclusion: string>
+
 # Split out of the poll loop so `main selftest` can drive it with the check shapes
 # GitHub actually produces, including the two that got this wrong. Waiting on the
 # live API to exercise a gate is how the Pages bug survived in the first place.
@@ -603,18 +607,18 @@ const REQUIRED_CHECKS = [contract]
 # Per name, not by row count: a re-run, or two workflows sharing a job name, can
 # put more than one run under one name, and counting rows against REQUIRED_CHECKS
 # would then never match and would time out on a green commit.
-def check-ready [checks: list] {
+def check-ready [checks: list<Check>] {
   $REQUIRED_CHECKS | all {|n|
     let runs = ($checks | where name == $n)
     ($runs | is-not-empty) and ($runs | all {|c| $c.status == "completed" })
   }
 }
 
-def check-failures [checks: list] {
+def check-failures [checks: list<Check>] {
   $checks | where {|c| $c.name in $REQUIRED_CHECKS and $c.conclusion != "success" }
 }
 
-def check-missing [checks: list] {
+def check-missing [checks: list<Check>] {
   $REQUIRED_CHECKS | where {|n| not ($checks | any {|c| $c.name == $n }) }
 }
 

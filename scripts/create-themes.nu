@@ -48,10 +48,7 @@
 
 # path self is this file, so its dirname is scripts/ and ROOT is the repo above it.
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
-# SCRIPTS exists because `path self | path dirname | path dirname` is not a legal const
-# chain in Nushell, because the second step has to read a name that is already bound.
-const SCRIPTS = path self | path dirname
-const ROOT = $SCRIPTS | path dirname
+const ROOT = path self | path dirname | path dirname
 
 # Each row is (template, output, scheme). Output is always the template minus `.in`,
 # but spelling both keeps the list greppable from either direction. `scheme` picks
