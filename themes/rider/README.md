@@ -20,9 +20,18 @@ does not switch between them on its own. The light `.icls` inherits from Intelli
 built-in `Default` scheme (`parent_scheme="Default"`) where the dark one inherits from
 `Darcula`, and the light `theme.json`'s four `Checkbox.*` icon keys drop the `.Dark`
 suffix the dark theme's copies carry, per JetBrains' own light/dark icon-key
-convention. Neither of those two differences has been verified against a running
-Rider install, only against JetBrains' theme documentation: say so if either turns
-out wrong once installed.
+convention. Both differences still need a rendered check in Rider.
+
+## Rider 2026.3 Compatibility
+
+The generated dark and light theme JSON files load through Rider 2026.3's native
+`UITheme` parser (build `263.7307.258`). Their UI color keys apply, and their
+`editorScheme` paths resolve to the packaged XML resources. This headless check
+verifies parsing and resource resolution, not scheme inheritance, icons, or rendered appearance.
+
+The descriptor keeps `since-build="223"` without an `until-build`, a range that includes
+[the 2026.3 build branch](https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html).
+You do not need an Islands parent or a descriptor change to include that build.
 
 ## These files are generated
 

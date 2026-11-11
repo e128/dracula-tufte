@@ -1180,10 +1180,17 @@ the light one, and the light `.icls` inherits IntelliJ's built-in `Default` sche
 (`parent_scheme="Default"`) where the dark one inherits `Darcula`. The light `theme.json`'s four
 `Checkbox.*` icon keys drop the `.Dark` suffix the dark theme's copies carry, per JetBrains' icon
 palette convention (a bare key is the light-icon asset, `.Dark` overrides it for the dark one).
-**Neither of those two differences has been run against an actual Rider install**, only checked
-against JetBrains' own theme documentation, because nothing in this repo's toolchain can render an
-IntelliJ theme the way Playwright renders the CSS payload. Flag it if either turns out wrong once
-installed, rather than trusting the doc citation as verification.
+**The light scheme inheritance and checkbox icons still need a rendered check in Rider.**
+Parsing theme JSON and resolving its bundled XML resource do not verify either difference.
+Do not treat a headless load check as visual verification.
+
+**Keep `since-build="223"` without an `until-build`.** The range includes Rider 2026.3's
+[branch 263](https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html).
+Do not raise the minimum or add an upper bound just to support that release.
+[Islands inheritance](https://plugins.jetbrains.com/docs/intellij/supporting-islands-theme.html)
+is optional styling, not a loading requirement. Do not add an Islands parent solely for compatibility.
+A native load check needs a Rider install that CI does not have. Keep it outside the contract gate
+rather than report a pass for a check that cannot reach its subject.
 
 **iTerm2 has no single-file dual mode**: a profile's "Use different colors for light and dark mode"
 checkbox takes two separately imported presets, so `dracula-tufte-light.itermcolors` is a second
