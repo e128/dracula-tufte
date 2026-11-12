@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en" data-season="christmas">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Tufte-Dracula component sample: forced Christmas light preview</title>
+  <meta name="generated-by" content="scripts/build-sample.nu"/>
+  <style>
+    /* Dracula-Tufte (muted) v1.63.0 */
+    @layer tufte-dracula {
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/files/source-serif-4-latin-opsz-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Source Serif 4'; font-style: italic; font-weight: 200 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/files/source-serif-4-latin-opsz-italic.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'JetBrains Mono'; font-style: italic; font-weight: 100 800;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono@5.3.0/files/jetbrains-mono-latin-wght-italic.woff2') format('woff2');
+    }
+    :root {
+      color-scheme: dark;
+      --surface:     oklch(0.288 0.022 277.509);  /* was #282a36 */
+      --surface-alt: oklch(0.243 0.019 280.395);  /* was #1e1f29 */
+      --on-surface:  oklch(0.977 0.008 106.545);  /* was #f8f8f2 */
+      --label:       oklch(0.810 0.054 275.492);  /* was #b7bfe4 */
+      --muted:       oklch(0.71 0.055 275);
+      --rule:        var(--muted);
+      --rule-light:  oklch(0.56 0.032 277.832);
+      --link:        oklch(0.802 0.064 216.782);  /* was #8fc9d9 */
+      --code-bg:     oklch(0.340 0.027 276.046);  /* was #343746 */
+      --orange:      oklch(0.773 0.115 61.444);
+      --red:         oklch(0.735 0.182 21.457);
+      --purple:      oklch(0.698 0.117 300.909);
+      --purple-bright: oklch(from var(--purple) calc(l + 0.07) c h);
+      --pink:        oklch(0.742 0.150 349.392);
+      --green:       oklch(0.775 0.125 155.397);
+      --data-1:      oklch(0.790 0.084 255.000);
+      --data-2:      oklch(0.742 0.158 340.000);
+      --data-3:      oklch(0.775 0.137 165.000);
+      --data-4:      oklch(0.790 0.116 112.500);
+      --body-font:   'Source Serif 4', Georgia, "Noto Serif", "DejaVu Serif", serif;
+      --mono-font:   'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
+      --page-width:  min(90vw, 160rem);
+      --gutter:      max(2rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+      --radius:      4px;
+      --radius-sm:   2px;
+      --accent-bar:  3px;
+      --ring:        oklch(1 0 0 / 0.1);
+      --highlight:   oklch(from var(--orange) l c h / 0.35);
+      --space-2:     0.5rem;
+      --space-3:     0.75rem;
+      --space-4:     1rem;
+      --space-6:     1.5rem;
+      --space-10:    2.5rem;
+      --space-12:    3rem;
+      --mermaid-scheme: dark;
+    }
+    html { scrollbar-gutter: stable both-edges; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--body-font);
+      font-weight: 450;
+      width: min(100% - 2 * var(--gutter), var(--page-width)); margin-inline: auto;
+      padding-block: var(--space-12);
+      line-height: 1.6; font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+      background: var(--surface); color: var(--on-surface);
+      overflow-wrap: break-word;
+      scrollbar-color: var(--rule) var(--surface-alt);
+    }
+    h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+    h1 { font-weight: 400; line-height: 1.15; font-size: 1.75em; margin-bottom: 0.15rem; letter-spacing: -0.02em; color: var(--pink); text-wrap: balance; }
+    .byline { font-size: 1rem; color: var(--muted); font-style: italic; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
+    .kicker { display: inline-block; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--link); padding: 0.25em 0.7em; margin-bottom: 0.5rem;
+      border-radius: 999px; background: oklch(from var(--link) l c h / 0.08); }
+    h2 { font-weight: 400; line-height: 1.2; font-style: italic; font-size: 1.2em; margin: var(--space-10) 0 var(--space-3); color: var(--purple); text-wrap: balance; }
+    h3 { font-weight: 650; line-height: 1.3; font-size: 1em; color: var(--label); margin: var(--space-6) 0 0.4rem; text-wrap: balance; }
+    h4 { font-weight: 550; line-height: 1.35; font-size: 1em; color: var(--label); margin: var(--space-4) 0 0.3rem; }
+    h5, h6 { font-weight: 450; line-height: 1.4; font-size: 1em; color: var(--label); margin: var(--space-3) 0 0.3rem; }
+    h6 { font-style: italic; }
+    p { margin: var(--space-2) 0; text-wrap: pretty; }
+    .indented p { margin-block: 0; }
+    .indented p + p { text-indent: 1.5em; }
+    .newthought { font-variant-caps: small-caps; font-size: 1.2em; font-weight: 600; letter-spacing: 0.03em; color: var(--on-surface); }
+    article, main { counter-reset: sidenote-counter; }
+    input.margin-toggle { display: none; }
+    label.margin-toggle:not(.sidenote-number) { display: none; }
+    .sidenote-number { counter-increment: sidenote-counter; }
+    .sidenote-number:after, .sidenote:before { content: counter(sidenote-counter) " "; font-size: 0.8125rem;
+      position: relative; top: -0.4em; line-height: 0; color: var(--muted); }
+    .sidenote, .marginnote { float: right; float: inline-end; clear: right; clear: inline-end; width: 28%;
+      margin-block: 0.2rem 1rem; margin-inline: 1.5rem 0; font-size: 1rem; line-height: 1.4; color: var(--label); text-wrap: pretty; hyphens: auto;
+      font-variant-caps: normal; font-weight: 400; letter-spacing: normal; }
+    .newthought :is(.sidenote, .marginnote) { font-size: 0.8125rem; }
+    a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8125rem;
+      text-decoration: none; margin-inline-start: 0.35em; transition: opacity 0.15s ease-out; }
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
+    a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
+    .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    :target { scroll-margin-block-start: var(--space-6); }
+    li:target, dl.timeline > dt:target + dd { outline: 2px solid var(--orange);
+      outline-offset: 3px; border-radius: var(--radius-sm); }
+    dl.timeline > dt:target { color: var(--orange); }
+    a[href^="http"]::after { content: "\A0↗"; font-size: 0.8125rem; color: var(--muted); }
+    @supports (content: "x" / "y") {
+      a[href^="http"]::after { content: "\A0↗" / ""; }
+    }
+    cite { font-family: var(--mono-font); font-style: normal; font-size: 1rem; color: var(--muted); overflow-wrap: break-word; }
+    strong { font-weight: 600; }
+    del, s { color: var(--muted); }
+    :is(ins, u) { text-decoration: underline dotted; text-underline-offset: 0.2em; }
+    samp { font-family: var(--mono-font); font-size: 1rem; }
+    sub, sup { line-height: 0; font-size: 0.8125rem; }
+    abbr[title] { text-decoration: underline dotted var(--muted); text-underline-offset: 0.2em; cursor: help; }
+    mark { background: var(--highlight); color: var(--on-surface); padding: .05em .2em; border-radius: var(--radius-sm); }
+    kbd { font-family: var(--mono-font); font-size: 1rem; color: var(--on-surface);
+      background: var(--code-bg); padding: .1em .35em; border-radius: var(--radius-sm);
+      box-shadow: inset 0 0 0 1px var(--rule), 0 1px 0 var(--rule); }
+    code {
+      font-family: var(--mono-font);
+      font-size: 1rem; color: var(--green);
+      background: var(--code-bg); padding: .1em .3em; border-radius: var(--radius-sm);
+      overflow-wrap: break-word;
+    }
+    pre {
+      font-family: var(--mono-font);
+      background: var(--code-bg); color: var(--on-surface);
+      padding: 1rem; overflow-x: auto; margin-block: var(--space-3);
+      border-inline-start: var(--accent-bar) solid var(--purple); border-radius: var(--radius);
+      font-size: 1rem;
+    }
+    pre code { background: none; padding: 0; color: var(--on-surface); font-size: 1em; }
+    .copy-code { float: inline-end; position: sticky; inset-block-start: 0; inset-inline-end: 0;
+      display: grid; place-items: center; inline-size: 2.75rem; block-size: 2.75rem; margin-block: -0.5rem 0; margin-inline: 0.5rem -0.5rem;
+      padding: 0; background: var(--code-bg); color: var(--label); border: 1px solid var(--rule);
+      border-radius: var(--radius-sm); cursor: pointer; }
+    .copy-code:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+    :is(blockquote, th, summary, h2, h6) :is(code, pre, kbd, samp) { font-style: normal; }
+    :is(pre, code) :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-operator,
+      .kw, .cf, .op, .bu, .k, .kc, .kd, .kn, .kp, .kr, .o, .ow,
+      .token.keyword, .token.operator, .token.tag) { color: var(--pink); }
+    :is(pre, code) :is(.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-addition, .hljs-char,
+      .st, .ss, .ch, .vs, .s, .s1, .s2, .sa, .sb, .sc, .sd, .se, .sh, .si, .sr, .sx, .dl,
+      .token.string, .token.regex, .token.char, .token.inserted) { color: var(--green); }
+    :is(pre, code) :is(.hljs-number, .hljs-params, .hljs-meta, .dv, .bn, .fl, .cn, .pp,
+      .m, .mb, .mf, .mh, .mi, .mo, .il,
+      .token.number, .token.boolean, .token.constant, .token.parameter) { color: var(--orange); }
+    :is(pre, code) :is(.hljs-comment, .hljs-quote, .hljs-doctag, .co, .an, .do,
+      .c, .c1, .cm, .cp, .cpf, .cs,
+      .token.comment, .token.prolog, .token.doctype) { color: var(--muted); font-style: italic; }
+    :is(pre, code) :is(.hljs-title, .hljs-name, .hljs-function, .hljs-section, .fu, .nf, .fm,
+      .token.function, .token.selector) { color: var(--link); }
+    :is(pre, code) :is(.hljs-type, .hljs-class, .hljs-attribute, .dt, .kt, .nc, .nn, .nb,
+      .token.class-name, .token.builtin, .token.namespace) { color: var(--purple-bright); }
+    :is(pre, code) :is(.hljs-attr, .hljs-variable, .hljs-property, .hljs-template-variable,
+      .va, .at, .na, .nv, .vc, .vg, .vi, .nd,
+      .token.attr-name, .token.property, .token.variable) { color: var(--label); }
+    :is(pre, code) :is(.hljs-deletion, .er, .al, .wa, .err, .gd, .token.deleted, .token.important) { color: var(--red); }
+    :is(pre, code) :is(.hljs-punctuation, .p, .token.punctuation) { color: inherit; }
+    math[display="block"] { overflow-x: auto; margin-block: var(--space-3); }
+    .math.display { display: block; overflow-x: auto; margin-block: var(--space-3); }
+    section { margin-bottom: var(--space-10); }
+    table {
+      box-shadow: 0 1px 0 var(--rule), 0 -1px 0 var(--rule);
+      border-collapse: collapse; margin: 0.5rem 0;
+      font-size: 1rem;
+      display: block; width: fit-content; max-width: 100%; overflow-x: auto;
+      background:
+        linear-gradient(to right, var(--surface) 30%, transparent) left center / 2.5rem 100% no-repeat local,
+        linear-gradient(to left, var(--surface) 30%, transparent) right center / 2.5rem 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, color-mix(in oklab, var(--rule) 35%, transparent), transparent) left center / 1rem 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, color-mix(in oklab, var(--rule) 35%, transparent), transparent) right center / 1rem 100% no-repeat scroll;
+    }
+    th {
+      font-weight: 450; font-style: italic; text-align: start;
+      padding: .4rem .6rem; color: var(--pink);
+      box-shadow: inset 0 -1px 0 var(--rule-light);
+    }
+    thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+    .table-scroll {
+      overflow: auto; max-height: 70vh; margin: 0.5rem 0; overscroll-behavior: contain; scroll-padding-top: 3em;
+      background:
+        linear-gradient(to right, var(--surface) 30%, transparent) left center / 2.5rem 100% no-repeat local,
+        linear-gradient(to left, var(--surface) 30%, transparent) right center / 2.5rem 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, color-mix(in oklab, var(--rule) 35%, transparent), transparent) left center / 1rem 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, color-mix(in oklab, var(--rule) 35%, transparent), transparent) right center / 1rem 100% no-repeat scroll;
+    }
+    .table-scroll > table { display: table; margin-block: 0; }
+    td {
+      border: none; padding: .35rem .6rem; text-align: start;
+      vertical-align: top; font-variant-numeric: tabular-nums;
+      transition: background-color 0.12s ease-out;
+    }
+    table.evidence-table tbody tr + tr td { border-block-start: 1px solid var(--rule-light); }
+    table.evidence-table thead th { box-shadow: inset 0 -1px 0 var(--rule); }
+    table.evidence-table td:first-child { font-weight: 600; color: var(--on-surface); }
+    tfoot td { font-weight: 600; box-shadow: inset 0 1px 0 var(--rule); }
+    .chart-takeaway { border-inline-start: 2px solid var(--rule-light); padding-inline-start: var(--space-4); color: var(--label); }
+    .chart-takeaway strong { color: var(--on-surface); }
+    .chart-takeaway .more { display: block; font-size: 1rem; color: var(--muted); }
+    :is(figcaption, caption) .label { display: block; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      margin: var(--space-6) 0; padding-inline-end: 1px; padding-block-end: 1px; }
+    .stat-strip > div { border: 1px solid var(--rule-light); margin-inline-end: -1px; margin-block-end: -1px;
+      padding: var(--space-3) var(--space-4); }
+    .stat-strip dt { font-size: 0.8125rem; font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-strip dd { margin: 0; }
+    .stat-strip .v { font-size: 1.75em; line-height: 1.05; margin-block-start: 0.3rem; color: var(--on-surface); font-variant-numeric: tabular-nums; }
+    .stat-strip .s { font-size: 1rem; color: var(--label); }
+    th.num, td.num { text-align: end; }
+    :is(th, td)[align="left"] { text-align: start; }
+    :is(th, td)[align="center"] { text-align: center; }
+    :is(th, td)[align="right"] { text-align: end; }
+    table.tree { --tree-step: 1.6rem; }
+    table.tree [data-depth="1"] td:first-child { padding-inline-start: calc(var(--tree-step) + .6rem); }
+    table.tree [data-depth="2"] td:first-child { padding-inline-start: calc(2 * var(--tree-step) + .6rem); }
+    table.tree [data-depth="3"] td:first-child { padding-inline-start: calc(3 * var(--tree-step) + .6rem); }
+    table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0"; color: var(--muted); }
+    @supports (content: "x" / "y") {
+      table.tree [data-depth]:not([data-depth="0"]) td:first-child::before { content: "\21B3\A0" / ""; }
+    }
+    table.tree [data-depth="0"] td { background: var(--code-bg); font-weight: 600; }
+    table.tree [data-depth="2"] td, table.tree [data-depth="3"] td { color: var(--label); }
+    details { margin: var(--space-2) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); padding: .5rem; }
+    summary { cursor: pointer; font-weight: 450; font-style: italic; color: var(--link); padding: 0.4rem 0; transition: color 0.15s ease-out; }
+    details[open] summary { margin-bottom: 0.5rem; }
+    aside, .markdown-alert {
+      border-inline-start: var(--accent-bar) solid var(--orange); padding: .5rem 1rem;
+      margin: var(--space-6) 0; color: var(--label); font-size: 1rem;
+    }
+    .markdown-alert-title { font-weight: 600; color: var(--orange); }
+    .markdown-alert-note { border-inline-start-color: var(--link); }
+    .markdown-alert-note .markdown-alert-title { color: var(--link); }
+    .markdown-alert-tip { border-inline-start-color: var(--green); }
+    .markdown-alert-tip .markdown-alert-title { color: var(--green); }
+    .markdown-alert-important { border-inline-start-color: var(--purple); }
+    .markdown-alert-important .markdown-alert-title { color: var(--purple); }
+    .markdown-alert-caution { border-inline-start-color: var(--red); }
+    .markdown-alert-caution .markdown-alert-title { color: var(--red); }
+    .markdown-alert-title svg { fill: currentColor; width: 1em; height: 1em; vertical-align: -0.12em; margin-inline-end: 0.35em; }
+    blockquote {
+      border-inline-start: var(--accent-bar) solid var(--muted); padding: .5rem 1rem;
+      margin: var(--space-6) 0; color: var(--label); font-style: italic;
+    }
+    blockquote p:last-child { margin-bottom: 0; }
+    blockquote.pull { position: relative; padding-inline-start: 2.2rem; }
+    blockquote.pull::before { content: "\201C"; position: absolute; inset-inline-start: 0.2rem; top: -0.15em;
+      font-family: var(--body-font); font-size: 2.5em; line-height: 1; color: var(--muted); opacity: 0.4; }
+    @supports (content: "x" / "y") {
+      blockquote.pull::before { content: "\201C" / ""; }
+    }
+    hr { border: none; border-block-start: 1px solid var(--rule-light); margin: var(--space-10) 0; }
+    img { max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--ring); border-radius: var(--radius-sm); }
+    :is(svg, video, canvas, iframe, object, embed) { max-width: 100%; }
+    img.emoji { box-shadow: none; width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
+    figure { margin: var(--space-6) 0; }
+    figcaption, caption { font-size: 1rem; line-height: 1.4; color: var(--label); text-align: start; text-wrap: pretty; }
+    figcaption { margin-top: 0.4rem; }
+    .hero { margin: var(--space-6) 0; border: 1px solid var(--rule-light); border-radius: var(--radius); background: var(--surface-alt); }
+    .hero > img { display: block; width: 100%; aspect-ratio: 21 / 9; object-fit: cover;
+      border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; box-shadow: none; }
+    .hero > figcaption { margin: 0; padding: var(--space-4); }
+    caption { font-style: italic; padding-block-end: 0.3rem; }
+    :is(figcaption, caption) .byline { display: block; font-size: 1em; margin: 0.15rem 0 0; }
+    table:has(caption) { box-shadow: 0 1px 0 var(--rule); }
+    dl { margin: var(--space-4) 0; }
+    dt { font-weight: 600; margin-top: .5rem; }
+    dd { margin-inline-start: 1.5rem; margin-bottom: .5rem; color: var(--label); }
+    dl.timeline { display: grid; grid-template-columns: var(--timeline-date, max-content) 1fr;
+      align-items: baseline; gap: var(--space-3) var(--space-6); }
+    dl.timeline > dt { margin-top: 0; text-align: end; font-weight: 500;
+      font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--on-surface); }
+    dl.timeline > dd { margin-inline-start: 0; margin-bottom: 0; color: var(--on-surface);
+      border-inline-start: 1px solid var(--rule-light); padding-inline-start: var(--space-4); }
+    dl.timeline > dd + dt { margin-top: var(--space-4); }
+    ul, ol, menu { padding-inline-start: 1.5rem; }
+    :where(ul, ol, menu):where(:not(.nav-list)) { margin-block: var(--space-3); }
+    li > :is(ul, ol, menu) { margin-block: 0; }
+    li { padding: 0.15rem 0; line-height: 1.5; }
+    li::marker { color: var(--muted); }
+    li:has(input[type="checkbox"]:first-child) { list-style: none; }
+    li input[type="checkbox"] { accent-color: var(--purple); font-size: 1em; width: 1em; height: 1em;
+      margin-inline-end: 0.45em; vertical-align: -0.08em; }
+    :is(button, input, select, textarea) { font: inherit; font-size: max(1em, 1rem); }
+    nav { margin: var(--space-4) 0; padding: .5rem 0; color: var(--label); font-size: 1rem; }
+    nav:has(> a) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.7em; row-gap: 0.2em; }
+    nav > a + a { border-inline-start: 1px solid var(--rule-light); padding-inline-start: 0.7em; }
+    nav a[aria-current="page"] { color: var(--on-surface); font-weight: 600;
+      border-inline-start: 3px solid var(--orange); padding-inline-start: 0.7em; }
+    footer { margin-top: var(--space-12); color: var(--label); font-size: 1rem; }
+    :is(.footnotes, .footnote) { border-block-start: 1px solid var(--rule-light); margin-top: var(--space-10);
+      padding-top: var(--space-3); font-size: 1rem; color: var(--label); }
+    :is(.footnotes, .footnote) p { margin-block: 0.2rem; }
+    :is(.footnotes, .footnote) > hr:first-child { display: none; }
+    .footnote-backref { text-decoration: none; }
+    .footnote-ref { white-space: nowrap; }
+    :is(.footnote-ref, sup) a { padding-block: 0.6em; }
+    .verified { color: var(--green); }
+    .unverified { color: var(--orange); }
+    .correction { color: var(--red); }
+    section:has(> .scorecard) { container-type: inline-size; }
+    .scorecard { display: grid; grid-template-columns: max-content max-content 1fr;
+      gap: 0.3rem 0.9rem; align-items: baseline; margin: var(--space-3) 0 1.25rem;
+      font-size: 1rem;
+      border-inline-start: var(--accent-bar) solid var(--rule-light); padding: .5rem 1rem; }
+    .scorecard .sc-label { color: var(--on-surface); }
+    .scorecard .sc-note { color: var(--muted); font-size: 1rem; }
+    .scorecard .sc-full { grid-column: 1 / -1; color: var(--label); margin-top: 0.2rem; }
+    .verdict { display: inline-block; justify-self: start; font-size: 0.8125rem; font-weight: 600; font-style: normal;
+      padding: 0.12em 0.55em; border-radius: var(--radius-sm); color: var(--surface);
+      letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; min-width: 5.2ch; text-align: center; }
+    .verdict-pass { background: var(--green); }
+    .verdict-partial { background: var(--orange); }
+    .verdict-failed { background: var(--red); }
+    .verdict-neutral { background: var(--muted); }
+    .filter-label { display: block; margin-top: var(--space-4); color: var(--label); font-size: 1rem; }
+    .filter-label + .filter-box { margin-top: 0.3rem; }
+    .filter-box {
+      width: 100%; margin: var(--space-4) 0 var(--space-6); padding: 0.65rem 0.85rem;
+      font-family: inherit; font-size: 1em;
+      color: var(--on-surface); background: var(--code-bg);
+      border: 1px solid var(--rule); border-radius: var(--radius);
+    }
+    .filter-box::placeholder { color: var(--muted); font-style: italic; }
+    .filter-box ~ [role="status"] { color: var(--label); font-size: 1rem; }
+    .filter-hidden { display: none !important; }
+    .filter-empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; }
+    details.nav-group { border: 1px solid var(--rule-light); border-radius: var(--radius); margin: 0.6rem 0; padding: 0.2rem 0.85rem; }
+    details.nav-group > summary { font-style: italic; color: var(--link); padding: 0.6rem 0; }
+    details.nav-group > summary .count { color: var(--muted); font-style: normal; font-size: 0.8125rem; margin-inline-start: 0.4em; }
+    details.nav-group .nav-list { border: none; padding: 0; }
+    .badge { display: inline-block; font-size: 0.8125rem; font-weight: 600; font-style: normal;
+      padding: 0.05em 0.5em; border-radius: var(--radius-sm); margin-inline-start: 0.5em; vertical-align: middle;
+      color: var(--label); box-shadow: inset 0 0 0 1px currentColor; }
+    .tag-dot::before { content: ""; display: inline-block; width: 0.6em; height: 0.6em;
+      border-radius: 50%; background: currentColor; margin-inline-end: 0.4em; vertical-align: middle; }
+    .live-dot { display: inline-block; width: 0.5em; height: 0.5em; border-radius: 50%;
+      background: var(--green); vertical-align: middle; animation: live-pulse 2s ease-in-out 2; }
+    @keyframes live-pulse { 0% { opacity: 0.4; } 50%, 100% { opacity: 1; } }
+    .nav-list { list-style: none; padding-inline-start: 0;
+      border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); padding: 0.3rem; }
+    .nav-list li { padding: 0; font-size: 1rem; line-height: 1.4; }
+    .nav-list li a { display: block; padding: 0.7rem 0.5rem; min-height: 40px; border-radius: var(--radius-sm); text-decoration-color: transparent; touch-action: manipulation;
+      transition: text-decoration-color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
+    .nav-list li a:active { scale: 0.96; }
+    .index-shell { margin: var(--space-6) 0; }
+    nav.index-rail { margin: 0; }
+    @media (min-width: 900px) {
+      .index-shell { display: grid; grid-template-columns: clamp(220px, 22vw, 300px) minmax(0, 1fr); column-gap: 2.5rem; }
+      .index-shell > .index-rail { align-self: start; position: sticky; top: 1rem;
+        max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain;
+        border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem; }
+    }
+    .edge-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) 0; margin: var(--space-6) 0;
+      --edge-gutter: var(--space-4); --edge-rule: 1px solid var(--rule-light); }
+    .edge-list h3 { margin-top: 0; }
+    .edge-list > div { display: flex; flex-direction: column; padding-inline-end: var(--edge-gutter); }
+    .edge-list > div > .nav-list { flex: 1; }
+    .edge-list > div + div { border-inline-start: var(--edge-rule); padding-inline: var(--edge-gutter) 0; }
+    .edge-list:has(> div:only-child) { grid-template-columns: 1fr; }
+    .recent-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr)); gap: var(--space-4); margin: var(--space-6) 0; }
+    .recent-group { display: flex; flex-direction: column; container-type: inline-size; }
+    .recent-group h3 { margin-top: 0; }
+    .recent-group .nav-list { flex: 1; }
+    .recent-group .nav-list li { display: flex; align-items: baseline; column-gap: 0.5rem; }
+    .recent-group .nav-list li a { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recent-group .nav-list li .count { flex: none; color: var(--muted); font-size: 0.8125rem; padding-inline-end: 0.5rem; }
+    @container (max-width: 40rem) { .recent-group .nav-list li a { white-space: normal; overflow: visible; text-overflow: clip; } }
+    .icon-list { list-style: none; padding-inline-start: 0; display: grid; gap: var(--space-3); margin: var(--space-4) 0; }
+    .icon-list li { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4);
+      background: var(--code-bg); border-radius: var(--radius);
+      border-inline-start: var(--accent-bar) solid var(--icon-color, var(--muted)); }
+    .icon-list strong { display: block; }
+    .icon-chip { flex: none; width: 2.25em; height: 2.25em; border-radius: var(--radius-sm); display: flex;
+      align-items: center; justify-content: center; font-weight: 700; color: var(--on-surface);
+      background: oklch(from var(--icon-color, var(--muted)) l c h / 0.15); }
+    .step-chain { display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+      gap: var(--space-3); margin: var(--space-6) 0; }
+    .step-hop { display: flex; align-items: center; gap: var(--space-3); }
+    .step-node { flex: none; width: 2.5em; height: 2.5em; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-weight: 700; color: var(--surface);
+      background: var(--icon-color, var(--muted)); }
+    .step-arrow { color: var(--muted); }
+    [dir="rtl"] .step-arrow { display: inline-block; transform: scaleX(-1); }
+    table.matrix thead th { text-align: center; font-style: normal; vertical-align: bottom; }
+    table.matrix td { text-align: center; white-space: nowrap; }
+    table.matrix td.none { color: var(--muted); }
+    table.matrix tbody th { font-style: normal; font-weight: 450; color: var(--on-surface); text-align: start;
+      position: sticky; inset-inline-start: 0; background: var(--surface); }
+    table.matrix thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
+    table.matrix tbody tr + tr > * { box-shadow: inset 0 1px 0 var(--rule-light); }
+    table.matrix .tag-dot { color: var(--purple); }
+    table.heatmap { border-collapse: separate; border-spacing: 0.2rem; }
+    table.heatmap thead th { text-align: center; font-style: normal; vertical-align: bottom; padding: 0.2rem 0; box-shadow: none; }
+    table.heatmap thead th.col > span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+    table.heatmap thead th.band { font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); text-align: start; padding-inline: 0.2rem;
+      box-shadow: inset 0 -1px 0 var(--rule-light); }
+    table.heatmap thead th:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 2; }
+    table.heatmap tbody th { font-style: normal; font-weight: 450; color: var(--on-surface); text-align: start; box-shadow: none;
+      position: sticky; inset-inline-start: 0; background: var(--surface); }
+    table.heatmap tbody th[colspan] { font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); font-weight: 400; padding-block-start: var(--space-3); }
+    table.heatmap td { padding: 0; text-align: center; vertical-align: middle; }
+    table.heatmap td.score { padding-inline: var(--space-3); text-align: end; white-space: nowrap;
+      background: linear-gradient(var(--purple) 0 0) no-repeat left bottom / var(--bar, 0) 0.2em; }
+    .hm { display: block; inline-size: 1.6rem; block-size: 1.6rem; margin: auto; border-radius: var(--radius-sm);
+      background: linear-gradient(var(--purple) 0 0) no-repeat bottom / 100% var(--h, 0), var(--code-bg); }
+    .hm.full { --h: 100%; }
+    .hm.part { --h: 40%; }
+    .hm.hatch { background: repeating-linear-gradient(135deg, var(--purple) 0 2px, transparent 2px 5px), var(--code-bg);
+      box-shadow: inset 0 0 0 1px var(--purple); }
+    .hm.ring { box-shadow: inset 0 0 0 2px var(--on-surface); }
+    .layer-stack { list-style: none; padding: 0; margin: var(--space-6) 0; display: grid; gap: var(--space-6); }
+    .layer { position: relative; display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: flex-start;
+      margin: 0; padding: var(--space-4); border: 1px solid var(--rule-light); border-radius: calc(var(--radius-sm) + 0.3rem); }
+    .layer-stack > .layer + .layer::before { content: "\2193"; content: "\2193" / ""; position: absolute;
+      inset-block-start: calc(-1 * var(--space-6)); inset-inline: 0; line-height: var(--space-6);
+      text-align: center; color: var(--muted); }
+    .layer-name { flex: 1 1 10rem; }
+    .layer-name strong { display: block; }
+    .layer-name span { display: block; color: var(--muted); font-size: 1rem; }
+    .layer-cards { flex: 3 1 18rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--space-3); }
+    .layer-card { border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+    .layer-card strong { display: block; }
+    .layer-card span { display: block; color: var(--label); font-size: 1rem; }
+    .layer-card.optional { border-style: dashed; }
+    .layer.layer-end { background: var(--on-surface); color: var(--surface); border-color: var(--on-surface); }
+    .layer.layer-end .layer-name span { color: inherit; }
+    table.bar-chart { display: table; inline-size: 100%; table-layout: fixed; }
+    table.bar-chart :is(th, td):first-child { inline-size: 30%; }
+    table.bar-chart td.bar { --bar-tint: oklch(from var(--data-1) l c h / 0.3);
+      --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
+      background-image: linear-gradient(var(--bar-tint) 0 0), linear-gradient(var(--rule) 0 0),
+        linear-gradient(to right, transparent calc(25% - 1px), var(--bar-guide) 0 25%, transparent 0 calc(50% - 1px),
+          var(--bar-guide) 0 50%, transparent 0 calc(75% - 1px), var(--bar-guide) 0 75%, transparent 0);
+      background-repeat: no-repeat; background-size: var(--bar, 0) 1.1em, 1px 100%, 100% 100%;
+      background-position: left center; inline-size: 12rem; }
+    table.bar-chart td.bar.lead { font-weight: 600; }
+    [dir="rtl"] table.bar-chart td.bar { background-position: right center; }
+    table.bar-chart td.dot { --bar-guide: color-mix(in oklab, var(--rule-light) 40%, transparent);
+      --dot-x: var(--bar, 0%);
+      background-image: radial-gradient(circle 0.24em at var(--dot-x) center, var(--data-1) 99%, transparent 100%),
+        linear-gradient(var(--rule) 0 0),
+        linear-gradient(to right, transparent calc(25% - 1px), var(--bar-guide) 0 25%, transparent 0 calc(50% - 1px),
+          var(--bar-guide) 0 50%, transparent 0 calc(75% - 1px), var(--bar-guide) 0 75%, transparent 0);
+      background-repeat: no-repeat;
+      background-size: calc(100% - 0.48em) 100%, 1px 100%, 100% 100%;
+      background-position: 0.24em center, left center, left center; inline-size: 12rem; }
+    [dir="rtl"] table.bar-chart td.dot { --dot-x: calc(100% - var(--bar, 0%));
+      background-position: right 0.24em center, right center, right center; }
+    .spark { display: inline-flex; align-items: flex-end; gap: 1px; block-size: 1.2em; vertical-align: text-bottom;
+      margin-inline-end: var(--space-2); border-block-end: 1px solid var(--rule); }
+    .spark > i { inline-size: 0.45em; block-size: var(--h, 0); background: var(--data-1); }
+    .spark > i:last-child { background: var(--on-surface); }
+    .spark.fit { border-block-end-style: dashed; }
+    dl.meter { display: grid; grid-template-columns: 1fr max-content; column-gap: var(--space-4);
+      row-gap: 0.25rem; align-items: baseline; }
+    dl.meter > dt { margin-top: 0; }
+    dl.meter dd { margin: 0; }
+    dl.meter .v { color: var(--on-surface); font-weight: 600; font-variant-numeric: tabular-nums; }
+    dl.meter .s { grid-column: 1 / -1; font-size: 1rem; color: var(--muted); }
+    dl.meter::after { content: ""; grid-column: 1 / -1; block-size: 0.375rem;
+      border: 1px solid var(--rule); border-radius: var(--radius-sm);
+      background-image: linear-gradient(var(--data-1) 0 0); background-repeat: no-repeat;
+      background-size: var(--bar, 0%) 100%; background-position: left center; }
+    [dir="rtl"] dl.meter::after { background-position: right center; }
+    .multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+      gap: var(--space-6); margin: var(--space-6) 0; }
+    .multiples { --multiples-label: 8rem; }
+    .multiples > table { margin: 0; }
+    .multiples > table caption { display: block; }
+    .multiples > table:first-child :is(th, td):first-child { inline-size: var(--multiples-label); }
+    .multiples > table + table { margin-inline-start: var(--multiples-label); width: auto;
+      max-inline-size: calc(100% - var(--multiples-label)); }
+    .col-2 > ol, .col-2 > ul { columns: 2; column-gap: 2.5rem; hyphens: auto; }
+    .col-2 > ol > li, .col-2 > ul > li { break-inside: avoid; }
+    .mermaid-overlay[open] {
+      position: fixed; inset: 0; z-index: 1000;
+      width: 100%; height: 100%; margin: 0; border: none; padding: 0;
+      max-width: none; max-height: none;
+      background: oklch(from var(--surface-alt) l c h / 0.92);
+      display: flex; align-items: center; justify-content: center;
+      cursor: zoom-out; opacity: 0; transition: opacity 0.2s ease-out;
+      pointer-events: none; overscroll-behavior: contain;
+    }
+    .mermaid-overlay.active { opacity: 1; pointer-events: auto; }
+    .mermaid-overlay::after { content: "✕"; position: absolute;
+      top: max(0.75rem, env(safe-area-inset-top, 0px));
+      inset-inline-end: max(1rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+      font-size: 1.75rem; line-height: 1; color: var(--label); }
+    @supports (content: "x" / "y") {
+      .mermaid-overlay::after { content: "✕" / ""; }
+    }
+    .mermaid-overlay svg { width: 95vw; height: 95vh; filter: drop-shadow(0 0 24px oklch(from var(--surface-alt) 0.15 c h / 0.5)); }
+    pre.mermaid { cursor: zoom-in; text-align: center; background: none; border-inline-start: none; overflow: visible; }
+    pre.mermaid svg, .mermaid-overlay svg { overflow: visible; }
+    .mermaid-zoom { display: block; margin: var(--space-3) auto 0; min-height: 44px; padding: 0.5rem 0.9rem;
+      font: inherit; font-family: var(--body-font); font-size: 1rem; color: var(--link); background: none; cursor: zoom-in;
+      border: 1px solid var(--rule); border-radius: var(--radius); touch-action: manipulation;
+      transition: color 0.15s ease-out, background-color 0.15s ease-out, scale 0.12s ease-out; }
+    .mermaid-zoom:active { scale: 0.96; }
+    pre.mermaid :is(.packetByte, .packetLabel, .packetTitle) { fill: var(--on-surface) !important; }
+    pre.mermaid .packetBlock { fill: var(--code-bg) !important; stroke: var(--purple) !important; }
+    pre.mermaid .cluster rect { fill: var(--code-bg) !important; stroke: var(--rule) !important; }
+    pre.mermaid .cluster-label :is(p, span) { color: var(--on-surface) !important; }
+    body.conn-map pre.mermaid svg { width: auto !important; max-width: 100% !important; height: auto !important; }
+    @media (min-width: 900px) {
+      body.conn-map article {
+        display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 2.5rem;
+      }
+      body.conn-map article > * { flex: 1 1 100%; }
+      body.conn-map article > section:nth-of-type(1) {
+        flex: 0 0 clamp(220px, 22vw, 300px);
+        position: sticky; top: 1rem;
+        max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain;
+        border-inline-end: 1px solid var(--rule-light); padding-inline-end: 1.5rem;
+      }
+      body.conn-map article > section:nth-of-type(2) {
+        flex: 1 1 0; min-width: 0;
+      }
+      body.conn-map article > section:nth-of-type(1) .edge-list {
+        grid-template-columns: 1fr; gap: 0.4rem; --edge-gutter: 0; --edge-rule: none;
+      }
+    }
+    @media (hover: hover) {
+      a:hover { text-decoration-color: var(--link); }
+      :is(h1, h2, h3, h4, h5, h6):hover :is(a.headerlink, a.anchor) { opacity: 1; }
+      tbody tr:hover td { background: var(--surface-alt); }
+      table.tree tbody tr:hover td { background: var(--surface-alt); }
+      summary:hover { color: var(--on-surface); }
+      nav.toc a:hover { color: var(--purple-bright); }
+      details.deep > summary:hover { color: var(--purple-bright); }
+      .nav-list li a:hover { background: var(--code-bg); text-decoration-color: var(--link); }
+      pre.mermaid:hover { box-shadow: 0 0 0 1px var(--rule); }
+      .mermaid-zoom:hover { color: var(--on-surface); background: var(--code-bg); }
+      .copy-code:hover { color: var(--on-surface); border-color: var(--link); }
+    }
+    ::selection { background: var(--purple); color: var(--surface); }
+    @media (max-width: 1000px) {
+      .sidenote, .marginnote { float: none; width: auto; margin: 0.5rem 0; display: block; }
+    }
+    @media (max-width: 760px) {
+      dl.timeline { grid-template-columns: 1fr; gap: 0.15rem; }
+      dl.timeline > dt { text-align: start; white-space: normal; }
+      dl.timeline > dd { border-inline-start: none; padding-inline-start: 0;
+        margin-block-end: var(--space-4); }
+      dl.timeline > dd + dt { margin-top: 0; }
+    }
+    @media (max-width: 600px) {
+      :root { --gutter: max(0.9rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+      body { padding-block: var(--space-6); }
+      pre { padding: 0.6rem; }
+      aside, blockquote { padding: 0.4rem 0.85rem; }
+      details, details.nav-group { padding: 0.3rem 0.6rem; }
+      .edge-list { grid-template-columns: 1fr; gap: 0.4rem; --edge-gutter: 0; --edge-rule: none; }
+      .col-2 > ol, .col-2 > ul { columns: 1; }
+      .scorecard { grid-template-columns: max-content 1fr; column-gap: 0.7rem; }
+      .scorecard .sc-note { grid-column: 1 / -1; }
+      .nav-list li a { padding: 0.7rem 0.5rem; min-height: 44px; }
+      details.nav-group > summary { padding: 0.75rem 0; min-height: 44px; }
+      pre.mermaid { overflow-x: auto; overscroll-behavior-x: contain; }
+      pre.mermaid svg, body.conn-map pre.mermaid svg { width: var(--natural-width, auto) !important; max-width: none !important; }
+    }
+    @container (max-width: 38em) { .scorecard { grid-template-columns: minmax(0, 1fr); } }
+    @media not all {
+      :root {
+        --on-surface:  oklch(1 0 0);
+        --surface-alt: oklch(0.200 0.019 280.395);
+        --label:       oklch(0.865 0.054 275.492);
+        --muted:       oklch(0.835 0.055 275);
+        --rule-light:  oklch(0.700 0.032 277.832);
+        --link:        oklch(0.830 0.064 216.782);
+        --orange:      oklch(0.840 0.092 61.444);
+        --red:         oklch(0.845 0.074 21.457);
+        --purple:      oklch(0.845 0.051 300.909);
+        --purple-bright: oklch(0.885 0.060 300.909);
+        --pink:        oklch(0.860 0.057 349.392);
+        --green:       oklch(0.820 0.100 155.397);
+        --data-1:      oklch(0.790 0.077 255.000);
+        --data-2:      oklch(0.742 0.120 340.000);
+        --data-3:      oklch(0.775 0.100 165.000);
+        --data-4:      oklch(0.790 0.100 112.500);
+      }
+      a { text-decoration-thickness: max(2px, 0.1em); text-decoration-color: currentColor; }
+      .nav-list li a { text-decoration-color: currentColor; }
+      a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
+      .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline-width: 3px; }
+    }
+    @media all {
+      :root {
+        color-scheme: light;
+        --surface:     oklch(0.990 0.006 106.545);
+        --surface-alt: oklch(0.950 0.006 106.545);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.960 0.010 277.509);
+        --label:       oklch(0.470 0.054 275.492);
+        --muted:       oklch(0.530 0.055 275);
+        --rule-light:  oklch(0.600 0.032 277.832);
+        --link:        oklch(0.520 0.056 216.782);
+        --orange:      oklch(0.535 0.085 61.444);
+        --red:         oklch(0.545 0.216 21.457);
+        --purple:      oklch(0.535 0.178 300.909);
+        --purple-bright: oklch(from var(--purple) calc(l - 0.06) c h);
+        --pink:        oklch(0.545 0.150 349.392);
+        --green:       oklch(0.515 0.105 155.397);
+        --data-1:      oklch(0.624 0.158 255.000);
+        --data-2:      oklch(0.643 0.173 340.000);
+        --data-3:      oklch(0.613 0.109 165.000);
+        --data-4:      oklch(0.619 0.091 112.500);
+        --ring:        oklch(0 0 0 / 0.1);
+        --mermaid-scheme: light;
+      }
+    }
+    @media screen {
+      :root[data-season="christmas"] {
+        --surface:     oklch(0.270 0.035 155);
+        --surface-alt: oklch(0.215 0.030 155);
+        --on-surface:  oklch(0.977 0.012 95);
+        --code-bg:     oklch(0.325 0.038 155);
+        --label:       oklch(0.830 0.045 150);
+        --muted:       oklch(0.760 0.045 150);
+        --rule-light:  oklch(0.560 0.050 155);
+        --link:        oklch(0.802 0.050 232);
+        --orange:      oklch(0.772 0.103 85);
+        --red:         oklch(0.735 0.181 20);
+        --purple:      oklch(0.698 0.152 150);
+        --pink:        oklch(0.705 0.147 14);
+        --green:       oklch(0.775 0.139 140);
+        --data-1:      oklch(0.790 0.083 255);
+        --data-2:      oklch(0.742 0.116 12);
+        --data-3:      oklch(0.775 0.182 150);
+        --data-4:      oklch(0.790 0.106 88);
+        --mermaid-scheme: christmas;
+      }
+    }
+    @media screen {
+      :root[data-season="christmas"] {
+        --surface:     oklch(0.982 0.020 95);
+        --surface-alt: oklch(0.940 0.026 95);
+        --on-surface:  oklch(0.190 0.012 150);
+        --code-bg:     oklch(0.962 0.012 150);
+        --label:       oklch(0.455 0.055 150);
+        --muted:       oklch(0.500 0.050 150);
+        --rule-light:  oklch(0.610 0.040 150);
+        --link:        oklch(0.510 0.062 232);
+        --orange:      oklch(0.520 0.074 85);
+        --red:         oklch(0.545 0.217 25);
+        --purple:      oklch(0.500 0.115 150);
+        --pink:        oklch(0.535 0.145 12);
+        --green:       oklch(0.500 0.128 145);
+        --data-1:      oklch(0.624 0.158 255);
+        --data-2:      oklch(0.643 0.162 12);
+        --data-3:      oklch(0.613 0.145 150);
+        --data-4:      oklch(0.619 0.083 88);
+        --mermaid-scheme: light-christmas;
+      }
+    }
+    @media (forced-colors: active) {
+      code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node, .layer-end { border: 1px solid currentColor; }
+      .hm { border: 1px solid CanvasText; }
+      pre code { border: none; }
+      table, th, td { border: 1px solid currentColor; }
+      .tag-dot::before, .live-dot, .spark > i { background: CanvasText; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+    @media print {
+      :root {
+        color-scheme: light;
+        --surface:     oklch(1 0 0);
+        --surface-alt: oklch(1 0 0);
+        --on-surface:  oklch(0.200 0 0);
+        --code-bg:     oklch(0.970 0 0);
+        --rule-light:  oklch(0.620 0.032 277.832);
+        --label:       oklch(0.470 0.054 275.492);
+        --muted:       oklch(0.545 0.055 275);
+        --link:        oklch(0.535 0.064 216.782);
+        --pink:        oklch(0.560 0.120 349.392);
+        --purple:      oklch(0.550 0.107 300.909);
+        --purple-bright: oklch(0.550 0.107 300.909);
+        --green:       oklch(0.530 0.100 155.397);
+        --orange:      oklch(0.550 0.092 61.444);
+        --red:         oklch(0.560 0.196 21.457);
+        --data-1:      oklch(0.624 0.146 255.000);
+        --data-2:      oklch(0.643 0.156 340.000);
+        --data-3:      oklch(0.613 0.079 165.000);
+        --data-4:      oklch(0.619 0.078 112.500);
+        --ring:        oklch(0 0 0 / 0.1);
+      }
+      mark { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+      body { width: auto; max-width: none; padding: 1rem; }
+      table { background: none; }
+      .table-scroll { max-height: none; overflow: visible; background: none; }
+      .mermaid-zoom { display: none; }
+      pre.mermaid {
+        --surface:     oklch(0.288 0.022 277.509);
+        --on-surface:  oklch(0.977 0.008 106.545);
+        --code-bg:     oklch(0.340 0.027 276.046);
+        --purple:      oklch(0.698 0.117 300.909);
+        --muted:       oklch(0.71 0.055 275);
+        background: var(--surface); padding: var(--space-3) 0; border-radius: var(--radius);
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+      }
+      table.bar-chart td.bar, .tag-dot::before { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .spark > i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .layer-end, .hm, table.heatmap td.score { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      table.bar-chart td.dot, dl.meter::after { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      a { color: inherit; text-decoration: none; }
+      a[href^="http"]::after { content: ""; }
+      h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+      p { orphans: 2; widows: 2; }
+      thead { display: table-header-group; }
+      tr, blockquote, aside, details, .scorecard, .verdict, img, .markdown-alert, pre,
+      dl.timeline > dd, dl.meter, math[display="block"] { break-inside: avoid; }
+      .verdict { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+      .verdict-pass { color: var(--green); }
+      .verdict-partial { color: var(--orange); }
+      .verdict-failed { color: var(--red); }
+      .verdict-neutral { color: var(--muted); }
+    }
+    @media print {
+      pre.mermaid { --surface: unset; --on-surface: unset; --code-bg: unset; --purple: unset;
+        --muted: unset; background: none; padding: 0; }
+    }
+    nav.toc { clear: right; clear: inline-end; max-inline-size: 38rem;
+      margin: 1.4rem 0 2.2rem; padding: 0.9rem 1.1rem;
+      border-inline-start: 3px solid var(--rule-light); background: color-mix(in oklab, var(--surface-alt) 60%, transparent); }
+    nav.toc .toc-label { font-size: 0.8125rem; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--muted); margin: 0 0 0.45rem; }
+    nav.toc ol { margin: 0; padding-inline-start: 1.3rem; columns: 2; column-gap: 2.4rem; }
+    nav.toc li { margin: 0.18rem 0; font-size: 0.8125rem; break-inside: avoid; }
+    nav.toc a { color: var(--on-surface); text-decoration: none;
+      border-block-end: 1px dotted var(--rule-light); }
+    details.deep { margin: 0.45rem 0 0; }
+    details.deep > summary { cursor: pointer; list-style: none;
+      font-size: 0.8125rem; letter-spacing: 0.04em;
+      color: var(--muted); padding: 0.25rem 0; }
+    details.deep > summary::before { content: "\25B8\00A0"; }
+    details.deep[open] > summary::before { content: "\25BE\00A0"; }
+    @supports (content: "x" / "y") {
+      details.deep > summary::before { content: "\25B8\00A0" / ""; }
+      details.deep[open] > summary::before { content: "\25BE\00A0" / ""; }
+    }
+    details.deep > summary::-webkit-details-marker { display: none; }
+    @media (max-width: 600px) {
+      nav.toc ol { columns: 1; }
+    }
+    @media print {
+      nav.toc ol { columns: 1; }
+    }
+    }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs';
+    const mermaidScheme = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim();
+    const mermaidLight = mermaidScheme === 'light' || mermaidScheme === 'light-christmas';
+    const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
+    const mermaidDark = {
+      background:          '#343746',
+      mainBkg:             '#343746',
+      primaryColor:        '#343746',
+      primaryTextColor:    '#f8f8f2',
+      primaryBorderColor:  '#aa8cdb',
+      lineColor:           '#979fc4',
+      textColor:           '#f8f8f2',
+      secondaryColor:      '#1e1f29',
+      clusterBkg:          '#343746',
+      clusterBorder:       '#707388',
+      nodeBorder:          '#aa8cdb',
+      edgeLabelBackground: '#343746',
+      noteBkgColor:        '#343746',
+      noteTextColor:       '#f8f8f2',
+      noteBorderColor:     '#707388',
+      archEdgeColor:       '#979fc4',
+      archGroupBorderColor: '#707388',
+      xyChart: {
+        backgroundColor: '#282a36',
+        titleColor: '#b7bfe4',
+        dataLabelColor: '#f8f8f2',
+        legendTextColor: '#f8f8f2',
+        xAxisLabelColor: '#f8f8f2',
+        yAxisLabelColor: '#f8f8f2',
+        xAxisTitleColor: '#f8f8f2',
+        yAxisTitleColor: '#f8f8f2',
+        xAxisTickColor: '#979fc4',
+        yAxisTickColor: '#979fc4',
+        xAxisLineColor: '#979fc4',
+        yAxisLineColor: '#979fc4',
+        plotColorPalette: '#96bef0',
+      },
+    };
+    const mermaidLightVars = {
+      background:          '#f0f1f9',
+      mainBkg:             '#f0f1f9',
+      primaryColor:        '#f0f1f9',
+      primaryTextColor:    '#161616',
+      primaryBorderColor:  '#804cc2',
+      lineColor:           '#626a8c',
+      textColor:           '#161616',
+      secondaryColor:      '#efefea',
+      clusterBkg:          '#f0f1f9',
+      clusterBorder:       '#7b7f94',
+      nodeBorder:          '#804cc2',
+      edgeLabelBackground: '#f0f1f9',
+      noteBkgColor:        '#f0f1f9',
+      noteTextColor:       '#161616',
+      noteBorderColor:     '#7b7f94',
+      archEdgeColor:       '#626a8c',
+      archGroupBorderColor: '#7b7f94',
+      xyChart: {
+        backgroundColor: '#fcfcf8',
+        titleColor: '#525879',
+        dataLabelColor: '#161616',
+        legendTextColor: '#161616',
+        xAxisLabelColor: '#161616',
+        yAxisLabelColor: '#161616',
+        xAxisTitleColor: '#161616',
+        yAxisTitleColor: '#161616',
+        xAxisTickColor: '#626a8c',
+        yAxisTickColor: '#626a8c',
+        xAxisLineColor: '#626a8c',
+        yAxisLineColor: '#626a8c',
+        plotColorPalette: '#3c88e4',
+      },
+    };
+    const mermaidChristmas = {
+      background:          '#243a2c',
+      mainBkg:             '#243a2c',
+      primaryColor:        '#243a2c',
+      primaryTextColor:    '#faf8ef',
+      primaryBorderColor:  '#4ab769',
+      lineColor:           '#9ebaa2',
+      textColor:           '#faf8ef',
+      secondaryColor:      '#0d1e13',
+      clusterBkg:          '#243a2c',
+      clusterBorder:       '#5d7e68',
+      nodeBorder:          '#4ab769',
+      edgeLabelBackground: '#243a2c',
+      noteBkgColor:        '#243a2c',
+      noteTextColor:       '#faf8ef',
+      noteBorderColor:     '#5d7e68',
+      archEdgeColor:       '#9ebaa2',
+      archGroupBorderColor: '#5d7e68',
+      xyChart: {
+        backgroundColor: '#182c1f',
+        titleColor: '#b3d0b8',
+        dataLabelColor: '#faf8ef',
+        legendTextColor: '#faf8ef',
+        xAxisLabelColor: '#faf8ef',
+        yAxisLabelColor: '#faf8ef',
+        xAxisTitleColor: '#faf8ef',
+        yAxisTitleColor: '#faf8ef',
+        xAxisTickColor: '#9ebaa2',
+        yAxisTickColor: '#9ebaa2',
+        xAxisLineColor: '#9ebaa2',
+        yAxisLineColor: '#9ebaa2',
+        plotColorPalette: '#97bef0',
+      },
+    };
+    const mermaidChristmasLight = {
+      background:          '#edf5ee',
+      mainBkg:             '#edf5ee',
+      primaryColor:        '#edf5ee',
+      primaryTextColor:    '#101511',
+      primaryBorderColor:  '#26753e',
+      lineColor:           '#4f6c54',
+      textColor:           '#101511',
+      secondaryColor:      '#f0ebd8',
+      clusterBkg:          '#edf5ee',
+      clusterBorder:       '#738a77',
+      nodeBorder:          '#26753e',
+      edgeLabelBackground: '#edf5ee',
+      noteBkgColor:        '#edf5ee',
+      noteTextColor:       '#101511',
+      noteBorderColor:     '#738a77',
+      archEdgeColor:       '#4f6c54',
+      archGroupBorderColor: '#738a77',
+      xyChart: {
+        backgroundColor: '#fdf9ea',
+        titleColor: '#405f46',
+        dataLabelColor: '#101511',
+        legendTextColor: '#101511',
+        xAxisLabelColor: '#101511',
+        yAxisLabelColor: '#101511',
+        xAxisTitleColor: '#101511',
+        yAxisTitleColor: '#101511',
+        xAxisTickColor: '#4f6c54',
+        yAxisTickColor: '#4f6c54',
+        xAxisLineColor: '#4f6c54',
+        yAxisLineColor: '#4f6c54',
+        plotColorPalette: '#3c88e4',
+      },
+    };
+    const mermaidVars = new Map([['light', mermaidLightVars], ['christmas', mermaidChristmas], ['light-christmas', mermaidChristmasLight]]);
+    mermaid.initialize({
+      startOnLoad: true, theme: 'base', look: 'classic',
+      securityLevel: window.mermaidSecurityLevel || 'strict',
+      fontFamily: mermaidFont,
+      themeVariables: {
+        darkMode: !mermaidLight,
+        fontFamily: mermaidFont,
+        fontSize:   '1rem',
+        ...(mermaidVars.get(mermaidScheme) ?? mermaidDark),
+      },
+    });
+    const sourceMeta = new WeakMap();
+    const accField = (text, key) => {
+      const match = text.match(new RegExp('^\\s*' + key + ':\\s*(.+?)\\s*$', 'im'));
+      return match ? match[1].replace(/^["']|["']$/g, '') : '';
+    };
+    document.querySelectorAll('pre.mermaid').forEach(pre => {
+      sourceMeta.set(pre, { title: accField(pre.textContent, 'accTitle'), descr: accField(pre.textContent, 'accDescr') });
+    });
+    const overlay = document.getElementById('mermaid-zoom');
+    if (!overlay) throw new Error('mermaid.js requires <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog> as the first child of <body>');
+    const zoomLabel = window.mermaidZoomLabel || 'Zoom diagram';
+    const regionLabel = window.mermaidRegionLabel || 'Scrollable diagram';
+    const titleOf = svg => svg.querySelector('title')?.textContent?.trim();
+    const named = (svg, label) => {
+      const title = titleOf(svg);
+      return title ? label + ': ' + title : label;
+    };
+    const hide = () => {
+      overlay.classList.remove('active');
+      overlay.close();
+      overlay.innerHTML = '';
+    };
+    const zoom = svg => {
+      const zoomed = svg.cloneNode(true);
+      zoomed.removeAttribute('width');
+      zoomed.removeAttribute('height');
+      zoomed.style.maxWidth = zoomed.style.width = zoomed.style.height = '';
+      overlay.setAttribute('aria-label', named(svg, zoomLabel));
+      overlay.replaceChildren(zoomed);
+      overlay.showModal();
+      requestAnimationFrame(() => overlay.classList.add('active'));
+    };
+    const scrolls = window.matchMedia('(max-width: 600px)');
+    const syncRegions = () => {
+      document.querySelectorAll('pre.mermaid').forEach(pre => {
+        const svg = pre.querySelector('svg');
+        if (!svg) return;
+        if (scrolls.matches) {
+          pre.tabIndex = 0;
+          pre.setAttribute('role', 'region');
+          pre.setAttribute('aria-label', regionLabel);
+        } else {
+          pre.removeAttribute('tabindex');
+          pre.removeAttribute('role');
+          pre.removeAttribute('aria-label');
+        }
+      });
+    };
+    scrolls.addEventListener('change', syncRegions);
+    const zoomBound = new WeakSet();
+    document.querySelectorAll('pre.mermaid').forEach(pre => {
+      new MutationObserver(() => {
+        const svg = pre.querySelector('svg');
+        if (!svg) return;
+        if (!svg.querySelector('title')) {
+          const meta = sourceMeta.get(pre);
+          if (meta && meta.title) {
+            if (meta.descr) {
+              const desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+              desc.textContent = meta.descr;
+              svg.prepend(desc);
+            }
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            title.textContent = meta.title;
+            svg.prepend(title);
+          }
+        }
+        if (!zoomBound.has(svg)) {
+          zoomBound.add(svg);
+          svg.addEventListener('click', e => { if (!e.target.closest('a')) zoom(svg); });
+        }
+        if (svg.style.maxWidth) svg.style.setProperty('--natural-width', svg.style.maxWidth);
+        syncRegions();
+        if (!pre.querySelector('.mermaid-zoom')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'mermaid-zoom';
+          button.textContent = zoomLabel;
+          button.setAttribute('aria-label', named(svg, zoomLabel));
+          button.addEventListener('click', () => zoom(svg));
+          pre.append(button);
+        }
+      }).observe(pre, { childList: true });
+    });
+    overlay.addEventListener('click', hide);
+    overlay.addEventListener('cancel', e => { e.preventDefault(); hide(); });
+  </script>
+  <script type="module">
+    document.querySelectorAll('input.filter-box').forEach(input => {
+      const scope = [];
+      let el = input.nextElementSibling;
+      while (el) {
+        if (el.matches('input.filter-box') || el.querySelector('input.filter-box')) break;
+        scope.push(el);
+        el = el.nextElementSibling;
+      }
+      if (!scope.length) return;
+      const rows = [];
+      const groups = [];
+      scope.forEach(node => {
+        rows.push(...node.querySelectorAll('tbody tr, .nav-list > li'));
+        if (node.matches('details.nav-group')) groups.push(node);
+        groups.push(...node.querySelectorAll('details.nav-group'));
+      });
+      if (!rows.length) return;
+      const wasOpen = groups.map(group => group.open);
+      const counts = groups.map(group => group.querySelector('summary .count'));
+      const wasCount = counts.map(count => count && count.textContent);
+      const status = input.parentElement.querySelector('[role="status"]');
+      let empty = input.parentElement.querySelector('.filter-empty');
+      if (!empty) {
+        empty = document.createElement('p');
+        empty.className = 'filter-empty';
+        empty.textContent = 'No entries match. Clear the filter to see all entries.';
+        empty.hidden = true;
+        scope[scope.length - 1].after(empty);
+      }
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+          const hit = !q || row.textContent.toLowerCase().includes(q);
+          row.classList.toggle('filter-hidden', !hit);
+          if (hit) visible += 1;
+        });
+        groups.forEach((group, i) => {
+          const shown = group.querySelectorAll('.nav-list > li:not(.filter-hidden)').length;
+          group.classList.toggle('filter-hidden', Boolean(q) && shown === 0);
+          group.open = q ? shown > 0 : wasOpen[i];
+          if (counts[i]) counts[i].textContent = q ? shown : wasCount[i];
+        });
+        empty.hidden = visible !== 0;
+        if (status) status.textContent = `${visible} ${visible === 1 ? 'entry' : 'entries'}`;
+      });
+    });
+  </script>
+  <script type="module">
+    const icons = {
+      copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+      done: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+    };
+    const paint = (button, name) => {
+      button.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
+    };
+    if (navigator.clipboard) {
+      document.querySelectorAll('pre:not(.mermaid)').forEach(pre => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-code';
+        button.setAttribute('aria-label', 'Copy code');
+        paint(button, 'copy');
+        button.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(pre.textContent);
+          } catch { return; }
+          paint(button, 'done');
+          button.setAttribute('aria-label', 'Copied');
+          setTimeout(() => { paint(button, 'copy'); button.setAttribute('aria-label', 'Copy code'); }, 1500);
+        });
+        pre.prepend(button);
+      });
+    }
+    const blocks = document.querySelectorAll('pre > code[class*="language-"]:not(.hljs)');
+    if (blocks.length) {
+      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/highlight.min.js');
+      blocks.forEach(block => hljs.highlightElement(block));
+    }
+  </script>
+</head>
+<body>
+  <div class="markdown-alert markdown-alert-caution">
+    <p class="markdown-alert-title">Preview only, not the payload</p>
+    <p>This page forces the Christmas theme in the light palette, whatever the date and the system appearance. It carries <code>data-season="christmas"</code> on <code>&lt;html&gt;</code> and no head snippet, and its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to Christmas light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href="dark.html">dark.html</a> is the same fixture with the stylesheet verbatim and the date-driven snippet.</p>
+  </div>
+  <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog>
+  <main>
+  <article>
+    <span class="kicker">Living fixture</span>
+    <h1>Tufte-Dracula Component Sample</h1>
+    <p class="byline">Living style fixture: every rule in tufte-dracula.css, mermaid.js and filter.js</p>
+
+    <nav>
+      <a href="#">Requirements Register</a>
+      <a href="#" aria-current="page">Decision Log</a>
+      <a href="#">Dependency Tracker</a>
+      <a href="#">Spike Results</a>
+      <a href="#">Findings</a>
+      <a href="#">Reuse Candidates</a>
+      <a href="#">Project Summary</a>
+    </nav>
+
+    <p>A note stack here spans the block that follows it.<label for="mn-2" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-2" class="margin-toggle"/><span class="marginnote">The first margin note in the stack. It floats to the inline end, and the notes below it clear it.</span><label for="mn-3" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-3" class="margin-toggle"/><span class="marginnote">A second margin note, clearing the first, so the pair stacks down the margin column.</span><label for="mn-4" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-4" class="margin-toggle"/><span class="marginnote">A third note makes the stack taller than its one-line paragraph, which is the case the index has to clear.</span></p>
+
+    <nav class="toc" aria-labelledby="toc-label">
+      <p class="toc-label" id="toc-label">On this page</p>
+      <ol>
+        <li><a href="#">Headings and text</a></li>
+        <li><a href="#">Lists and definition lists</a></li>
+        <li><a href="#">Tables and the scroll region</a></li>
+        <li><a href="#">Diagrams and the zoom overlay</a></li>
+        <li><a href="#">Borrowed components</a></li>
+        <li><a href="#">Appearance modes</a></li>
+      </ol>
+    </nav>
+
+    <section>
+      <h2 id="headings">Headings &amp; text <a class="headerlink" href="#headings" aria-label="Permalink to this heading">&#182;</a></h2>
+      <h3 id="third-level">Third-level heading <a class="anchor" href="#third-level" aria-label="Permalink to this heading">#</a></h3>
+      <h4>Fourth level: body size, label tier</h4>
+      <h5>Fifth level: body size, muted tier</h5>
+      <h6>Sixth level: muted and italic</h6>
+      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (weight 600)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <code>src/theme/tokens.css:14</code>, and inline <code>code()</code>.</p>
+      <p>Status spans: <span class="verified">verified</span>, <span class="unverified">unverified</span>, <span class="correction">correction</span>.</p>
+      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd>, a ringed chip distinct from inline <code>code()</code>.</p>
+      <p>Markdown inline output: <del>struck through</del> drops to the muted tier, <samp>program output</samp> takes the mono face without the code chip, an <abbr title="HyperText Markup Language">HTML</abbr> abbreviation carries a dotted rule, and H<sub>2</sub>O sits beside 10<sup>3</sup> without opening the line. An emoji image <img class="emoji" alt="&#128578;" title=":slightly_smiling_face:" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23e6c84f%22/%3E%3Ccircle cx=%225.5%22 cy=%226.5%22 r=%221%22/%3E%3Ccircle cx=%2210.5%22 cy=%226.5%22 r=%221%22/%3E%3Cpath d=%22M5 10q3 2.5 6 0%22 fill=%22none%22 stroke=%22%23000%22/%3E%3C/svg%3E"> sets at text size with no frame.</p>
+      <details class="deep"><summary>Why weight 450 and not 400</summary><p>The webfont exists for the weight axis. A system serif ships 400 and 700 and nothing between, so nothing else renders the 450 that light-on-dark body copy wants.</p></details>
+      <p>A sidenote lives here.<label for="sn-1" class="margin-toggle sidenote-number"></label><input type="checkbox" id="sn-1" class="margin-toggle"/><span class="sidenote">This is a Tufte sidenote. It floats to the right margin and auto-numbers.</span> And a margin note follows.<label for="mn-1" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-1" class="margin-toggle"/><span class="marginnote">A margin note carries no number.</span></p>
+    </section>
+
+    <section>
+      <h2>Code block</h2>
+      <pre tabindex="0" role="region" aria-label="Code block"><code>def greet [name: string] {
+    print $"hello ($name)"
+}</code></pre>
+      <p>A highlighted block takes the same slot map the editor themes use: keywords pink, strings green, numbers orange, comments muted, functions link, types purple, fields label.</p>
+      <pre tabindex="0" role="region" aria-label="Highlighted code block"><code class="language-csharp hljs"><span class="hljs-comment">// highlighter classes, not hand-written spans</span>
+<span class="hljs-keyword">public</span> <span class="hljs-type">Result</span> <span class="hljs-title hljs-function">Parse</span>(<span class="hljs-type">string</span> <span class="hljs-params">source</span>) {
+    <span class="hljs-keyword">var</span> <span class="hljs-variable">count</span> = <span class="hljs-number">42</span>;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-type">Result</span>(<span class="hljs-string">"ok"</span>, <span class="hljs-variable">count</span>);
+}</code></pre>
+      <p>An unhighlighted block that names its language is highlighted in the browser by <code>highlight.js</code>. Emit <code>pre &gt; code.language-python</code> and nothing else: the script skips a block that already carries <code>hljs</code> spans, and a block with no <code>language-</code> class stays plain.</p>
+      <pre tabindex="0" role="region" aria-label="Runtime-highlighted code block"><code class="language-python"># highlighted in the browser, not by the generator
+def parse(source: str) -&gt; Result:
+    count = 42
+    return Result("ok", total=count)</code></pre>
+      <p>Pygments names the same slots one and two letters, so Sphinx, MkDocs, Quarto and a notebook export land in the same registers.</p>
+      <div class="highlight"><pre tabindex="0" role="region" aria-label="Pygments code block"><span class="c1"># pygments classes, not hand-written spans</span>
+<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="kt">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Result</span><span class="p">:</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="k">return</span> <span class="nc">Result</span><span class="p">(</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="na">total</span><span class="o">=</span><span class="n">count</span><span class="p">)</span></pre></div>
+    </section>
+
+    <section>
+      <h2>Table</h2>
+      <table tabindex="0">
+        <caption>Table caption: annotation register, start-aligned like every other block. An unwrapped table carries <code>tabindex</code>, because the escape hatch below 1000px hands it a sideways-scroll axis no keyboard could otherwise reach.</caption>
+        <thead><tr><th scope="col">Column</th><th scope="col" class="num">Value</th><th scope="col">Note</th></tr></thead>
+        <!-- mock: the figures exist to demonstrate tabular-nums alignment, not to state data -->
+        <tbody>
+          <tr><td>alpha</td><td class="num">1234</td><td>no stripe, no fill</td></tr>
+          <tr><td>beta</td><td class="num">567</td><td>figures align on the class, not the cell</td></tr>
+          <tr><td>gamma</td><td class="num">9012</td><td>hover me</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Tree table</h2>
+      <p>Depth comes from <code>data-depth</code> on the row, not from nesting. No <code>role</code>, no script.</p>
+      <table class="tree" tabindex="0">
+        <caption>Requirement tree: an unwrapped table, so it takes the sideways-scroll escape hatch below 1000px and carries <code>tabindex</code> to be reachable there.</caption>
+        <thead><tr><th scope="col">Id</th><th scope="col">Title</th><th scope="col">State</th></tr></thead>
+        <tbody>
+          <tr data-depth="0"><td>Epic 1</td><td>root row, tinted and bold</td><td>New</td></tr>
+          <tr data-depth="1"><td>F1</td><td>child row, one indent step</td><td>Active</td></tr>
+          <tr data-depth="2"><td>REQ-01</td><td>grandchild, muted</td><td>MVP</td></tr>
+          <tr data-depth="2"><td>REQ-02</td><td>sibling, untinted like every leaf</td><td>MVP</td></tr>
+          <tr data-depth="1"><td>F2</td><td>second child</td><td>New</td></tr>
+          <tr data-depth="0"><td>Epic 2</td><td>second root</td><td>New</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Wide table in a scroll wrapper</h2>
+      <p>A wide table wrapped in <code>.table-scroll</code> scrolls on both axes inside the wrapper, so the document never scrolls sideways, and the header stays pinned because the wrapper is the scrollport. The wrapper carries <code>tabindex="0"</code>, <code>role="region"</code> and a label. The table keeps its own row and column semantics, because the role sits on the wrapper and never on the table.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Quarterly totals by region">
+        <table>
+          <caption>Twenty-four rows across eight columns: past the 70vh cap and past the body width at once.</caption>
+          <thead><tr><th scope="col">Id</th><th scope="col">Region</th><th scope="col" class="num">Q1</th><th scope="col" class="num">Q2</th><th scope="col" class="num">Q3</th><th scope="col" class="num">Q4</th><th scope="col">Trend</th><th scope="col">Note</th></tr></thead>
+          <!-- mock: the figures exist to give the wrapper something to scroll, not to state data -->
+          <tbody>
+            <tr><td>R-1</td><td>Northwest</td><td class="num">137</td><td class="num">211</td><td class="num">89</td><td class="num">313</td><td>rising</td><td>Row 1 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-2</td><td>Southeast</td><td class="num">274</td><td class="num">422</td><td class="num">178</td><td class="num">626</td><td><a href="#">flat</a></td><td>Row 2 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-3</td><td>Midlands</td><td class="num">411</td><td class="num">633</td><td class="num">267</td><td class="num">939</td><td>falling</td><td>Row 3 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-4</td><td>Coastal</td><td class="num">548</td><td class="num">844</td><td class="num">356</td><td class="num">1252</td><td>rising</td><td>Row 4 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-5</td><td>Interior</td><td class="num">685</td><td class="num">1055</td><td class="num">445</td><td class="num">1565</td><td>flat</td><td>Row 5 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-6</td><td>Upper Bay</td><td class="num">822</td><td class="num">1266</td><td class="num">534</td><td class="num">1878</td><td>falling</td><td>Row 6 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-7</td><td>Northwest</td><td class="num">959</td><td class="num">1477</td><td class="num">623</td><td class="num">2191</td><td>rising</td><td>Row 7 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-8</td><td>Southeast</td><td class="num">1096</td><td class="num">1688</td><td class="num">712</td><td class="num">2504</td><td>flat</td><td>Row 8 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-9</td><td>Midlands</td><td class="num">1233</td><td class="num">1899</td><td class="num">801</td><td class="num">2817</td><td>falling</td><td>Row 9 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-10</td><td>Coastal</td><td class="num">1370</td><td class="num">2110</td><td class="num">890</td><td class="num">3130</td><td>rising</td><td>Row 10 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-11</td><td>Interior</td><td class="num">1507</td><td class="num">2321</td><td class="num">979</td><td class="num">3443</td><td>flat</td><td>Row 11 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-12</td><td>Upper Bay</td><td class="num">1644</td><td class="num">2532</td><td class="num">1068</td><td class="num">3756</td><td>falling</td><td>Row 12 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-13</td><td>Northwest</td><td class="num">1781</td><td class="num">2743</td><td class="num">1157</td><td class="num">4069</td><td>rising</td><td>Row 13 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-14</td><td>Southeast</td><td class="num">1918</td><td class="num">2954</td><td class="num">1246</td><td class="num">4382</td><td>flat</td><td>Row 14 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-15</td><td>Midlands</td><td class="num">2055</td><td class="num">3165</td><td class="num">1335</td><td class="num">4695</td><td>falling</td><td>Row 15 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-16</td><td>Coastal</td><td class="num">2192</td><td class="num">3376</td><td class="num">1424</td><td class="num">5008</td><td>rising</td><td>Row 16 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-17</td><td>Interior</td><td class="num">2329</td><td class="num">3587</td><td class="num">1513</td><td class="num">5321</td><td>flat</td><td>Row 17 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-18</td><td>Upper Bay</td><td class="num">2466</td><td class="num">3798</td><td class="num">1602</td><td class="num">5634</td><td>falling</td><td>Row 18 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-19</td><td>Northwest</td><td class="num">2603</td><td class="num">4009</td><td class="num">1691</td><td class="num">5947</td><td>rising</td><td>Row 19 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-20</td><td>Southeast</td><td class="num">2740</td><td class="num">4220</td><td class="num">1780</td><td class="num">6260</td><td>flat</td><td>Row 20 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-21</td><td>Midlands</td><td class="num">2877</td><td class="num">4431</td><td class="num">1869</td><td class="num">6573</td><td>falling</td><td>Row 21 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-22</td><td>Coastal</td><td class="num">3014</td><td class="num">4642</td><td class="num">1958</td><td class="num">6886</td><td>rising</td><td>Row 22 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-23</td><td>Interior</td><td class="num">3151</td><td class="num">4853</td><td class="num">2047</td><td class="num">7199</td><td>flat</td><td>Row 23 of twenty-four, long enough that eight columns outrun the body</td></tr>
+            <tr><td>R-24</td><td>Upper Bay</td><td class="num">3288</td><td class="num">5064</td><td class="num">2136</td><td class="num">7512</td><td>falling</td><td>Row 24 of twenty-four, long enough that eight columns outrun the body</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Blockquote, aside, details</h2>
+      <blockquote><p><span lang="la">Stat crux dum volvitur orbis.</span> The Cross stands while the world turns.</p></blockquote>
+      <blockquote class="pull"><p>A <code>blockquote.pull</code> carries a large faint opening quote mark over the same accent bar. Opt-in, because the plain blockquote above is used too densely for citations to carry the glyph everywhere.</p></blockquote>
+      <aside>An aside: orange accent-bar, no fill. For asides and callouts. A <mark>marked passage inside the label tier</mark> keeps body-copy text, since the wash carries nothing dimmer.</aside>
+      <details><summary>Collapsible summary</summary><p>Hidden content revealed on click.</p></details>
+    </section>
+
+    <section>
+      <h2>Icon rows and a step chain</h2>
+      <p>A tag-dot marks a categorical value that already has a color elsewhere, never a rank. The class carries only the dot, never the label, because it paints <code>currentColor</code> and would otherwise recolor the text beside it: <span class="tag-dot" style="color: var(--data-1)"></span>Rust, <span class="tag-dot" style="color: var(--data-3)"></span>Go, <span class="tag-dot" style="color: var(--data-2)"></span>Python. A live-dot is the sheet's first animation, two beats and then still, because a loop that never ends owes the reader a way to stop it: <span class="live-dot"></span> streaming.</p>
+      <ul class="icon-list" role="list">
+        <li style="--icon-color: var(--orange)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Implement</strong><code>implement the functionality</code></div></li>
+        <li style="--icon-color: var(--link)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Identify</strong><code>identify the bottleneck</code></div></li>
+        <li style="--icon-color: var(--green)"><span class="icon-chip" aria-hidden="true">V</span><div><strong>Validate</strong><code>verify behavioral correctness</code></div></li>
+      </ul>
+      <p>A step chain is for a flow too trivial to justify a Mermaid diagram. A graph with a branch or a loop still belongs in <code>pre.mermaid</code>. Its <code>--icon-color</code> takes a prose accent, never a <code>--data-*</code> slot: the node fills at full strength and the letter is <code>--surface</code> on top of it, so a ramp scoped to the 3:1 diagram floor lands that pair at 3.5:1 in light mode. A <code>.tag-dot</code> or an <code>.icon-chip</code> may still carry a <code>--data-*</code> color, because neither puts text on the fill. The chain below runs Specify, Implement, Optimize, Verify, one letter to a node. A node is a circle with room for one character, so the words belong in the sentence that introduces the chain, the way this one does. Each <code>.step-arrow</code> is <code>aria-hidden</code>, because a screen reader otherwise reads the glyph between every pair of steps.</p>
+      <div class="step-chain">
+        <span class="step-node" style="--icon-color: var(--orange)">S</span>
+        <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--link)">I</span></span>
+        <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--purple)">O</span></span>
+        <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--green)">V</span></span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Layer stack and coverage matrix</h2>
+      <p>A layer stack draws a path that a request crosses in order. Each <code>li.layer</code> holds a name, a caption, and one or more <code>.layer-card</code> children. A dashed <code>.optional</code> card says so in its text, because a dashed border alone fails in forced-colors mode. The CSS draws the arrow between layers, and <code>.layer-end</code> inverts the last one.</p>
+      <ol class="layer-stack" role="list">
+        <li class="layer"><div class="layer-name"><strong>On the network</strong><span>the company web security service</span></div><div class="layer-cards"><div class="layer-card"><strong>Network check</strong><span>Stops requests (in the path)</span></div></div></li>
+        <li class="layer"><div class="layer-name"><strong>In the app</strong><span>the software that sends the request</span></div><div class="layer-cards"><div class="layer-card"><strong>Platform hook</strong><span>Stops requests (in the path)</span></div><div class="layer-card optional"><strong>Check the app calls</strong><span>Optional. Gives an answer; the app decides</span></div></div></li>
+        <li class="layer layer-end"><div class="layer-name"><strong>The AI model</strong><span>reads the request and answers</span></div></li>
+      </ol>
+      <p>A coverage matrix is a <code>table.matrix</code> in a <code>.table-scroll</code> wrapper. Each cell holds a dot and a count, or a muted <code>&middot;</code> when none is documented. The first column stays pinned while the rest scrolls. The count is never summed across a row.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Checks that reach each kind of AI">
+        <table class="matrix">
+          <thead><tr><th>Kind of AI</th><th>Admission gate</th><th>Browser extension</th><th>Endpoint agent</th><th>AI gateway</th><th>Response after detection</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Cloud AI services</th><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td></tr>
+            <tr><th scope="row">Self-hosted models</th><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td><td><span class="tag-dot"></span>13</td><td class="none">&middot;</td></tr>
+            <tr><th scope="row">Coding assistants</th><td class="none">&middot;</td><td><span class="tag-dot"></span>3</td><td><span class="tag-dot"></span>6</td><td class="none">&middot;</td><td class="none">&middot;</td></tr>
+            <tr><th scope="row">Agents on platforms</th><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td class="none">&middot;</td><td><span class="tag-dot"></span>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>A heatmap is a <code>table.heatmap</code> in a <code>.table-scroll</code> wrapper. A <code>span.hm</code> is one square. <code>full</code> fills it, <code>part</code> fills the lower part, <code>hatch</code> stripes it, and <code>ring</code> outlines it, so no state rests on color alone. Column headers read bottom to top, and a band row above them names each group. A score cell draws a bar under its number. A row never sums its squares.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Coverage heatmap by kind of AI">
+        <table class="heatmap">
+          <thead>
+            <tr><th rowspan="2">Kind of AI</th><th rowspan="2">Score</th><th class="band" colspan="3">On the device</th><th class="band" colspan="2">Existing tool</th><th class="band" colspan="3">Off the device</th></tr>
+            <tr><th class="col"><span>EDR sensor</span></th><th class="col"><span>IDE plugin</span></th><th class="col"><span>Browser extension</span></th><th class="col"><span>Existing EDR data</span></th><th class="col"><span>Telemetry export</span></th><th class="col"><span>Network or DNS</span></th><th class="col"><span>Platform APIs</span></th><th class="col"><span>Audit logs</span></th></tr>
+          </thead>
+          <tbody>
+            <tr><th colspan="10">Top group</th></tr>
+            <tr><th scope="row">Agents on platforms</th><td class="score" style="--bar: 75.0%">75.0</td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm hatch" role="img" aria-label="Striped"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td></tr>
+            <tr><th scope="row">Remote MCP servers</th><td class="score" style="--bar: 71.7%">71.7</td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm hatch" role="img" aria-label="Striped"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td></tr>
+            <tr><th colspan="10">Next</th></tr>
+            <tr><th scope="row">Cloud AI services</th><td class="score" style="--bar: 68.3%">68.3</td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td></tr>
+            <tr><th scope="row">Self-hosted models</th><td class="score" style="--bar: 66.7%">66.7</td><td><span class="hm ring" role="img" aria-label="Outlined"></span></td><td><span class="hm part" role="img" aria-label="Partial"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td><td><span class="hm full" role="img" aria-label="Full"></span></td><td><span class="hm" role="img" aria-label="None"></span></td><td><span class="hm" role="img" aria-label="None"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Lists &amp; definitions</h2>
+      <ul><li>Bullet one, muted marker</li><li>Bullet two<ul><li>nested item</li></ul></li></ul>
+      <ol><li>Ordered one</li><li>Ordered two</li></ol>
+      <dl><dt>Term</dt><dd>Definition of the term.</dd><dt>Another</dt><dd>Its definition.</dd></dl>
+      <p>A task list drops its marker and keeps the checkbox. Markdown emits the control disabled, so it stays read-only.</p>
+      <ul class="contains-task-list">
+        <li class="task-list-item"><input type="checkbox" disabled> open item</li>
+        <li class="task-list-item"><input type="checkbox" checked disabled> done item</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Timeline</h2>
+      <p>A <code>dl</code> carrying <code>class="timeline"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code>max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>
+      <p>Deep links carry an arrival cue: jump to <a href="#e-802">the 802 entry</a> or to <a href="#fn-1">footnote 1</a> and the destination takes an orange outline, distinct from the link-blue focus ring, and lands clear of the viewport edge.</p>
+      <dl class="timeline">
+        <dt id="e-802">c. 802</dt>
+        <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code>dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class="footnote-ref"><a href="#fn-1">1</a></sup></dd>
+        <dt id="e-928">928-944</dt>
+        <dd><strong>A range.</strong> The widest label in the column, so it sets the date width. Its digits still align with the rows above and below.</dd>
+        <dt id="e-1431"><time datetime="1431">1431</time></dt>
+        <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>
+      </dl>
+      <p>Era groups are separate lists, so <code>max-content</code> would give each one its own date width and step the spine left down the page. Setting <code>--timeline-date</code> on an ancestor pins one axis across all of them.</p>
+      <div style="--timeline-date: 11ch">
+        <h3>First era</h3>
+        <dl class="timeline">
+          <dt>c. 1182-1201</dt><dd>The widest label in the document. It fits the pinned width exactly.</dd>
+        </dl>
+        <h3>Second era</h3>
+        <dl class="timeline">
+          <dt>1431</dt><dd>Short labels, same axis. Without the pin this rule would sit further left than the one above it.</dd>
+          <dt>1992</dt><dd>Second row, to show the spine is continuous within a group.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section>
+      <h2>Markdown callouts, math &amp; footnotes</h2>
+      <p>GitHub alert blocks share the <code>aside</code> form (one accent bar, no fill) and carry the hue on the title line only.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>
+      <div class="markdown-alert markdown-alert-note"><p class="markdown-alert-title">Note</p><p>Link-blue bar. Neutral information.</p></div>
+      <div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title">Tip</p><p>Green bar. Optional advice.</p></div>
+      <div class="markdown-alert markdown-alert-important"><p class="markdown-alert-title">Important</p><p>Purple bar. Do not skip this.</p></div>
+      <div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">Warning</p><p>Orange bar, the same hue the plain aside takes.</p></div>
+      <div class="markdown-alert markdown-alert-caution"><p class="markdown-alert-title">Caution</p><p>Red bar. Risk of loss or breakage.</p></div>
+      <table tabindex="0">
+        <caption>Pipe-table alignment: a converter emits no caption, so this one is the fixture's own, and it is what names the tab stop the escape hatch requires.</caption>
+        <thead><tr><th align="left">Alignment</th><th align="center">from the</th><th align="right">pipe table</th></tr></thead>
+        <tbody><tr><td align="left">start</td><td align="center">center</td><td align="right">3.14159</td></tr></tbody>
+      </table>
+      <p>Math converted to MathML needs no script and no CDN: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> sets inline without opening the line box, and a display block scrolls on its own axis rather than widening the page.</p>
+      <math display="block" tabindex="0" role="region" aria-label="Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>
+      <p>Pandoc&#8217;s MathJax output is a <code>span.math.display</code> instead. It scrolls the same way, and CSS cannot give it a tab stop, so it takes the same three attributes.</p>
+      <span class="math display" tabindex="0" role="region" aria-label="Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6">\[\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}\]</span>
+      <section class="footnotes" data-footnotes>
+        <ol><li id="fn-1"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href="#fnref-1" class="footnote-backref" aria-label="Back to reference 1">&#8617;</a></p></li></ol>
+      </section>
+    </section>
+
+    <section class="indented">
+      <h2>Indented paragraphs (opt-in)</h2>
+      <p>A container carrying <code>class="indented"</code> sets its paragraphs the way a book does: no gap between them, and every paragraph after the first opens with a 1.5em indent. The first paragraph is never indented, because nothing precedes it to break from.</p>
+      <p>This paragraph is the second, so it indents. The break is carried by the indent rather than by white space, which is the convention the rest of the page deliberately does not use. The default remains spaced paragraphs with no indent, and this class is the only way to get the other one.</p>
+      <p>Lists keep their own margin here, as they do everywhere else, so they do not butt against the paragraph above even though the paragraphs themselves carry none.</p>
+      <ul><li>A list inside the indented container</li><li>Second item</li></ul>
+    </section>
+
+    <section>
+      <h2>Proof-test scorecard</h2>
+      <div class="scorecard">
+        <span class="sc-label">P1 Observability</span><span class="verdict verdict-pass">Pass</span><span class="sc-note">directly measured</span>
+        <span class="sc-label">P2 Mechanism</span><span class="verdict verdict-partial">Partial</span><span class="sc-note">surrogate endpoint</span>
+        <span class="sc-label">P3 Prediction</span><span class="verdict verdict-failed">Failed</span><span class="sc-note">model output, not measurement</span>
+        <span class="sc-label">P4 Coherence of the profile the method inherits</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
+        <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
+      </div>
+      <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>See below</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>
+      <table tabindex="0">
+        <caption>Proof-test scorecard, table form</caption>
+        <thead><tr><th scope="col">#</th><th scope="col">Method</th><th scope="col">Verdict</th><th scope="col">Bearing</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Five principles</td><td><span class="verdict verdict-neutral">See below</span></td><td>see P1-P2</td></tr>
+          <tr><td></td><td>&middot; P1 Observability</td><td><span class="verdict verdict-pass">Pass</span></td><td>directly measured</td></tr>
+          <tr><td></td><td>&middot; P2 Mechanism</td><td><span class="verdict verdict-partial">Partial</span></td><td>surrogate endpoint</td></tr>
+          <tr><td>2</td><td>Charge gate</td><td><span class="verdict verdict-neutral">N/A</span></td><td>not assessed</td></tr>
+        </tbody>
+        <tfoot><tr><td></td><td>Summary</td><td>1 Pass, 1 Partial</td><td>1 not assessed</td></tr></tfoot>
+      </table>
+    </section>
+
+    <section>
+      <h2>Navigation index components</h2>
+      <label class="filter-label" for="nav-filter">Filter entries</label>
+      <input id="nav-filter" type="search" class="filter-box" autocomplete="off" placeholder="Failed audit"/>
+      <p role="status">4 entries</p>
+      <ul class="nav-list" role="list">
+        <li><a href="#">A tappable nav-list link</a></li>
+        <li><a href="#">Another entry <span class="badge badge-t1">Tier 1</span></a></li>
+        <li><a href="#">Failed audit <span class="badge badge-t3">Tier 3</span></a></li>
+      </ul>
+      <p class="filter-empty" hidden>No entries match. Clear the filter to see all entries.</p>
+      <details class="nav-group" open><summary>Subfolder group <span class="count">1</span></summary>
+        <ul class="nav-list" role="list"><li><a href="#">grouped item <span class="badge badge-t2">Tier 2</span></a></li></ul>
+      </details>
+    </section>
+
+    <section>
+      <h2>The index shell</h2>
+      <div class="index-shell">
+        <nav class="index-rail" aria-labelledby="rail-label">
+          <p id="rail-label">Sections</p>
+          <ul class="nav-list" role="list">
+            <li><a href="#">Antecedents</a></li>
+            <li><a href="#">Decision log</a></li>
+            <li><a href="#">Dependency tracker</a></li>
+            <li><a href="#">Findings</a></li>
+          </ul>
+        </nav>
+        <div>
+          <ul class="nav-list" role="list">
+            <li><a href="#">A long entry list scrolls past the rail <span class="badge badge-t1">Tier 1</span></a></li>
+            <li><a href="#">Antecedent records for the charge gate</a></li>
+            <li><a href="#">Antecedent records for the release gate</a></li>
+            <li><a href="#">Decision log, first quarter <span class="count">12</span></a></li>
+            <li><a href="#">Decision log, second quarter <span class="count">9</span></a></li>
+            <li><a href="#">Dependency tracker, open items</a></li>
+            <li><a href="#">Findings from the load test</a></li>
+            <li><a href="#">Findings from the recovery drill</a></li>
+            <li><a href="#">Failed audit <span class="badge badge-t3">Tier 3</span></a></li>
+            <li><a href="#">Reuse candidates for the index rail</a></li>
+            <li><a href="#">Spike results, storage tier</a></li>
+            <li><a href="#">Spike results, message bus</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Image hero tile</h2>
+      <figure class="hero">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 840 360'%3E%3Crect width='840' height='360' fill='%233a3d52'/%3E%3Cpath d='M0 300 L240 160 L430 260 L640 120 L840 280 L840 360 L0 360 Z' fill='%238a8fb0'/%3E%3Ccircle cx='690' cy='96' r='46' fill='%23bd93f9'/%3E%3C/svg%3E" alt="A wide banner illustration: layered purple hills under a single bright disc." />
+        <figcaption>
+          <span class="label">Template component</span>
+          <h3>An image tile with a headline and one call to action</h3>
+          <p>The image reserves its box through <code>aspect-ratio</code>, so nothing below it moves when the file arrives.</p>
+          <a href="#headings">See the headings and text section</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h2>Connections edge-list</h2>
+      <div class="edge-list">
+        <div><h3>Antecedents</h3><ul class="nav-list" role="list"><li><a href="#">prior node one</a></li><li><a href="#">prior node two</a></li></ul></div>
+        <div><h3>Descendants</h3><ul class="nav-list" role="list"><li><a href="#">later node one</a></li></ul></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Recently updated, by category</h2>
+      <div class="recent-groups">
+        <div class="recent-group"><h3>Category A</h3><ul class="nav-list" role="list"><li><a href="#" title="Item One">Item One</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 12: Category A">View all 12 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Category B</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Two">Item Two</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 533: Category B">View all 533 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Category C</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Three">Item Three</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 36: Category C">View all 36 <span aria-hidden="true">&rarr;</span></a></div>
+        <div class="recent-group"><h3>Other</h3><ul class="nav-list" role="list"><li><a href="#" title="Item Four">Item Four</a> <span class="count">2026-08-15</span></li></ul><a href="#" aria-label="View all 1689: Other">View all 1689 <span aria-hidden="true">&rarr;</span></a></div>
+      </div>
+    </section>
+
+    <section class="col-2">
+      <h2>Two-column citation list</h2>
+      <ol><li>First source, flows into balanced columns on wide screens.</li><li>Second source.</li><li>Third source.</li><li>Fourth source.</li></ol>
+    </section>
+
+    <section>
+      <h2>Mermaid diagram (click to zoom)</h2>
+      <figure>
+      <pre class="mermaid">flowchart TD
+  accTitle: Decision flow sample
+  accDescr: Start leads to a decision; yes does the thing, no skips it, and both reach done.
+  A[Start] --> B{Decision}
+  B -->|yes| C[Do the thing]
+  B -->|no| D[Skip it]
+  C --> E[Done]
+  D --> E</pre>
+      <figcaption><span class="label">Caption tiers</span>A figure caption sits in the annotation register and stays start-aligned under a centred diagram.<span class="byline">Source: the flowchart above, rendered at the template's pinned Mermaid version.</span></figcaption>
+      </figure>
+      <pre class="mermaid">sequenceDiagram
+  accTitle: Sequence diagram sample
+  accDescr: The caller sends a request, the service stores it, and a note records that a label box must fit its own monospace text.
+  participant C as Caller
+  participant S as Service (long name)
+  C->>S: Request with a fairly long label
+  S->>S: Store it
+  Note over S: This note is wider than the actor box.<br/>Its rect must contain the rendered text.
+  S->>C: Result</pre>
+      <pre class="mermaid">quadrantChart
+  accTitle: Quadrant chart sample
+  accDescr: Four labelled points near the chart edges, where long labels would otherwise be clipped by the fixed chart viewBox.
+  x-axis Narrow --> Wide
+  y-axis Shallow --> Deep
+  quadrant-1 Best of both
+  quadrant-2 Deep but narrow
+  quadrant-3 Neither yet
+  quadrant-4 Wide but shallow
+  A label long enough to reach past the edge: [0.9, 0.9]
+  Another deliberately overlong point label: [0.1, 0.1]</pre>
+      <pre class="mermaid">packet-beta
+  accTitle: Packet diagram sample
+  accDescr: A UDP header split into four labelled byte ranges, styled through tufte-dracula.css because mermaid's own packet themeVariables are a documented no-op.
+  title UDP Header
+  0-15: "Source Port"
+  16-31: "Destination Port"
+  32-47: "Length"
+  48-63: "Checksum"</pre>
+      <pre class="mermaid">usecase-beta
+  accTitle: Use case diagram sample
+  accDescr: A reader actor reaching a system boundary that groups a use case and the diagram zoom it includes.
+  direction LR
+  actor Reader
+  systemBoundary Site
+    Read("Read page")
+    Zoom("Zoom diagram")
+  end
+  Reader --> Read
+  Read ..> : include Zoom</pre>
+    </section>
+
+    <hr/>
+    <footer>Footer text, muted and small. Generated by scripts/build-sample.nu.</footer>
+  </article>
+  </main>
+</body>
+</html>

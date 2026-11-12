@@ -12,12 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Verify the thirteen contract files exist
+      - name: Verify the fourteen contract files exist
         run: |
-          for f in tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md; do
+          for f in tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css samples/dark.html samples/dark-conn-map.html scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md .github/season-probe.py; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
-          echo "All 13 contract files present."
+          echo "All 14 contract files present."
 
       - name: Stylesheet wrapper is exactly the first and last line
         run: |
@@ -36,14 +36,15 @@ jobs:
           # itself. This gate is what keeps that copy honest against the palette.
           # jq runs before the loop, not in a process substitution: a malformed or
           # emptied palette must abort the step, not yield zero rows and pass green.
-          # Both palettes: `init` is the default (dark) set and `initLight` is the same
-          # keys projected through the light block. mermaid.js carries both inline and
-          # picks one at init from the --mermaid-scheme CSS token, so a drifted light hex
-          # is invisible to anyone reading in dark mode.
-          rows=$(jq -er '(.init, .initLight) | to_entries[] | select(.key != "_comment") | "\(.key) \(.value.hex)"' mermaid-palette.json) \
-            || { echo "cannot read .init / .initLight out of mermaid-palette.json"; exit 1; }
+          # All four palettes: `init` is the default (dark) set and `initLight` is the same
+          # keys projected through the light block. `initChristmas` and `initChristmasLight`
+          # are the same keys again through the season blocks. mermaid.js carries all four
+          # inline and picks one at init from the --mermaid-scheme CSS token, so a drifted
+          # light or season hex is invisible to anyone reading in plain dark mode.
+          rows=$(jq -er '(.init, .initLight, .initChristmas, .initChristmasLight) | to_entries[] | select(.key != "_comment") | "\(.key) \(.value.hex)"' mermaid-palette.json) \
+            || { echo "cannot read the four init sections out of mermaid-palette.json"; exit 1; }
           n=$(printf '%s\n' "$rows" | grep -c .)
-          [ "$n" -ge 38 ] || { echo "mermaid-palette.json has only $n init rows across both palettes, refusing to pass vacuously"; exit 1; }
+          [ "$n" -ge 100 ] || { echo "mermaid-palette.json has only $n init rows across four palettes, refusing to pass vacuously"; exit 1; }
           fail=0
           while read -r key hex; do
             grep -qE "$key:[[:space:]]*'$hex'" mermaid.js \
@@ -55,25 +56,28 @@ jobs:
           # above already fails on any non-hex value.
 
       - name: mermaid-palette.json hex must match the CSS oklch
-        # Also re-derives the contrast floor for all four palettes (default,
-        # prefers-contrast, prefers-color-scheme: light, print). Those ratios are
-        # measured in NOTES.md, and prose is not a gate.
+        # Also re-derives the contrast floor for all six palettes (default,
+        # prefers-contrast, prefers-color-scheme: light, print, and the two Christmas
+        # season palettes). Those ratios are measured in NOTES.md, and prose is not a gate.
         run: python3 .github/palette-check.py
 
       - name: Sanity check (no hand-rolled style blocks)
         run: |
           # tufte-dracula.css/mermaid.js/filter.js are contracts that already carry
           # their own <style>/<script> wrapper, and scripts/build-sample.nu inlines them
-          # verbatim into each fixture -- so exactly one <style> and three <script>
-          # blocks are expected. More means a hand-rolled block was added alongside
-          # the canonical ones.
+          # verbatim into each fixture -- so exactly one <style> is expected, and three
+          # <script> blocks on a page with no seasonal head snippet, four on a dark fixture
+          # that carries it. More means a hand-rolled block was added alongside the
+          # canonical ones.
           # grep -o, not grep -c: -c counts matching *lines*, so a second block
           # opened on a line that already holds one reads as 1 and passes.
-          for f in samples/dark.html samples/dark-conn-map.html samples/light.html samples/light-conn-map.html; do
+          for f in samples/dark.html samples/dark-conn-map.html samples/light.html samples/light-conn-map.html samples/christmas-dark.html samples/christmas-light.html; do
             n=$(grep -o "<style" "$f" | wc -l | tr -d ' ')
             [ "$n" -eq 1 ] || { echo "$f: expected exactly 1 <style> block (canonical CSS), found $n"; exit 1; }
+            want=3
+            case "$f" in samples/dark*.html) want=4 ;; esac
             n=$(grep -o "<script" "$f" | wc -l | tr -d ' ')
-            [ "$n" -eq 3 ] || { echo "$f: expected exactly 3 <script> blocks (canonical mermaid.js + filter.js + highlight.js), found $n"; exit 1; }
+            [ "$n" -eq "$want" ] || { echo "$f: expected exactly $want <script> blocks (mermaid.js + filter.js + highlight.js, plus the seasonal snippet on a dark fixture), found $n"; exit 1; }
           done
           echo "No hand-rolled style/script blocks."
 
@@ -98,6 +102,28 @@ jobs:
               && { echo "$f: a prefers-color-scheme condition survived the rewrite"; fail=1; }
           done
           [ "$fail" -eq 0 ] && echo "Light previews force light."
+          exit $fail
+
+      - name: Christmas previews must actually force the season
+        run: |
+          # samples/christmas-*.html carry data-season on <html> and rewrite the season
+          # conditions to `@media screen`, so the date and the contrast setting stop
+          # mattering. If the stylesheet renames a condition the generator's rewrite
+          # no-ops, and Pages would serve the default palette under a Christmas name.
+          fail=0
+          for f in samples/christmas-dark.html samples/christmas-light.html; do
+            grep -q '<html lang="en" data-season="christmas">' "$f" \
+              || { echo "$f: no data-season on <html>"; fail=1; }
+            grep -q '@media screen {' "$f" \
+              || { echo "$f: no forced '@media screen {': the season block is not on"; fail=1; }
+            grep -q '@media not all {' "$f" \
+              || { echo "$f: no '@media not all {': the contrast block is still live"; fail=1; }
+            perl -0pe 's{<p>This page forces.*?</p>}{}s' "$f" | grep -q 'prefers-color-scheme' \
+              && { echo "$f: a prefers-color-scheme condition survived the rewrite"; fail=1; }
+          done
+          grep -q '@media all {' samples/christmas-light.html \
+            || { echo "samples/christmas-light.html: no forced '@media all {': the light palette is not on"; fail=1; }
+          [ "$fail" -eq 0 ] && echo "Christmas previews force the season."
           exit $fail
 
       - name: No em-dash and no en-dash in any tracked file
@@ -190,6 +216,13 @@ jobs:
         # green. This drives all three inlined scripts in the real fixture through the same
         # headless Chrome the render step uses, and asserts observable behaviour.
         run: python3 .github/script-probe.py
+
+      - name: The seasonal snippet must pick the right days
+        # The head snippet is the only thing that turns the Christmas palette on by date.
+        # This runs the verbatim snippet in headless Chrome against a mocked Date at the
+        # window edges, in three time zones, and checks it reaches Mermaid before the
+        # palette is read. A bound off by one day would otherwise show on 11 November.
+        run: python3 .github/season-probe.py
 
       - name: Upload the mode renders
         # Advisory, and deliberately not in scripts/maintain.nu's REQUIRED_CHECKS: the
