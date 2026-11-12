@@ -19,7 +19,8 @@ const ROOT = $SCRIPTS | path dirname
 # loop below names this list instead of repeating it, so a new fixture is added once.
 const DARK_FIXTURES = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html]
 const LIGHT_FIXTURES = [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html]
-const FIXTURES = $DARK_FIXTURES ++ $LIGHT_FIXTURES
+const SEASON_PREVIEWS = [samples/christmas-dark.html samples/christmas-light.html]
+const FIXTURES = $DARK_FIXTURES ++ $LIGHT_FIXTURES ++ $SEASON_PREVIEWS
 
 def read-root [file: string] {
   open --raw ($ROOT | path join $file)
@@ -334,7 +335,7 @@ def "main cdn-pins" [] {
 # Mirrors .github/workflows/contract-check.yml locally, step for step: the payload
 # files exist, the wrapper is one line at each end, mermaid.js agrees with
 # mermaid-palette.json key by key, the hex projections still match the oklch
-# source, all four palettes hold their contrast floor, exactly one <style> and three
+# source, all six palettes hold their contrast floor, exactly one <style> and three
 # <script> per fixture, each appearance mode paints its own surface, generated
 # files match the current CSS/JS.
 #
@@ -344,7 +345,7 @@ def "main cdn-pins" [] {
 def "main check" [] {
   mut ok = true
 
-  for f in ([tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md] ++ $FIXTURES) {
+  for f in ([tufte-dracula.css mermaid.js filter.js highlight.js mermaid-palette.json tokens.css scripts/build-sample.nu README.md CONTRACT.md AGENTS.md NOTES.md .github/season-probe.py] ++ $FIXTURES) {
     if not ($ROOT | path join $f | path exists) {
       print $"MISSING: ($f)"
       $ok = false
@@ -373,7 +374,7 @@ def "main check" [] {
   # colour passed here and failed on the push.
   let palette_json = (open ($ROOT | path join "mermaid-palette.json"))
   let js = (read-root mermaid.js)
-  for section in [init initLight] {
+  for section in [init initLight initChristmas initChristmasLight] {
     let entries = ($palette_json | get $section | transpose key entry | where key != "_comment")
     if ($entries | length) < 20 {
       print $"mermaid-palette.json .($section) has only ($entries | length) keys, refusing to pass vacuously"
@@ -395,7 +396,11 @@ def "main check" [] {
     let styles = (($body | split row "<style" | length) - 1)
     let scripts = (($body | split row "<script" | length) - 1)
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
-    if $scripts != 3 { print $"($f): expected 3 <script> blocks, found ($scripts)"; $ok = false }
+    # The dark fixtures carry the three payload scripts plus the seasonal head snippet
+    # (CONTRACT.md section 1). The previews are generated without it: a light page is never
+    # seasonal and a Christmas page forces the attribute in markup.
+    let want = (if ($f in $DARK_FIXTURES) { 4 } else { 3 })
+    if $scripts != $want { print $"($f): expected ($want) <script> blocks, found ($scripts)"; $ok = false }
   }
 
   if not (contract-markup-ok) { $ok = false }
@@ -418,6 +423,26 @@ def "main check" [] {
     let body = (read-root $f)
     if not ($body =~ '@media all \{') { print $"($f): no forced `@media all {`: the light palette is not on"; $ok = false }
     if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {`: the contrast block is still live"; $ok = false }
+    if ($body | str replace --all --regex '(?s)<p>This page forces.*?</p>' '') =~ 'prefers-color-scheme' {
+      print $"($f): a prefers-color-scheme condition survived the rewrite"
+      $ok = false
+    }
+  }
+
+  # The Christmas previews force the season in markup (data-season on <html>) and rewrite the
+  # season conditions to `@media screen`, so the date and the contrast setting stop mattering.
+  # Both carry that attribute and a dead contrast block. Only the light one turns the plain
+  # light block on. A rename in the stylesheet makes the generator's rewrite a no-op, and then
+  # Pages would serve the default palette under a Christmas name.
+  for f in $SEASON_PREVIEWS {
+    let body = (read-root $f)
+    if not ($body =~ '<html lang="en" data-season="christmas">') { print $"($f): no data-season on <html>"; $ok = false }
+    if not ($body =~ '@media screen \{') { print $"($f): no forced `@media screen {`: the season block is not on"; $ok = false }
+    if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {`: the contrast block is still live"; $ok = false }
+    if ($f | str ends-with "christmas-light.html") and not ($body =~ '@media all \{') {
+      print $"($f): no forced `@media all {`: the light palette is not on"
+      $ok = false
+    }
     if ($body | str replace --all --regex '(?s)<p>This page forces.*?</p>' '') =~ 'prefers-color-scheme' {
       print $"($f): a prefers-color-scheme condition survived the rewrite"
       $ok = false
@@ -450,6 +475,20 @@ def "main check" [] {
   if $probe.exit_code != 0 {
     print ($probe.stdout | lines | where {|l| $l | str starts-with "BINDING" } | str join "\n")
     print ($probe.stderr | str trim)
+    $ok = false
+  }
+
+  # The seasonal head snippet picks the days. season-probe.py runs the verbatim snippet in
+  # headless Chrome against a mocked Date at the window edges, in three time zones, so an
+  # off-by-one bound or a UTC getter fails here and not on the first of November.
+  let season = (^python3 ($ROOT | path join ".github/season-probe.py") | complete)
+  for warning in ($season.stdout | lines | where {|l| $l | str starts-with "SKIP:" }) {
+    print $warning
+  }
+  print ($season.stdout | lines | last 1 | str join)
+  if $season.exit_code != 0 {
+    print ($season.stdout | lines | where {|l| $l | str starts-with "SEASON" } | str join "\n")
+    print ($season.stderr | str trim)
     $ok = false
   }
 

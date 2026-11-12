@@ -40,30 +40,37 @@ so it is locked to light and it is not the payload. Each light page says so in a
 contrast has no preview page. CI renders it and attaches the image to each pull request. See
 [Appearance modes](NOTES.md#appearance-modes).
 
+The four fixtures above also carry the optional seasonal head snippet, so they turn festive from
+November 11 through December 26 by your local calendar. Two more pages force that theme for any
+date and any system setting:
+[christmas-dark.html](https://e128.github.io/dracula-tufte/samples/christmas-dark.html) and
+[christmas-light.html](https://e128.github.io/dracula-tufte/samples/christmas-light.html). They
+are previews, not the payload, and each says so in a banner.
+
 ## The twelve files
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.62.1, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.63.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark and light, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
 | `tokens.css` | Palette reference. Generated from the `:root` block. Do not edit it by hand. |
-| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css` and all eight fixtures. Run it after any payload change. |
+| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css`, the eight fixtures and the two Christmas previews. Run it after any payload change. |
 | `samples/dark.html` | Living style fixture, and the executable specification. Generated. Do not edit it by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. It uses `<body class="conn-map">` with the sections in Links-then-Graph order. Generated. |
 | `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Generated. |
 | `samples/dark-charts.html` | Chart fixture: `table.bar-chart`, the meter, the dot plot, a column sparkline, small multiples, a Mermaid `xychart` line, a delta column, a stored-and-derived flowchart, the guidance on which chart to draw, and twelve more Mermaid fence types verified against this palette. Generated. |
 | `CONTRACT.md` | The consumer checklist. It stays imperative and short, because a consumer's agent reads it on every bump. |
 
-The four light previews are deliberately **not** contract files. The rest of the repo splits by
-who runs a file. A person types the `scripts/*.nu` commands. CI runs the `.github/*.py` helpers.
+The four light previews and the two Christmas previews are deliberately **not** contract files.
+The rest of the repo splits by who runs a file. A person types the `scripts/*.nu` commands. CI runs the `.github/*.py` helpers.
 Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#repo-layout).
 
 ## Consumers
 
-The current release is **`v1.62.1`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.63.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -82,7 +89,7 @@ when a fixture drifts from the stylesheet, so **when CONTRACT.md and a fixture d
 markup, the fixture is right.** The single exception is flagged in § 2 itself: the fixture's
 `quadrantChart` breaks its own requirement on purpose, as a stress case.
 
-Four things are worth knowing before you get there:
+Five things are worth knowing before you get there:
 
 - **Inline each file verbatim, or slice the body out.** Each payload ships inside its own wrapper
   tag. A generator that supplies its own wrapper takes the bare body with `sed '1d;$d'`. The
@@ -97,6 +104,11 @@ Four things are worth knowing before you get there:
   palette. Mermaid diagrams follow the light palette, because `mermaid.js` reads a CSS token at
   init. A reader who changes system appearance with the page open sees a stale diagram until the
   next reload. See [Appearance modes](NOTES.md#appearance-modes).
+- **The Christmas theme needs one snippet from you.** The stylesheet carries the palette and never
+  turns it on. A page shows it from November 11 through December 26, by the visitor's local
+  calendar at page load, only after your generator adds the classic head snippet that
+  [CONTRACT.md § 1](CONTRACT.md#seasonal-theme-optional) gives. Updating the pinned submodule alone
+  changes nothing for a page without it. Leave the snippet out to opt out.
 - **Keep the markdown source.** A generator that deletes its source after conversion cannot
   regenerate, so it can never adopt a later release. A repair of generated HTML in place is a much
   harder problem than a second run of the generator.
@@ -195,14 +207,19 @@ for six releases with every other check green. It also renders the page with `fo
 switched on and asserts that block's structure, which is the only coverage that mode has, because
 its correctness is not a color.
 
+**A second check does the same for the seasonal snippet.** `.github/season-probe.py` extracts the
+head snippet from the generated fixtures and compares it with the copy in CONTRACT.md. It then runs
+the snippet in headless Chrome against a mocked clock across the window's boundary dates and three
+time zones, and checks that the two Christmas previews hold under any system setting.
+
 **One palette feeds several projections.** The `:root` block is the only source of color truth.
 `.github/palette-check.py` runs fourteen checks over it:
 
-1. Hex projections in both Mermaid palettes.
+1. Hex projections in all four Mermaid palettes.
 2. The `classdef` fills, dark and light, and the letter each set paints on its own fill.
 3. The `/* was */` provenance comments.
 4. Stray hex in `mermaid.js`.
-5. Contrast floors in all four modes.
+5. Contrast floors in all six modes.
 6. `--mermaid-scheme` in both directions, and the scroll breakpoint pinned across two files.
 7. The sRGB gamut ceiling.
 8. The vividness bands.

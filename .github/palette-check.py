@@ -172,6 +172,46 @@ light_triples.update({
 })
 light_palette = {name: oklch_to_hex(*lch) for name, lch in light_triples.items()}
 
+SEASON_CONDITIONS = {
+    "christmas": "@media screen and (prefers-contrast: no-preference)",
+    "light-christmas": "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)",
+}
+SEASON_TOKENS = {
+    "surface", "surface-alt", "on-surface", "code-bg", "label", "muted",
+    "rule-light", "link", "orange", "red", "purple", "pink", "green",
+    "data-1", "data-2", "data-3", "data-4",
+}
+season_blocks = {}
+season_overrides = {}
+for mode, condition in SEASON_CONDITIONS.items():
+    block = re.search(
+        re.escape(condition) + r' \{\s*:root\[data-season="christmas"\] \{(.*?)\n\s*\}',
+        stylesheet, re.S,
+    )
+    if not block:
+        sys.exit(f'DRIFT: no `{condition}` block with :root[data-season="christmas"]')
+    season_blocks[mode] = block.group(1)
+    overrides = {
+        name: (float(L), float(C), float(h))
+        for name, L, C, h in re.findall(
+            r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", block.group(1)
+        )
+    }
+    missing = SEASON_TOKENS - overrides.keys()
+    if missing:
+        sys.exit(f"DRIFT: {mode} is missing parseable seasonal declarations: "
+                 + ", ".join(f"--{name}" for name in sorted(missing)))
+    season_overrides[mode] = overrides
+
+# Both seasonal rules match in light mode. The light rule wins over the dark
+# seasonal rule, while the light :root still supplies its relative colors.
+christmas_triples = {**triples, **season_overrides["christmas"]}
+light_christmas_triples = {
+    **light_triples, **season_overrides["christmas"], **season_overrides["light-christmas"]
+}
+christmas_palette = {name: oklch_to_hex(*lch) for name, lch in christmas_triples.items()}
+light_christmas_palette = {name: oklch_to_hex(*lch) for name, lch in light_christmas_triples.items()}
+
 # --dump is the generator side of the same parse: scripts/create-themes.nu needs the palette
 # as data, and re-deriving oklch -> sRGB in Nushell would mean a second implementation
 # of the matrix above, free to drift from the one CI checks. This comment used to say
@@ -202,10 +242,12 @@ if "--dump" in sys.argv:
 pal = json.loads((ROOT / "mermaid-palette.json").read_text())
 fail = 0
 
-# 1. Every init hex is exactly the conversion of the variable it names, in both
-#    palettes. initLight names the same tokens and resolves them through the light
-#    block, so a light-only token edit cannot slip past by looking right in dark.
-for section, source in (("init", palette), ("initLight", light_palette)):
+# 1. Each init hex projects its named variable through its own resolved palette.
+#    Each variant must cover the same themeVariables keys as the default.
+for section, source in (
+    ("init", palette), ("initLight", light_palette),
+    ("initChristmas", christmas_palette), ("initChristmasLight", light_christmas_palette),
+):
     if section not in pal:
         print(f"DRIFT: mermaid-palette.json has no {section} section")
         fail = 1
@@ -295,16 +337,16 @@ for name, stated in re.findall(
 # 4. contract-check.yml maps every palette key onto mermaid.js; this is the
 #    reverse: a hex inline in mermaid.js that is no longer a palette color at all
 #    (a hand-added themeVariable, a stale value under a renamed key).
-known = set(palette.values()) | set(light_palette.values())
+known = (set(palette.values()) | set(light_palette.values()) |
+         set(christmas_palette.values()) | set(light_christmas_palette.values()))
 for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_text()))):
     if found not in known:
         print(f"DRIFT: mermaid.js hex {found} is not a tufte-dracula.css palette color")
         fail = 1
 
-# 5. Every mode has to hold its own contrast floor. The stylesheet ships four
-#    palettes now (the default, `prefers-contrast: more`, `prefers-color-scheme:
-#    light` and print) and the ratios behind each one were measured by hand and
-#    written into NOTES.md. A measurement in prose is not a gate: a later edit to
+# 5. Every mode has to hold its own contrast floor. The seasonal screen palettes
+#    use the same floors as the corresponding default and light palettes.
+#    A measurement in prose is not a gate: a later edit to
 #    one lightness value strands text at a ratio nobody re-derives. This check
 #    re-derives all of them on every run.
 #
@@ -343,12 +385,18 @@ MODES = {
     "default": (None, 4.2, 3.0),
     "prefers-contrast: more": ("@media (prefers-contrast: more)", 7.0, 3.0),
     "prefers-color-scheme: light": ("@media (prefers-color-scheme: light)", 4.5, 3.0),
+    "christmas": (SEASON_CONDITIONS["christmas"], 4.2, 3.0),
+    "light-christmas": (SEASON_CONDITIONS["light-christmas"], 4.5, 3.0),
     "print": ("@media print", 4.5, 3.0),
 }
 resolved = {}
 for mode, (condition, text_floor, rule_floor) in MODES.items():
     triples_for_mode = dict(triples)
-    if condition is not None:
+    if mode == "christmas":
+        triples_for_mode = dict(christmas_triples)
+    elif mode == "light-christmas":
+        triples_for_mode = dict(light_christmas_triples)
+    elif condition is not None:
         block = re.search(
             re.escape(condition) + r" \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S
         )
@@ -400,6 +448,8 @@ mermaid_js = (ROOT / "mermaid.js").read_text()
 for where, want, block_text in (
     (":root", "dark", css),
     ("the light :root block", "light", light_block.group(1)),
+    ("the christmas :root block", "christmas", season_blocks["christmas"]),
+    ("the light-christmas :root block", "light-christmas", season_blocks["light-christmas"]),
 ):
     if not re.search(r"--mermaid-scheme:\s*" + want + r"\s*;", block_text):
         print(f"DRIFT: {where} does not declare --mermaid-scheme: {want}")
@@ -460,7 +510,7 @@ if f"matchMedia('{SCROLL_BREAKPOINT}')" not in mermaid_js:
 #    mode still fails loudly rather than passing under a relaxation meant for two
 #    modes it never applies to.
 P3_WIDENED = {"red", "orange", "purple", "pink", "green", "data-1", "data-2", "data-3", "data-4"}
-P3_MODES = {"default", "prefers-color-scheme: light"}
+P3_MODES = {"default", "prefers-color-scheme: light", "christmas", "light-christmas"}
 for mode, triples_for_mode in resolved.items():
     for name, (L, C, h) in sorted(triples_for_mode.items()):
         wide = name in P3_WIDENED and mode in P3_MODES
@@ -513,8 +563,9 @@ for mode, triples_for_mode in resolved.items():
         ceiling = max_chroma_p3(L, h) if mode in P3_MODES else max_chroma(L, h)
         got = C / ceiling
         if not low <= got <= high:
+            gamut = "P3" if mode in P3_MODES else "sRGB"
             print(
-                f"VIVIDNESS: {mode} --{name} is {got * 100:.1f}% of the sRGB ceiling at "
+                f"VIVIDNESS: {mode} --{name} is {got * 100:.1f}% of the {gamut} ceiling at "
                 f"L {L:.3f} hue {h:g}, outside the {low * 100:.0f} to {high * 100:.0f}% band. "
                 f"Chroma {(low + high) / 2 * ceiling:.3f} would sit mid-band."
             )
@@ -525,15 +576,15 @@ for mode, triples_for_mode in resolved.items():
 #    and high contrast and print are compressed by design, so none of them is pinned.
 LIGHT_ACCENTS = ("orange", "purple", "pink", "green", "link")
 LIGHT_BAND = (0.55, 0.65)
-light_mode = "prefers-color-scheme: light"
-for name in LIGHT_ACCENTS:
-    L, C, h = resolved[light_mode][name]
-    ceiling = max_chroma_p3(L, h) if name in P3_WIDENED else max_chroma(L, h)
-    got = C / ceiling
-    if not LIGHT_BAND[0] <= got <= LIGHT_BAND[1]:
-        print(f"VIVIDNESS: light --{name} is {got * 100:.1f}% of its ceiling, outside the "
-              f"{LIGHT_BAND[0] * 100:.0f} to {LIGHT_BAND[1] * 100:.0f}% accent band")
-        fail = 1
+for light_mode in ("prefers-color-scheme: light", "light-christmas"):
+    for name in LIGHT_ACCENTS:
+        L, C, h = resolved[light_mode][name]
+        ceiling = max_chroma_p3(L, h) if name in P3_WIDENED else max_chroma(L, h)
+        got = C / ceiling
+        if not LIGHT_BAND[0] <= got <= LIGHT_BAND[1]:
+            print(f"VIVIDNESS: {light_mode} --{name} is {got * 100:.1f}% of its ceiling, outside the "
+                  f"{LIGHT_BAND[0] * 100:.0f} to {LIGHT_BAND[1] * 100:.0f}% accent band")
+            fail = 1
 
 # 9. An accent used as a BACKGROUND is a pair no check above ever looks at. Check 5
 #    only ever puts a token in the foreground, on --surface, --code-bg or
@@ -656,14 +707,19 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
     triples_for_mode = resolved.get(mode)
     if triples_for_mode is None:
         continue
-    block = css
-    if condition is not None:
+    blocks = []
+    if mode == "christmas":
+        blocks = [season_blocks["christmas"]]
+    elif mode == "light-christmas":
+        blocks = [light_block.group(1), season_blocks["christmas"], season_blocks["light-christmas"]]
+    elif condition is not None:
         found = re.search(
             re.escape(condition) + r" \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S
         )
-        block = found.group(1) if found else ""
+        blocks = [found.group(1)] if found else []
     rel = dict(base_relative)
-    rel.update(relative_decls(block))
+    for block in blocks:
+        rel.update(relative_decls(block))
     declared_relative |= set(rel)
     for name, (base, shift, alpha) in rel.items():
         # A mode may override the relative form with a literal, which print does for
@@ -833,5 +889,5 @@ else:
                 )
                 fail = 1
 
-print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, 4 modes).")
+print("Palette drift." if fail else f"Palette OK ({len(palette)} tokens, {len(MODES)} modes).")
 sys.exit(fail)

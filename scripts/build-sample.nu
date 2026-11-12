@@ -12,6 +12,11 @@
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
 const ROOT = path self | path dirname | path dirname
 
+# The two Christmas conditions in tufte-dracula.css. Neither is a light or dark mode: both
+# sit behind `data-season`, and both carry `screen` so that print keeps its own tokens.
+const SEASON_DARK = "@media screen and (prefers-contrast: no-preference)"
+const SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)"
+
 def main [] {
   let css = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right)
   let mermaid = (open --raw ($ROOT | path join "mermaid.js") | str trim --right)
@@ -21,7 +26,8 @@ def main [] {
   tokens $css
 
   # (filename, <body> tag, title, body-content, light-preview filename), one page
-  # per layout mode, each with a forced-light twin for Pages.
+  # per layout mode, each with a forced-light twin for Pages. The main fixture also
+  # gets two forced-season previews, one dark and one light.
   [
     ["dark.html" "<body>" "Tufte-Dracula component sample" (body) "light.html"]
     ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula connections-map layout" (conn-map-body) "light-conn-map.html"]
@@ -36,6 +42,7 @@ def main [] {
       "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\"/>"
       $"  <title>($p.2)</title>"
       "  <meta name=\"generated-by\" content=\"scripts/build-sample.nu\"/>"
+      (season-snippet)
       $css
       $mermaid
       $filter
@@ -51,8 +58,61 @@ def main [] {
     ^git -C $ROOT add $out
     print $"  → ($out)"
     preview $html $p.0 $p.2 $p.4
+    if $p.0 == "dark.html" {
+      season-preview $html $p.0 $p.2 "christmas-dark.html" "dark"
+      season-preview $html $p.0 $p.2 "christmas-light.html" "light"
+    }
   }
   null
+}
+
+# The seasonal head snippet a consumer pastes before the stylesheet. It is not a fifth
+# payload file: the four payload files stay verbatim, and this block belongs to the page.
+# It is a classic inline script on purpose. A classic script runs the moment the parser
+# reaches it, so `data-season` is on `<html>` before any `type="module"` script
+# evaluates, and `mermaid.js` reads `--mermaid-scheme` once, at module evaluation. A
+# module, `defer` or `async` snippet would race that read. `getMonth()` and `getDate()`
+# are the visitor's local calendar, 0-based month: 10 is November and 11 is December,
+# so the window is November 11 through December 26 inclusive.
+#
+# CONTRACT.md section 1 carries a copy that `.github/season-probe.py` compares against
+# this one, and the probe runs the copy found in the generated fixture. Change all three
+# together, and keep the block free of comments: every page carries it.
+def season-snippet [] {
+  [
+    "  <script>"
+    "    (function () {"
+    "      var now = new Date(), month = now.getMonth(), day = now.getDate();"
+    "      if ((month === 10 && day >= 11) || (month === 11 && day <= 26)) {"
+    "        document.documentElement.setAttribute('data-season', 'christmas');"
+    "      }"
+    "    })();"
+    "  </script>"
+  ] | str join "\n"
+}
+
+# Replace each condition in `rewrites`, and raise when one is missing. Every condition is
+# checked on its own, never "did anything change": a first cut compared the whole string
+# before and after and passed when only the contrast condition still matched, which is
+# the case that matters least. A renamed condition would otherwise ship the default
+# palette under a preview name while regeneration still compared clean.
+def rewrite-conditions [html: string, fixture: string, rewrites: list] {
+  for r in $rewrites {
+    if not ($html | str contains $r.cond) {
+      error make {msg: $"preview: ($fixture) has no `($r.cond)`: the stylesheet renamed it, so the preview would ship the default palette under a forced name"}
+    }
+  }
+  $rewrites | reduce --fold $html {|r, acc| $acc | str replace --all $r.cond $r.to }
+}
+
+# A preview must not depend on the host date, so the snippet leaves the page. A page that
+# kept it would show the season on some days and not on others.
+def drop-season-snippet [html: string, fixture: string] {
+  let snippet = (season-snippet)
+  if not ($html | str contains $snippet) {
+    error make {msg: $"preview: ($fixture) has no season snippet to remove, so the preview would still follow the host date"}
+  }
+  $html | str replace $"($snippet)\n" ""
 }
 
 # The light palette is a media query, so no fixture shows it: a visitor on a
@@ -74,10 +134,6 @@ def main [] {
 # the banner is not optional, because the filename no longer carries the warning.
 def preview [html: string, fixture: string, title: string, name: string] {
   # One list drives both the presence check and the rewrite, so the two cannot drift.
-  # Each condition is checked on its own, not "did anything change". A first cut
-  # compared the whole string before and after and passed when only the contrast
-  # condition still matched, which is the case that matters least. Renaming the
-  # light condition alone would have shipped a dark page called light.
   #
   # The print-and-light block becomes an unconditional `@media print`, because a page
   # locked to light renders a light-themed diagram, which needs neither the frozen dark
@@ -85,26 +141,76 @@ def preview [html: string, fixture: string, title: string, name: string] {
   # leave a live `prefers-color-scheme` in a page that claims to have none, which the
   # contract check reads as a rewrite that did not happen. Its entry sits first only for
   # readability: the longer string is not a substring of the shorter one.
+  #
+  # A light preview is never seasonal. The snippet leaves the page, and both Christmas
+  # blocks become `@media not all`. Dropping the snippet alone would leave a live
+  # `prefers-color-scheme` in the light Christmas condition, and the Christmas blocks
+  # would still win the cascade for any consumer who copied the preview and added
+  # `data-season` to it. Both conditions are also checked for presence, so a rename in
+  # the stylesheet fails here instead of shipping a preview that can turn festive.
   let rewrites = [
     {cond: "@media print and (prefers-color-scheme: light)", to: "@media print"}
     {cond: "@media (prefers-color-scheme: light)", to: "@media all"}
     {cond: "@media (prefers-contrast: more)", to: "@media not all"}
+    {cond: $SEASON_LIGHT, to: "@media not all"}
+    {cond: $SEASON_DARK, to: "@media not all"}
   ]
-  for r in $rewrites {
-    if not ($html | str contains $r.cond) {
-      error make {msg: $"preview: ($fixture) has no `($r.cond)`: the stylesheet renamed it, so the preview would ship the default palette under a light name"}
-    }
-  }
-  let forced = ($rewrites | reduce --fold $html {|r, acc| $acc | str replace $r.cond $r.to })
+  let forced = (rewrite-conditions (drop-season-snippet $html $fixture) $fixture $rewrites)
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
     "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
-    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
+    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows the Christmas theme. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
     "  </div>"
   ] | str join "\n")
   let out = ($ROOT | path join "samples" $name)
   ($forced
     | str replace $"<title>($title)</title>" $"<title>($title): forced light preview</title>"
+    | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out
+  ^git -C $ROOT add $out
+  print $"  → ($out)"
+}
+
+# A forced Christmas preview of the main fixture, one dark and one light, for any host
+# date and any system setting. It carries `data-season="christmas"` on `<html>` itself and
+# no snippet, so the date decides nothing. Every other mode condition is rewritten, the
+# way `preview` does it, so the host decides nothing either:
+#
+#   dark:  the light blocks become `@media not all`, the dark Christmas block becomes
+#          `@media screen`, and the light Christmas block becomes `@media not all`.
+#   light: the light blocks and both Christmas blocks become live. The light Christmas
+#          block is declared after the dark one and overrides it, the same order a light
+#          system gets in the wild.
+#
+# `prefers-contrast: more` is `@media not all` in both. The real Christmas blocks
+# require `no-preference`, so a reader who asks for more contrast never sees the season,
+# and a preview that honored the setting would show a page nobody else sees.
+#
+# These pages are NOT the payload. They carry the same banner as the light previews, and
+# its first paragraph starts `<p>This page forces` so the checks that already strip that
+# paragraph before scanning for `prefers-color-scheme` strip this one too.
+def season-preview [html: string, fixture: string, title: string, name: string, mode: string] {
+  let light = ($mode == "light")
+  let rewrites = [
+    {cond: "@media print and (prefers-color-scheme: light)", to: (if $light { "@media print" } else { "@media not all" })}
+    {cond: "@media (prefers-color-scheme: light)", to: (if $light { "@media all" } else { "@media not all" })}
+    {cond: "@media (prefers-contrast: more)", to: "@media not all"}
+    {cond: $SEASON_LIGHT, to: (if $light { "@media screen" } else { "@media not all" })}
+    {cond: $SEASON_DARK, to: "@media screen"}
+  ]
+  let forced = (rewrite-conditions (drop-season-snippet $html $fixture) $fixture $rewrites)
+  if not ($forced | str contains "<html lang=\"en\">") {
+    error make {msg: $"season-preview: ($fixture) has no `<html lang=\"en\">` to carry data-season"}
+  }
+  let banner = ([
+    "  <div class=\"markdown-alert markdown-alert-caution\">"
+    "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
+    $"    <p>This page forces the Christmas theme in the ($mode) palette, whatever the date and the system appearance. It carries <code>data-season=\"christmas\"</code> on <code>&lt;html&gt;</code> and no head snippet, and its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to Christmas ($mode)</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim and the date-driven snippet.</p>"
+    "  </div>"
+  ] | str join "\n")
+  let out = ($ROOT | path join "samples" $name)
+  ($forced
+    | str replace "<html lang=\"en\">" "<html lang=\"en\" data-season=\"christmas\">"
+    | str replace $"<title>($title)</title>" $"<title>($title): forced Christmas ($mode) preview</title>"
     | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out
   ^git -C $ROOT add $out
   print $"  → ($out)"
@@ -177,7 +283,7 @@ def conn-map-body [] {
     "      <h3>Small map</h3>"
     "      <pre class=\"mermaid\">%%{init: {'flowchart': {'useMaxWidth': false}}}%%\nflowchart BT\n  accTitle: Connections map for the focus topic\n  accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.\n  focus[Focus Topic with a deliberately long label that must fit its own box]\n  a1[Antecedent A] --> focus\n  a2[Antecedent B] --> focus\n  focus --> d1[Descendant X]\n  focus --> d2[Descendant Y]</pre>"
     "      <h3>Large map</h3>"
-    "      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it stays a three-<code>&lt;script&gt;</code> fixture.</p>"
+    "      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it adds no script beyond the three payload scripts and the seasonal head snippet.</p>"
     "      <pre class=\"mermaid\">---\nconfig:\n  layout: elk\n  flowchart:\n    useMaxWidth: false\n  elk:\n    nodePlacementStrategy: NETWORK_SIMPLEX\n---\nflowchart TD\n  accTitle: Large connections map for the focus topic\n  accDescr: A focus topic with two eras of antecedents and descendants grouped into open subgraphs, every node individually clickable, and a legend explaining that a solid line is a technological connection and a dashed line is a conceptual one.\n  subgraph legend[\"Legend\"]\n    direction LR\n    key1((\" \")) -->|technological| key2((\" \"))\n    key3((\" \")) -.->|conceptual| key4((\" \"))\n  end\n  focus[Focus Topic]\n  subgraph pre2010[\"Antecedents, pre-2010\"]\n    a1[Antecedent A]\n    a2[Antecedent B]\n    a3[Antecedent C]\n    a4[Antecedent D]\n    a5[Antecedent E]\n    a6[Antecedent F]\n  end\n  subgraph post2010[\"Descendants, post-2010\"]\n    d1[Descendant W]\n    d2[Descendant X]\n    d3[Descendant Y]\n    d4[Descendant Z]\n  end\n  a1 --> focus\n  a2 --> focus\n  a3 --> focus\n  a4 -.-> focus\n  a5 -.-> focus\n  a6 --> focus\n  focus --> d1\n  focus --> d2\n  focus -.-> d3\n  focus --> d4</pre>"    "    </section>"
     "  </article>"
     "  </main>"

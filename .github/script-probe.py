@@ -22,6 +22,11 @@ behaviour. It is the only check in the repo that runs the payload rather than re
   mermaid.js  every `pre.mermaid` renders an `<svg>` and gains its own zoom button, a
               click on the live diagram opens the `<dialog>`, and the pre carries no
               `role="region"` at a width where it cannot scroll
+  mermaid.js  (seasons) in each of dark, light, Christmas dark and Christmas light, the
+              `--mermaid-scheme` token resolves to the mode's name, and the rendered diagram
+              paints that mode's own palette: node fill and border, edge line and label text
+              from `mermaid-palette.json`, `darkMode` matching the scheme, and the xychart
+              line on the charts fixture
   layout      `nav.toc` respects its 38rem cap on wide screens and clears a floated
               note stack placed before it, so the panel stays compact and avoids overlap
               (NOTES.md, Progressive disclosure)
@@ -376,6 +381,100 @@ FIDELITY_DRIVER = """
   </script>
 """
 
+# mermaid.js reads --mermaid-scheme once, at init, and picks one of four hex maps. The base
+# driver proves a diagram renders and zooms, and says nothing about WHICH palette it painted,
+# so a seasonal token that fell through to the dark map would pass every assertion above. This
+# renders the fixture in each of the four modes with the same condition rewrite render-modes.py
+# uses, and reads the painted result back out of the live SVG instead of trusting the source:
+# the computed stroke and fill of a flowchart node, the edge line, the label text, and the
+# xychart line, each against the hex `mermaid-palette.json` declares for that mode.
+#
+# `darkMode` has no direct readout, so it is read through a value Mermaid derives from it:
+# the tooltip rule in each SVG's own stylesheet takes its border from `mkBorder`, which
+# lightens the tooltip background by 10 points when darkMode is true and darkens it by 10 when
+# it is false. The border must sit lighter than the background in a dark scheme and darker in
+# a light one. The scheme token is asserted first, so a mode that resolves the wrong token
+# fails there with its real cause.
+SEASON_DRIVER = """
+  <script type="module">
+    const out = [];
+    const want = __WANT__;
+    const t = (name, cond) => out.push('palette-' + want.mode + '-' + name + '=' + (cond ? 'PASS' : 'FAIL'));
+    const rgb = hex => 'rgb(' + [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(', ') + ')';
+    t('token', getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim() === want.scheme);
+    const stop = Date.now() + 20000;
+    const kind = want.plot ? 'svg[aria-roledescription="xychart"]' : 'svg[aria-roledescription="flowchart-v2"]';
+    const svg = await new Promise(done => {
+      (function poll() {
+        const found = document.querySelector('pre.mermaid ' + kind);
+        if (found || Date.now() > stop) done(found); else setTimeout(poll, 250);
+      })();
+    });
+    t('rendered', Boolean(svg));
+    if (svg && want.plot) {
+      const line = svg.querySelector('path[stroke]');
+      t('line', Boolean(line) && line.getAttribute('stroke').toLowerCase() === want.plot.toLowerCase());
+    } else if (svg) {
+      const paint = (sel, prop) => { const el = svg.querySelector(sel); return el ? getComputedStyle(el)[prop] : ''; };
+      t('node-border', paint('.node rect', 'stroke') === rgb(want.nodeBorder));
+      t('node-fill', paint('.node rect', 'fill') === rgb(want.mainBkg));
+      t('edge-line', paint('.flowchart-link', 'stroke') === rgb(want.lineColor));
+      t('label-text', paint('.nodeLabel', 'color') === rgb(want.text));
+      const css = svg.querySelector('style').textContent;
+      const tip = css.match(/div\\.mermaidTooltip\\{[^}]*?background:hsl\\([^,]+,[^,]+,\\s*([\\d.]+)%\\)[^}]*?border:1px solid hsl\\([^,]+,[^,]+,\\s*([\\d.]+)%\\)/);
+      t('dark-mode', Boolean(tip) && (parseFloat(tip[2]) > parseFloat(tip[1])) === want.dark);
+    }
+    const el = document.createElement('pre');
+    el.id = 'script-probe';
+    el.textContent = out.join('\\n');
+    document.body.append(el);
+  </script>
+"""
+
+# mode: (the token mermaid.js must read, the mermaid-palette.json section it must paint).
+SEASON_MODES = {
+    "dark": ("dark", "init"),
+    "light": ("light", "initLight"),
+    "season": ("christmas", "initChristmas"),
+    "season-light": ("light-christmas", "initChristmasLight"),
+}
+
+
+def dateless(page):
+    """The page without its seasonal head snippet, so no assertion here reads the clock."""
+    out, n = re.subn(r"[ \t]*<script>(?:(?!</script>).)*data-season(?:(?!</script>).)*</script>\n",
+                     "", page, count=1, flags=re.S)
+    if n != 1:
+        sys.exit("The fixture carries no seasonal head snippet to remove. Regenerate the fixtures.")
+    return out
+
+
+def in_mode(html, mode, name):
+    """The fixture with exactly `mode`'s conditions on, as render-modes.py rewrites them."""
+    on, seasonal, _ = _rm.MODES[mode]
+    for c in _rm.CONDITIONS:
+        if f"{c} {{" not in html:
+            sys.exit(f"{name} has no `{c} {{`, so the season palettes are unreachable. "
+                     f"Regenerate the fixtures.")
+        html = html.replace(c, "@media all" if c in on else "@media not all", 1)
+    if seasonal:
+        if '<html lang="en">' not in html:
+            sys.exit(f'{name} has no bare `<html lang="en">` to carry data-season.')
+        html = html.replace('<html lang="en">', '<html lang="en" data-season="christmas">', 1)
+    return html
+
+
+def season_want(mode, plots, charts):
+    scheme, section = SEASON_MODES[mode]
+    hexes = {k: v["hex"] for k, v in plots[section].items() if k != "_comment"}
+    want = {"mode": mode + ("-xychart" if charts else ""), "scheme": scheme, "dark": not scheme.startswith("light"),
+            "nodeBorder": hexes["nodeBorder"], "mainBkg": hexes["mainBkg"],
+            "lineColor": hexes["lineColor"], "text": hexes["textColor"]}
+    if charts:
+        want["plot"] = hexes["plotColorPalette"]
+    return want
+
+
 FORCED_CONDITION = "@media (forced-colors: active)"
 
 
@@ -417,7 +516,7 @@ def main():
     if not mermaid:
         print(f"SKIP: The precheck for {CDN} did not pass. Mermaid and Highlight.js checks did not run.")
 
-    html = FIXTURE.read_text()
+    html = dateless(FIXTURE.read_text())
     if "</body>" not in html:
         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
@@ -431,11 +530,27 @@ def main():
     forced = html.replace(FORCED_CONDITION, "@media all", 1)
     results += run(forced.replace("</body>", FORCED_DRIVER + "\n</body>", 1), 7, "forced-colors")
 
-    charts = CHARTS.read_text()
+    charts = dateless(CHARTS.read_text())
     plots = json.loads((ROOT / "mermaid-palette.json").read_text())
     xy = json.dumps([plots[k]["plotColorPalette"]["hex"] for k in ("init", "initLight")])
     driver = FIDELITY_DRIVER.replace("__XY__", xy)
     results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 9 if mermaid else 7, "fidelity")
+
+    if mermaid:
+        # Four palettes that were never distinct would pass every per-mode check below, so
+        # the maps are required to differ on the colors the driver reads before they are used.
+        sections = [plots[section] for _, section in SEASON_MODES.values()]
+        for key in ("nodeBorder", "mainBkg", "lineColor", "textColor"):
+            if len({section[key]["hex"] for section in sections}) != len(sections):
+                sys.exit(f"mermaid-palette.json {key} is not distinct across the four palettes, "
+                         f"so a wrong palette would pass the season probe.")
+        for mode in SEASON_MODES:
+            want = json.dumps(season_want(mode, plots, False))
+            body = in_mode(html, mode, FIXTURE.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
+            results += run(body, 6, f"{mode} palette")
+        want = json.dumps(season_want("season", plots, True))
+        body = in_mode(charts, "season", CHARTS.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
+        results += run(body, 3, "season xychart")
 
     fail = 0
     for line in results:

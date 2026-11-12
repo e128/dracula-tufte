@@ -48,7 +48,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Keyboard and assistive technology](#keyboard-and-assistive-technology) | Zoom button, modal overlay, `inert`, scroll regions |
 | [Direction, zoom and growth](#direction-zoom-and-growth) | RTL, text-only zoom, safe-area insets |
 | [Cascade layer](#cascade-layer) | `@layer tufte-dracula`, the `!important` inversion |
-| [Appearance modes](#appearance-modes) | High contrast, light, `--mermaid-scheme`, the mode gates |
+| [Appearance modes](#appearance-modes) | High contrast, light, `--mermaid-scheme`, the mode gates, the Christmas season |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its load-bearing decisions |
 | [Nav link separators](#nav-link-separators) | The `nav > a + a` rule, the wrapped-line artefact, the current-page marker |
@@ -699,9 +699,9 @@ defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs fourteen checks: (1) hex projections in both Mermaid palettes; (2) the
+`.github/palette-check.py` runs fourteen checks: (1) hex projections in all four Mermaid palettes; (2) the
 `classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
-stray hex in `mermaid.js`; (5) the contrast floor in all four modes against three grounds, plus rules
+stray hex in `mermaid.js`; (5) the contrast floor in all six modes against three grounds, plus rules
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
 and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for every parsed token
 in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
@@ -1797,8 +1797,9 @@ needing its own gate. **The net change after deleting it is fewer rules than bef
 
 **A scheme flip with no reload leaves the diagram stale**: the token is read once, at init; a live
 re-theme means a re-init, a re-render from source, and a fresh `MutationObserver` race. **An in-page
-toggle was asked for and refused**: the fixtures carry exactly one `<style>` and three `<script>`
-blocks, both gated, so a toggle would need a second theming convention or a fourth inlined script.
+toggle was asked for and refused**: the fixtures carry exactly one `<style>` and three payload
+`<script>` blocks (four on a dark fixture, which adds the seasonal head snippet), both gated, so a
+toggle would need a second theming convention or another inlined script.
 Take it only as a deliberate public-API decision if a consumer asks for a manual override as a
 feature.
 
@@ -1817,7 +1818,7 @@ PR instead.
 
 **Two gates cover the modes, covering different halves, neither a screenshot diff** (layout is
 identical across modes, only color moves). `.github/palette-check.py` check 5 re-derives the contrast
-floor for all four palettes on every run, overlaying each mode block's overrides on the default
+floor for all six palettes on every run, overlaying each mode block's overrides on the default
 palette the way the cascade actually resolves it. `.github/render-modes.py` covers that the palette
 **arrives**: **headless Chrome cannot be told which media query to match** (`--force-dark-mode` etc.
 all leave the OS's own result unchanged), so each render rewrites **every** mode condition in a
@@ -1837,6 +1838,46 @@ meaning fifteen inline calls instead of one block to keep in step.
 light palette at its own floor rather than a fourth, never-built high-contrast-light palette. **The
 failure mode of a wrong order is much worse: dark high-contrast accents on a white surface. Do not
 reorder the two blocks.**
+
+### The Christmas season
+
+**The Christmas palette is a pair of `:root[data-season="christmas"]` blocks, and the stylesheet never
+sets the attribute.** CSS cannot read a date, so a consumer sets it. The head snippet in `CONTRACT.md`
+§ 1 does that from the reader's local calendar, 11 November to 26 December inclusive. **The payload
+stays four files.** A fifth file would change the contract for every consumer, and `filter.js` loads
+only on a page with a filter box, so neither can carry a check that every page needs.
+
+**Do not put date logic in the CSS, `mermaid.js` or `filter.js`.** **Do not make the snippet a
+`type="module"`, `defer` or `async` script, and do not place it after the payload.** `mermaid.js`
+reads `--mermaid-scheme` once, when its module evaluates, so a snippet that loses that race draws a
+default diagram on a Christmas page. **Do not add a manual override API.** The scheme toggle was
+refused for the same reason: a second theming convention for one request.
+
+**The season yields to contrast and print by media condition, not by cascade order.** The attribute
+selector outranks the contrast and print `:root` blocks on specificity, so the guard is the
+condition: `screen` and `prefers-contrast: no-preference`. **Do not remove either half**, and do not
+build a Christmas high-contrast palette. It is the same stance as light mode and high contrast not
+composing.
+
+**Dark Christmas turns the surfaces pine, and light Christmas turns them cream.** The accents remap
+to holly, gold, ice and cranberry, and both blocks restate every token they change. Both clear the
+floor of the mode they sit on (4.2:1 and 4.5:1), the data ramp keeps its pinned fractions, and the
+light accents keep the 55 to 65 percent band. **Measure `--link` against the sRGB ceiling.** It is
+not in `P3_WIDENED`, so a chroma sized against the wider ruler lands at 79 percent and fails check 8.
+**Keep the light Christmas surface warm.** It sits more than twice the render tolerance from the
+plain light surface, so `render-modes.py` can tell the two apart. Pulling it back toward `#fcfcf8`
+makes that gate pass for the wrong palette.
+
+**`--mermaid-scheme` takes four values** (`dark`, `light`, `christmas`, `light-christmas`), and
+`mermaid.js` carries four hex maps. There is no Christmas `classDef` set: the ban on a `classDef`
+hex line for a page that follows appearance covers a page that follows the date too.
+
+**Three kinds of page carry the season.** The dark fixtures carry the snippet, so each turns festive
+inside the window. The four light previews never show it. The two Christmas previews set the
+attribute in markup and rewrite the season conditions to `@media screen`, so the date and the
+contrast setting stop mattering and print keeps its own palette. `.github/season-probe.py` runs the
+verbatim snippet against a mocked clock at the window edges in three time zones, and it must keep
+doing so: a bound off by one day would otherwise show on 11 November.
 
 ## Print
 

@@ -112,7 +112,7 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
   them by hand. Change `tufte-dracula.css`, `mermaid.js`, `filter.js`, `highlight.js` or
   `scripts/build-sample.nu`, then regenerate.
 - Run `nu scripts/maintain.nu check` after every change. It mirrors CI: file presence, the palette
-  hex-against-oklch gate, exactly one `<style>` and three `<script>` blocks per fixture, and a
+  hex-against-oklch gate, exactly one `<style>` and three payload `<script>` blocks per fixture (four on a dark fixture, which adds the seasonal head snippet), and a
   staleness check that proves regeneration changes nothing. It must print `Contract OK`.
 - The first line of `tufte-dracula.css` must be exactly `  <style>`. The last line must be
   exactly `  </style>`. Consumers slice the body out with `sed '1d;$d'`. This is a contract.
