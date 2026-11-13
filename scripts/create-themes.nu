@@ -73,8 +73,10 @@ const THEMES = [
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte.json", scheme: "dark"}
   {template: "themes/rider/dracula-tufte.icls.in", output: "themes/rider/dracula-tufte.icls", scheme: "dark"}
   {template: "themes/rider/dracula-tufte-light.icls.in", output: "themes/rider/dracula-tufte-light.icls", scheme: "light"}
+  {template: "themes/rider/dracula-tufte-xmas.icls.in", output: "themes/rider/dracula-tufte-xmas.icls", scheme: "christmas"}
   {template: "themes/rider/dracula-tufte.theme.json.in", output: "themes/rider/dracula-tufte.theme.json", scheme: "dark"}
   {template: "themes/rider/dracula-tufte-light.theme.json.in", output: "themes/rider/dracula-tufte-light.theme.json", scheme: "light"}
+  {template: "themes/rider/dracula-tufte-xmas.theme.json.in", output: "themes/rider/dracula-tufte-xmas.theme.json", scheme: "christmas"}
   {template: "themes/rider/META-INF/plugin.xml.in", output: "themes/rider/META-INF/plugin.xml", scheme: "dark"}
   {template: "themes/tmux/dracula-tufte.conf.in", output: "themes/tmux/dracula-tufte.conf", scheme: "dark"}
   {template: "themes/vscode/extension.vsixmanifest.in", output: "themes/vscode/extension.vsixmanifest", scheme: "dark"}
@@ -412,9 +414,9 @@ def package [out: path, version: string] {
   let stage = ($dist | path join "stage")
   let jar_name = $"dracula-tufte-rider-($version).jar"
 
-  # Inner jar first, out of its own staging tree. Two theme.json/icls pairs go in,
-  # dark and light, since a JetBrains theme is one appearance per theme.json and
-  # plugin.xml (below) registers both as separate themeProviders.
+  # Inner jar first, out of its own staging tree. Three theme.json/icls pairs go in,
+  # dark, light and Christmas, since a JetBrains theme is one appearance per
+  # theme.json and plugin.xml registers each as its own themeProvider.
   let jstage = ($stage | path join "jar")
   rm --recursive --force $stage
   mkdir ($jstage | path join "META-INF")
@@ -423,6 +425,8 @@ def package [out: path, version: string] {
   cp ($dir | path join "dracula-tufte.icls") ($jstage | path join "dracula-tufte.xml")
   cp ($dir | path join "dracula-tufte-light.theme.json") ($jstage | path join "dracula-tufte-light.theme.json")
   cp ($dir | path join "dracula-tufte-light.icls") ($jstage | path join "dracula-tufte-light.xml")
+  cp ($dir | path join "dracula-tufte-xmas.theme.json") ($jstage | path join "dracula-tufte-xmas.theme.json")
+  cp ($dir | path join "dracula-tufte-xmas.icls") ($jstage | path join "dracula-tufte-xmas.xml")
   [ "Manifest-Version: 1.0"
     "Implementation-Title: Dracula-Tufte (muted)"
     $"Implementation-Version: ($version)"
@@ -432,7 +436,8 @@ def package [out: path, version: string] {
   # Files before directories: writing a file bumps its parent's mtime.
   for f in [
     "META-INF/MANIFEST.MF" "META-INF/plugin.xml" "dracula-tufte.theme.json" "dracula-tufte.xml"
-    "dracula-tufte-light.theme.json" "dracula-tufte-light.xml" "META-INF"
+    "dracula-tufte-light.theme.json" "dracula-tufte-light.xml"
+    "dracula-tufte-xmas.theme.json" "dracula-tufte-xmas.xml" "META-INF"
   ] {
     ^touch -t 198001010000 ($jstage | path join $f)
   }
@@ -441,7 +446,8 @@ def package [out: path, version: string] {
   mkdir ($stage | path join "lib")
   cd $jstage
   let jz = (^zip -q -X $jar "META-INF/" META-INF/MANIFEST.MF META-INF/plugin.xml
-    dracula-tufte.theme.json dracula-tufte.xml dracula-tufte-light.theme.json dracula-tufte-light.xml | complete)
+    dracula-tufte.theme.json dracula-tufte.xml dracula-tufte-light.theme.json dracula-tufte-light.xml
+    dracula-tufte-xmas.theme.json dracula-tufte-xmas.xml | complete)
   cd $ROOT
   if $jz.exit_code != 0 {
     rm --recursive --force $stage

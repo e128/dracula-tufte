@@ -1,30 +1,31 @@
 # Dracula-Tufte (muted): JetBrains Rider theme
 
-Four artefacts, one palette, two appearances:
+Six artefacts, one palette, three appearances:
 
-- `dracula-tufte.icls` / `dracula-tufte-light.icls`: editor colour scheme (syntax,
-  gutter, diff, console ANSI).
-- `dracula-tufte.theme.json` / `dracula-tufte-light.theme.json`: IDE chrome (tool
-  windows, tabs, menus, popups, icons).
+- `dracula-tufte.icls` / `dracula-tufte-light.icls` / `dracula-tufte-xmas.icls`: editor
+  colour scheme (syntax, gutter, diff, console ANSI).
+- `dracula-tufte.theme.json` / `dracula-tufte-light.theme.json` / `dracula-tufte-xmas.theme.json`:
+  IDE chrome (tool windows, tabs, menus, popups, icons).
 
 Every hex here is the sRGB rendering of a `tufte-dracula.css` `:root` `oklch()` token:
-dark from the base palette, light from its `prefers-color-scheme: light` override.
-The ANSI slots match `themes/ghostty/dracula-tufte` one-for-one, so the Rider console
-and the terminal agree.
+dark from the base palette, light from its `prefers-color-scheme: light` override, and
+Christmas from the `:root[data-season="christmas"]` block. The ANSI slots match
+`themes/ghostty/dracula-tufte` one-for-one, so the Rider console and the terminal agree.
 
-**IntelliJ Platform themes are one appearance per `theme.json`**, so this ships as two
+**IntelliJ Platform themes are one appearance per `theme.json`**, so this ships as three
 complete themes rather than one theme that follows the system setting: `plugin.xml`
-registers both as separate `themeProvider` entries, and each names its own
-`editorScheme`. Pick whichever one you want from Settings → Appearance → Theme; Rider
-does not switch between them on its own. The light `.icls` inherits from IntelliJ's
-built-in `Default` scheme (`parent_scheme="Default"`) where the dark one inherits from
-`Darcula`, and the light `theme.json`'s four `Checkbox.*` icon keys drop the `.Dark`
-suffix the dark theme's copies carry, per JetBrains' own light/dark icon-key
-convention. Both differences still need a rendered check in Rider.
+registers each as its own `themeProvider` entry, and each names its own `editorScheme`.
+Pick whichever one you want from Settings → Appearance → Theme; Rider does not switch
+between them on its own, and the Christmas theme does not follow the calendar. The light
+`.icls` inherits from IntelliJ's built-in `Default` scheme (`parent_scheme="Default"`),
+while the dark and Christmas ones inherit from `Darcula`; the light `theme.json`'s four
+`Checkbox.*` icon keys drop the `.Dark` suffix the dark and Christmas copies carry, per
+JetBrains' own light/dark icon-key convention. The Christmas theme is dark-family, so it
+keeps the `.Dark` keys. Those differences still need a rendered check in Rider.
 
 ## Rider 2026.3 Compatibility
 
-The generated dark and light theme JSON files load through Rider 2026.3's native
+The generated dark, light and Christmas theme JSON files load through Rider 2026.3's native
 `UITheme` parser (build `263.7307.258`). Their UI color keys apply, and their
 `editorScheme` paths resolve to the packaged XML resources. This headless check
 verifies parsing and resource resolution, not scheme inheritance, icons, or rendered appearance.
@@ -35,7 +36,7 @@ You do not need an Islands parent or a descriptor change to include that build.
 
 ## These files are generated
 
-`scripts/create-themes.nu` writes all five (two `.icls`, two `theme.json`, one
+`scripts/create-themes.nu` writes all seven (three `.icls`, three `theme.json`, one
 `plugin.xml`), plus the installable plugin, from the `.in` template beside each one.
 Edit the template, never the output.
 
@@ -95,7 +96,8 @@ The file keeps its `.icls` name on disk because that is what Import Scheme…
 expects.
 
 **Colour scheme only**, no packaging step: Settings → Editor → Color Scheme →
-gear → Import Scheme… → pick `dracula-tufte.icls` or `dracula-tufte-light.icls`.
+gear → Import Scheme… → pick `dracula-tufte.icls`, `dracula-tufte-light.icls` or
+`dracula-tufte-xmas.icls`.
 Unnecessary once the plugin is installed, since each theme carries its own scheme
 with it.
 

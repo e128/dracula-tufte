@@ -51,7 +51,7 @@ are previews, not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.63.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.64.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -70,7 +70,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.63.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.64.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -124,14 +124,15 @@ hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/
 
 **Rider, Zed, Ghostty, iTerm2, VS Code and CotEditor ship both a dark and a light variant**,
 projected from the same `:root` palette and its `prefers-color-scheme: light` override
-respectively.
+respectively. Rider also ships a Christmas variant, projected from the seasonal block behind
+`data-season="christmas"`; it is a third theme you select by hand, not a calendar switch.
 opencode, tmux and Slack ship dark only: opencode's and tmux's theme formats have no
 appearance-switch mechanism to project a light variant into, and Slack is a hand-copied string
 with nowhere to hold a second one.
 
 | Theme | Files | Modes | Install |
 | --- | --- | --- | --- |
-| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light) | dark + light | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick either theme from the theme list |
+| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light), `dracula-tufte-xmas.theme.json`/`.icls` (Christmas) | dark + light + Christmas | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
 | **Zed** | `dracula-tufte.json` (one file, both appearances) | dark + light | Copy to `~/.config/zed/themes/` |
 | **Ghostty** | `dracula-tufte`, `dracula-tufte-light` | dark + light | Copy both to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light` |
 | **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme` | dark + light | Settings, Appearance, gear, Import both; the pair switches with the window appearance |
