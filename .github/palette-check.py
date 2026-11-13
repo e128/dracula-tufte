@@ -234,6 +234,14 @@ if "--dump" in sys.argv:
                 name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, light_triples[name][0] + 0.07), *light_triples[name][1:])}
                 for name, hexval in light_palette.items()
             },
+            "christmas": {
+                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, christmas_triples[name][0] + 0.07), *christmas_triples[name][1:])}
+                for name, hexval in christmas_palette.items()
+            },
+            "light-christmas": {
+                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, light_christmas_triples[name][0] + 0.07), *light_christmas_triples[name][1:])}
+                for name, hexval in light_christmas_palette.items()
+            },
         },
         sys.stdout,
     )

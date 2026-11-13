@@ -1159,8 +1159,9 @@ hex actually lands.
 
 **Rider, Zed, Ghostty, iTerm2, VS Code and CotEditor ship a light variant**, projected from the
 same `prefers-color-scheme: light` override the page itself uses. opencode and tmux stay dark only:
-neither format has an appearance-switch mechanism to project a second palette into. `.github/palette-check.py --dump`
-returns `{dark: {...}, light: {...}}` rather than one flat map, and `scripts/create-themes.nu`'s
+neither format has an appearance-switch mechanism to project a second palette into.
+`.github/palette-check.py --dump` returns `{dark: {...}, light: {...}, christmas: {...},
+light-christmas: {...}}` rather than one flat map, and `scripts/create-themes.nu`'s
 `render`/`resolve` pick a palette per placeholder: bare `{{token}}` resolves against a template's
 default scheme, `{{light:token}}` (or `dark:`) overrides that one placeholder regardless of default.
 
@@ -1174,15 +1175,23 @@ object renders unchanged and the light one, alongside it in the same template, p
 placeholder with `light:`. Do not invent a third shape for a future target before checking which of
 these two its schema actually is.
 
-**Rider ships two complete themes, not one that follows the system setting**: IntelliJ Platform
-themes are one appearance per `theme.json`, so `plugin.xml` registers a second `themeProvider` for
-the light one, and the light `.icls` inherits IntelliJ's built-in `Default` scheme
-(`parent_scheme="Default"`) where the dark one inherits `Darcula`. The light `theme.json`'s four
-`Checkbox.*` icon keys drop the `.Dark` suffix the dark theme's copies carry, per JetBrains' icon
-palette convention (a bare key is the light-icon asset, `.Dark` overrides it for the dark one).
-**The light scheme inheritance and checkbox icons still need a rendered check in Rider.**
-Parsing theme JSON and resolving its bundled XML resource do not verify either difference.
-Do not treat a headless load check as visual verification.
+**Rider ships three complete themes, not one that follows the system or the calendar**:
+IntelliJ Platform themes are one appearance per `theme.json`, so `plugin.xml` registers a
+`themeProvider` for each, and the light `.icls` inherits IntelliJ's built-in `Default` scheme
+(`parent_scheme="Default"`) where the dark and Christmas ones inherit `Darcula`. The light
+`theme.json`'s four `Checkbox.*` icon keys drop the `.Dark` suffix the dark and Christmas copies
+carry, per JetBrains' icon palette convention (a bare key is the light-icon asset, `.Dark`
+overrides it for the dark one). **The light scheme inheritance and checkbox icons still need a
+rendered check in Rider.** Parsing theme JSON and resolving its bundled XML resource do not verify
+either difference. Do not treat a headless load check as visual verification.
+
+**The Christmas theme is a third `themeProvider` rendered from the `christmas` palette, and it
+does not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
+the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas` is
+picked by hand from the theme list, the way the light one is. It uses the dark Christmas block
+(pine surfaces), not the light Christmas block, and keeps the `.Dark` icon keys because it is
+dark-family. `scripts/create-themes.nu` renders it with `scheme: "christmas"`, which is the same
+`--dump` key `.github/palette-check.py` derives for Mermaid's `initChristmas` set.
 
 **Keep `since-build="223"` without an `until-build`.** The range includes Rider 2026.3's
 [branch 263](https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html).
