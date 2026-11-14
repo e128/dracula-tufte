@@ -1,5 +1,5 @@
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs';
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs';
     const mermaidScheme = getComputedStyle(document.documentElement).getPropertyValue('--mermaid-scheme').trim();
     const mermaidLight = mermaidScheme === 'light' || mermaidScheme.startsWith('light-');
     const mermaidFont = '"JetBrains Mono", ui-monospace, "Fira Code", monospace';
