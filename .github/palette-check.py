@@ -172,45 +172,71 @@ light_triples.update({
 })
 light_palette = {name: oklch_to_hex(*lch) for name, lch in light_triples.items()}
 
-SEASON_CONDITIONS = {
-    "christmas": "@media screen and (prefers-contrast: no-preference)",
-    "light-christmas": "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)",
-}
 SEASON_TOKENS = {
     "surface", "surface-alt", "on-surface", "code-bg", "label", "muted",
     "rule-light", "link", "orange", "red", "purple", "pink", "green",
     "data-1", "data-2", "data-3", "data-4",
 }
+
+# A date-range palette is one row here. Everything the checks and `--dump` see
+# derives from the row, so a new season is an entry plus a pair of CSS blocks,
+# not an edit to every list in this file. The two conditions are design, not
+# data: the season applies on screen only, and only when the reader states no
+# contrast preference (NOTES.md, "The Christmas season"). The mode names are a
+# convention: `<season>` overlays the dark palette, and `light-<season>`
+# overlays the light one, which is the cascade order in the stylesheet.
+DARK_SEASON_CONDITION = "@media screen and (prefers-contrast: no-preference)"
+LIGHT_SEASON_CONDITION = (
+    "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)"
+)
+SEASONS = {
+    "christmas": {
+        "tokens": SEASON_TOKENS,   # tokens each seasonal block must restate
+        "dark_floor": 4.2,         # text floor over the dark family's grounds
+        "light_floor": 4.5,        # text floor over the light family's grounds
+        "p3": True,                # the ramp holds a P3-reaching chroma
+        "light_accents": True,     # the light variant joins the accent band
+    },
+}
 season_blocks = {}
 season_overrides = {}
-for mode, condition in SEASON_CONDITIONS.items():
-    block = re.search(
-        re.escape(condition) + r' \{\s*:root\[data-season="christmas"\] \{(.*?)\n\s*\}',
-        stylesheet, re.S,
-    )
-    if not block:
-        sys.exit(f'DRIFT: no `{condition}` block with :root[data-season="christmas"]')
-    season_blocks[mode] = block.group(1)
-    overrides = {
-        name: (float(L), float(C), float(h))
-        for name, L, C, h in re.findall(
-            r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", block.group(1)
+for season, config in SEASONS.items():
+    for mode, condition in (
+        (season, DARK_SEASON_CONDITION),
+        (f"light-{season}", LIGHT_SEASON_CONDITION),
+    ):
+        block = re.search(
+            re.escape(condition) + r' \{\s*:root\[data-season="' + season + r'"\] \{(.*?)\n\s*\}',
+            stylesheet, re.S,
         )
-    }
-    missing = SEASON_TOKENS - overrides.keys()
-    if missing:
-        sys.exit(f"DRIFT: {mode} is missing parseable seasonal declarations: "
-                 + ", ".join(f"--{name}" for name in sorted(missing)))
-    season_overrides[mode] = overrides
+        if not block:
+            sys.exit(f'DRIFT: no `{condition}` block with :root[data-season="{season}"]')
+        season_blocks[mode] = block.group(1)
+        overrides = {
+            name: (float(L), float(C), float(h))
+            for name, L, C, h in re.findall(
+                r"--([\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)", block.group(1)
+            )
+        }
+        missing = config["tokens"] - overrides.keys()
+        if missing:
+            sys.exit(f"DRIFT: {mode} is missing parseable seasonal declarations: "
+                     + ", ".join(f"--{name}" for name in sorted(missing)))
+        season_overrides[mode] = overrides
 
 # Both seasonal rules match in light mode. The light rule wins over the dark
 # seasonal rule, while the light :root still supplies its relative colors.
-christmas_triples = {**triples, **season_overrides["christmas"]}
-light_christmas_triples = {
-    **light_triples, **season_overrides["christmas"], **season_overrides["light-christmas"]
+season_triples = {}
+for season in SEASONS:
+    season_triples[season] = {**triples, **season_overrides[season]}
+    season_triples[f"light-{season}"] = {
+        **light_triples, **season_overrides[season], **season_overrides[f"light-{season}"]
+    }
+triples_by_mode = {"dark": triples, "light": light_triples, **season_triples}
+palettes_by_mode = {
+    mode: {name: oklch_to_hex(*lch) for name, lch in lchs.items()}
+    for mode, lchs in triples_by_mode.items()
 }
-christmas_palette = {name: oklch_to_hex(*lch) for name, lch in christmas_triples.items()}
-light_christmas_palette = {name: oklch_to_hex(*lch) for name, lch in light_christmas_triples.items()}
 
 # --dump is the generator side of the same parse: scripts/create-themes.nu needs the palette
 # as data, and re-deriving oklch -> sRGB in Nushell would mean a second implementation
@@ -226,22 +252,11 @@ light_christmas_palette = {name: oklch_to_hex(*lch) for name, lch in light_chris
 if "--dump" in sys.argv:
     json.dump(
         {
-            "dark": {
-                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, triples[name][0] + 0.07), *triples[name][1:])}
-                for name, hexval in palette.items()
-            },
-            "light": {
-                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, light_triples[name][0] + 0.07), *light_triples[name][1:])}
-                for name, hexval in light_palette.items()
-            },
-            "christmas": {
-                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, christmas_triples[name][0] + 0.07), *christmas_triples[name][1:])}
-                for name, hexval in christmas_palette.items()
-            },
-            "light-christmas": {
-                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, light_christmas_triples[name][0] + 0.07), *light_christmas_triples[name][1:])}
-                for name, hexval in light_christmas_palette.items()
-            },
+            mode: {
+                name: {"hex": hexval, "bright": oklch_to_hex(min(0.99, lchs[name][0] + 0.07), *lchs[name][1:])}
+                for name, hexval in palettes_by_mode[mode].items()
+            }
+            for mode, lchs in triples_by_mode.items()
         },
         sys.stdout,
     )
@@ -252,10 +267,17 @@ fail = 0
 
 # 1. Each init hex projects its named variable through its own resolved palette.
 #    Each variant must cover the same themeVariables keys as the default.
-for section, source in (
-    ("init", palette), ("initLight", light_palette),
-    ("initChristmas", christmas_palette), ("initChristmasLight", light_christmas_palette),
-):
+# `<Name>` is the season name with each hyphen-separated word capitalized:
+# `christmas` -> `Christmas`, `new-year` -> `NewYear`.
+def section_name(season):
+    return "".join(word.capitalize() for word in season.split("-"))
+
+section_palettes = {"init": palette, "initLight": light_palette}
+for season in SEASONS:
+    name = section_name(season)
+    section_palettes[f"init{name}"] = palettes_by_mode[season]
+    section_palettes[f"init{name}Light"] = palettes_by_mode[f"light-{season}"]
+for section, source in section_palettes.items():
     if section not in pal:
         print(f"DRIFT: mermaid-palette.json has no {section} section")
         fail = 1
@@ -345,8 +367,7 @@ for name, stated in re.findall(
 # 4. contract-check.yml maps every palette key onto mermaid.js; this is the
 #    reverse: a hex inline in mermaid.js that is no longer a palette color at all
 #    (a hand-added themeVariable, a stale value under a renamed key).
-known = (set(palette.values()) | set(light_palette.values()) |
-         set(christmas_palette.values()) | set(light_christmas_palette.values()))
+known = set().union(*(set(p.values()) for p in palettes_by_mode.values()))
 for found in sorted(set(re.findall(r"#[0-9a-f]{6}", (ROOT / "mermaid.js").read_text()))):
     if found not in known:
         print(f"DRIFT: mermaid.js hex {found} is not a tufte-dracula.css palette color")
@@ -393,18 +414,18 @@ MODES = {
     "default": (None, 4.2, 3.0),
     "prefers-contrast: more": ("@media (prefers-contrast: more)", 7.0, 3.0),
     "prefers-color-scheme: light": ("@media (prefers-color-scheme: light)", 4.5, 3.0),
-    "christmas": (SEASON_CONDITIONS["christmas"], 4.2, 3.0),
-    "light-christmas": (SEASON_CONDITIONS["light-christmas"], 4.5, 3.0),
-    "print": ("@media print", 4.5, 3.0),
 }
+for season, config in SEASONS.items():
+    MODES[season] = (DARK_SEASON_CONDITION, config["dark_floor"], 3.0)
+    MODES[f"light-{season}"] = (LIGHT_SEASON_CONDITION, config["light_floor"], 3.0)
+MODES["print"] = ("@media print", 4.5, 3.0)
 resolved = {}
 for mode, (condition, text_floor, rule_floor) in MODES.items():
-    triples_for_mode = dict(triples)
-    if mode == "christmas":
-        triples_for_mode = dict(christmas_triples)
-    elif mode == "light-christmas":
-        triples_for_mode = dict(light_christmas_triples)
-    elif condition is not None:
+    if mode in season_triples:
+        triples_for_mode = dict(season_triples[mode])
+    else:
+        triples_for_mode = dict(triples)
+    if mode not in season_triples and condition is not None:
         block = re.search(
             re.escape(condition) + r" \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S
         )
@@ -453,12 +474,16 @@ for mode, (condition, text_floor, rule_floor) in MODES.items():
 #    rather than trusted. The token is not an oklch() value, so nothing else here sees
 #    it, and the JS side is checked by name because a renamed token is the same bug.
 mermaid_js = (ROOT / "mermaid.js").read_text()
-for where, want, block_text in (
+mermaid_scheme_checks = [
     (":root", "dark", css),
     ("the light :root block", "light", light_block.group(1)),
-    ("the christmas :root block", "christmas", season_blocks["christmas"]),
-    ("the light-christmas :root block", "light-christmas", season_blocks["light-christmas"]),
-):
+]
+for season in SEASONS:
+    mermaid_scheme_checks += [
+        (f"the {season} :root block", season, season_blocks[season]),
+        (f"the light-{season} :root block", f"light-{season}", season_blocks[f"light-{season}"]),
+    ]
+for where, want, block_text in mermaid_scheme_checks:
     if not re.search(r"--mermaid-scheme:\s*" + want + r"\s*;", block_text):
         print(f"DRIFT: {where} does not declare --mermaid-scheme: {want}")
         fail = 1
@@ -518,7 +543,11 @@ if f"matchMedia('{SCROLL_BREAKPOINT}')" not in mermaid_js:
 #    mode still fails loudly rather than passing under a relaxation meant for two
 #    modes it never applies to.
 P3_WIDENED = {"red", "orange", "purple", "pink", "green", "data-1", "data-2", "data-3", "data-4"}
-P3_MODES = {"default", "prefers-color-scheme: light", "christmas", "light-christmas"}
+P3_MODES = {"default", "prefers-color-scheme: light"} | {
+    mode
+    for season, config in SEASONS.items()
+    for mode in ((season, f"light-{season}") if config["p3"] else ())
+}
 for mode, triples_for_mode in resolved.items():
     for name, (L, C, h) in sorted(triples_for_mode.items()):
         wide = name in P3_WIDENED and mode in P3_MODES
@@ -584,7 +613,11 @@ for mode, triples_for_mode in resolved.items():
 #    and high contrast and print are compressed by design, so none of them is pinned.
 LIGHT_ACCENTS = ("orange", "purple", "pink", "green", "link")
 LIGHT_BAND = (0.55, 0.65)
-for light_mode in ("prefers-color-scheme: light", "light-christmas"):
+LIGHT_ACCENT_MODES = sorted(
+    {"prefers-color-scheme: light"}
+    | {f"light-{season}" for season, config in SEASONS.items() if config["light_accents"]}
+)
+for light_mode in LIGHT_ACCENT_MODES:
     for name in LIGHT_ACCENTS:
         L, C, h = resolved[light_mode][name]
         ceiling = max_chroma_p3(L, h) if name in P3_WIDENED else max_chroma(L, h)
@@ -711,15 +744,21 @@ def contrast_lin(one, two):
 
 base_relative = relative_decls(css)
 declared_relative = set(base_relative)
+season_of_mode = {
+    mode: season
+    for season in SEASONS
+    for mode in (season, f"light-{season}")
+}
 for mode, (condition, text_floor, rule_floor) in MODES.items():
     triples_for_mode = resolved.get(mode)
     if triples_for_mode is None:
         continue
     blocks = []
-    if mode == "christmas":
-        blocks = [season_blocks["christmas"]]
-    elif mode == "light-christmas":
-        blocks = [light_block.group(1), season_blocks["christmas"], season_blocks["light-christmas"]]
+    if mode in season_of_mode:
+        blocks = [season_blocks[mode]]
+        if mode.startswith("light-"):
+            season = season_of_mode[mode]
+            blocks = [light_block.group(1), season_blocks[season], season_blocks[mode]]
     elif condition is not None:
         found = re.search(
             re.escape(condition) + r" \{\s*:root \{(.*?)\n\s*\}", stylesheet, re.S

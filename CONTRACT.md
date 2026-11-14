@@ -103,6 +103,44 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 CI does not copy this block by eye. `.github/season-probe.py` extracts it from every fixture,
 compares it with the one above, and runs it in a browser against a mocked clock.
 
+### Adding a New Date-Range Palette
+
+A season beyond Christmas follows the same shape, and the mode names are a convention the drift
+gate depends on: the attribute value is the season name, `--mermaid-scheme` takes `<season>` and
+`light-<season>`, and `.github/palette-check.py` keys its `SEASONS` row by the season name. The
+steps, in order:
+
+1. Write two `:root[data-season="name"]` blocks in `tufte-dracula.css`, one under
+   `@media screen and (prefers-contrast: no-preference)` and one under
+   `@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)`.
+   Each restates every token a block of that family changes, and each declares its own
+   `--mermaid-scheme`. The dark block's colors must clear the dark floors and the light block's
+   the light floors; `palette-check.py` re-derives both.
+2. Add the `SEASONS` row in `.github/palette-check.py`: the token set, both floors, whether the
+   ramp reaches P3, and whether the light variant joins the accent band. Everything else in that
+   file derives from the row.
+3. Add `init<Name>` and `init<Name>Light` sections to `mermaid-palette.json`, keyed by
+   `themeVariables` name with a `from` field, and the two hex maps plus one `Map` insert in
+   `mermaid.js`. `mermaidLight` tests `startsWith('light-')`, so a light season needs no edit
+   there. `<Name>` capitalizes each hyphen-separated word of the season name (`christmas` becomes
+   `Christmas`, `new-year` becomes `NewYear`).
+4. No edit is needed to `.github/palette-check.py`'s expectations: both sections derive from the
+   row. Run `palette-check.py` and fix whatever it measures.
+5. Add a `<season>-dark.html` and `<season>-light.html` pair to `samples/`, set the attribute in
+   markup, and rewrite the season conditions to `@media screen`, the way the Christmas previews
+   do. Register both in `SEASON_PREVIEWS` in `scripts/maintain.nu`.
+6. If a terminal or editor target should ship the season, add `.in` template rows to
+   `scripts/create-themes.nu` with `scheme: "<season>"`. The render already resolves any
+   `--dump` key by name.
+7. Extend `.github/season-probe.py` for the new attribute and snippet, or state in the PR why
+   the probe stays Christmas-only.
+8. Record the palette decision in `NOTES.md` under a season heading, as the Christmas entries
+   do, and update `CONTRACT.md` § 1 with the head snippet a consumer pastes.
+
+The date-window snippet itself is consumer code: a page pastes it with its own window bounds,
+exactly as § 1 does for Christmas. Nothing in the stylesheet or the payload scripts ever reads a
+date.
+
 ## 2. Emit this markup
 
 Forty-three requirements. No stylesheet change can supply any of them. Most name a string to search
