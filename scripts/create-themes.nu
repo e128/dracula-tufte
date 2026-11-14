@@ -57,7 +57,8 @@ const ROOT = path self | path dirname | path dirname
 #
 # Rider, VS Code, Ghostty and CotEditor ship light and dark as two rows pointing at
 # two templates (an IDE, terminal or syntax-editor theme is one appearance per file
-# in all four formats); Zed ships both from the one row above, its own template
+# in all four formats). Ghostty and Rider also ship a Christmas row against the
+# seasonal palette. Zed ships both from the one row above, its own template
 # holding both appearances already (see the placeholder comment above). iTerm2 has
 # no `.in` template at all, so it is not in this list; see `render-itermcolors`
 # below.
@@ -70,6 +71,7 @@ const THEMES = [
   {template: "themes/coteditor/Dracula-Tufte (Light).cottheme.in", output: "themes/coteditor/Dracula-Tufte (Light).cottheme", scheme: "light"}
   {template: "themes/ghostty/dracula-tufte.in", output: "themes/ghostty/dracula-tufte", scheme: "dark"}
   {template: "themes/ghostty/dracula-tufte-light.in", output: "themes/ghostty/dracula-tufte-light", scheme: "light"}
+  {template: "themes/ghostty/dracula-tufte-xmas.in", output: "themes/ghostty/dracula-tufte-xmas", scheme: "christmas"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte.json", scheme: "dark"}
   {template: "themes/rider/dracula-tufte.icls.in", output: "themes/rider/dracula-tufte.icls", scheme: "dark"}
   {template: "themes/rider/dracula-tufte-light.icls.in", output: "themes/rider/dracula-tufte-light.icls", scheme: "light"}
@@ -238,9 +240,9 @@ def render [text: string, palette: record, version: string, scheme: string = "da
   $out
 }
 
-# `key` resolves against `palette.dark` or `palette.light`, chosen by `scheme`, unless
-# it carries its own `light:`/`dark:` prefix, which wins regardless of `scheme`. See the
-# THEMES placeholder comment above for which templates need the prefix and which don't.
+# `key` resolves against the palette named by `scheme` (`dark`, `light`, or a season such as
+# `christmas`), unless it carries its own `light:`/`dark:` prefix, which wins regardless of
+# `scheme`. See the THEMES placeholder comment above for which templates need the prefix.
 def resolve [key: string, palette: record, version: string, scheme: string = "dark"]: nothing -> string {
   if $key == "version" { return $version }
 

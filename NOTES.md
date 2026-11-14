@@ -1888,6 +1888,16 @@ contrast setting stop mattering and print keeps its own palette. `.github/season
 verbatim snippet against a mocked clock at the window edges in three time zones, and it must keep
 doing so: a bound off by one day would otherwise show on 11 November.
 
+**A date-range palette beyond Christmas is one `SEASONS` row in `.github/palette-check.py`, plus the
+checklist in `CONTRACT.md` "Adding a New Date-Range Palette".** The mode names are a convention, not
+per-season data: the attribute value is the season name, `--mermaid-scheme` takes `<season>` and
+`light-<season>`, and Mermaid's sections are `init<Name>` and `init<Name>Light`. Every merge, dump
+key, floor, P3 membership and accent band in the drift gate derives from the row, and
+`mermaid.js` tests lightness with `startsWith('light-')` so a light season needs no script edit.
+**Do not write a season special case outside the row.** A second hardcoded list is the drift the
+registry exists to remove, and a name that breaks the convention splits `--mermaid-scheme` into a
+string table again.
+
 ## Print
 
 **The print block overrides palette tokens, not elements**: `background`/`color` on `body` alone
