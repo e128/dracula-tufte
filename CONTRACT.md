@@ -44,9 +44,10 @@ with no script to open it is dead markup.
 so a reader can see the light palette on a dark-mode machine. They carry a stylesheet whose
 `@media` conditions were rewritten to force that, so a copy taken from one of them is locked to
 light and can never follow a reader's system appearance. Each says so in a banner.
-`samples/christmas-dark.html` and `samples/christmas-light.html` are the same kind of page for the
-[seasonal theme](#seasonal-theme-optional): they force it for any date and any system setting, so
-a copy taken from one of them is locked to Christmas. Neither is the payload.
+`samples/christmas-dark.html`, `samples/christmas-light.html`, `samples/thanksgiving-dark.html` and
+`samples/thanksgiving-light.html` are the same kind of page for the
+[seasonal theme](#seasonal-theme-optional): each pair forces one season for any date and any system
+setting, so a copy taken from one of them is locked to that season. None is the payload.
 `samples/dark.html`, `samples/dark-conn-map.html`, `samples/dark-timeline.html` and
 `samples/dark-charts.html` do carry the payload verbatim, but the file is still the source.
 
@@ -61,10 +62,11 @@ nothing after it.
 
 ### Seasonal Theme (Optional)
 
-`tufte-dracula.css` carries a Christmas palette that stays off until `<html>` carries
-`data-season="christmas"`. The stylesheet never sets that attribute. **A page turns the theme on by
-date only after its generator adds the head snippet below.** Inlining a newer stylesheet into a page
-that has no snippet changes nothing, so no consumer gets the theme until it adds the snippet.
+`tufte-dracula.css` carries two seasonal palettes that stay off until `<html>` carries
+`data-season`. The attribute value names the season: `"thanksgiving"` or `"christmas"`. The
+stylesheet never sets that attribute. **A page turns a theme on by date only after its generator
+adds the head snippet below.** Inlining a newer stylesheet into a page that has no snippet changes
+nothing, so no consumer gets a season until it adds the snippet.
 
 Emit the snippet as a classic inline `<script>`, before the `<style>` block and before every
 `<script type="module">`:
@@ -72,33 +74,43 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 ```html
   <script>
     (function () {
-      var now = new Date(), month = now.getMonth(), day = now.getDate();
-      if ((month === 10 && day >= 11) || (month === 11 && day <= 26)) {
-        document.documentElement.setAttribute('data-season', 'christmas');
+      var now = new Date(), month = now.getMonth(), day = now.getDate(), r;
+      var ranges = [
+        [10, 1, 10, 28, 'thanksgiving'],
+        [10, 29, 11, 31, 'christmas'],
+      ];
+      for (var i = 0; i < ranges.length; i++) {
+        r = ranges[i];
+        if ((month > r[0] || (month === r[0] && day >= r[1])) && (month < r[2] || (month === r[2] && day <= r[3]))) {
+          document.documentElement.setAttribute('data-season', r[4]);
+          break;
+        }
       }
     })();
   </script>
 ```
 
-- **The window is November 11 through December 26, inclusive.** It reads the visitor's local
-  calendar once, at page load. A page left open past midnight keeps its theme until the next load.
-  To change the window, edit the two bounds. `getMonth()` counts from zero, so `10` is November and
-  `11` is December.
+- **The windows are November 1 through November 28 for Thanksgiving, and November 29 through
+  December 31 for Christmas, both inclusive.** The snippet reads the visitor's local calendar once,
+  at page load. A page left open past midnight keeps its theme until the next load. To change a
+  window, edit that row in `ranges`. `getMonth()` counts from zero, so `10` is November and `11` is
+  December. A date in no row leaves the attribute off.
 - **Keep the snippet classic and first.** `mermaid.js` reads `--mermaid-scheme` once, when its
   module evaluates. A classic inline script runs as the parser reaches it, so the attribute is on
   `<html>` before any module runs. A `type="module"`, `defer` or `async` snippet, or one placed
   after the payload scripts, can lose that race and draw diagrams in the standard palette on a
-  Christmas page.
+  seasonal page.
 - **The theme yields to the reader.** It applies on the `screen` media type and only when the
   reader states no contrast preference, so high contrast and print keep their own palettes.
-- **Omit the snippet to opt out.** To force the season on every date, write
-  `data-season="christmas"` on `<html>` and omit the snippet, which is how the two preview pages
-  work. A page under a `script-src` policy needs a nonce or a hash for the snippet. A blocked
-  snippet leaves the standard palette, with no error visible to the reader.
+- **Omit the snippet to opt out.** To force a season on every date, write
+  `data-season="thanksgiving"` or `data-season="christmas"` on `<html>` and omit the snippet, which
+  is how the season preview pages work. A page under a `script-src` policy needs a nonce or a hash
+  for the snippet. A blocked snippet leaves the standard palette, with no error visible to the
+  reader.
 - **The fixtures carry the snippet.** All four dark fixtures include it (in `samples/dark.html`,
-  search `document.documentElement.setAttribute('data-season', 'christmas')`), so each one turns
-  festive inside the window and holds four `<script>` blocks instead of three. The four light
-  previews carry no snippet and never show the season.
+  search `document.documentElement.setAttribute('data-season'`), so each one turns seasonal inside
+  a window and holds four `<script>` blocks instead of three. The four light previews carry no
+  snippet and never show a season.
 
 CI does not copy this block by eye. `.github/season-probe.py` extracts it from every fixture,
 compares it with the one above, and runs it in a browser against a mocked clock.
@@ -126,20 +138,21 @@ steps, in order:
    `Christmas`, `new-year` becomes `NewYear`).
 4. No edit is needed to `.github/palette-check.py`'s expectations: both sections derive from the
    row. Run `palette-check.py` and fix whatever it measures.
-5. Add a `<season>-dark.html` and `<season>-light.html` pair to `samples/`, set the attribute in
-   markup, and rewrite the season conditions to `@media screen`, the way the Christmas previews
-   do. Register both in `SEASON_PREVIEWS` in `scripts/maintain.nu`.
+5. Add the season's row to `SEASON_RANGES` in `scripts/build-sample.nu`. It emits the
+   `<season>-dark.html` and `<season>-light.html` pair, sets the attribute in markup, rewrites the
+   season conditions to `@media screen`, and derives the display name. Register both pages in
+   `SEASON_PREVIEWS` in `scripts/maintain.nu` and add their date cases to `.github/season-probe.py`.
 6. If a terminal or editor target should ship the season, add `.in` template rows to
    `scripts/create-themes.nu` with `scheme: "<season>"`. The render already resolves any
    `--dump` key by name.
-7. Extend `.github/season-probe.py` for the new attribute and snippet, or state in the PR why
-   the probe stays Christmas-only.
+7. Add the new season's windows and expectations to `CASES` in `.github/season-probe.py`. The probe
+   drives the whole snippet, so its expectations stay literal and it catches a range that is off by
+   one day.
 8. Record the palette decision in `NOTES.md` under a season heading, as the Christmas entries
    do, and update `CONTRACT.md` § 1 with the head snippet a consumer pastes.
 
-The date-window snippet itself is consumer code: a page pastes it with its own window bounds,
-exactly as § 1 does for Christmas. Nothing in the stylesheet or the payload scripts ever reads a
-date.
+The date-window snippet itself is consumer code: a page pastes it with its own rows. Nothing in
+the stylesheet or the payload scripts ever reads a date.
 
 ## 2. Emit this markup
 

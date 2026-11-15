@@ -12,10 +12,20 @@
 # Everything resolves from ROOT, never from cwd, so this runs from anywhere in the tree.
 const ROOT = path self | path dirname | path dirname
 
-# The two Christmas conditions in tufte-dracula.css. Neither is a light or dark mode: both
-# sit behind `data-season`, and both carry `screen` so that print keeps its own tokens.
+# The two conditions every seasonal palette sits behind in tufte-dracula.css. Neither is a
+# light or dark mode: both sit behind `data-season`, and both carry `screen` so that print
+# keeps its own tokens.
 const SEASON_DARK = "@media screen and (prefers-contrast: no-preference)"
 const SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)"
+
+# The calendar ranges the head snippet emits, one row per season. Month numbers are
+# zero-based because the snippet hands them straight to `getMonth()`: 10 is November and
+# 11 is December. Dates are inclusive. Add a row and a pair of CSS blocks, and the
+# snippet, the preview pair and the display name all follow.
+const SEASON_RANGES = [
+  {season: "thanksgiving", from: [10 1], to: [10 28]}
+  {season: "christmas", from: [10 29], to: [11 31]}
+]
 
 def main [] {
   let css = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right)
@@ -27,7 +37,7 @@ def main [] {
 
   # (filename, <body> tag, title, body-content, light-preview filename), one page
   # per layout mode, each with a forced-light twin for Pages. The main fixture also
-  # gets two forced-season previews, one dark and one light.
+  # gets one forced-season preview pair per row in SEASON_RANGES.
   [
     ["dark.html" "<body>" "Tufte-Dracula component sample" (body) "light.html"]
     ["dark-conn-map.html" "<body class=\"conn-map\">" "Tufte-Dracula connections-map layout" (conn-map-body) "light-conn-map.html"]
@@ -59,8 +69,10 @@ def main [] {
     print $"  → ($out)"
     preview $html $p.0 $p.2 $p.4
     if $p.0 == "dark.html" {
-      season-preview $html $p.0 $p.2 "christmas-dark.html" "dark"
-      season-preview $html $p.0 $p.2 "christmas-light.html" "light"
+      for r in $SEASON_RANGES {
+        season-preview $html $p.0 $p.2 $"($r.season)-dark.html" "dark" $r.season
+        season-preview $html $p.0 $p.2 $"($r.season)-light.html" "light" $r.season
+      }
     }
   }
   null
@@ -71,24 +83,39 @@ def main [] {
 # It is a classic inline script on purpose. A classic script runs the moment the parser
 # reaches it, so `data-season` is on `<html>` before any `type="module"` script
 # evaluates, and `mermaid.js` reads `--mermaid-scheme` once, at module evaluation. A
-# module, `defer` or `async` snippet would race that read. `getMonth()` and `getDate()`
-# are the visitor's local calendar, 0-based month: 10 is November and 11 is December,
-# so the window is November 11 through December 26 inclusive.
+# module, `defer` or `async` snippet would race that read. The table below is built from
+# SEASON_RANGES: month numbers are the visitor's local calendar and zero-based, and both
+# ends are inclusive. A date in no row leaves the attribute off.
 #
 # CONTRACT.md section 1 carries a copy that `.github/season-probe.py` compares against
 # this one, and the probe runs the copy found in the generated fixture. Change all three
 # together, and keep the block free of comments: every page carries it.
 def season-snippet [] {
+  let rows = ($SEASON_RANGES | each {|r|
+    $"        [($r.from.0), ($r.from.1), ($r.to.0), ($r.to.1), '($r.season)'],"
+  } | str join "\n")
   [
     "  <script>"
     "    (function () {"
-    "      var now = new Date(), month = now.getMonth(), day = now.getDate();"
-    "      if ((month === 10 && day >= 11) || (month === 11 && day <= 26)) {"
-    "        document.documentElement.setAttribute('data-season', 'christmas');"
+    "      var now = new Date(), month = now.getMonth(), day = now.getDate(), r;"
+    "      var ranges = ["
+    $rows
+    "      ];"
+    "      for (var i = 0; i < ranges.length; i++) {"
+    "        r = ranges[i];"
+    "        if ((month > r[0] || (month === r[0] && day >= r[1])) && (month < r[2] || (month === r[2] && day <= r[3]))) {"
+    "          document.documentElement.setAttribute('data-season', r[4]);"
+    "          break;"
+    "        }"
     "      }"
     "    })();"
     "  </script>"
   ] | str join "\n"
+}
+
+# `christmas` -> `Christmas`, the display form the preview banner and title use.
+def season-title [season: string] {
+  $season | split row "-" | each {|word| $word | str capitalize } | str join ""
 }
 
 # Replace each condition in `rewrites`, and raise when one is missing. Every condition is
@@ -142,9 +169,9 @@ def preview [html: string, fixture: string, title: string, name: string] {
   # contract check reads as a rewrite that did not happen. Its entry sits first only for
   # readability: the longer string is not a substring of the shorter one.
   #
-  # A light preview is never seasonal. The snippet leaves the page, and both Christmas
-  # blocks become `@media not all`. Dropping the snippet alone would leave a live
-  # `prefers-color-scheme` in the light Christmas condition, and the Christmas blocks
+  # A light preview is never seasonal. The snippet leaves the page, and every season
+  # block becomes `@media not all`. Dropping the snippet alone would leave a live
+  # `prefers-color-scheme` in the light season conditions, and the season blocks
   # would still win the cascade for any consumer who copied the preview and added
   # `data-season` to it. Both conditions are also checked for presence, so a rename in
   # the stylesheet fails here instead of shipping a preview that can turn festive.
@@ -159,7 +186,7 @@ def preview [html: string, fixture: string, title: string, name: string] {
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
     "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
-    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows the Christmas theme. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
+    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows a seasonal theme. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
     "  </div>"
   ] | str join "\n")
   let out = ($ROOT | path join "samples" $name)
@@ -170,26 +197,27 @@ def preview [html: string, fixture: string, title: string, name: string] {
   print $"  → ($out)"
 }
 
-# A forced Christmas preview of the main fixture, one dark and one light, for any host
-# date and any system setting. It carries `data-season="christmas"` on `<html>` itself and
+# A forced season preview of the main fixture, one dark and one light, for any host
+# date and any system setting. It carries `data-season="<season>"` on `<html>` itself and
 # no snippet, so the date decides nothing. Every other mode condition is rewritten, the
 # way `preview` does it, so the host decides nothing either:
 #
-#   dark:  the light blocks become `@media not all`, the dark Christmas block becomes
-#          `@media screen`, and the light Christmas block becomes `@media not all`.
-#   light: the light blocks and both Christmas blocks become live. The light Christmas
-#          block is declared after the dark one and overrides it, the same order a light
+#   dark:  the light blocks become `@media not all`, the dark season block becomes
+#          `@media screen`, and the light season block becomes `@media not all`.
+#   light: the light blocks and both season blocks become live. The light season block
+#          is declared after the dark one and overrides it, the same order a light
 #          system gets in the wild.
 #
-# `prefers-contrast: more` is `@media not all` in both. The real Christmas blocks
-# require `no-preference`, so a reader who asks for more contrast never sees the season,
-# and a preview that honored the setting would show a page nobody else sees.
+# `prefers-contrast: more` is `@media not all` in both. The real season blocks require
+# `no-preference`, so a reader who asks for more contrast never sees the season, and a
+# preview that honored the setting would show a page nobody else sees.
 #
 # These pages are NOT the payload. They carry the same banner as the light previews, and
 # its first paragraph starts `<p>This page forces` so the checks that already strip that
 # paragraph before scanning for `prefers-color-scheme` strip this one too.
-def season-preview [html: string, fixture: string, title: string, name: string, mode: string] {
+def season-preview [html: string, fixture: string, title: string, name: string, mode: string, season: string] {
   let light = ($mode == "light")
+  let display = (season-title $season)
   let rewrites = [
     {cond: "@media print and (prefers-color-scheme: light)", to: (if $light { "@media print" } else { "@media not all" })}
     {cond: "@media (prefers-color-scheme: light)", to: (if $light { "@media all" } else { "@media not all" })}
@@ -204,13 +232,13 @@ def season-preview [html: string, fixture: string, title: string, name: string, 
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
     "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
-    $"    <p>This page forces the Christmas theme in the ($mode) palette, whatever the date and the system appearance. It carries <code>data-season=\"christmas\"</code> on <code>&lt;html&gt;</code> and no head snippet, and its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to Christmas ($mode)</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim and the date-driven snippet.</p>"
+    $"    <p>This page forces the ($display) theme in the ($mode) palette, whatever the date and the system appearance. It carries <code>data-season=\"($season)\"</code> on <code>&lt;html&gt;</code> and no head snippet, and its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to ($display) ($mode)</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim and the date-driven snippet.</p>"
     "  </div>"
   ] | str join "\n")
   let out = ($ROOT | path join "samples" $name)
   ($forced
-    | str replace "<html lang=\"en\">" "<html lang=\"en\" data-season=\"christmas\">"
-    | str replace $"<title>($title)</title>" $"<title>($title): forced Christmas ($mode) preview</title>"
+    | str replace "<html lang=\"en\">" $"<html lang=\"en\" data-season=\"($season)\">"
+    | str replace $"<title>($title)</title>" $"<title>($title): forced ($display) ($mode) preview</title>"
     | str replace --regex '(?m)^(<body[^>]*>)$' $"$1\n($banner)") | save -f $out
   ^git -C $ROOT add $out
   print $"  → ($out)"

@@ -381,10 +381,10 @@ FIDELITY_DRIVER = """
   </script>
 """
 
-# mermaid.js reads --mermaid-scheme once, at init, and picks one of four hex maps. The base
+# mermaid.js reads --mermaid-scheme once, at init, and picks one of six hex maps. The base
 # driver proves a diagram renders and zooms, and says nothing about WHICH palette it painted,
 # so a seasonal token that fell through to the dark map would pass every assertion above. This
-# renders the fixture in each of the four modes with the same condition rewrite render-modes.py
+# renders the fixture in each of the six modes with the same condition rewrite render-modes.py
 # uses, and reads the painted result back out of the live SVG instead of trusting the source:
 # the computed stroke and fill of a flowchart node, the edge line, the label text, and the
 # xychart line, each against the hex `mermaid-palette.json` declares for that mode.
@@ -437,6 +437,8 @@ SEASON_MODES = {
     "light": ("light", "initLight"),
     "season": ("christmas", "initChristmas"),
     "season-light": ("light-christmas", "initChristmasLight"),
+    "season-thanksgiving": ("thanksgiving", "initThanksgiving"),
+    "season-thanksgiving-light": ("light-thanksgiving", "initThanksgivingLight"),
 }
 
 
@@ -456,11 +458,11 @@ def in_mode(html, mode, name):
         if f"{c} {{" not in html:
             sys.exit(f"{name} has no `{c} {{`, so the season palettes are unreachable. "
                      f"Regenerate the fixtures.")
-        html = html.replace(c, "@media all" if c in on else "@media not all", 1)
+        html = html.replace(c, "@media all" if c in on else "@media not all")
     if seasonal:
         if '<html lang="en">' not in html:
             sys.exit(f'{name} has no bare `<html lang="en">` to carry data-season.')
-        html = html.replace('<html lang="en">', '<html lang="en" data-season="christmas">', 1)
+        html = html.replace('<html lang="en">', f'<html lang="en" data-season="{seasonal}">', 1)
     return html
 
 
@@ -537,20 +539,21 @@ def main():
     results += run(charts.replace("</body>", flag + driver + "\n</body>", 1), 9 if mermaid else 7, "fidelity")
 
     if mermaid:
-        # Four palettes that were never distinct would pass every per-mode check below, so
+        # Palettes that were never distinct would pass every per-mode check below, so
         # the maps are required to differ on the colors the driver reads before they are used.
         sections = [plots[section] for _, section in SEASON_MODES.values()]
         for key in ("nodeBorder", "mainBkg", "lineColor", "textColor"):
             if len({section[key]["hex"] for section in sections}) != len(sections):
-                sys.exit(f"mermaid-palette.json {key} is not distinct across the four palettes, "
+                sys.exit(f"mermaid-palette.json {key} is not distinct across the six palettes, "
                          f"so a wrong palette would pass the season probe.")
         for mode in SEASON_MODES:
             want = json.dumps(season_want(mode, plots, False))
             body = in_mode(html, mode, FIXTURE.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
             results += run(body, 6, f"{mode} palette")
-        want = json.dumps(season_want("season", plots, True))
-        body = in_mode(charts, "season", CHARTS.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
-        results += run(body, 3, "season xychart")
+        for mode in ("season", "season-thanksgiving"):
+            want = json.dumps(season_want(mode, plots, True))
+            body = in_mode(charts, mode, CHARTS.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
+            results += run(body, 3, f"{mode} xychart")
 
     fail = 0
     for line in results:

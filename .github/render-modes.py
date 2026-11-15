@@ -35,10 +35,11 @@ for no gain: check 1 already fails on a deleted or misspelled query, and check 6
 already fails on a weakened value. What the contrast render adds is that the mode
 paints without error, and an image a person can look at.
 
-The two season modes (`season`, `season-light`) add `data-season="christmas"` to the
-scratch copy's `<html>` by hand, because the head snippet that sets it in a real page is a
-script and every script is stripped. Season light also switches on the plain light block,
-the way a reader on a light system sees both blocks match.
+The season modes (`season`, `season-light`, `season-thanksgiving`,
+`season-thanksgiving-light`) add their `data-season` value to the scratch copy's `<html>`
+by hand, because the head snippet that sets it in a real page is a script and every
+script is stripped. A season light mode also switches on the plain light block, the way a
+reader on a light system sees both blocks match.
 
 The PNGs are written for a human to look at. CI uploads them as artifacts.
 
@@ -80,27 +81,29 @@ LIGHT = "@media (prefers-color-scheme: light)"
 SEASON = "@media screen and (prefers-contrast: no-preference)"
 SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)"
 CONDITIONS = [CONTRAST, LIGHT, SEASON, SEASON_LIGHT]
-# mode: (conditions switched on, whether <html> carries data-season, expected surface).
+# mode: (conditions switched on, the data-season value or None, expected surface).
 # The season modes need the attribute set in the scratch copy, because every script is
 # stripped before Chrome sees it and the head snippet that sets it at runtime never runs.
 # Season light is the light block plus both season blocks, which is the cascade a reader
 # on a light system in season gets: the season block is declared later at higher
 # specificity, so it wins every token it restates.
 MODES = {
-    "dark": ((), False, "#2a2b3c"),
-    "light": ((LIGHT,), False, "#fcfcf8"),
-    "contrast": ((CONTRAST,), False, "#2a2b3c"),
-    "season": ((SEASON,), True, "#182c1f"),
-    "season-light": ((LIGHT, SEASON, SEASON_LIGHT), True, "#fdf9ea"),
+    "dark": ((), None, "#2a2b3c"),
+    "light": ((LIGHT,), None, "#fcfcf8"),
+    "contrast": ((CONTRAST,), None, "#2a2b3c"),
+    "season": ((SEASON,), "christmas", "#182c1f"),
+    "season-light": ((LIGHT, SEASON, SEASON_LIGHT), "christmas", "#fdf9ea"),
+    "season-thanksgiving": ((SEASON,), "thanksgiving", "#291b0f"),
+    "season-thanksgiving-light": ((LIGHT, SEASON, SEASON_LIGHT), "thanksgiving", "#feedd8"),
 }
 
 # Chrome renders the oklch() surface through its own conversion, which lands a
 # unit or two off the one in palette-check.py. 6 per channel is wide enough for
 # that and far too narrow to accept a different palette. Dark and contrast share a
 # surface on purpose. Every other pair must sit more than twice the tolerance apart, and
-# main() refuses to run when one does not: season light is the closest to light, a
-# warm cream against a cool white, and a pair inside the tolerance would let the wrong
-# palette pass.
+# main() refuses to run when one does not: light Christmas and the plain light surface
+# are the closest pair, two warm creams 14 units apart, and a pair inside the tolerance
+# would let the wrong palette pass.
 TOLERANCE = 6
 
 
@@ -191,13 +194,13 @@ def main():
             # never matches, so what the host prefers stops mattering.
             body = stripped
             for c in CONDITIONS:
-                body = body.replace(c, "@media all" if c in on else "@media not all", 1)
+                body = body.replace(c, "@media all" if c in on else "@media not all")
             if seasonal:
                 if '<html lang="en">' not in body:
                     print(f"MISSING: {name} has no bare `<html lang=\"en\">` to carry data-season")
                     fail = 1
                     continue
-                body = body.replace('<html lang="en">', '<html lang="en" data-season="christmas">', 1)
+                body = body.replace('<html lang="en">', f'<html lang="en" data-season="{seasonal}">', 1)
             source = outdir / f"{fixture.stem}-in-{mode}.html"
             source.write_text(body)
             png = outdir / f"{fixture.stem}-in-{mode}.png"
