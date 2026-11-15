@@ -19,8 +19,21 @@ const ROOT = $SCRIPTS | path dirname
 # loop below names this list instead of repeating it, so a new fixture is added once.
 const DARK_FIXTURES = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html]
 const LIGHT_FIXTURES = [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html]
-const SEASON_PREVIEWS = [samples/christmas-dark.html samples/christmas-light.html]
+const SEASON_PREVIEWS = [samples/christmas-dark.html samples/christmas-light.html samples/thanksgiving-dark.html samples/thanksgiving-light.html]
 const FIXTURES = $DARK_FIXTURES ++ $LIGHT_FIXTURES ++ $SEASON_PREVIEWS
+
+# `dark` -> init, `light` -> initLight, `christmas` -> initChristmas, and
+# `light-christmas` -> initChristmasLight. Derived from palette-check.py's `--dump`
+# keys so a new season needs no second list here.
+def palette-section [mode: string] {
+  if $mode == "dark" { return "init" }
+  if $mode == "light" { return "initLight" }
+  let light = ($mode | str starts-with "light-")
+  let name = (if $light { $mode | str substring 6.. } else { $mode })
+  let title = ($name | split row "-" | each {|word| $word | str capitalize } | str join "")
+  let suffix = (if $light { "Light" } else { "" })
+  $"init($title)($suffix)"
+}
 
 def read-root [file: string] {
   open --raw ($ROOT | path join $file)
@@ -374,7 +387,12 @@ def "main check" [] {
   # colour passed here and failed on the push.
   let palette_json = (open ($ROOT | path join "mermaid-palette.json"))
   let js = (read-root mermaid.js)
-  for section in [init initLight initChristmas initChristmasLight] {
+  let dump = (^python3 ($ROOT | path join ".github/palette-check.py") --dump | complete)
+  if $dump.exit_code != 0 {
+    print ($dump.stderr | str trim)
+    $ok = false
+  }
+  for section in ($dump.stdout | from json | columns | each {|mode| palette-section $mode }) {
     let entries = ($palette_json | get $section | transpose key entry | where key != "_comment")
     if ($entries | length) < 20 {
       print $"mermaid-palette.json .($section) has only ($entries | length) keys, refusing to pass vacuously"
@@ -429,17 +447,20 @@ def "main check" [] {
     }
   }
 
-  # The Christmas previews force the season in markup (data-season on <html>) and rewrite the
+  # The season previews force the season in markup (data-season on <html>) and rewrite the
   # season conditions to `@media screen`, so the date and the contrast setting stop mattering.
   # Both carry that attribute and a dead contrast block. Only the light one turns the plain
   # light block on. A rename in the stylesheet makes the generator's rewrite a no-op, and then
-  # Pages would serve the default palette under a Christmas name.
+  # Pages would serve the default palette under a season name.
   for f in $SEASON_PREVIEWS {
     let body = (read-root $f)
-    if not ($body =~ '<html lang="en" data-season="christmas">') { print $"($f): no data-season on <html>"; $ok = false }
+    let base = ($f | path basename)
+    let season = ($base | str replace --regex '-(dark|light)\.html$' '')
+    let light = ($base | str ends-with "-light.html")
+    if not ($body =~ $"<html lang=\"en\" data-season=\"($season)\">") { print $"($f): no data-season=\"($season)\" on <html>"; $ok = false }
     if not ($body =~ '@media screen \{') { print $"($f): no forced `@media screen {`: the season block is not on"; $ok = false }
     if not ($body =~ '@media not all \{') { print $"($f): no `@media not all {`: the contrast block is still live"; $ok = false }
-    if ($f | str ends-with "christmas-light.html") and not ($body =~ '@media all \{') {
+    if $light and not ($body =~ '@media all \{') {
       print $"($f): no forced `@media all {`: the light palette is not on"
       $ok = false
     }

@@ -48,7 +48,7 @@ Two comments remain in the CSS. A machine reads both.
 | [Keyboard and assistive technology](#keyboard-and-assistive-technology) | Zoom button, modal overlay, `inert`, scroll regions |
 | [Direction, zoom and growth](#direction-zoom-and-growth) | RTL, text-only zoom, safe-area insets |
 | [Cascade layer](#cascade-layer) | `@layer tufte-dracula`, the `!important` inversion |
-| [Appearance modes](#appearance-modes) | High contrast, light, `--mermaid-scheme`, the mode gates, the Christmas season |
+| [Appearance modes](#appearance-modes) | High contrast, light, `--mermaid-scheme`, the mode gates, the seasonal palettes |
 | [Print](#print) | Token reassignment, page breaks, chip outlining |
 | [Filter](#filter) | `filter.js` scope and its load-bearing decisions |
 | [Nav link separators](#nav-link-separators) | The `nav > a + a` rule, the wrapped-line artefact, the current-page marker |
@@ -1827,7 +1827,7 @@ PR instead.
 
 **Two gates cover the modes, covering different halves, neither a screenshot diff** (layout is
 identical across modes, only color moves). `.github/palette-check.py` check 5 re-derives the contrast
-floor for all six palettes on every run, overlaying each mode block's overrides on the default
+floor for all eight palettes on every run, overlaying each mode block's overrides on the default
 palette the way the cascade actually resolves it. `.github/render-modes.py` covers that the palette
 **arrives**: **headless Chrome cannot be told which media query to match** (`--force-dark-mode` etc.
 all leave the OS's own result unchanged), so each render rewrites **every** mode condition in a
@@ -1848,13 +1848,16 @@ light palette at its own floor rather than a fourth, never-built high-contrast-l
 failure mode of a wrong order is much worse: dark high-contrast accents on a white surface. Do not
 reorder the two blocks.**
 
-### The Christmas season
+### Seasonal palettes
 
-**The Christmas palette is a pair of `:root[data-season="christmas"]` blocks, and the stylesheet never
+**Each seasonal palette is a pair of `:root[data-season="<season>"]` blocks, and the stylesheet never
 sets the attribute.** CSS cannot read a date, so a consumer sets it. The head snippet in `CONTRACT.md`
-§ 1 does that from the reader's local calendar, 11 November to 26 December inclusive. **The payload
-stays four files.** A fifth file would change the contract for every consumer, and `filter.js` loads
-only on a page with a filter box, so neither can carry a check that every page needs.
+§ 1 does that from the reader's local calendar: Thanksgiving from 1 November through 28 November, and
+Christmas from 29 November through 31 December, both inclusive. The rows live in `SEASON_RANGES` in
+`scripts/build-sample.nu`, so the fixtures, the preview pair and the display name all follow one edit.
+**The payload stays four files.** A fifth file would change the contract for every consumer, and
+`filter.js` loads only on a page with a filter box, so neither can carry a check that every page
+needs.
 
 **Do not put date logic in the CSS, `mermaid.js` or `filter.js`.** **Do not make the snippet a
 `type="module"`, `defer` or `async` script, and do not place it after the payload.** `mermaid.js`
@@ -1877,26 +1880,35 @@ not in `P3_WIDENED`, so a chroma sized against the wider ruler lands at 79 perce
 plain light surface, so `render-modes.py` can tell the two apart. Pulling it back toward `#fcfcf8`
 makes that gate pass for the wrong palette.
 
-**`--mermaid-scheme` takes four values** (`dark`, `light`, `christmas`, `light-christmas`), and
-`mermaid.js` carries four hex maps. There is no Christmas `classDef` set: the ban on a `classDef`
-hex line for a page that follows appearance covers a page that follows the date too.
+**Dark Thanksgiving turns the surfaces brown, and light Thanksgiving turns them parchment.** The
+accents remap to amber, cranberry, plum and olive. The light surface is a warm parchment
+(`#feedd8`) so it differs from both the plain light `#fcfcf8` and the light Christmas `#fdf9ea` by
+more than twice the render tolerance; three creams inside that tolerance would let `render-modes.py`
+pass the wrong palette. The dark surface stays a warm near-black (`#291b0f`), distinct from the
+Christmas pine. Both blocks restate every token they change and hold the same floors and bands.
 
-**Three kinds of page carry the season.** The dark fixtures carry the snippet, so each turns festive
-inside the window. The four light previews never show it. The two Christmas previews set the
-attribute in markup and rewrite the season conditions to `@media screen`, so the date and the
-contrast setting stop mattering and print keeps its own palette. `.github/season-probe.py` runs the
-verbatim snippet against a mocked clock at the window edges in three time zones, and it must keep
-doing so: a bound off by one day would otherwise show on 11 November.
+**`--mermaid-scheme` takes six values** (`dark`, `light`, `christmas`, `light-christmas`,
+`thanksgiving`, `light-thanksgiving`), and `mermaid.js` carries six hex maps. There is no seasonal
+`classDef` set: the ban on a `classDef` hex line for a page that follows appearance covers a page
+that follows the date too.
 
-**A date-range palette beyond Christmas is one `SEASONS` row in `.github/palette-check.py`, plus the
-checklist in `CONTRACT.md` "Adding a New Date-Range Palette".** The mode names are a convention, not
-per-season data: the attribute value is the season name, `--mermaid-scheme` takes `<season>` and
-`light-<season>`, and Mermaid's sections are `init<Name>` and `init<Name>Light`. Every merge, dump
-key, floor, P3 membership and accent band in the drift gate derives from the row, and
-`mermaid.js` tests lightness with `startsWith('light-')` so a light season needs no script edit.
-**Do not write a season special case outside the row.** A second hardcoded list is the drift the
-registry exists to remove, and a name that breaks the convention splits `--mermaid-scheme` into a
-string table again.
+**Three kinds of page carry a season.** The dark fixtures carry the snippet, so each turns seasonal
+inside a window. The four light previews never show one. The four season previews set the attribute
+in markup and rewrite the season conditions to `@media screen`, so the date and the contrast setting
+stop mattering and print keeps its own palette. `.github/season-probe.py` runs the verbatim snippet
+against a mocked clock at every window edge in three time zones, and it must keep doing so: a bound
+off by one day would otherwise show a season a day early.
+
+**A date-range palette is one `SEASONS` row in `.github/palette-check.py` and one `SEASON_RANGES`
+row in `scripts/build-sample.nu`, plus the checklist in `CONTRACT.md` "Adding a New Date-Range
+Palette".** The mode names are a convention, not per-season data: the attribute value is the season
+name, `--mermaid-scheme` takes `<season>` and `light-<season>`, and Mermaid's sections are
+`init<Name>` and `init<Name>Light`. Every merge, dump key, floor, P3 membership and accent band in
+the drift gate derives from the row, `scripts/maintain.nu` derives the Mermaid section list from
+`palette-check.py --dump`, and `mermaid.js` tests lightness with `startsWith('light-')` so a light
+season needs no script edit. **Do not write a season special case outside the two rows.** A second
+hardcoded list is the drift the registry exists to remove, and a name that breaks the convention
+splits `--mermaid-scheme` into a string table again.
 
 ## Print
 

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Prove the seasonal head snippet turns the Christmas theme on for the right dates.
+"""Prove the seasonal head snippet picks the right palette for the right dates.
 
 Consumers opt in by pasting a classic inline script before the stylesheet. It sets
-`data-season="christmas"` on `<html>` from the visitor's local calendar, November 11
-through December 26 inclusive, at page load. Nothing else in the repo runs that script.
-`maintain.nu check` counts `<script>` blocks, `palette-check.py` measures colors, and
-`script-probe.py` drives the three payload scripts. None of them asks whether the
-snippet picks the right days, so an off-by-one on a boundary, a UTC getter or a
-malformed edit would ship green.
+`data-season` on `<html>` from the visitor's local calendar, with one row per season:
+Thanksgiving from November 1 through November 28, and Christmas from November 29
+through December 31, all inclusive, at page load. Nothing else in the repo runs that
+script. `maintain.nu check` counts `<script>` blocks, `palette-check.py` measures
+colors, and `script-probe.py` drives the three payload scripts. None of them asks
+whether the snippet picks the right days, so an off-by-one on a boundary, a UTC getter
+or a malformed edit would ship green.
 
 This extracts the snippet from the generated fixtures, so it tests the bytes a page
 carries, and then drives it in real headless Chrome:
@@ -24,9 +25,9 @@ carries, and then drives it in real headless Chrome:
               others. The run asserts that Chrome honored the zone, and fails otherwise.
   ordering    the real fixture, with its module scripts replaced by one recorder, reads
               `data-season` and `--mermaid-scheme` when a module first evaluates, which is
-              when `mermaid.js` reads the token. In the window both say Christmas, out of
-              it neither does.
-  previews    `christmas-dark.html` and `christmas-light.html` paint the same Christmas
+              when `mermaid.js` reads the token. In a window both name that season, out of
+              one neither does.
+  previews    `christmas-*.html` and `thanksgiving-*.html` paint their season
               palette whatever the system scheme and contrast, and `light.html` stays
               plain light under the same settings. The settings reach Chrome through
               `--blink-settings`, and the run reads them back through `matchMedia`, so a
@@ -62,39 +63,42 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DARK = ["samples/dark.html", "samples/dark-conn-map.html",
         "samples/dark-timeline.html", "samples/dark-charts.html"]
 MAIN = "samples/dark.html"
-PREVIEWS = {"dark": "samples/christmas-dark.html", "light": "samples/christmas-light.html"}
+SEASONS = ["christmas", "thanksgiving"]
+PREVIEWS = {(season, mode): f"samples/{season}-{mode}.html"
+            for season in SEASONS for mode in ("dark", "light")}
 PLAIN_LIGHT = "samples/light.html"
 CONTRACT = ROOT / "CONTRACT.md"
 
-SEASON_SET = "setAttribute('data-season', 'christmas')"
+SEASON_ATTR = "document.documentElement.setAttribute('data-season'"
 ZONES = {"UTC": 0, "Pacific/Kiritimati": -840, "Pacific/Pago_Pago": 660}
 
-# (label, year, month, day, hour, minute, second, season expected). Months are the
-# calendar's own, 1 to 12. The expectations are literals on purpose: deriving them from
-# the rule would restate the snippet's own logic and could not disagree with it.
+# (label, year, month, day, hour, minute, second, season expected or None). Months are
+# the calendar's own, 1 to 12. The expectations are literals on purpose: deriving them
+# from the rule would restate the snippet's own logic and could not disagree with it.
 CASES = [
-    ("Oct 11, a day number inside the window", 2026, 10, 11, 12, 0, 0, False),
-    ("Oct 26, a day number inside the window", 2026, 10, 26, 12, 0, 0, False),
-    ("Oct 31 end of day", 2026, 10, 31, 23, 59, 59, False),
-    ("Nov 1", 2026, 11, 1, 0, 0, 0, False),
-    ("Nov 10 start of day", 2026, 11, 10, 0, 0, 0, False),
-    ("Nov 10 end of day", 2026, 11, 10, 23, 59, 59, False),
-    ("Nov 11 start of day", 2026, 11, 11, 0, 0, 0, True),
-    ("Nov 11 noon", 2026, 11, 11, 12, 0, 0, True),
-    ("Nov 30", 2026, 11, 30, 12, 0, 0, True),
-    ("Dec 1", 2026, 12, 1, 0, 0, 0, True),
-    ("Dec 25", 2026, 12, 25, 12, 0, 0, True),
-    ("Dec 26 start of day", 2026, 12, 26, 0, 0, 0, True),
-    ("Dec 26 end of day", 2026, 12, 26, 23, 59, 59, True),
-    ("Dec 27 start of day", 2026, 12, 27, 0, 0, 0, False),
-    ("Dec 31 end of day", 2026, 12, 31, 23, 59, 59, False),
-    ("Jan 1", 2027, 1, 1, 0, 0, 0, False),
-    ("Jan 11, a day number inside the window", 2027, 1, 11, 12, 0, 0, False),
-    ("Jan 26, a day number inside the window", 2027, 1, 26, 12, 0, 0, False),
-    ("Jun 15", 2026, 6, 15, 12, 0, 0, False),
-    ("Leap year Feb 29", 2024, 2, 29, 12, 0, 0, False),
-    ("Leap year Dec 26", 2024, 12, 26, 23, 59, 59, True),
-    ("Next year Nov 11", 2027, 11, 11, 0, 0, 0, True),
+    ("Oct 1", 2026, 10, 1, 0, 0, 0, None),
+    ("Oct 11, a day number inside both windows", 2026, 10, 11, 12, 0, 0, None),
+    ("Oct 31 end of day", 2026, 10, 31, 23, 59, 59, None),
+    ("Nov 1 start of day", 2026, 11, 1, 0, 0, 0, "thanksgiving"),
+    ("Nov 1 noon", 2026, 11, 1, 12, 0, 0, "thanksgiving"),
+    ("Nov 15", 2026, 11, 15, 12, 0, 0, "thanksgiving"),
+    ("Nov 28 start of day", 2026, 11, 28, 0, 0, 0, "thanksgiving"),
+    ("Nov 28 end of day", 2026, 11, 28, 23, 59, 59, "thanksgiving"),
+    ("Nov 29 start of day", 2026, 11, 29, 0, 0, 0, "christmas"),
+    ("Nov 29 noon", 2026, 11, 29, 12, 0, 0, "christmas"),
+    ("Nov 30", 2026, 11, 30, 12, 0, 0, "christmas"),
+    ("Dec 1", 2026, 12, 1, 0, 0, 0, "christmas"),
+    ("Dec 25", 2026, 12, 25, 12, 0, 0, "christmas"),
+    ("Dec 31 start of day", 2026, 12, 31, 0, 0, 0, "christmas"),
+    ("Dec 31 end of day", 2026, 12, 31, 23, 59, 59, "christmas"),
+    ("Jan 1", 2027, 1, 1, 0, 0, 0, None),
+    ("Jan 11, a day number inside the old windows", 2027, 1, 11, 12, 0, 0, None),
+    ("Jan 26, a day number inside the old windows", 2027, 1, 26, 12, 0, 0, None),
+    ("Jun 15", 2026, 6, 15, 12, 0, 0, None),
+    ("Leap year Feb 29", 2024, 2, 29, 12, 0, 0, None),
+    ("Leap year Dec 31", 2024, 12, 31, 23, 59, 59, "christmas"),
+    ("Next year Nov 1", 2027, 11, 1, 0, 0, 0, "thanksgiving"),
+    ("Next year Nov 29", 2027, 11, 29, 0, 0, 0, "christmas"),
 ]
 
 # `Date` is replaced inside the page the snippet runs in, so the snippet sees the case's
@@ -226,7 +230,7 @@ def snippet_of(html, name):
     check(f"before-style-and-modules-{name}",
           block.start() < first_style and block.start() < first_module,
           "the snippet must precede the stylesheet and every module script")
-    check(f"sets-season-{name}", SEASON_SET in block.group(1), f"no `{SEASON_SET}`")
+    check(f"sets-season-{name}", SEASON_ATTR in block.group(1), f"no `{SEASON_ATTR}`")
     check(f"comment-free-{name}", not re.search(r"//|/\*|<!--", block.group(1)), "a comment inside the snippet")
     return block.group(0)
 
@@ -281,30 +285,36 @@ def main():
         for i, (label, y, m, d, *_, want) in enumerate(CASES):
             r = got[i]
             check(f"clock-mocked-{zone}-{i}", r["clock"] == [y, m, d], f"{label}: the mock reported {r['clock']}")
-            check(f"calendar-{zone}-{label}", not r["errors"] and (r["season"] == "christmas") == want,
-                  f"{label} in {zone}: expected {'christmas' if want else 'no season'}, got "
+            check(f"calendar-{zone}-{label}", not r["errors"] and r["season"] == want,
+                  f"{label} in {zone}: expected {want or 'no season'}, got "
                   f"{r['season']!r} {r['errors'] or ''}")
 
     # ordering, in the real fixture
     page = read(MAIN)
-    for tag, when, want in (("in-window", (2026, 12, 1), True), ("out-of-window", (2027, 1, 15), False)):
+    for tag, when, want in (("thanksgiving", (2026, 11, 15), "thanksgiving"),
+                            ("christmas", (2026, 12, 1), "christmas"),
+                            ("out-of-window", (2027, 1, 15), None)):
         mock = f"  <script>{MOCK % (when[0], when[1] - 1, when[2], 12, 0, 0)}</script>\n"
         timed = page.replace("<head>", "<head>\n" + mock, 1)
         timed = re.sub(r'<script type="module">.*?</script>', "", timed, flags=re.S)
         r = chrome_dump(timed.replace("</head>", RECORDER + "</head>", 1))
-        check(f"ordering-{tag}-season", (r["season"] == "christmas") == want, f"data-season was {r['season']!r}")
-        check(f"ordering-{tag}-token", ("christmas" in r["scheme"]) == want,
+        check(f"ordering-{tag}-season", r["season"] == want, f"data-season was {r['season']!r}")
+        token_ok = (want in r["scheme"]) if want else not any(s in r["scheme"] for s in SEASONS)
+        check(f"ordering-{tag}-token", token_ok,
               f"--mermaid-scheme read {r['scheme']!r} when a module first evaluated")
 
     # previews
     seen = {}
-    for kind, rel in (*PREVIEWS.items(), ("plain", PLAIN_LIGHT)):
+    for kind, rel in (*PREVIEWS.items(), ("plain", None)):
+        season, mode = kind if isinstance(kind, tuple) else (None, None)
+        rel = rel if rel is not None else PLAIN_LIGHT
+        label = "plain" if season is None else f"{season}-{mode}"
         html = read(rel)
-        has_snippet = SEASON_SET in html
-        check(f"preview-{kind}-has-no-snippet", not has_snippet, f"{rel} still carries the date-driven snippet")
-        check(f"preview-{kind}-season-attr",
-              ('<html lang="en" data-season="christmas">' in html) == (kind != "plain"),
-              f"{rel}: <html> carries data-season only on the Christmas previews")
+        has_snippet = SEASON_ATTR in html
+        check(f"preview-{label}-has-no-snippet", not has_snippet, f"{rel} still carries the date-driven snippet")
+        check(f"preview-{label}-season-attr",
+              (f'<html lang="en" data-season="{season}">' in html) == (season is not None),
+              f"{rel}: <html> carries data-season only on the season previews")
         bare = re.sub(r"<script\b[^>]*>.*?</script>", "", html, flags=re.S)
         for host, blink in HOSTS.items():
             r = chrome_dump(bare.replace("</head>", RECORDER + "</head>", 1), blink=blink)
@@ -315,23 +325,23 @@ def main():
         runs = list(seen.get(kind, {}).values())
         if len(runs) < 2:
             continue
-        check(f"preview-{kind}-ignores-system",
+        check(f"preview-{label}-ignores-system",
               all((r["scheme"], r["surface"], r["background"]) == (runs[0]["scheme"], runs[0]["surface"],
                                                                    runs[0]["background"]) for r in runs),
               f"{rel} painted differently under the two system settings: {[r['scheme'] for r in runs]}")
         scheme = runs[0]["scheme"]
-        if kind == "plain":
+        if season is None:
             check("preview-plain-is-not-seasonal", scheme == "light" and runs[0]["season"] is None,
                   f"{rel}: scheme {scheme!r}, season {runs[0]['season']!r}")
         else:
-            wants_light = kind == "light"
-            check(f"preview-{kind}-is-christmas",
-                  runs[0]["season"] == "christmas" and "christmas" in scheme and ("light" in scheme) == wants_light,
+            wants_light = mode == "light"
+            check(f"preview-{label}-is-season",
+                  runs[0]["season"] == season and season in scheme and ("light" in scheme) == wants_light,
                   f"{rel}: scheme {scheme!r}, season {runs[0]['season']!r}")
     backgrounds = {k: next(iter(v.values()))["background"] for k, v in seen.items() if len(v) == 2}
-    if len(backgrounds) == 3:
-        check("preview-grounds-differ", len(set(backgrounds.values())) == 3,
-              f"the three previews do not paint three grounds: {backgrounds}")
+    if len(backgrounds) == len(PREVIEWS) + 1:
+        check("preview-grounds-differ", len(set(backgrounds.values())) == len(backgrounds),
+              f"the previews do not paint distinct grounds: {backgrounds}")
 
     report()
 

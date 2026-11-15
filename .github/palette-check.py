@@ -182,7 +182,7 @@ SEASON_TOKENS = {
 # derives from the row, so a new season is an entry plus a pair of CSS blocks,
 # not an edit to every list in this file. The two conditions are design, not
 # data: the season applies on screen only, and only when the reader states no
-# contrast preference (NOTES.md, "The Christmas season"). The mode names are a
+# contrast preference (NOTES.md, "Seasonal palettes"). The mode names are a
 # convention: `<season>` overlays the dark palette, and `light-<season>`
 # overlays the light one, which is the cascade order in the stylesheet.
 DARK_SEASON_CONDITION = "@media screen and (prefers-contrast: no-preference)"
@@ -196,6 +196,13 @@ SEASONS = {
         "light_floor": 4.5,        # text floor over the light family's grounds
         "p3": True,                # the ramp holds a P3-reaching chroma
         "light_accents": True,     # the light variant joins the accent band
+    },
+    "thanksgiving": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
     },
 }
 season_blocks = {}
