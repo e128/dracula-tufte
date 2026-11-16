@@ -40,14 +40,21 @@ so it is locked to light and it is not the payload. Each light page says so in a
 contrast has no preview page. CI renders it and attaches the image to each pull request. See
 [Appearance modes](NOTES.md#appearance-modes).
 
-The four fixtures above also carry the optional seasonal head snippet, so they turn Thanksgiving
-from November 1 through the fourth Thursday of November and Christmas from the fourth Friday of
-November through December 28, by your local calendar. Four more pages force those themes for any date and any system setting:
-[thanksgiving-dark.html](https://e128.github.io/dracula-tufte/samples/thanksgiving-dark.html),
-[thanksgiving-light.html](https://e128.github.io/dracula-tufte/samples/thanksgiving-light.html),
-[christmas-dark.html](https://e128.github.io/dracula-tufte/samples/christmas-dark.html) and
-[christmas-light.html](https://e128.github.io/dracula-tufte/samples/christmas-light.html). They
-are previews, not the payload, and each says so in a banner.
+The four fixtures above also carry the optional seasonal head snippet, so they follow the
+calendar by the visitor's local date at page load.
+
+### Seasonal previews
+
+Each season also has a pair of preview pages that force it for any date and any system setting.
+One row per season:
+
+| Season | `data-season` | Active window | Forced preview |
+| --- | --- | --- | --- |
+| Thanksgiving | `thanksgiving` | November 1 through the fourth Thursday of November | [dark](https://e128.github.io/dracula-tufte/samples/thanksgiving-dark.html), [light](https://e128.github.io/dracula-tufte/samples/thanksgiving-light.html) |
+| Christmas | `christmas` | the fourth Friday of November through December 28 | [dark](https://e128.github.io/dracula-tufte/samples/christmas-dark.html), [light](https://e128.github.io/dracula-tufte/samples/christmas-light.html) |
+
+The windows are inclusive and resolved in the visitor's local year. December 29 through 31 belong
+to no season. A preview page is not the payload, and each says so in a banner.
 
 ## The twelve files
 
@@ -57,16 +64,16 @@ are previews, not the payload, and each says so in a banner.
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
-| `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark, light and the four seasonal variants, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
+| `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark, light and one variant per season, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
 | `tokens.css` | Palette reference. Generated from the `:root` block. Do not edit it by hand. |
-| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css`, the eight fixtures and the four season previews. Run it after any payload change. |
+| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css`, the eight fixtures and the season previews. Run it after any payload change. |
 | `samples/dark.html` | Living style fixture, and the executable specification. Generated. Do not edit it by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. It uses `<body class="conn-map">` with the sections in Links-then-Graph order. Generated. |
 | `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Generated. |
 | `samples/dark-charts.html` | Chart fixture: `table.bar-chart`, the meter, the dot plot, a column sparkline, small multiples, a Mermaid `xychart` line, a delta column, a stored-and-derived flowchart, the guidance on which chart to draw, and twelve more Mermaid fence types verified against this palette. Generated. |
 | `CONTRACT.md` | The consumer checklist. It stays imperative and short, because a consumer's agent reads it on every bump. |
 
-The four light previews and the four season previews are deliberately **not** contract files.
+The light previews and the season previews are deliberately **not** contract files.
 The rest of the repo splits by who runs a file. A person types the `scripts/*.nu` commands. CI runs the `.github/*.py` helpers.
 Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#repo-layout).
 
@@ -106,13 +113,12 @@ Five things are worth knowing before you get there:
   palette. Mermaid diagrams follow the light palette, because `mermaid.js` reads a CSS token at
   init. A reader who changes system appearance with the page open sees a stale diagram until the
   next reload. See [Appearance modes](NOTES.md#appearance-modes).
-- **The seasonal themes need one snippet from you.** The stylesheet carries the Thanksgiving and
-  Christmas palettes and never turns either on. A page shows Thanksgiving from November 1 through
-  the fourth Thursday of November and Christmas from the fourth Friday of November through
-  December 28, by the visitor's local calendar at page load, only after your generator adds the
-  classic head snippet that
-  [CONTRACT.md § 1](CONTRACT.md#seasonal-theme-optional) gives. Updating the pinned submodule alone
-  changes nothing for a page without it. Leave the snippet out to opt out.
+- **The seasonal themes need one snippet from you.** The stylesheet carries a palette per season
+  and never turns one on. A page shows a season only after your generator adds the classic head
+  snippet that [CONTRACT.md § 1](CONTRACT.md#seasonal-theme-optional) gives.
+  [Seasonal previews](#seasonal-previews) lists the seasons and their date windows. Updating the
+  pinned submodule alone changes nothing for a page without the snippet. Leave the snippet out to
+  opt out.
 - **Keep the markdown source.** A generator that deletes its source after conversion cannot
   regenerate, so it can never adopt a later release. A repair of generated HTML in place is a much
   harder problem than a second run of the generator.
@@ -126,26 +132,30 @@ plist, which `scripts/create-themes.nu` builds straight from the palette because
 three float components, not a hex string. The Slack entry has no file format to generate: it is a
 hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/README.md).
 
-**Rider, Zed, Ghostty, iTerm2, VS Code and CotEditor ship both a dark and a light variant**,
-projected from the same `:root` palette and its `prefers-color-scheme: light` override
-respectively. **Every target with a template also ships one variant per season**, projected from
-the seasonal block behind `data-season`, for Thanksgiving and Christmas. A season variant is a
-theme you select by hand, not a calendar switch. It uses the season's dark block, so it stays
-dark-family even in light mode. opencode and tmux ship dark only: their theme formats have no
-appearance-switch mechanism to project a light variant into, and each season's variant comes from
-the same dark template. Slack is a hand-copied string with nowhere to hold a second one.
+**Every target ships the appearances its format can hold.** Rider, Zed, Ghostty, iTerm2, VS Code
+and CotEditor ship dark and light, projected from `:root` and its `prefers-color-scheme: light`
+override. opencode and tmux ship dark only: their theme formats have no appearance switch. Slack
+holds a single hand-copied string.
 
-| Theme | Files | Modes | Install |
-| --- | --- | --- | --- |
-| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light), `dracula-tufte-xmas.theme.json`/`.icls` (Christmas), `dracula-tufte-thanksgiving.theme.json`/`.icls` (Thanksgiving) | dark + light + Christmas + Thanksgiving | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
-| **Zed** | `dracula-tufte.json` (one file, all four themes) | dark + light + Christmas + Thanksgiving | Copy to `~/.config/zed/themes/` |
-| **Ghostty** | `dracula-tufte`, `dracula-tufte-light`, `dracula-tufte-xmas` (Christmas), `dracula-tufte-thanksgiving` (Thanksgiving) | dark + light + Christmas + Thanksgiving | Copy to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light`; pick a seasonal theme by hand |
-| **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme`, `Dracula-Tufte Christmas (Dark).cottheme`, `Dracula-Tufte Thanksgiving (Dark).cottheme` | dark + light + Christmas + Thanksgiving | Settings, Appearance, gear, Import the themes you want; the plain pair switches with the window appearance |
-| **iTerm2** | `dracula-tufte.itermcolors`, `dracula-tufte-light.itermcolors`, `dracula-tufte-christmas.itermcolors`, `dracula-tufte-thanksgiving.itermcolors` | dark + light + Christmas + Thanksgiving | Preferences, Profiles, Colors, Color Presets, import the presets you want; check "Use different colors for light and dark mode" and assign each preset to its appearance |
-| **opencode** | `dracula-tufte.json`, `dracula-tufte-christmas.json`, `dracula-tufte-thanksgiving.json` | dark + Christmas + Thanksgiving | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
-| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` (dark), `themes/dracula-tufte-light-color-theme.json` (light), `themes/dracula-tufte-christmas-color-theme.json` (Christmas), `themes/dracula-tufte-thanksgiving-color-theme.json` (Thanksgiving) | dark + light + Christmas + Thanksgiving | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select a theme |
-| **tmux** | `dracula-tufte.conf`, `dracula-tufte-christmas.conf`, `dracula-tufte-thanksgiving.conf` | dark + Christmas + Thanksgiving | `source-file` the variant you want from `~/.tmux.conf` |
-| **Slack** | `themes/slack/README.md` (color string, no file to install) | dark only | Preferences, Themes, Custom Theme, paste string |
+**Every target in the table except Slack also ships one variant per season**, projected from that
+season's dark block, so it stays dark-family even in light mode. A season variant is selected by
+hand, not by the calendar. [Seasonal previews](#seasonal-previews) lists the seasons. In the
+table, `<season>` is the season's `data-season` value, except that Rider and Ghostty spell
+Christmas `xmas` in filenames. A new season adds one file per target, or one more theme object in
+Zed's single file, plus the steps in CONTRACT.md's
+[Adding a New Date-Range Palette](CONTRACT.md#adding-a-new-date-range-palette).
+
+| Theme | Files | Modes | Season variants | Install |
+| --- | --- | --- | --- | --- |
+| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light) | dark + light | `dracula-tufte-<season>.theme.json`/`.icls` | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
+| **Zed** | `dracula-tufte.json` (one file, all themes) | dark + light | `Dracula-Tufte (muted) <Season>` object in the same file | Copy to `~/.config/zed/themes/` |
+| **Ghostty** | `dracula-tufte`, `dracula-tufte-light` | dark + light | `dracula-tufte-<season>` | Copy to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light`; pick a seasonal theme by hand |
+| **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme` | dark + light | `Dracula-Tufte <Season> (Dark).cottheme` | Settings, Appearance, gear, Import the themes you want; the plain pair switches with the window appearance |
+| **iTerm2** | `dracula-tufte.itermcolors`, `dracula-tufte-light.itermcolors` | dark + light | `dracula-tufte-<season>.itermcolors` | Preferences, Profiles, Colors, Color Presets, import the presets you want; check "Use different colors for light and dark mode" and assign each preset to its appearance |
+| **opencode** | `dracula-tufte.json` | dark only | `dracula-tufte-<season>.json` | Copy to `~/.config/opencode/themes/`, then set `"theme"` in `opencode.json` to the file base name |
+| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` (dark), `themes/dracula-tufte-light-color-theme.json` (light) | dark + light | `themes/dracula-tufte-<season>-color-theme.json` | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select a theme |
+| **tmux** | `dracula-tufte.conf` | dark only | `dracula-tufte-<season>.conf` | `source-file` the variant you want from `~/.tmux.conf` |
+| **Slack** | `themes/slack/README.md` (color string, no file to install) | dark only | none: one hand-copied string | Preferences, Themes, Custom Theme, paste string |
 
 ```sh
 nu scripts/create-themes.nu           # write every theme, then package the Rider plugin
@@ -216,7 +226,7 @@ its correctness is not a color.
 **A second check does the same for the seasonal snippet.** `.github/season-probe.py` extracts the
 head snippet from the generated fixtures and compares it with the copy in CONTRACT.md. It then runs
 the snippet in headless Chrome against a mocked clock across both windows' boundary dates and three
-time zones, and checks that the four season previews hold under any system setting.
+time zones, and checks that the season previews hold under any system setting.
 
 **One palette feeds several projections.** The `:root` block is the only source of color truth.
 `.github/palette-check.py` runs fourteen checks over it:

@@ -151,7 +151,7 @@ jobs:
       - name: Install nu
         uses: hustcer/setup-nu@v3
         with:
-          version: "*"
+          version: "0.117.0"
 
       - name: Release gate still refuses what it should
         run: nu scripts/maintain.nu selftest
