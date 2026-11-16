@@ -21,6 +21,16 @@
         "label": "Dracula-Tufte (muted) Light",
         "uiTheme": "vs",
         "path": "./themes/dracula-tufte-light-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Christmas",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-christmas-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Thanksgiving",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-thanksgiving-color-theme.json"
       }
     ]
   },

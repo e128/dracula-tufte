@@ -3,9 +3,11 @@
 
 Consumers opt in by pasting a classic inline script before the stylesheet. It sets
 `data-season` on `<html>` from the visitor's local calendar, with one row per season:
-Thanksgiving from November 1 through November 28, and Christmas from November 29
-through December 31, all inclusive, at page load. Nothing else in the repo runs that
-script. `maintain.nu check` counts `<script>` blocks, `palette-check.py` measures
+Thanksgiving from November 1 through the fourth Thursday of November, and Christmas from
+the fourth Friday of November through December 28, all inclusive, at page load. Rows are
+checked in order and the first match wins, so in a year where November 1 is a Friday the
+fourth Friday falls before the fourth Thursday and Thanksgiving keeps those days.
+Nothing else in the repo runs that script. `maintain.nu check` counts `<script>` blocks, `palette-check.py` measures
 colors, and `script-probe.py` drives the three payload scripts. None of them asks
 whether the snippet picks the right days, so an off-by-one on a boundary, a UTC getter
 or a malformed edit would ship green.
@@ -82,23 +84,33 @@ CASES = [
     ("Nov 1 start of day", 2026, 11, 1, 0, 0, 0, "thanksgiving"),
     ("Nov 1 noon", 2026, 11, 1, 12, 0, 0, "thanksgiving"),
     ("Nov 15", 2026, 11, 15, 12, 0, 0, "thanksgiving"),
-    ("Nov 28 start of day", 2026, 11, 28, 0, 0, 0, "thanksgiving"),
-    ("Nov 28 end of day", 2026, 11, 28, 23, 59, 59, "thanksgiving"),
-    ("Nov 29 start of day", 2026, 11, 29, 0, 0, 0, "christmas"),
+    ("Nov 26 end of day, fourth Thursday", 2026, 11, 26, 23, 59, 59, "thanksgiving"),
+    ("Nov 27 start of day, fourth Friday", 2026, 11, 27, 0, 0, 0, "christmas"),
+    ("Nov 28", 2026, 11, 28, 12, 0, 0, "christmas"),
     ("Nov 29 noon", 2026, 11, 29, 12, 0, 0, "christmas"),
     ("Nov 30", 2026, 11, 30, 12, 0, 0, "christmas"),
     ("Dec 1", 2026, 12, 1, 0, 0, 0, "christmas"),
     ("Dec 25", 2026, 12, 25, 12, 0, 0, "christmas"),
-    ("Dec 31 start of day", 2026, 12, 31, 0, 0, 0, "christmas"),
-    ("Dec 31 end of day", 2026, 12, 31, 23, 59, 59, "christmas"),
+    ("Dec 28 end of day", 2026, 12, 28, 23, 59, 59, "christmas"),
+    ("Dec 29 start of day", 2026, 12, 29, 0, 0, 0, None),
+    ("Dec 31", 2026, 12, 31, 12, 0, 0, None),
     ("Jan 1", 2027, 1, 1, 0, 0, 0, None),
     ("Jan 11, a day number inside the old windows", 2027, 1, 11, 12, 0, 0, None),
     ("Jan 26, a day number inside the old windows", 2027, 1, 26, 12, 0, 0, None),
     ("Jun 15", 2026, 6, 15, 12, 0, 0, None),
     ("Leap year Feb 29", 2024, 2, 29, 12, 0, 0, None),
-    ("Leap year Dec 31", 2024, 12, 31, 23, 59, 59, "christmas"),
+    ("2024 Nov 22, fourth Friday before the fourth Thursday", 2024, 11, 22, 12, 0, 0, "thanksgiving"),
+    ("2024 Nov 28 end of day, fourth Thursday", 2024, 11, 28, 23, 59, 59, "thanksgiving"),
+    ("2024 Nov 29 start of day", 2024, 11, 29, 0, 0, 0, "christmas"),
+    ("2024 Dec 28", 2024, 12, 28, 12, 0, 0, "christmas"),
+    ("2024 Dec 29", 2024, 12, 29, 12, 0, 0, None),
     ("Next year Nov 1", 2027, 11, 1, 0, 0, 0, "thanksgiving"),
+    ("Next year Nov 25 end of day, fourth Thursday", 2027, 11, 25, 23, 59, 59, "thanksgiving"),
+    ("Next year Nov 26 start of day, fourth Friday", 2027, 11, 26, 0, 0, 0, "christmas"),
     ("Next year Nov 29", 2027, 11, 29, 0, 0, 0, "christmas"),
+    ("2028 Nov 23 end of day, fourth Thursday of five", 2028, 11, 23, 23, 59, 59, "thanksgiving"),
+    ("2028 Nov 24 start of day, fourth Friday", 2028, 11, 24, 0, 0, 0, "christmas"),
+    ("2028 Nov 30, fifth Thursday", 2028, 11, 30, 12, 0, 0, "christmas"),
 ]
 
 # `Date` is replaced inside the page the snippet runs in, so the snippet sees the case's

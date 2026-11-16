@@ -20,5 +20,6 @@
     <themeProvider id="com.e128.dracula-tufte" path="/dracula-tufte.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-light" path="/dracula-tufte-light.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-xmas" path="/dracula-tufte-xmas.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-thanksgiving" path="/dracula-tufte-thanksgiving.theme.json" />
   </extensions>
 </idea-plugin>

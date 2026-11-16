@@ -1,14 +1,19 @@
 # Dracula-Tufte (muted): CotEditor theme
 
-Two `.cottheme` files, one per appearance. CotEditor pairs two themes whose names differ
-only by a trailing ` (Dark)` or ` (Light)`, so the pair switches with the window appearance
-once both are installed and Appearance is set to Match System. The space before the
-parenthesis is part of the name.
+Two `.cottheme` files for the plain palette, one per appearance, plus one seasonal dark
+file per season: `Dracula-Tufte Christmas (Dark).cottheme` and
+`Dracula-Tufte Thanksgiving (Dark).cottheme`. CotEditor pairs two themes whose names differ
+only by a trailing ` (Dark)` or ` (Light)`, so the plain pair switches with the window
+appearance once both are installed and Appearance is set to Match System. The space before
+the parenthesis is part of the name. A seasonal file carries the ` (Dark)` suffix because
+it uses the season's dark block, and it is selected by hand rather than by date.
 
 ## Generated, do not hand-edit
 
-`scripts/create-themes.nu` writes both files from the `.in` template beside each one. Edit
-the template.
+`scripts/create-themes.nu` writes every file from the dark or light `.in` template beside
+the plain pair. The two seasonal files reuse the dark template, because a `.cottheme`
+carries no appearance name inside it and the file name is the whole difference. Edit the
+template.
 
 ```sh
 nu scripts/create-themes.nu
@@ -17,7 +22,7 @@ nu scripts/create-themes.nu --check
 
 ## Install
 
-Copy both files to `~/Library/Application Support/CotEditor/Themes/`, or import them from
+Copy the files you want to `~/Library/Application Support/CotEditor/Themes/`, or import them from
 Settings, Appearance, gear, Import. For the Mac App Store build, use the container path:
 `~/Library/Containers/com.coteditor.CotEditor/Data/Library/Application Support/CotEditor/Themes/`.
 

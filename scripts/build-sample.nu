@@ -20,11 +20,18 @@ const SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefe
 
 # The calendar ranges the head snippet emits, one row per season. Month numbers are
 # zero-based because the snippet hands them straight to `getMonth()`: 10 is November and
-# 11 is December. Dates are inclusive. Add a row and a pair of CSS blocks, and the
-# snippet, the preview pair and the display name all follow.
+# 11 is December. Dates are inclusive. An end can be a fixed day (`to`) or the nth
+# weekday of a month (`to_nth`, month, weekday, n), and a start can be fixed (`from`) or
+# the nth weekday (`from_nth`), in the same zero-based and `getDay()` conventions:
+# Thanksgiving runs from November 1 through the fourth Thursday, weekday 4, and Christmas
+# from the fourth Friday, weekday 5, through December 28. Rows are checked in order and
+# the first match wins, so they never overlap: where the fourth Friday falls before the
+# fourth Thursday, November 1 is a Friday and Thanksgiving keeps the days up to its own
+# end. Add a row and a pair of CSS blocks, and the snippet, the preview pair and the
+# display name all follow.
 const SEASON_RANGES = [
-  {season: "thanksgiving", from: [10 1], to: [10 28]}
-  {season: "christmas", from: [10 29], to: [11 31]}
+  {season: "thanksgiving", from: [10 1], to_nth: [10 4 4]}
+  {season: "christmas", from_nth: [10 5 4], to: [11 28]}
 ]
 
 def main [] {
@@ -85,19 +92,41 @@ def main [] {
 # evaluates, and `mermaid.js` reads `--mermaid-scheme` once, at module evaluation. A
 # module, `defer` or `async` snippet would race that read. The table below is built from
 # SEASON_RANGES: month numbers are the visitor's local calendar and zero-based, and both
-# ends are inclusive. A date in no row leaves the attribute off.
+# ends are inclusive. A date in no row leaves the attribute off. An end named as the nth
+# weekday is resolved by `nthWeekday` in the visitor's own year, so it tracks the
+# calendar rather than a fixed day.
 #
 # CONTRACT.md section 1 carries a copy that `.github/season-probe.py` compares against
 # this one, and the probe runs the copy found in the generated fixture. Change all three
 # together, and keep the block free of comments: every page carries it.
+def range-bound [r: record, kind: string] {
+  let nth = $"($kind)_nth"
+  if $nth in ($r | columns) {
+    let p = ($r | get $nth)
+    let m = ($p.0 | into string)
+    let w = ($p.1 | into string)
+    let n = ($p.2 | into string)
+    $m + ', nthWeekday(year, ' + $m + ', ' + $w + ', ' + $n + ')'
+  } else {
+    let p = ($r | get $kind)
+    $"($p.0), ($p.1)"
+  }
+}
+
 def season-snippet [] {
   let rows = ($SEASON_RANGES | each {|r|
-    $"        [($r.from.0), ($r.from.1), ($r.to.0), ($r.to.1), '($r.season)'],"
+    let f = (range-bound $r "from")
+    let t = (range-bound $r "to")
+    $"        [($f), ($t), '($r.season)'],"
   } | str join "\n")
   [
     "  <script>"
     "    (function () {"
-    "      var now = new Date(), month = now.getMonth(), day = now.getDate(), r;"
+    "      var now = new Date(), year = now.getFullYear(), month = now.getMonth(), day = now.getDate(), r;"
+    "      function nthWeekday(y, m, w, n) {"
+    "        var d = new Date(y, m, 1);"
+    "        return new Date(y, m, 1 + ((w - d.getDay() + 7) % 7) + (n - 1) * 7).getDate();"
+    "      }"
     "      var ranges = ["
     $rows
     "      ];"
