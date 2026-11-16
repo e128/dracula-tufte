@@ -41,8 +41,8 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 [Appearance modes](NOTES.md#appearance-modes).
 
 The four fixtures above also carry the optional seasonal head snippet, so they turn Thanksgiving
-from November 1 through November 28 and Christmas from November 29 through December 31, by your
-local calendar. Four more pages force those themes for any date and any system setting:
+from November 1 through the fourth Thursday of November and Christmas from the fourth Friday of
+November through December 28, by your local calendar. Four more pages force those themes for any date and any system setting:
 [thanksgiving-dark.html](https://e128.github.io/dracula-tufte/samples/thanksgiving-dark.html),
 [thanksgiving-light.html](https://e128.github.io/dracula-tufte/samples/thanksgiving-light.html),
 [christmas-dark.html](https://e128.github.io/dracula-tufte/samples/christmas-dark.html) and
@@ -53,7 +53,7 @@ are previews, not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.67.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.68.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -72,7 +72,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.67.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.68.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -108,8 +108,9 @@ Five things are worth knowing before you get there:
   next reload. See [Appearance modes](NOTES.md#appearance-modes).
 - **The seasonal themes need one snippet from you.** The stylesheet carries the Thanksgiving and
   Christmas palettes and never turns either on. A page shows Thanksgiving from November 1 through
-  November 28 and Christmas from November 29 through December 31, by the visitor's local calendar
-  at page load, only after your generator adds the classic head snippet that
+  the fourth Thursday of November and Christmas from the fourth Friday of November through
+  December 28, by the visitor's local calendar at page load, only after your generator adds the
+  classic head snippet that
   [CONTRACT.md § 1](CONTRACT.md#seasonal-theme-optional) gives. Updating the pinned submodule alone
   changes nothing for a page without it. Leave the snippet out to opt out.
 - **Keep the markdown source.** A generator that deletes its source after conversion cannot
@@ -127,22 +128,23 @@ hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/
 
 **Rider, Zed, Ghostty, iTerm2, VS Code and CotEditor ship both a dark and a light variant**,
 projected from the same `:root` palette and its `prefers-color-scheme: light` override
-respectively. Rider and Ghostty also ship a Christmas variant, projected from the seasonal block
-behind `data-season="christmas"`; it is a third theme you select by hand, not a calendar switch.
-opencode, tmux and Slack ship dark only: opencode's and tmux's theme formats have no
-appearance-switch mechanism to project a light variant into, and Slack is a hand-copied string
-with nowhere to hold a second one.
+respectively. **Every target with a template also ships one variant per season**, projected from
+the seasonal block behind `data-season`, for Thanksgiving and Christmas. A season variant is a
+theme you select by hand, not a calendar switch. It uses the season's dark block, so it stays
+dark-family even in light mode. opencode and tmux ship dark only: their theme formats have no
+appearance-switch mechanism to project a light variant into, and each season's variant comes from
+the same dark template. Slack is a hand-copied string with nowhere to hold a second one.
 
 | Theme | Files | Modes | Install |
 | --- | --- | --- | --- |
-| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light), `dracula-tufte-xmas.theme.json`/`.icls` (Christmas) | dark + light + Christmas | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
-| **Zed** | `dracula-tufte.json` (one file, both appearances) | dark + light | Copy to `~/.config/zed/themes/` |
-| **Ghostty** | `dracula-tufte`, `dracula-tufte-light`, `dracula-tufte-xmas` (Christmas) | dark + light + Christmas | Copy to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light`; pick `dracula-tufte-xmas` by hand for Christmas |
-| **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme` | dark + light | Settings, Appearance, gear, Import both; the pair switches with the window appearance |
-| **iTerm2** | `dracula-tufte.itermcolors`, `dracula-tufte-light.itermcolors` | dark + light | Preferences, Profiles, Colors, Color Presets, Import both; check "Use different colors for light and dark mode" and assign each preset to its appearance |
-| **opencode** | `dracula-tufte.json` | dark only | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
-| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` (dark) and `themes/dracula-tufte-light-color-theme.json` (light) | dark + light | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select either theme |
-| **tmux** | `dracula-tufte.conf` | dark only | `source-file` it from `~/.tmux.conf` |
+| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light), `dracula-tufte-xmas.theme.json`/`.icls` (Christmas), `dracula-tufte-thanksgiving.theme.json`/`.icls` (Thanksgiving) | dark + light + Christmas + Thanksgiving | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
+| **Zed** | `dracula-tufte.json` (one file, all four themes) | dark + light + Christmas + Thanksgiving | Copy to `~/.config/zed/themes/` |
+| **Ghostty** | `dracula-tufte`, `dracula-tufte-light`, `dracula-tufte-xmas` (Christmas), `dracula-tufte-thanksgiving` (Thanksgiving) | dark + light + Christmas + Thanksgiving | Copy to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light`; pick a seasonal theme by hand |
+| **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme`, `Dracula-Tufte Christmas (Dark).cottheme`, `Dracula-Tufte Thanksgiving (Dark).cottheme` | dark + light + Christmas + Thanksgiving | Settings, Appearance, gear, Import the themes you want; the plain pair switches with the window appearance |
+| **iTerm2** | `dracula-tufte.itermcolors`, `dracula-tufte-light.itermcolors`, `dracula-tufte-christmas.itermcolors`, `dracula-tufte-thanksgiving.itermcolors` | dark + light + Christmas + Thanksgiving | Preferences, Profiles, Colors, Color Presets, import the presets you want; check "Use different colors for light and dark mode" and assign each preset to its appearance |
+| **opencode** | `dracula-tufte.json`, `dracula-tufte-christmas.json`, `dracula-tufte-thanksgiving.json` | dark + Christmas + Thanksgiving | Copy to `~/.config/opencode/themes/`, then set `"theme": "dracula-tufte"` in `opencode.json` |
+| **VS Code** | `package.json` plus `themes/dracula-tufte-color-theme.json` (dark), `themes/dracula-tufte-light-color-theme.json` (light), `themes/dracula-tufte-christmas-color-theme.json` (Christmas), `themes/dracula-tufte-thanksgiving-color-theme.json` (Thanksgiving) | dark + light + Christmas + Thanksgiving | Extensions view, `...` menu, Install from Location, pick `themes/vscode/`, then select a theme |
+| **tmux** | `dracula-tufte.conf`, `dracula-tufte-christmas.conf`, `dracula-tufte-thanksgiving.conf` | dark + Christmas + Thanksgiving | `source-file` the variant you want from `~/.tmux.conf` |
 | **Slack** | `themes/slack/README.md` (color string, no file to install) | dark only | Preferences, Themes, Custom Theme, paste string |
 
 ```sh

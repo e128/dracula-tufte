@@ -1206,6 +1206,21 @@ checkbox takes two separately imported presets, so `dracula-tufte-light.itermcol
 plist built by the same `render-itermcolors` function with `scheme: "light"`, not a field inside the
 existing file.
 
+**Every template-bearing target ships each season as a theme selected by hand, rendered from that
+season's dark block.** That is Rider, VS Code, Ghostty, CotEditor, opencode, tmux, iTerm2 and Zed.
+A season variant is the same dark-family projection the Christmas theme already used, repeated per
+season through the season name as `scheme` (or as a placeholder prefix; `resolve` treats any
+palette name as one, so Zed's single template holds `{{christmas:...}}` and
+`{{thanksgiving:...}}` objects beside its dark and light ones). **Do not make a theme follow the
+calendar**, for the same reason it is not done for Christmas: a theme cannot read the date, and a
+plugin that rewrote the selected theme by date would override the reader's own choice. A target
+whose template carries no appearance name inside it (CotEditor, opencode) points its seasonal row
+at the dark template rather than duplicating an identical file; the output name is the whole
+difference. Ghostty and Rider keep their shipped `xmas` file names, and new seasons take the full
+season name. **Do not ship a light seasonal variant without a new decision**: the seasonal theme
+is a hand-picked dark-family appearance by precedent, while the calendar-driven blocks on the page
+already carry their own light pair.
+
 ## Mermaid
 
 ### Init config
@@ -1852,8 +1867,11 @@ reorder the two blocks.**
 
 **Each seasonal palette is a pair of `:root[data-season="<season>"]` blocks, and the stylesheet never
 sets the attribute.** CSS cannot read a date, so a consumer sets it. The head snippet in `CONTRACT.md`
-§ 1 does that from the reader's local calendar: Thanksgiving from 1 November through 28 November, and
-Christmas from 29 November through 31 December, both inclusive. The rows live in `SEASON_RANGES` in
+§ 1 does that from the reader's local calendar: Thanksgiving from 1 November through the fourth
+Thursday of November, and Christmas from the fourth Friday of November through 28 December, both
+inclusive. The fourth Thursday is Thanksgiving Day, and the fourth Friday falls on the next day
+except in a year where 1 November is a Friday. Rows are checked in order and the first match wins,
+so Thanksgiving keeps those days and Christmas starts the day after its end. The rows live in `SEASON_RANGES` in
 `scripts/build-sample.nu`, so the fixtures, the preview pair and the display name all follow one edit.
 **The payload stays four files.** A fifth file would change the contract for every consumer, and
 `filter.js` loads only on a page with a filter box, so neither can carry a check that every page

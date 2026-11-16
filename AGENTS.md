@@ -126,6 +126,13 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
   one of them was wrong, undetected, for twelve releases. The form is
   ``(in `samples/dark.html`, search `class="tag-dot"`)`` and `nu scripts/maintain.nu check` parses
   and resolves every one of them.
+- **Every season ships theme variants in every template-bearing target, in the same change that
+  adds the season.** That is Rider, VS Code, Ghostty, CotEditor, opencode and tmux (rows in
+  `THEMES`), iTerm2 (`render-itermcolors` pair rows) and Zed (theme objects in its one template).
+  The variant renders from the season's dark block, is named for the season, and is selected by
+  hand: **do not make any theme follow the calendar.** Regenerate `themes/` and commit the outputs
+  with the change. `scripts/create-themes.nu --check` gates every one of them.
+
 - **A gate that cannot reach its subject does not get written.** Say so in `NOTES.md` and leave the
   obligation in prose. A check that skips the only instance it could test reports green about a
   question it never asked, which is worse than the honest gap. This is why the `quadrantChart`

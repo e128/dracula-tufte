@@ -2,7 +2,7 @@
   "name": "dracula-tufte",
   "displayName": "Dracula-Tufte (muted)",
   "description": "The muted Dracula-Tufte palette as a VS Code color theme.",
-  "version": "1.67.0",
+  "version": "1.68.0",
   "publisher": "dracula-tufte",
   "engines": {
     "vscode": "^1.75.0"
@@ -21,6 +21,16 @@
         "label": "Dracula-Tufte (muted) Light",
         "uiTheme": "vs",
         "path": "./themes/dracula-tufte-light-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Christmas",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-christmas-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Thanksgiving",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-thanksgiving-color-theme.json"
       }
     ]
   },

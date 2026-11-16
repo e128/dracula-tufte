@@ -74,10 +74,14 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 ```html
   <script>
     (function () {
-      var now = new Date(), month = now.getMonth(), day = now.getDate(), r;
+      var now = new Date(), year = now.getFullYear(), month = now.getMonth(), day = now.getDate(), r;
+      function nthWeekday(y, m, w, n) {
+        var d = new Date(y, m, 1);
+        return new Date(y, m, 1 + ((w - d.getDay() + 7) % 7) + (n - 1) * 7).getDate();
+      }
       var ranges = [
-        [10, 1, 10, 28, 'thanksgiving'],
-        [10, 29, 11, 31, 'christmas'],
+        [10, 1, 10, nthWeekday(year, 10, 4, 4), 'thanksgiving'],
+        [10, nthWeekday(year, 10, 5, 4), 11, 28, 'christmas'],
       ];
       for (var i = 0; i < ranges.length; i++) {
         r = ranges[i];
@@ -90,11 +94,17 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
   </script>
 ```
 
-- **The windows are November 1 through November 28 for Thanksgiving, and November 29 through
-  December 31 for Christmas, both inclusive.** The snippet reads the visitor's local calendar once,
+- **Thanksgiving runs from November 1 through the fourth Thursday of November, and Christmas from
+  the fourth Friday of November through December 28, all inclusive.** The fourth Thursday is
+  Thanksgiving Day. `nthWeekday` resolves both Thursdays and Fridays in the visitor's own year,
+  so the windows track the calendar. That also covers the years where November 1 is a Friday and
+  the fourth Friday falls before the fourth Thursday: rows are checked in order and the first
+  match wins, so Thanksgiving keeps those days and Christmas starts the day after its end.
+  December 29 through 31 belong to no season. The snippet reads the visitor's local calendar once,
   at page load. A page left open past midnight keeps its theme until the next load. To change a
   window, edit that row in `ranges`. `getMonth()` counts from zero, so `10` is November and `11` is
-  December. A date in no row leaves the attribute off.
+  December, and `getDay()` counts from Sunday, so `4` is Thursday and `5` is Friday. A date in no
+  row leaves the attribute off.
 - **Keep the snippet classic and first.** `mermaid.js` reads `--mermaid-scheme` once, when its
   module evaluates. A classic inline script runs as the parser reaches it, so the attribute is on
   `<html>` before any module runs. A `type="module"`, `defer` or `async` snippet, or one placed
@@ -142,9 +152,14 @@ steps, in order:
    `<season>-dark.html` and `<season>-light.html` pair, sets the attribute in markup, rewrites the
    season conditions to `@media screen`, and derives the display name. Register both pages in
    `SEASON_PREVIEWS` in `scripts/maintain.nu` and add their date cases to `.github/season-probe.py`.
-6. If a terminal or editor target should ship the season, add `.in` template rows to
-   `scripts/create-themes.nu` with `scheme: "<season>"`. The render already resolves any
-   `--dump` key by name.
+6. Every template-bearing theme target ships the season. Add `THEMES` rows with
+   `scheme: "<season>"` for Rider (`.icls` and `theme.json`), VS Code, Ghostty, CotEditor,
+   opencode and tmux, add the iTerm2 pair row, and add the season's theme object to Zed's one
+   template with every placeholder prefixed `{{<season>:...}}`. Register the Rider
+   `themeProvider`, the VS Code label and the `.vsix` entry list, and the Rider jar staging list.
+   A target whose template carries no appearance name (CotEditor, opencode) reuses its dark
+   template for the seasonal row. The render already resolves any `--dump` key as a prefix or as
+   `scheme`.
 7. Add the new season's windows and expectations to `CASES` in `.github/season-probe.py`. The probe
    drives the whole snippet, so its expectations stay literal and it catches a range that is off by
    one day.
@@ -524,6 +539,7 @@ release that changed nothing: add the row in the release commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.68.0 | nothing. **The seasonal date windows move and the theme targets gain season variants.** Thanksgiving now runs from November 1 through the fourth Thursday of November, and Christmas from the fourth Friday of November through December 28, resolved in the visitor's local year. A page that pasted the v1.63 snippet keeps its old fixed windows until it copies the block in § 1 again; the palette blocks themselves are unchanged. December 29 through 31 now belong to no season. `themes/` adds a Thanksgiving variant in every template-bearing target, and a Christmas variant where one was missing. None of them is part of the payload. |
 | v1.63.0 | nothing is required. **A seasonal Christmas palette ships behind `data-season="christmas"`, and nothing you already emit changes.** A page without the head snippet in § 1 never turns it on, so inlining the new stylesheet alone is a no-op. To get the palette by date, paste that snippet before the `<style>` block. It covers 11 November to 26 December in the reader's local calendar. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Keep the snippet a classic script and keep it first: `mermaid.js` reads `--mermaid-scheme` once at load, so a snippet that runs later paints a default diagram on a Christmas page. The ban on a `classDef name fill:#hex` line on a page that follows appearance now covers a page that follows the date as well. |
 | v1.62.1 | nothing. **Rider compatibility documentation only.** The theme descriptor already includes Rider 2026.3, and the native parser check verifies theme JSON and bundled resource resolution. The stylesheet changes only in its version stamp; the inlined scripts and theme templates keep their payload bytes from v1.62.0. No markup or token change |
 | v1.60.0 | **two new opt-in chart components, and nothing you already emit changes.** A `dl.meter` draws a value against a known limit, and `td.dot` draws the dot plot variant of the bar chart. Each carries a § 2 requirement, and neither adds a token: the meter's band and the dot both paint `--data-1` at full strength, the ramp member and the allowance the palette gate already measures. A page that emits neither owes nothing; regenerate pages whose inline stylesheet predates this payload |
@@ -533,7 +549,6 @@ release that changed nothing: add the row in the release commit itself.
 | v1.59.0 | nothing. **The sheet sets five type steps and no other size.** Body stays the fluid `clamp(1rem, 0.95rem + 0.25vw, 1.25rem)`, which reads 16 to 18.8px. Small text is `0.8125rem` (13px), captions and interface text `1rem` (16px), a section heading and a lead `1.2em` (23px), display `1.75em` (33px). The intermediate 12, 14, 15, 17, 18, 21 and 25px steps are gone, and the small steps are rem-based so nested text cannot compound into a sixth size. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
 | v1.58.3 | nothing. **A `table.bar-chart` fills the page measure** instead of hugging a `12rem` bar column: the table takes `display: table`, `inline-size: 100%`, and a fixed layout with a 30% label column, so the bars read against the page grid and a long section label wraps rather than widening the table. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
 | v1.58.2 | nothing. **The sheet reserves the scrollbar track on both edges** (`scrollbar-gutter: stable both-edges` on `html`), so a page short enough to fit and one long enough to scroll share one centred frame instead of shifting left by half a classic scrollbar. No markup change, no new token, and no measure change: `--page-width` and `--gutter` keep their values, so regenerate pages whose inline stylesheet predates this payload and nothing else |
-| v1.58.1 | **one new § 2 requirement, and the layer stack, coverage matrix and heatmap gain their requirements.** A page that cites sources from running prose now cites them as `sup` links into one numbered `Sources` section at the foot of the page, `<h2 id="sources">` over a `<div class="col-2">` holding the `<ol>`, rather than a stack of `.sidenote` down the margin. No fixture demonstrates it yet. The three components v1.58.0 introduced carried fixtures and NOTES.md decisions but no stated requirement until this release, so a page that already emits none of them owes nothing. No payload byte changes |
 ## 4. Regenerate on a byte compare, not a version string
 
 A version comment is not a staleness signal. A generated file can carry a current comment over
