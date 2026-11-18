@@ -60,7 +60,7 @@ to no season. A preview page is not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.68.1, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.68.2, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -79,7 +79,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.68.1`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.68.2`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -98,7 +98,7 @@ when a fixture drifts from the stylesheet, so **when CONTRACT.md and a fixture d
 markup, the fixture is right.** The single exception is flagged in § 2 itself: the fixture's
 `quadrantChart` breaks its own requirement on purpose, as a stress case.
 
-Five things are worth knowing before you get there:
+Six things are worth knowing before you get there:
 
 - **Inline each file verbatim, or slice the body out.** Each payload ships inside its own wrapper
   tag. A generator that supplies its own wrapper takes the bare body with `sed '1d;$d'`. The
@@ -122,6 +122,9 @@ Five things are worth knowing before you get there:
 - **Keep the markdown source.** A generator that deletes its source after conversion cannot
   regenerate, so it can never adopt a later release. A repair of generated HTML in place is a much
   harder problem than a second run of the generator.
+- **Mark code as untranslatable.** Add `translate="no"` to the `<code>` and `<pre>` elements your
+  generator emits. Chrome's page translation rewrites the identifiers inside a code sample, so a
+  reader who translates the page sees code that no longer matches the source.
 
 ## Editor themes
 

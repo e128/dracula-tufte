@@ -894,7 +894,7 @@ def body [] {
     "    <section>"
     "      <h2>Navigation index components</h2>"
     "      <label class=\"filter-label\" for=\"nav-filter\">Filter entries</label>"
-    "      <input id=\"nav-filter\" type=\"search\" class=\"filter-box\" autocomplete=\"off\" placeholder=\"Failed audit\"/>"
+    "      <input id=\"nav-filter\" type=\"search\" class=\"filter-box\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\" enterkeyhint=\"search\" placeholder=\"Failed audit\"/>"
     "      <p role=\"status\">4 entries</p>"
     "      <ul class=\"nav-list\" role=\"list\">"
     "        <li><a href=\"#\">A tappable nav-list link</a></li>"
