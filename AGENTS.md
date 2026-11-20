@@ -108,8 +108,9 @@ Never delete a load-bearing explanation. Move it to NOTES.md.
 
 ## Regeneration and the contract
 
-- `scripts/build-sample.nu` generates `tokens.css` and all eight fixtures in `samples/`. Never edit
-  them by hand. Change `tufte-dracula.css`, `mermaid.js`, `filter.js`, `highlight.js` or
+- `scripts/build-sample.nu` generates `tokens.css` and all twelve fixtures in `samples/`: four dark
+  fixtures, four forced-light previews and four forced-season previews. Never edit them by hand.
+  Change `tufte-dracula.css`, `mermaid.js`, `filter.js`, `highlight.js` or
   `scripts/build-sample.nu`, then regenerate.
 - Run `nu scripts/maintain.nu check` after every change. It mirrors CI: file presence, the palette
   hex-against-oklch gate, exactly one `<style>` and three payload `<script>` blocks per fixture (four on a dark fixture, which adds the seasonal head snippet), and a

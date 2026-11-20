@@ -187,7 +187,11 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       (in `samples/dark.html`, search `class="filter-label"`). If you emit a `placeholder` at all,
       make it an **example** of what the box accepts, never an instruction: it restates the label it
       sits under, and it disappears on the first keystroke, so an instruction there teaches nothing
-      and costs a line of chrome (in `samples/dark.html`, search `placeholder="Failed audit"`).
+      and costs a line of chrome (in `samples/dark.html`, search `placeholder="Failed audit"`). The
+      box also carries `autocomplete="off"`, `autocapitalize="off"`, `spellcheck="false"` and
+      `enterkeyhint="search"` (in `samples/dark.html`, search `autocapitalize="off"`): a phone
+      keyboard then offers a search key, does not capitalize the query, and does not spell-check a
+      term that already matches an entry.
 - [ ] `accTitle:` and `accDescr:` inside every ` ```mermaid ` fence
       (in `samples/dark.html`, search `accTitle: Decision flow sample`).
 - [ ] `scope="col"` on table headers, and heading levels that nest with no skips

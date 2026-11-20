@@ -7,6 +7,10 @@
       button.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
     };
     if (navigator.clipboard) {
+      const status = document.createElement('span');
+      status.setAttribute('role', 'status');
+      status.style.cssText = 'position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;';
+      document.body.append(status);
       document.querySelectorAll('pre:not(.mermaid)').forEach(pre => {
         const button = document.createElement('button');
         button.type = 'button';
@@ -19,7 +23,9 @@
           } catch { return; }
           paint(button, 'done');
           button.setAttribute('aria-label', 'Copied');
-          setTimeout(() => { paint(button, 'copy'); button.setAttribute('aria-label', 'Copy code'); }, 1500);
+          status.textContent = '';
+          setTimeout(() => { status.textContent = 'Copied'; }, 0);
+          setTimeout(() => { paint(button, 'copy'); button.setAttribute('aria-label', 'Copy code'); status.textContent = ''; }, 1500);
         });
         pre.prepend(button);
       });
