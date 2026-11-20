@@ -89,10 +89,23 @@ Literata, Newsreader, Lora and Petrona were rejected: Lora carries Georgia's old
 figures, and none of the five ship `smcp`, so `.newthought` small caps stay synthesized either way.
 
 **The fallback path is a real downgrade, not an equivalence, and the repo accepts it.** Offline the
-stack falls to Georgia (no 450, proportional figures, tables lose alignment, and no 550 or 650
-either, so both steps map to 700 and `h3` and `h4` render alike), then Noto Serif
-(Android/ChromeOS), then DejaVu Serif (Linux). Charter and Palatino are deliberately absent: both
-exist only where Georgia already does. `font-display: swap` keeps text visible during load.
+stack falls to Georgia (no 450, 500, 550 or 650; proportional figures; tables lose alignment; the
+550 and 650 steps both map to 700, so `h3` and `h4` render alike, and 500 maps to 400, so `h5` falls
+back to the body weight), then Noto Serif (Android/ChromeOS), then DejaVu Serif (Linux). Charter and
+Palatino are deliberately absent: both exist only where Georgia already does.
+`font-display: optional` keeps a first, cold load in that fallback rather than swapping the webfont
+in after paint.
+
+**`font-display: optional`, not `swap`, because the swap was the page's whole layout shift.** With
+`swap` the body face arrived after first paint on a cold load and re-wrapped text across the page:
+measured CLS 0.0127 on `samples/dark.html`, 0.1454 on `samples/dark-charts.html` and 0.2055 on
+`samples/light-charts.html` against the 0.1 good threshold, and 0.0000 on all three with the font
+requests blocked. `optional` gives the face a short block period and never swaps it in after paint;
+the same three fixtures then measure 0.0000 with the requests live. **Do not switch back to `swap`
+without re-measuring CLS**, and do not add a metrics-matched fallback face: a Georgia face with
+`size-adjust: 90.65%` and matching ascent and descent overrides measured 0.5953 on
+`samples/light-charts.html`, worse than `swap` alone. The cost is stated: on a first visit with a
+cold cache, the page may render Georgia and `ui-monospace` for that view. Later loads use the faces.
 
 **The code face is also a webfont, `'JetBrains Mono'` first**, loaded from
 `@fontsource-variable/jetbrains-mono`, pinned like the body face, matching the Rider theme's editor
@@ -152,11 +165,16 @@ Nested ratios compound. Check the parent before adding a step. Three paid-for tr
 size, made body copy the smallest text on a phone, and ignored the reader's own setting.
 
 **`h1`/`h2` sit at weight 400. `h3` through `h6` share the body step, so weight is the ladder: 650,
-550, 450, then 450 italic on `h6`.** 400 would render a heading lighter than the paragraph beneath it,
+550, 500, then 450 italic on `h6`.** 400 would render a heading lighter than the paragraph beneath it,
 which is why the ladder starts at 650: at one size, a parent must never render lighter than its child.
 **Nothing at text size may go lighter than body copy**: h3-h6, `summary`, `th`. **Do not collapse two
 adjacent levels onto the same weight**, and do not flip the order: they then differ only by margin,
 which no reader sees.
+
+**`h5` sits at 500, not the 450 body weight.** At 450 it tied the paragraph under it, so only
+`--label` and its margin marked it, and `--label` is dimmer than body text: the heading read as the
+dimmest text in its own section. 500 keeps every level distinct and keeps `h5` at or above body copy.
+**Do not drop `h5` back to 450 while `h6` stays at 450 italic**: the two then differ only by style.
 
 **That rule now covers color too: `h5`/`h6` sit at `--label`, not `--muted`.** At body size, weight
 is the only other axis marking them as headings; on `--muted` a heading was the dimmest thing in its
@@ -554,6 +572,16 @@ permalinks deliberately do not.** The copy button is `2.75rem` square and the zo
 `min-height: 44px`. `script-probe.py` asserts both from the rendered rectangle, mutated to confirm
 each fails at the old size. The permalinks stay glyph-sized on the spacing exception above, because
 padding them would widen the heading's last line for a control revealed only on hover or focus.
+
+**The copy confirmation is a status message, not only a label change.** `highlight.js` appends one
+visually hidden `role="status"` span to `<body>` and sets its text to `Copied` after a successful
+copy, clearing it when the button returns to its resting label. The button's own `aria-label`
+changes too, but a focused control's name change is not something every screen reader announces; the
+region is the part that carries the message. `script-probe.py` asserts the region exists, is hidden,
+announces, and clears. **Do not move the message onto an `aria-live` attribute on the button**: the
+shared region makes the announcement independent of which block was copied. **Do not give the region
+a class**: it is created inline by the payload and hidden with `clip-path: inset(50%)`, so it adds no
+selector a consumer has to ship.
 
 `cite` is monospace and `font-style: normal`: the browser default (italic serif) is indistinguishable
 from `<em>` in this theme.
@@ -1991,6 +2019,14 @@ the narrower CSS rule styles only the shape `CONTRACT.md` § 6 documents.
 
 `.filter-box` is `font-size: 1em`. **Do not write a `pt` floor here**: 16pt is not 16px, and the
 iOS-zoom threshold is 12pt.
+
+**The filter box is a search field in the keyboard's terms too, not only in its `type`.** The fixture
+carries `autocomplete="off"`, `autocapitalize="off"`, `spellcheck="false"` and
+`enterkeyhint="search"`. Without them a phone keyboard capitalizes the first letter of a query,
+underline-checks a term that already matches an entry, and shows a return key where a search key
+belongs. **Do not drop them as redundant with `type="search"`**: the type alone does not turn off
+autocapitalization or spell-check on every soft keyboard, and `enterkeyhint` is what labels the
+action key.
 
 ## Nav link separators
 

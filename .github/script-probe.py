@@ -210,6 +210,47 @@ DRIVER = """
   </script>
 """
 
+
+COPY_DRIVER = """
+  <script type="module">
+    const out = [];
+    const t = (name, cond) => out.push(name + '=' + (cond ? 'PASS' : 'FAIL'));
+    const publish = () => {
+      const el = document.createElement('pre');
+      el.id = 'script-probe';
+      el.textContent = out.join('\\n');
+      document.body.append(el);
+    };
+    const region = () => document.querySelector('body > span[role="status"]');
+    const fake = { writeText: () => Promise.resolve() };
+    try {
+      Object.defineProperty(navigator, 'clipboard', { value: fake, configurable: true });
+    } catch {}
+    try {
+      navigator.clipboard.writeText = fake.writeText;
+    } catch {}
+    const button = document.querySelector('.copy-code');
+    t('copy-status-region', Boolean(region()));
+    const hidden = region() && (() => {
+      const r = region().getBoundingClientRect();
+      return r.width <= 2 && r.height <= 2;
+    })();
+    t('copy-status-hidden', Boolean(hidden));
+    if (button && region()) {
+      button.click();
+      setTimeout(() => {
+        t('copy-status-announces', region().textContent === 'Copied');
+        setTimeout(() => {
+          t('copy-status-resets', region().textContent === '');
+          publish();
+        }, 1700);
+      }, 80);
+    } else {
+      publish();
+    }
+  </script>
+"""
+
 CDN = re.search(r"from '(https://[^']+)'", (ROOT / "mermaid.js").read_text()).group(1)
 
 
@@ -523,6 +564,7 @@ def main():
         sys.exit(f"{FIXTURE.name} has no </body> to append the driver to.")
     flag = f"  <script>window.__probeMermaid = {'true' if mermaid else 'false'};</script>\n"
     results = run(html.replace("</body>", flag + DRIVER + "\n</body>", 1), 20, "binding")
+    results += run(html.replace("</body>", flag + COPY_DRIVER + "\n</body>", 1), 4, "copy status")
 
     # Same page, forced-colors switched on by rewriting the condition. Checked as a
     # string in the real fixture first, so a renamed or deleted query fails loudly here

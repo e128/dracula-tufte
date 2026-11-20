@@ -1,0 +1,36 @@
+diff --git a/CONTRACT.md b/CONTRACT.md
+index 99845ef..f54f61b 100644
+--- a/CONTRACT.md
++++ b/CONTRACT.md
+@@ -187,7 +187,11 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
+       (in `samples/dark.html`, search `class="filter-label"`). If you emit a `placeholder` at all,
+       make it an **example** of what the box accepts, never an instruction: it restates the label it
+       sits under, and it disappears on the first keystroke, so an instruction there teaches nothing
+-      and costs a line of chrome (in `samples/dark.html`, search `placeholder="Failed audit"`).
++      and costs a line of chrome (in `samples/dark.html`, search `placeholder="Failed audit"`). The
++      box also carries `autocomplete="off"`, `autocapitalize="off"`, `spellcheck="false"` and
++      `enterkeyhint="search"` (in `samples/dark.html`, search `autocapitalize="off"`): a phone
++      keyboard then offers a search key, does not capitalize the query, and does not spell-check a
++      term that already matches an entry.
+ - [ ] `accTitle:` and `accDescr:` inside every ` ```mermaid ` fence
+       (in `samples/dark.html`, search `accTitle: Decision flow sample`).
+ - [ ] `scope="col"` on table headers, and heading levels that nest with no skips
+diff --git a/NOTES.md b/NOTES.md
+index 5d466e6..09d1f24 100644
+--- a/NOTES.md
++++ b/NOTES.md
+@@ -1992,6 +1992,14 @@ the narrower CSS rule styles only the shape `CONTRACT.md` § 6 documents.
+ `.filter-box` is `font-size: 1em`. **Do not write a `pt` floor here**: 16pt is not 16px, and the
+ iOS-zoom threshold is 12pt.
+ 
++**The filter box is a search field in the keyboard's terms too, not only in its `type`.** The fixture
++carries `autocomplete="off"`, `autocapitalize="off"`, `spellcheck="false"` and
++`enterkeyhint="search"`. Without them a phone keyboard capitalizes the first letter of a query,
++underline-checks a term that already matches an entry, and shows a return key where a search key
++belongs. **Do not drop them as redundant with `type="search"`**: the type alone does not turn off
++autocapitalization or spell-check on every soft keyboard, and `enterkeyhint` is what labels the
++action key.
++
+ ## Nav link separators
+ 
+ `nav > a + a` takes a `border-inline-start` plus symmetric padding: without it, sibling `<a>`
