@@ -5,9 +5,11 @@ Consumers opt in by pasting a classic inline script before the stylesheet. It se
 `data-season` on `<html>` from the visitor's local calendar, with one row per season:
 St Patrick from March 1 through March 17, Chartreuse from May 1 through May 16, Independence Day
 from June 28 through July 4, Thanksgiving from November 1 through the fourth Thursday of November,
-and Christmas from the fourth Friday of November through December 28, all inclusive, at page load. Rows are
-checked in order and the first match wins, so in a year where November 1 is a Friday the
-fourth Friday falls before the fourth Thursday and Thanksgiving keeps those days.
+and Christmas from the fourth Friday of November through December 28, all inclusive, at page load.
+Poland overrides 3 May, 15 August, 11 November and 6 December, and those override rows come first
+so they carve their days out of Chartreuse, Thanksgiving or Christmas. Rows are checked in order and
+the first match wins, so in a year where November 1 is a Friday the fourth Friday falls before the
+fourth Thursday and Thanksgiving keeps those days.
 Nothing else in the repo runs that script. `maintain.nu check` counts `<script>` blocks, `palette-check.py` measures
 colors, and `script-probe.py` drives the three payload scripts. None of them asks
 whether the snippet picks the right days, so an off-by-one on a boundary, a UTC getter
@@ -66,7 +68,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DARK = ["samples/dark.html", "samples/dark-conn-map.html",
         "samples/dark-timeline.html", "samples/dark-charts.html"]
 MAIN = "samples/dark.html"
-SEASONS = ["chartreuse", "christmas", "independence-day", "st-patrick", "thanksgiving"]
+SEASONS = ["chartreuse", "christmas", "independence-day", "poland", "st-patrick", "thanksgiving"]
 PREVIEWS = {(season, mode): f"samples/{season}-{mode}.html"
             for season in SEASONS for mode in ("dark", "light")}
 PLAIN_LIGHT = "samples/light.html"
@@ -88,6 +90,10 @@ CASES = [
     ("2024 Mar 1", 2024, 3, 1, 12, 0, 0, "st-patrick"),
     ("2027 Mar 17 end of day", 2027, 3, 17, 23, 59, 59, "st-patrick"),
     ("Apr 30 end of day", 2026, 4, 30, 23, 59, 59, None),
+    ("May 2, before the override", 2026, 5, 2, 23, 59, 59, "chartreuse"),
+    ("May 3, Poland Constitution Day", 2026, 5, 3, 0, 0, 0, "poland"),
+    ("May 3 noon, carving Chartreuse", 2026, 5, 3, 12, 0, 0, "poland"),
+    ("May 4, base range resumes", 2026, 5, 4, 0, 0, 0, "chartreuse"),
     ("May 1 start of day", 2026, 5, 1, 0, 0, 0, "chartreuse"),
     ("May 1 noon", 2026, 5, 1, 12, 0, 0, "chartreuse"),
     ("May 8", 2026, 5, 8, 12, 0, 0, "chartreuse"),
@@ -96,6 +102,9 @@ CASES = [
     ("2024 May 1", 2024, 5, 1, 12, 0, 0, "chartreuse"),
     ("2027 May 16 end of day", 2027, 5, 16, 23, 59, 59, "chartreuse"),
     ("Jun 27 end of day", 2026, 6, 27, 23, 59, 59, None),
+    ("Aug 14, before the override", 2026, 8, 14, 23, 59, 59, None),
+    ("Aug 15, Poland Armed Forces Day", 2026, 8, 15, 12, 0, 0, "poland"),
+    ("Aug 16, after the override", 2026, 8, 16, 0, 0, 0, None),
     ("Jun 28 start of day", 2026, 6, 28, 0, 0, 0, "independence-day"),
     ("Jun 28 noon", 2026, 6, 28, 12, 0, 0, "independence-day"),
     ("Jul 1", 2026, 7, 1, 12, 0, 0, "independence-day"),
@@ -107,6 +116,10 @@ CASES = [
     ("Oct 11, a day number inside both windows", 2026, 10, 11, 12, 0, 0, None),
     ("Oct 31 end of day", 2026, 10, 31, 23, 59, 59, None),
     ("Nov 1 start of day", 2026, 11, 1, 0, 0, 0, "thanksgiving"),
+    ("Nov 10, before the override", 2026, 11, 10, 23, 59, 59, "thanksgiving"),
+    ("Nov 11, Poland Independence Day", 2026, 11, 11, 0, 0, 0, "poland"),
+    ("Nov 11 noon, carving Thanksgiving", 2026, 11, 11, 12, 0, 0, "poland"),
+    ("Nov 12, base range resumes", 2026, 11, 12, 0, 0, 0, "thanksgiving"),
     ("Nov 1 noon", 2026, 11, 1, 12, 0, 0, "thanksgiving"),
     ("Nov 15", 2026, 11, 15, 12, 0, 0, "thanksgiving"),
     ("Nov 26 end of day, fourth Thursday", 2026, 11, 26, 23, 59, 59, "thanksgiving"),
@@ -115,6 +128,10 @@ CASES = [
     ("Nov 29 noon", 2026, 11, 29, 12, 0, 0, "christmas"),
     ("Nov 30", 2026, 11, 30, 12, 0, 0, "christmas"),
     ("Dec 1", 2026, 12, 1, 0, 0, 0, "christmas"),
+    ("Dec 5, before the override", 2026, 12, 5, 23, 59, 59, "christmas"),
+    ("Dec 6, Poland St Nicholas Day", 2026, 12, 6, 0, 0, 0, "poland"),
+    ("Dec 6 noon, carving Christmas", 2026, 12, 6, 12, 0, 0, "poland"),
+    ("Dec 7, base range resumes", 2026, 12, 7, 0, 0, 0, "christmas"),
     ("Dec 25", 2026, 12, 25, 12, 0, 0, "christmas"),
     ("Dec 28 end of day", 2026, 12, 28, 23, 59, 59, "christmas"),
     ("Dec 29 start of day", 2026, 12, 29, 0, 0, 0, None),

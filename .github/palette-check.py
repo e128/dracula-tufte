@@ -225,6 +225,13 @@ SEASONS = {
         "p3": True,
         "light_accents": True,
     },
+    "poland": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
 }
 season_blocks = {}
 season_overrides = {}

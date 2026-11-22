@@ -2,7 +2,7 @@
   "name": "dracula-tufte",
   "displayName": "Dracula-Tufte (muted)",
   "description": "The muted Dracula-Tufte palette as a VS Code color theme.",
-  "version": "1.71.0",
+  "version": "1.72.0",
   "publisher": "dracula-tufte",
   "engines": {
     "vscode": "^1.75.0"
@@ -46,6 +46,11 @@
         "label": "Dracula-Tufte (muted) Independence Day",
         "uiTheme": "vs-dark",
         "path": "./themes/dracula-tufte-independence-day-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Poland",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-poland-color-theme.json"
       }
     ]
   },

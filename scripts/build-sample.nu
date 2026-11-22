@@ -31,6 +31,20 @@ const SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefe
 # fourth Thursday, November 1 is a Friday and Thanksgiving keeps the days up to its own
 # end. Add a row and a pair of CSS blocks, and the snippet, the preview pair and the
 # display name all follow.
+
+# Single-day overrides of the base calendar. They are emitted first because the snippet
+# checks rows in order and the first match wins, so an override carves its day out of
+# whichever base range holds it. Poland covers Constitution Day (3 May), Assumption and
+# Armed Forces Day (15 August), Independence Day (11 November) and St Nicholas Day
+# (6 December); Thanksgiving and Christmas each overlap one. Add a row here, not
+# to SEASON_RANGES, when the date belongs to an existing range.
+const SEASON_OVERRIDES = [
+  {season: "poland", from: [4 3], to: [4 3]}
+  {season: "poland", from: [7 15], to: [7 15]}
+  {season: "poland", from: [10 11], to: [10 11]}
+  {season: "poland", from: [11 6], to: [11 6]}
+]
+
 const SEASON_RANGES = [
   {season: "st-patrick", from: [2 1], to: [2 17]}
   {season: "chartreuse", from: [4 1], to: [4 16]}
@@ -81,9 +95,9 @@ def main [] {
     print $"  → ($out)"
     preview $html $p.0 $p.2 $p.4
     if $p.0 == "dark.html" {
-      for r in $SEASON_RANGES {
-        season-preview $html $p.0 $p.2 $"($r.season)-dark.html" "dark" $r.season
-        season-preview $html $p.0 $p.2 $"($r.season)-light.html" "light" $r.season
+      for season in (($SEASON_OVERRIDES ++ $SEASON_RANGES) | get season | uniq) {
+        season-preview $html $p.0 $p.2 $"($season)-dark.html" "dark" $season
+        season-preview $html $p.0 $p.2 $"($season)-light.html" "light" $season
       }
     }
   }
@@ -119,7 +133,7 @@ def range-bound [r: record, kind: string] {
 }
 
 def season-snippet [] {
-  let rows = ($SEASON_RANGES | each {|r|
+  let rows = (($SEASON_OVERRIDES ++ $SEASON_RANGES) | each {|r|
     let f = (range-bound $r "from")
     let t = (range-bound $r "to")
     $"        [($f), ($t), '($r.season)'],"

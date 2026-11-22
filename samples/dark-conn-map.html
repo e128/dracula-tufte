@@ -13,6 +13,10 @@
         return new Date(y, m, 1 + ((w - d.getDay() + 7) % 7) + (n - 1) * 7).getDate();
       }
       var ranges = [
+        [4, 3, 4, 3, 'poland'],
+        [7, 15, 7, 15, 'poland'],
+        [10, 11, 10, 11, 'poland'],
+        [11, 6, 11, 6, 'poland'],
         [2, 1, 2, 17, 'st-patrick'],
         [4, 1, 4, 16, 'chartreuse'],
         [5, 28, 6, 4, 'independence-day'],
@@ -29,7 +33,7 @@
     })();
   </script>
   <style>
-    /* Dracula-Tufte (muted) v1.71.0 */
+    /* Dracula-Tufte (muted) v1.72.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -867,6 +871,50 @@
         --mermaid-scheme: light-independence-day;
       }
     }
+    @media screen and (prefers-contrast: no-preference) {
+      :root[data-season="poland"] {
+        --surface:     oklch(0.240 0.062 22);
+        --surface-alt: oklch(0.190 0.052 20);
+        --on-surface:  oklch(0.975 0.006 90);
+        --code-bg:     oklch(0.295 0.068 22);
+        --label:       oklch(0.850 0.035 80);
+        --muted:       oklch(0.770 0.035 80);
+        --rule-light:  oklch(0.600 0.050 25);
+        --link:        oklch(0.815 0.085 82);
+        --orange:      oklch(0.800 0.130 82);
+        --red:         oklch(0.720 0.193 25);
+        --purple:      oklch(0.700 0.125 350);
+        --pink:        oklch(0.780 0.120 12);
+        --green:       oklch(0.800 0.100 100);
+        --data-1:      oklch(0.790 0.133 85);
+        --data-2:      oklch(0.742 0.112 25);
+        --data-3:      oklch(0.775 0.126 350);
+        --data-4:      oklch(0.790 0.109 75);
+        --mermaid-scheme: poland;
+      }
+    }
+    @media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference) {
+      :root[data-season="poland"] {
+        --surface:     oklch(0.952 0.020 25);
+        --surface-alt: oklch(0.915 0.028 25);
+        --on-surface:  oklch(0.200 0.030 22);
+        --code-bg:     oklch(0.935 0.022 25);
+        --label:       oklch(0.440 0.120 24);
+        --muted:       oklch(0.490 0.070 25);
+        --rule-light:  oklch(0.600 0.055 25);
+        --link:        oklch(0.470 0.060 75);
+        --orange:      oklch(0.500 0.075 70);
+        --red:         oklch(0.505 0.201 25);
+        --purple:      oklch(0.470 0.132 350);
+        --pink:        oklch(0.510 0.138 12);
+        --green:       oklch(0.470 0.068 100);
+        --data-1:      oklch(0.610 0.102 85);
+        --data-2:      oklch(0.630 0.161 25);
+        --data-3:      oklch(0.620 0.177 350);
+        --data-4:      oklch(0.610 0.084 75);
+        --mermaid-scheme: light-poland;
+      }
+    }
     @media (forced-colors: active) {
       code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node, .layer-end { border: 1px solid currentColor; }
       .hm { border: 1px solid CanvasText; }
@@ -1448,7 +1496,75 @@
         plotColorPalette:     '#3886e3',
       },
     };
-    const mermaidVars = new Map([['light', mermaidLightVars], ['christmas', mermaidChristmas], ['light-christmas', mermaidChristmasLight], ['thanksgiving', mermaidThanksgiving], ['light-thanksgiving', mermaidThanksgivingLight], ['chartreuse', mermaidChartreuse], ['light-chartreuse', mermaidChartreuseLight], ['st-patrick', mermaidStPatrick], ['light-st-patrick', mermaidStPatrickLight], ['independence-day', mermaidIndependenceDay], ['light-independence-day', mermaidIndependenceDayLight]]);
+    const mermaidPoland = {
+      background:           '#491d1d',
+      mainBkg:              '#491d1d',
+      primaryColor:         '#491d1d',
+      primaryTextColor:     '#f8f7f2',
+      primaryBorderColor:   '#d87ca9',
+      lineColor:            '#c0b29c',
+      textColor:            '#f8f7f2',
+      secondaryColor:       '#27080a',
+      clusterBkg:           '#491d1d',
+      clusterBorder:        '#9c7571',
+      nodeBorder:           '#d87ca9',
+      edgeLabelBackground:  '#491d1d',
+      noteBkgColor:         '#491d1d',
+      noteTextColor:        '#f8f7f2',
+      noteBorderColor:      '#9c7571',
+      archEdgeColor:        '#c0b29c',
+      archGroupBorderColor: '#9c7571',
+      xyChart: {
+        backgroundColor:    '#371111',
+        titleColor:         '#daccb5',
+        dataLabelColor:     '#f8f7f2',
+        legendTextColor:    '#f8f7f2',
+        xAxisLabelColor:    '#f8f7f2',
+        yAxisLabelColor:    '#f8f7f2',
+        xAxisTitleColor:    '#f8f7f2',
+        yAxisTitleColor:    '#f8f7f2',
+        xAxisTickColor:     '#c0b29c',
+        yAxisTickColor:     '#c0b29c',
+        xAxisLineColor:     '#c0b29c',
+        yAxisLineColor:     '#c0b29c',
+        plotColorPalette:   '#e2b349',
+      },
+    };
+    const mermaidPolandLight = {
+      background:           '#f8e4e2',
+      mainBkg:              '#f8e4e2',
+      primaryColor:         '#f8e4e2',
+      primaryTextColor:     '#221010',
+      primaryBorderColor:   '#8e3565',
+      lineColor:            '#84504c',
+      textColor:            '#221010',
+      secondaryColor:       '#f5dcda',
+      clusterBkg:           '#f8e4e2',
+      clusterBorder:        '#9f7470',
+      nodeBorder:           '#8e3565',
+      edgeLabelBackground:  '#f8e4e2',
+      noteBkgColor:         '#f8e4e2',
+      noteTextColor:        '#221010',
+      noteBorderColor:      '#9f7470',
+      archEdgeColor:        '#84504c',
+      archGroupBorderColor: '#9f7470',
+      xyChart: {
+        backgroundColor:    '#fceae8',
+        titleColor:         '#893130',
+        dataLabelColor:     '#221010',
+        legendTextColor:    '#221010',
+        xAxisLabelColor:    '#221010',
+        yAxisLabelColor:    '#221010',
+        xAxisTitleColor:    '#221010',
+        yAxisTitleColor:    '#221010',
+        xAxisTickColor:     '#84504c',
+        yAxisTickColor:     '#84504c',
+        xAxisLineColor:     '#84504c',
+        yAxisLineColor:     '#84504c',
+        plotColorPalette:   '#9f7e32',
+      },
+    };
+    const mermaidVars = new Map([['light', mermaidLightVars], ['christmas', mermaidChristmas], ['light-christmas', mermaidChristmasLight], ['thanksgiving', mermaidThanksgiving], ['light-thanksgiving', mermaidThanksgivingLight], ['chartreuse', mermaidChartreuse], ['light-chartreuse', mermaidChartreuseLight], ['st-patrick', mermaidStPatrick], ['light-st-patrick', mermaidStPatrickLight], ['independence-day', mermaidIndependenceDay], ['light-independence-day', mermaidIndependenceDayLight], ['poland', mermaidPoland], ['light-poland', mermaidPolandLight]]);
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',

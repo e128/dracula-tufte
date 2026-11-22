@@ -1,0 +1,63 @@
+{
+  "attributes" : {
+    "color" : "#cdc072"
+  },
+  "background" : {
+    "color" : "#371111"
+  },
+  "characters" : {
+    "color" : "#cdc072"
+  },
+  "commands" : {
+    "color" : "#debe82"
+  },
+  "comments" : {
+    "color" : "#c0b29c"
+  },
+  "highlight" : {
+    "color" : "#e7b551",
+    "usesSystemSetting" : false
+  },
+  "insertionPoint" : {
+    "color" : "#fa96a3",
+    "usesSystemSetting" : false
+  },
+  "invisibles" : {
+    "color" : "#744d4b"
+  },
+  "keywords" : {
+    "color" : "#fa96a3"
+  },
+  "lineHighlight" : {
+    "color" : "#431d1d"
+  },
+  "metadata" : {
+    "author" : "the maintainer",
+    "description" : "Dracula-Tufte (muted) theme for CotEditor.",
+    "distributionURL" : "https:\/\/github.com\/e128\/dracula-tufte",
+    "license" : "MIT"
+  },
+  "name" : "Dracula-Tufte (Dark)",
+  "numbers" : {
+    "color" : "#e7b551"
+  },
+  "selection" : {
+    "color" : "#debe8233",
+    "usesSystemSetting" : false
+  },
+  "strings" : {
+    "color" : "#cdc072"
+  },
+  "text" : {
+    "color" : "#f8f7f2"
+  },
+  "types" : {
+    "color" : "#f092bf"
+  },
+  "values" : {
+    "color" : "#e7b551"
+  },
+  "variables" : {
+    "color" : "#daccb5"
+  }
+}

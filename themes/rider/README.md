@@ -1,13 +1,14 @@
 # Dracula-Tufte (muted): JetBrains Rider theme
 
-Twenty-four artefacts, one palette, twelve appearances:
+Twenty-eight artefacts, one palette, fourteen appearances:
 
 - `dracula-tufte.icls` / `dracula-tufte-light.icls` / `dracula-tufte-xmas.icls` /
   `dracula-tufte-xmas-light.icls` / `dracula-tufte-thanksgiving.icls` /
   `dracula-tufte-thanksgiving-light.icls` / `dracula-tufte-chartreuse.icls` /
   `dracula-tufte-chartreuse-light.icls` / `dracula-tufte-st-patrick.icls` /
   `dracula-tufte-st-patrick-light.icls` / `dracula-tufte-independence-day.icls` /
-  `dracula-tufte-independence-day-light.icls`: editor colour scheme
+  `dracula-tufte-independence-day-light.icls` / `dracula-tufte-poland.icls` /
+  `dracula-tufte-poland-light.icls`: editor colour scheme
   (syntax, gutter, diff, console ANSI).
 - `dracula-tufte.theme.json` / `dracula-tufte-light.theme.json` /
   `dracula-tufte-xmas.theme.json` / `dracula-tufte-xmas-light.theme.json` /
@@ -15,7 +16,8 @@ Twenty-four artefacts, one palette, twelve appearances:
   `dracula-tufte-chartreuse.theme.json` / `dracula-tufte-chartreuse-light.theme.json` /
   `dracula-tufte-st-patrick.theme.json` / `dracula-tufte-st-patrick-light.theme.json` /
   `dracula-tufte-independence-day.theme.json` /
-  `dracula-tufte-independence-day-light.theme.json`: IDE chrome
+  `dracula-tufte-independence-day-light.theme.json` /
+  `dracula-tufte-poland.theme.json` / `dracula-tufte-poland-light.theme.json`: IDE chrome
   (tool windows, tabs, menus, popups, icons).
 
 Every hex here is the sRGB rendering of a `tufte-dracula.css` `:root` `oklch()` token:
@@ -23,7 +25,7 @@ dark from the base palette, light from its `prefers-color-scheme: light` overrid
 season from its dark or light `:root[data-season="<season>"]` block. The ANSI slots match
 `themes/ghostty/dracula-tufte` one-for-one, so the Rider console and the terminal agree.
 
-**IntelliJ Platform themes are one appearance per `theme.json`**, so this ships as twelve
+**IntelliJ Platform themes are one appearance per `theme.json`**, so this ships as fourteen
 complete themes rather than one theme that follows the system setting: `plugin.xml`
 registers each as its own `themeProvider` entry, and each names its own `editorScheme`.
 Pick whichever one you want from Settings → Appearance → Theme; Rider does not switch
@@ -36,7 +38,7 @@ convention. Those differences still need a rendered check in Rider.
 
 ## Rider 2026.3 Compatibility
 
-The generated dark, light, and dark plus light Christmas, Thanksgiving, Chartreuse, St Patrick and Independence Day theme JSON files load through
+The generated dark, light, and dark plus light Christmas, Thanksgiving, Chartreuse, St Patrick, Independence Day and Poland theme JSON files load through
 Rider 2026.3's native `UITheme` parser (build `263.7307.258`). Their UI color keys apply, and their
 `editorScheme` paths resolve to the packaged XML resources. This headless check
 verifies parsing and resource resolution, not scheme inheritance, icons, or rendered appearance.
@@ -47,7 +49,7 @@ You do not need an Islands parent or a descriptor change to include that build.
 
 ## These files are generated
 
-`scripts/create-themes.nu` writes all twenty-five (twelve `.icls`, twelve `theme.json`,
+`scripts/create-themes.nu` writes all twenty-nine (fourteen `.icls`, fourteen `theme.json`,
 one `plugin.xml`), plus the installable plugin, from the `.in` template beside each one.
 Edit the template, never the output.
 
