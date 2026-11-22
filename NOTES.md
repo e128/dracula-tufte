@@ -727,9 +727,9 @@ defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs fourteen checks: (1) hex projections in all four Mermaid palettes; (2) the
+`.github/palette-check.py` runs fourteen checks: (1) hex projections in all eight Mermaid palettes; (2) the
 `classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
-stray hex in `mermaid.js`; (5) the contrast floor in all six modes against three grounds, plus rules
+stray hex in `mermaid.js`; (5) the contrast floor in all ten modes against three grounds, plus rules
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
 and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for every parsed token
 in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
@@ -1213,13 +1213,15 @@ overrides it for the dark one). **The light scheme inheritance and checkbox icon
 rendered check in Rider.** Parsing theme JSON and resolving its bundled XML resource do not verify
 either difference. Do not treat a headless load check as visual verification.
 
-**The Christmas theme is a third `themeProvider` rendered from the `christmas` palette, and it
-does not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
-the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas` is
-picked by hand from the theme list, the way the light one is. It uses the dark Christmas block
-(pine surfaces), not the light Christmas block, and keeps the `.Dark` icon keys because it is
-dark-family. `scripts/create-themes.nu` renders it with `scheme: "christmas"`, which is the same
-`--dump` key `.github/palette-check.py` derives for Mermaid's `initChristmas` set.
+**Each seasonal theme is another `themeProvider` rendered from that season's palette, and it does
+not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
+the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas`,
+`dracula-tufte-chartreuse`, `dracula-tufte-st-patrick` and
+`dracula-tufte-independence-day` are
+picked by hand from the theme list, the way the light one is. Each uses the season's dark block,
+not its light block, and keeps the `.Dark` icon keys because it is dark-family.
+`scripts/create-themes.nu` renders each with its season name as `scheme`, which is the same
+`--dump` key `.github/palette-check.py` derives for Mermaid's `init<Season>` set.
 
 **Keep `since-build="223"` without an `until-build`.** The range includes Rider 2026.3's
 [branch 263](https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html).
@@ -1238,8 +1240,9 @@ existing file.
 season's dark block.** That is Rider, VS Code, Ghostty, CotEditor, opencode, tmux, iTerm2 and Zed.
 A season variant is the same dark-family projection the Christmas theme already used, repeated per
 season through the season name as `scheme` (or as a placeholder prefix; `resolve` treats any
-palette name as one, so Zed's single template holds `{{christmas:...}}` and
-`{{thanksgiving:...}}` objects beside its dark and light ones). **Do not make a theme follow the
+palette name as one, so Zed's single template holds `{{christmas:...}}`,
+`{{thanksgiving:...}}`, `{{st-patrick:...}}` and `{{independence-day:...}}` objects beside its dark
+and light ones). **Do not make a theme follow the
 calendar**, for the same reason it is not done for Christmas: a theme cannot read the date, and a
 plugin that rewrote the selected theme by date would override the reader's own choice. A target
 whose template carries no appearance name inside it (CotEditor, opencode) points its seasonal row
@@ -1870,7 +1873,7 @@ PR instead.
 
 **Two gates cover the modes, covering different halves, neither a screenshot diff** (layout is
 identical across modes, only color moves). `.github/palette-check.py` check 5 re-derives the contrast
-floor for all eight palettes on every run, overlaying each mode block's overrides on the default
+floor for every palette on every run, overlaying each mode block's overrides on the default
 palette the way the cascade actually resolves it. `.github/render-modes.py` covers that the palette
 **arrives**: **headless Chrome cannot be told which media query to match** (`--force-dark-mode` etc.
 all leave the OS's own result unchanged), so each render rewrites **every** mode condition in a
@@ -1895,9 +1898,10 @@ reorder the two blocks.**
 
 **Each seasonal palette is a pair of `:root[data-season="<season>"]` blocks, and the stylesheet never
 sets the attribute.** CSS cannot read a date, so a consumer sets it. The head snippet in `CONTRACT.md`
-§ 1 does that from the reader's local calendar: Thanksgiving from 1 November through the fourth
-Thursday of November, and Christmas from the fourth Friday of November through 28 December, both
-inclusive. The fourth Thursday is Thanksgiving Day, and the fourth Friday falls on the next day
+§ 1 does that from the reader's local calendar: St Patrick from 1 March through 17 March, Chartreuse
+from 1 May through 16 May, Independence Day from 28 June through 4 July, Thanksgiving from
+1 November through the fourth Thursday of November, and Christmas from the fourth Friday of
+November through 28 December, all inclusive. The fourth Thursday is Thanksgiving Day, and the fourth Friday falls on the next day
 except in a year where 1 November is a Friday. Rows are checked in order and the first match wins,
 so Thanksgiving keeps those days and Christmas starts the day after its end. The rows live in `SEASON_RANGES` in
 `scripts/build-sample.nu`, so the fixtures, the preview pair and the display name all follow one edit.
@@ -1914,7 +1918,7 @@ refused for the same reason: a second theming convention for one request.
 **The season yields to contrast and print by media condition, not by cascade order.** The attribute
 selector outranks the contrast and print `:root` blocks on specificity, so the guard is the
 condition: `screen` and `prefers-contrast: no-preference`. **Do not remove either half**, and do not
-build a Christmas high-contrast palette. It is the same stance as light mode and high contrast not
+build a seasonal high-contrast palette. It is the same stance as light mode and high contrast not
 composing.
 
 **Dark Christmas turns the surfaces pine, and light Christmas turns them cream.** The accents remap
@@ -1933,13 +1937,44 @@ more than twice the render tolerance; three creams inside that tolerance would l
 pass the wrong palette. The dark surface stays a warm near-black (`#291b0f`), distinct from the
 Christmas pine. Both blocks restate every token they change and hold the same floors and bands.
 
-**`--mermaid-scheme` takes six values** (`dark`, `light`, `christmas`, `light-christmas`,
-`thanksgiving`, `light-thanksgiving`), and `mermaid.js` carries six hex maps. There is no seasonal
+**St Patrick turns the dark surfaces shamrock and the light ones mint.** The dark surface is a deep
+saturated green (`#02331d`) rather than the desaturated Christmas pine, and the light surface is a
+cool mint (`#d6f7dc`) rather than one of the warm creams or the chartreuse field, so
+`render-modes.py` can tell all four apart. The accents remap to gold (`--orange`, `#e4b24d`) and
+shamrock (`--purple` and `--green` at two nearby hues), with the usual blue link and rose status
+roles. Both blocks restate every token they change and hold the mode's floor, the pinned data
+fractions and the light accent band. Gold is an accent, never a ground: light text on a gold fill
+would not clear the floor.
+
+**Independence Day turns the dark surfaces navy and the light ones pale blue.** The dark ground
+(`#101d38`) is a cooler, bluer near-black than the default slate and the Christmas pine; the light
+ground (`#e8f3ff`) is a pale blue, distinct from the warm creams and the two green fields. Accents
+remap to flag blue (`--purple`), flag red (`--pink` and `--red`), a teal `--green` for status, and
+gold `--orange` for the caution role. Both blocks hold the mode floor, the pinned data fractions and
+the light accent band. Dark `--purple` sits at a lower lightness than the other seasons so its
+`--purple-bright` derivation still fits the P3 ceiling at L + 0.07.
+
+**Chartreuse starts from the swatches and is muted for this palette.** Dark is green chartreuse:
+the surface is a shade of Vintage Chartreuse (`#9BA434`, rendered `#4d5208`), `--purple` is the
+Yellow-Green swatch (`#9ACD32`, rendered `#b5df76`), and `--green` is Vintage Chartreuse at accent
+lightness (`#c9d374`). Light is yellow chartreuse: the surface is `#CDE62E` (rendered `#cce630`),
+between Pear `#D1E231` and the `#CAE415` shade, with `--purple` near the `#62673D` shade and
+`--orange` from Peridot (`#E6E200`) pulled to text lightness. Chroma is reduced to clear the
+contrast floor and the 55 to 65 percent light accent band, so the rendered hex is a muted projection
+rather than the raw swatch. Do not paste a swatch hex into a token. **The two grounds are mid-tone
+by design**: the light page is the vivid chartreuse field, and the dark page is the olive ground
+rather than a near-black, so every accent in both blocks is darkened or lightened to keep its floor.
+The dark block also restates `--highlight` at `calc(l - 0.10)` of its orange, because a wash of the
+lighter accent behind light text measured below 4.5:1 at the inherited shift.
+
+**`--mermaid-scheme` takes twelve values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
+`chartreuse`, `light-chartreuse`, `independence-day`, `light-independence-day`, `christmas`,
+`light-christmas`, `thanksgiving`, `light-thanksgiving`), and `mermaid.js` carries twelve hex maps. There is no seasonal
 `classDef` set: the ban on a `classDef` hex line for a page that follows appearance covers a page
 that follows the date too.
 
 **Three kinds of page carry a season.** The dark fixtures carry the snippet, so each turns seasonal
-inside a window. The four light previews never show one. The four season previews set the attribute
+inside a window. The four light previews never show one. The ten season previews set the attribute
 in markup and rewrite the season conditions to `@media screen`, so the date and the contrast setting
 stop mattering and print keeps its own palette. `.github/season-probe.py` runs the verbatim snippet
 against a mocked clock at every window edge in three time zones, and it must keep doing so: a bound

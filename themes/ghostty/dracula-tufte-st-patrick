@@ -1,0 +1,37 @@
+# Dracula-Tufte (muted) St Patrick: Ghostty theme
+#
+# Every value is the sRGB rendering of a tufte-dracula.css :root oklch() token,
+# computed with .github/palette-check.py's oklch_to_hex. Values come from the
+# seasonal block behind data-season="st-patrick". Bright ANSI slots that have no
+# token of their own are the same hue and chroma at L + 0.07.
+#
+# This is a seasonal theme selected by hand, not a calendar switch.
+#
+# Install: copy this file to ~/.config/ghostty/themes/, then set
+#          `theme = dracula-tufte-st-patrick` in ~/.config/ghostty/config.
+
+background = #02331d
+foreground = #f4f9f0
+
+cursor-color = #e484b3
+cursor-text = #02331d
+
+selection-background = #23543a
+selection-foreground = #f4f9f0
+
+palette = 0=#012514
+palette = 1=#ff7a7e
+palette = 2=#7bd77f
+palette = 3=#d7b767
+palette = 4=#97bef0
+palette = 5=#61da92
+palette = 6=#93c7d9
+palette = 7=#b5d5b5
+palette = 8=#708d79
+palette = 9=#ffa2a2
+palette = 10=#92ee95
+palette = 11=#e4b24d
+palette = 12=#b3d4ff
+palette = 13=#e484b3
+palette = 14=#a9def0
+palette = 15=#f9fef5

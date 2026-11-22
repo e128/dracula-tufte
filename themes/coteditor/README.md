@@ -1,8 +1,9 @@
 # Dracula-Tufte (muted): CotEditor theme
 
 Two `.cottheme` files for the plain palette, one per appearance, plus one seasonal dark
-file per season: `Dracula-Tufte Christmas (Dark).cottheme` and
-`Dracula-Tufte Thanksgiving (Dark).cottheme`. CotEditor pairs two themes whose names differ
+file per season: `Dracula-Tufte St Patrick (Dark).cottheme`,
+`Dracula-Tufte Chartreuse (Dark).cottheme`, `Dracula-Tufte Independence Day (Dark).cottheme`,
+`Dracula-Tufte Christmas (Dark).cottheme` and `Dracula-Tufte Thanksgiving (Dark).cottheme`. CotEditor pairs two themes whose names differ
 only by a trailing ` (Dark)` or ` (Light)`, so the plain pair switches with the window
 appearance once both are installed and Appearance is set to Match System. The space before
 the parenthesis is part of the name. A seasonal file carries the ` (Dark)` suffix because
@@ -11,7 +12,7 @@ it uses the season's dark block, and it is selected by hand rather than by date.
 ## Generated, do not hand-edit
 
 `scripts/create-themes.nu` writes every file from the dark or light `.in` template beside
-the plain pair. The two seasonal files reuse the dark template, because a `.cottheme`
+the plain pair. The seasonal files reuse the dark template, because a `.cottheme`
 carries no appearance name inside it and the file name is the whole difference. Edit the
 template.
 

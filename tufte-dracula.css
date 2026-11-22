@@ -1,5 +1,5 @@
   <style>
-    /* Dracula-Tufte (muted) v1.69.0 */
+    /* Dracula-Tufte (muted) v1.70.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -702,6 +702,139 @@
         --data-3:      oklch(0.600 0.156 145);
         --data-4:      oklch(0.619 0.083 85);
         --mermaid-scheme: light-thanksgiving;
+      }
+    }
+    @media screen and (prefers-contrast: no-preference) {
+      :root[data-season="chartreuse"] {
+        --surface:     oklch(0.420 0.090 114);
+        --surface-alt: oklch(0.370 0.080 114);
+        --on-surface:  oklch(0.975 0.014 110);
+        --code-bg:     oklch(0.390 0.085 114);
+        --label:       oklch(0.900 0.060 112);
+        --muted:       oklch(0.840 0.055 112);
+        --rule-light:  oklch(0.760 0.050 114);
+        --link:        oklch(0.840 0.060 195);
+        --orange:      oklch(0.820 0.116 85);
+        --highlight:   oklch(from var(--orange) calc(l - 0.10) c h / 0.35);
+        --red:         oklch(0.830 0.106 20);
+        --purple:      oklch(0.850 0.140 127);
+        --pink:        oklch(0.840 0.110 350);
+        --green:       oklch(0.840 0.120 114);
+        --data-1:      oklch(0.790 0.083 255);
+        --data-2:      oklch(0.742 0.116 12);
+        --data-3:      oklch(0.775 0.182 150);
+        --data-4:      oklch(0.790 0.106 88);
+        --mermaid-scheme: chartreuse;
+      }
+    }
+    @media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference) {
+      :root[data-season="chartreuse"] {
+        --surface:     oklch(0.877 0.192 118);
+        --surface-alt: oklch(0.845 0.190 118);
+        --on-surface:  oklch(0.190 0.014 118);
+        --code-bg:     oklch(0.905 0.180 118);
+        --label:       oklch(0.380 0.070 118);
+        --muted:       oklch(0.420 0.070 118);
+        --rule-light:  oklch(0.560 0.080 118);
+        --link:        oklch(0.420 0.046 220);
+        --orange:      oklch(0.450 0.064 85);
+        --red:         oklch(0.470 0.187 25);
+        --purple:      oklch(0.430 0.068 118);
+        --pink:        oklch(0.470 0.127 10);
+        --green:       oklch(0.430 0.079 130);
+        --data-1:      oklch(0.540 0.162 255);
+        --data-2:      oklch(0.540 0.144 345);
+        --data-3:      oklch(0.540 0.127 150);
+        --data-4:      oklch(0.540 0.073 88);
+        --mermaid-scheme: light-chartreuse;
+      }
+    }
+    @media screen and (prefers-contrast: no-preference) {
+      :root[data-season="st-patrick"] {
+        --surface:     oklch(0.285 0.065 158);
+        --surface-alt: oklch(0.235 0.054 158);
+        --on-surface:  oklch(0.975 0.012 130);
+        --code-bg:     oklch(0.335 0.070 158);
+        --label:       oklch(0.840 0.055 145);
+        --muted:       oklch(0.760 0.050 145);
+        --rule-light:  oklch(0.615 0.045 155);
+        --link:        oklch(0.800 0.060 220);
+        --orange:      oklch(0.790 0.130 82);
+        --red:         oklch(0.735 0.181 20);
+        --purple:      oklch(0.800 0.150 155);
+        --pink:        oklch(0.730 0.130 350);
+        --green:       oklch(0.800 0.150 145);
+        --data-1:      oklch(0.790 0.083 255);
+        --data-2:      oklch(0.742 0.147 345);
+        --data-3:      oklch(0.775 0.182 150);
+        --data-4:      oklch(0.790 0.106 88);
+        --mermaid-scheme: st-patrick;
+      }
+    }
+    @media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference) {
+      :root[data-season="st-patrick"] {
+        --surface:     oklch(0.945 0.050 150);
+        --surface-alt: oklch(0.910 0.055 150);
+        --on-surface:  oklch(0.190 0.020 155);
+        --code-bg:     oklch(0.930 0.045 150);
+        --label:       oklch(0.440 0.060 155);
+        --muted:       oklch(0.490 0.055 155);
+        --rule-light:  oklch(0.600 0.045 155);
+        --link:        oklch(0.490 0.054 220);
+        --orange:      oklch(0.500 0.070 82);
+        --red:         oklch(0.520 0.207 25);
+        --purple:      oklch(0.460 0.090 155);
+        --pink:        oklch(0.520 0.131 12);
+        --green:       oklch(0.470 0.121 145);
+        --data-1:      oklch(0.618 0.160 255);
+        --data-2:      oklch(0.643 0.171 345);
+        --data-3:      oklch(0.600 0.141 150);
+        --data-4:      oklch(0.619 0.083 88);
+        --mermaid-scheme: light-st-patrick;
+      }
+    }
+    @media screen and (prefers-contrast: no-preference) {
+      :root[data-season="independence-day"] {
+        --surface:     oklch(0.235 0.055 264);
+        --surface-alt: oklch(0.185 0.050 264);
+        --on-surface:  oklch(0.975 0.010 250);
+        --code-bg:     oklch(0.285 0.060 264);
+        --label:       oklch(0.840 0.040 250);
+        --muted:       oklch(0.760 0.040 250);
+        --rule-light:  oklch(0.600 0.045 255);
+        --link:        oklch(0.800 0.060 230);
+        --orange:      oklch(0.790 0.120 75);
+        --red:         oklch(0.735 0.181 20);
+        --purple:      oklch(0.720 0.113 265);
+        --pink:        oklch(0.730 0.140 10);
+        --green:       oklch(0.800 0.110 175);
+        --data-1:      oklch(0.790 0.083 255);
+        --data-2:      oklch(0.742 0.147 345);
+        --data-3:      oklch(0.775 0.182 150);
+        --data-4:      oklch(0.790 0.106 88);
+        --mermaid-scheme: independence-day;
+      }
+    }
+    @media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference) {
+      :root[data-season="independence-day"] {
+        --surface:     oklch(0.960 0.020 250);
+        --surface-alt: oklch(0.925 0.030 250);
+        --on-surface:  oklch(0.190 0.020 260);
+        --code-bg:     oklch(0.945 0.025 250);
+        --label:       oklch(0.440 0.050 260);
+        --muted:       oklch(0.490 0.045 260);
+        --rule-light:  oklch(0.600 0.040 260);
+        --link:        oklch(0.490 0.067 240);
+        --orange:      oklch(0.500 0.070 75);
+        --red:         oklch(0.520 0.207 25);
+        --purple:      oklch(0.460 0.190 265);
+        --pink:        oklch(0.520 0.131 10);
+        --green:       oklch(0.470 0.072 175);
+        --data-1:      oklch(0.618 0.160 255);
+        --data-2:      oklch(0.643 0.171 345);
+        --data-3:      oklch(0.600 0.141 150);
+        --data-4:      oklch(0.619 0.083 88);
+        --mermaid-scheme: light-independence-day;
       }
     }
     @media (forced-colors: active) {

@@ -1,10 +1,11 @@
 # Dracula-Tufte (muted): Zed theme
 
-One file, schema `v0.2.0`: 148 style keys, 43 syntax slots, 7 player colours, four
+One file, schema `v0.2.0`: 148 style keys, 43 syntax slots, 7 player colours, seven
 themes. Zed's `themes` array already holds more than one theme per file, so dark, light,
-Christmas and Thanksgiving are four entries in the same array (`"appearance": "dark"` or
+Christmas, Thanksgiving, Chartreuse, St Patrick and Independence Day are seven entries in the same array
+(`"appearance": "dark"` or
 `"light"`) rather than separate files: no other target in `themes/` gets this for free.
-The two seasonal themes use the season's dark block and are selected by hand.
+The five seasonal themes use the season's dark block and are selected by hand.
 
 ## Generated, do not hand-edit
 
@@ -23,8 +24,10 @@ cp themes/zed/dracula-tufte.json ~/.config/zed/themes/
 ```
 
 Zed picks it up without a restart. `cmd-k cmd-t`, then **Dracula-Tufte (muted)**,
-**Dracula-Tufte (muted) Light**, **Dracula-Tufte (muted) Christmas** or
-**Dracula-Tufte (muted) Thanksgiving**; **Theme: Auto** follows the system appearance and
+**Dracula-Tufte (muted) Light**, **Dracula-Tufte (muted) Christmas**, **Dracula-Tufte (muted) Thanksgiving**,
+**Dracula-Tufte (muted) Chartreuse**, **Dracula-Tufte (muted) St Patrick** or
+**Dracula-Tufte (muted) Independence Day**;
+**Theme: Auto** follows the system appearance and
 picks between dark and light on its own, since both live in the one installed file.
 
 ## Role mapping

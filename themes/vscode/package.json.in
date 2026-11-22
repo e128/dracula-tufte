@@ -31,6 +31,21 @@
         "label": "Dracula-Tufte (muted) Thanksgiving",
         "uiTheme": "vs-dark",
         "path": "./themes/dracula-tufte-thanksgiving-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Chartreuse",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-chartreuse-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) St Patrick",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-st-patrick-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Independence Day",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-independence-day-color-theme.json"
       }
     ]
   },

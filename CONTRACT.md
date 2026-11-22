@@ -44,8 +44,11 @@ with no script to open it is dead markup.
 so a reader can see the light palette on a dark-mode machine. They carry a stylesheet whose
 `@media` conditions were rewritten to force that, so a copy taken from one of them is locked to
 light and can never follow a reader's system appearance. Each says so in a banner.
-`samples/christmas-dark.html`, `samples/christmas-light.html`, `samples/thanksgiving-dark.html` and
-`samples/thanksgiving-light.html` are the same kind of page for the
+`samples/christmas-dark.html`, `samples/christmas-light.html`, `samples/thanksgiving-dark.html`,
+`samples/thanksgiving-light.html`, `samples/chartreuse-dark.html`,
+`samples/chartreuse-light.html`, `samples/st-patrick-dark.html`,
+`samples/st-patrick-light.html`, `samples/independence-day-dark.html` and
+`samples/independence-day-light.html` are the same kind of page for the
 [seasonal theme](#seasonal-theme-optional): each pair forces one season for any date and any system
 setting, so a copy taken from one of them is locked to that season. None is the payload.
 `samples/dark.html`, `samples/dark-conn-map.html`, `samples/dark-timeline.html` and
@@ -62,11 +65,11 @@ nothing after it.
 
 ### Seasonal Theme (Optional)
 
-`tufte-dracula.css` carries two seasonal palettes that stay off until `<html>` carries
-`data-season`. The attribute value names the season: `"thanksgiving"` or `"christmas"`. The
-stylesheet never sets that attribute. **A page turns a theme on by date only after its generator
-adds the head snippet below.** Inlining a newer stylesheet into a page that has no snippet changes
-nothing, so no consumer gets a season until it adds the snippet.
+`tufte-dracula.css` carries five seasonal palettes that stay off until `<html>` carries
+`data-season`. The attribute value names the season: `"st-patrick"`, `"chartreuse"`,
+`"independence-day"`, `"thanksgiving"` or `"christmas"`. The stylesheet never sets that attribute. **A page turns a theme on by date only
+after its generator adds the head snippet below.** Inlining a newer stylesheet into a page that has
+no snippet changes nothing, so no consumer gets a season until it adds the snippet.
 
 Emit the snippet as a classic inline `<script>`, before the `<style>` block and before every
 `<script type="module">`:
@@ -80,6 +83,9 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
         return new Date(y, m, 1 + ((w - d.getDay() + 7) % 7) + (n - 1) * 7).getDate();
       }
       var ranges = [
+        [2, 1, 2, 17, 'st-patrick'],
+        [4, 1, 4, 16, 'chartreuse'],
+        [5, 28, 6, 4, 'independence-day'],
         [10, 1, 10, nthWeekday(year, 10, 4, 4), 'thanksgiving'],
         [10, nthWeekday(year, 10, 5, 4), 11, 28, 'christmas'],
       ];
@@ -94,17 +100,18 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
   </script>
 ```
 
-- **Thanksgiving runs from November 1 through the fourth Thursday of November, and Christmas from
-  the fourth Friday of November through December 28, all inclusive.** The fourth Thursday is
-  Thanksgiving Day. `nthWeekday` resolves both Thursdays and Fridays in the visitor's own year,
-  so the windows track the calendar. That also covers the years where November 1 is a Friday and
-  the fourth Friday falls before the fourth Thursday: rows are checked in order and the first
-  match wins, so Thanksgiving keeps those days and Christmas starts the day after its end.
-  December 29 through 31 belong to no season. The snippet reads the visitor's local calendar once,
-  at page load. A page left open past midnight keeps its theme until the next load. To change a
-  window, edit that row in `ranges`. `getMonth()` counts from zero, so `10` is November and `11` is
-  December, and `getDay()` counts from Sunday, so `4` is Thursday and `5` is Friday. A date in no
-  row leaves the attribute off.
+- **St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16,
+  Independence Day from June 28 through July 4, Thanksgiving from November 1 through the fourth
+  Thursday of November, and Christmas from the fourth Friday of November through December 28, all
+  inclusive.** The fourth Thursday is Thanksgiving Day. `nthWeekday` resolves both Thursdays and
+  Fridays in the visitor's own year, so the Thanksgiving and Christmas windows track the calendar.
+  That also covers the years where November 1 is a Friday and the fourth Friday falls before the
+  fourth Thursday: rows are checked in order and the first match wins, so Thanksgiving keeps those
+  days and Christmas starts the day after its end. December 29 through 31 belong to no season. The
+  snippet reads the visitor's local calendar once, at page load. A page left open past midnight
+  keeps its theme until the next load. To change a window, edit that row in `ranges`. `getMonth()`
+  counts from zero, so `4` is May, `10` is November and `11` is December, and `getDay()` counts
+  from Sunday, so `4` is Thursday and `5` is Friday. A date in no row leaves the attribute off.
 - **Keep the snippet classic and first.** `mermaid.js` reads `--mermaid-scheme` once, when its
   module evaluates. A classic inline script runs as the parser reaches it, so the attribute is on
   `<html>` before any module runs. A `type="module"`, `defer` or `async` snippet, or one placed
@@ -113,6 +120,7 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 - **The theme yields to the reader.** It applies on the `screen` media type and only when the
   reader states no contrast preference, so high contrast and print keep their own palettes.
 - **Omit the snippet to opt out.** To force a season on every date, write
+  `data-season="st-patrick"`, `data-season="chartreuse"`, `data-season="independence-day"`,
   `data-season="thanksgiving"` or `data-season="christmas"` on `<html>` and omit the snippet, which
   is how the season preview pages work. A page under a `script-src` policy needs a nonce or a hash
   for the snippet. A blocked snippet leaves the standard palette, with no error visible to the
@@ -127,8 +135,8 @@ compares it with the one above, and runs it in a browser against a mocked clock.
 
 ### Adding a New Date-Range Palette
 
-A season beyond Christmas follows the same shape, and the mode names are a convention the drift
-gate depends on: the attribute value is the season name, `--mermaid-scheme` takes `<season>` and
+A season beyond the five shipped follows the same shape, and the mode names are a convention the
+drift gate depends on: the attribute value is the season name, `--mermaid-scheme` takes `<season>` and
 `light-<season>`, and `.github/palette-check.py` keys its `SEASONS` row by the season name. The
 steps, in order:
 
@@ -543,6 +551,7 @@ release that changed nothing: add the row in the release commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.70.0 | nothing is required. **Three seasonal palettes ship behind `data-season` values, and nothing you already emit changes.** St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16, and Independence Day from June 28 through July 4. A page without the head snippet in § 1 never turns them on; to follow the calendar, paste the updated snippet before the `<style>` block. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains one dark-family variant per season, selected by hand. None of them is part of the payload. |
 | v1.68.0 | nothing. **The seasonal date windows move and the theme targets gain season variants.** Thanksgiving now runs from November 1 through the fourth Thursday of November, and Christmas from the fourth Friday of November through December 28, resolved in the visitor's local year. A page that pasted the v1.63 snippet keeps its old fixed windows until it copies the block in § 1 again; the palette blocks themselves are unchanged. December 29 through 31 now belong to no season. `themes/` adds a Thanksgiving variant in every template-bearing target, and a Christmas variant where one was missing. None of them is part of the payload. |
 | v1.63.0 | nothing is required. **A seasonal Christmas palette ships behind `data-season="christmas"`, and nothing you already emit changes.** A page without the head snippet in § 1 never turns it on, so inlining the new stylesheet alone is a no-op. To get the palette by date, paste that snippet before the `<style>` block. It covers 11 November to 26 December in the reader's local calendar. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Keep the snippet a classic script and keep it first: `mermaid.js` reads `--mermaid-scheme` once at load, so a snippet that runs later paints a default diagram on a Christmas page. The ban on a `classDef name fill:#hex` line on a page that follows appearance now covers a page that follows the date as well. |
 | v1.62.1 | nothing. **Rider compatibility documentation only.** The theme descriptor already includes Rider 2026.3, and the native parser check verifies theme JSON and bundled resource resolution. The stylesheet changes only in its version stamp; the inlined scripts and theme templates keep their payload bytes from v1.62.0. No markup or token change |
@@ -552,7 +561,6 @@ release that changed nothing: add the row in the release commit itself.
 | v1.59.1 | nothing. **A recut of the v1.59.0 payload.** v1.59.0 reached `main` by direct push, so this release reissued the same bytes from a commit that landed through a pull request with the contract check green. Only the version stamp and the generated files change: regenerate pages whose inline stylesheet predates this payload |
 | v1.59.0 | nothing. **The sheet sets five type steps and no other size.** Body stays the fluid `clamp(1rem, 0.95rem + 0.25vw, 1.25rem)`, which reads 16 to 18.8px. Small text is `0.8125rem` (13px), captions and interface text `1rem` (16px), a section heading and a lead `1.2em` (23px), display `1.75em` (33px). The intermediate 12, 14, 15, 17, 18, 21 and 25px steps are gone, and the small steps are rem-based so nested text cannot compound into a sixth size. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
 | v1.58.3 | nothing. **A `table.bar-chart` fills the page measure** instead of hugging a `12rem` bar column: the table takes `display: table`, `inline-size: 100%`, and a fixed layout with a 30% label column, so the bars read against the page grid and a long section label wraps rather than widening the table. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
-| v1.58.2 | nothing. **The sheet reserves the scrollbar track on both edges** (`scrollbar-gutter: stable both-edges` on `html`), so a page short enough to fit and one long enough to scroll share one centred frame instead of shifting left by half a classic scrollbar. No markup change, no new token, and no measure change: `--page-width` and `--gutter` keep their values, so regenerate pages whose inline stylesheet predates this payload and nothing else |
 ## 4. Regenerate on a byte compare, not a version string
 
 A version comment is not a staleness signal. A generated file can carry a current comment over

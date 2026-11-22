@@ -1,11 +1,14 @@
 # Dracula-Tufte (muted): VS Code theme
 
-Six files: `package.json` (the extension manifest), `extension.vsixmanifest`
-(the VSIX container manifest), and four color themes under `themes/`: dark
+Nine files: `package.json` (the extension manifest), `extension.vsixmanifest`
+(the VSIX container manifest), and seven color themes under `themes/`: dark
 (`dracula-tufte-color-theme.json`), light (`dracula-tufte-light-color-theme.json`),
-Christmas (`dracula-tufte-christmas-color-theme.json`) and Thanksgiving
-(`dracula-tufte-thanksgiving-color-theme.json`), each holding workbench colors plus
-TextMate scopes. `package.json`'s `contributes.themes` lists all four, light with
+Christmas (`dracula-tufte-christmas-color-theme.json`), Thanksgiving
+(`dracula-tufte-thanksgiving-color-theme.json`), Chartreuse
+(`dracula-tufte-chartreuse-color-theme.json`), St Patrick
+(`dracula-tufte-st-patrick-color-theme.json`) and Independence Day
+(`dracula-tufte-independence-day-color-theme.json`), each holding workbench colors plus
+TextMate scopes. `package.json`'s `contributes.themes` lists all seven, light with
 `uiTheme: vs` and the rest with `uiTheme: vs-dark`; VS Code's own "Auto Detect Color
 Scheme" setting is what switches between dark and light with the OS, same as any other
 extension shipping both appearances. A seasonal theme is selected by hand and does not
@@ -13,7 +16,7 @@ follow the calendar.
 
 ## Generated, do not hand-edit
 
-`scripts/create-themes.nu` writes all six from the `.in` template beside
+`scripts/create-themes.nu` writes all seven from the `.in` template beside
 each one, then packages `dist/dracula-tufte-vscode-<version>.vsix`, the same
 way it packages the Rider plugin zip. Edit the template, never the rendered
 file or the `.vsix`.
@@ -36,7 +39,9 @@ code --install-extension themes/vscode/dist/dracula-tufte-vscode-<version>.vsix
 Or, from the Extensions view: `...` menu -> **Install from VSIX...** -> pick
 the file. Either way, reload when prompted, then `Ctrl/Cmd+K Ctrl/Cmd+T` and
 pick **Dracula-Tufte (muted)**, **Dracula-Tufte (muted) Light**,
-**Dracula-Tufte (muted) Christmas** or **Dracula-Tufte (muted) Thanksgiving**.
+**Dracula-Tufte (muted) Christmas**, **Dracula-Tufte (muted) Thanksgiving**,
+**Dracula-Tufte (muted) Chartreuse**, **Dracula-Tufte (muted) St Patrick** or
+**Dracula-Tufte (muted) Independence Day**.
 
 There is still no marketplace listing, so this is the only install path aside
 from the unpacked folder below.
