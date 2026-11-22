@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.e128.dracula-tufte</id>
   <name>Dracula-Tufte (muted)</name>
-  <version>1.70.0</version>
+  <version>1.71.0</version>
   <vendor>e128</vendor>
 
   <description><![CDATA[
@@ -24,5 +24,10 @@
     <themeProvider id="com.e128.dracula-tufte-chartreuse" path="/dracula-tufte-chartreuse.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-st-patrick" path="/dracula-tufte-st-patrick.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-independence-day" path="/dracula-tufte-independence-day.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-xmas-light" path="/dracula-tufte-xmas-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-thanksgiving-light" path="/dracula-tufte-thanksgiving-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-chartreuse-light" path="/dracula-tufte-chartreuse-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-st-patrick-light" path="/dracula-tufte-st-patrick-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-independence-day-light" path="/dracula-tufte-independence-day-light.theme.json" />
   </extensions>
 </idea-plugin>

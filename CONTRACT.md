@@ -166,7 +166,9 @@ steps, in order:
    template with every placeholder prefixed `{{<season>:...}}`. Register the Rider
    `themeProvider`, the VS Code label and the `.vsix` entry list, and the Rider jar staging list.
    A target whose template carries no appearance name (CotEditor, opencode) reuses its dark
-   template for the seasonal row. The render already resolves any `--dump` key as a prefix or as
+   template for the seasonal row. Rider also gets a second row per season for each of its two
+   files, rendered with `scheme: "light-<season>"` from a `-light` template, and the matching
+   `themeProvider` and jar entries. The render already resolves any `--dump` key as a prefix or as
    `scheme`.
 7. Add the new season's windows and expectations to `CASES` in `.github/season-probe.py`. The probe
    drives the whole snippet, so its expectations stay literal and it catches a range that is off by
