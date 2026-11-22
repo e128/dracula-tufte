@@ -74,7 +74,7 @@ A preview page is not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.70.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.71.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -93,7 +93,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.70.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.71.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -155,16 +155,17 @@ override. opencode and tmux ship dark only: their theme formats have no appearan
 holds a single hand-copied string.
 
 **Every target in the table except Slack also ships one variant per season**, projected from that
-season's dark block, so it stays dark-family even in light mode. A season variant is selected by
-hand, not by the calendar. [Seasonal previews](#seasonal-previews) lists the seasons. In the
+season's dark block, so it stays dark-family even in light mode. Rider adds a light variant of
+each season beside the dark one, so its plugin carries every appearance. A season variant is
+selected by hand, not by the calendar. [Seasonal previews](#seasonal-previews) lists the seasons. In the
 table, `<season>` is the season's `data-season` value, except that Rider and Ghostty spell
-Christmas `xmas` in filenames. A new season adds one file per target, or one more theme object in
-Zed's single file, plus the steps in CONTRACT.md's
+Christmas `xmas` in filenames. A new season adds one file per target (two for Rider, dark and
+light), or one more theme object in Zed's single file, plus the steps in CONTRACT.md's
 [Adding a New Date-Range Palette](CONTRACT.md#adding-a-new-date-range-palette).
 
 | Theme | Files | Modes | Season variants | Install |
 | --- | --- | --- | --- | --- |
-| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light) | dark + light | `dracula-tufte-<season>.theme.json`/`.icls` | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
+| **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light) | dark + light | `dracula-tufte-<season>.theme.json`/`.icls` and `dracula-tufte-<season>-light.theme.json`/`.icls` | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
 | **Zed** | `dracula-tufte.json` (one file, all themes) | dark + light | `Dracula-Tufte (muted) <Season>` object in the same file | Copy to `~/.config/zed/themes/` |
 | **Ghostty** | `dracula-tufte`, `dracula-tufte-light` | dark + light | `dracula-tufte-<season>` | Copy to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light`; pick a seasonal theme by hand |
 | **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme` | dark + light | `Dracula-Tufte <Season> (Dark).cottheme` | Settings, Appearance, gear, Import the themes you want; the plain pair switches with the window appearance |

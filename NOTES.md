@@ -1203,25 +1203,32 @@ object renders unchanged and the light one, alongside it in the same template, p
 placeholder with `light:`. Do not invent a third shape for a future target before checking which of
 these two its schema actually is.
 
-**Rider ships three complete themes, not one that follows the system or the calendar**:
+**Rider ships twelve complete themes, not one that follows the system or the calendar**:
 IntelliJ Platform themes are one appearance per `theme.json`, so `plugin.xml` registers a
-`themeProvider` for each, and the light `.icls` inherits IntelliJ's built-in `Default` scheme
-(`parent_scheme="Default"`) where the dark and Christmas ones inherit `Darcula`. The light
-`theme.json`'s four `Checkbox.*` icon keys drop the `.Dark` suffix the dark and Christmas copies
-carry, per JetBrains' icon palette convention (a bare key is the light-icon asset, `.Dark`
-overrides it for the dark one). **The light scheme inheritance and checkbox icons still need a
-rendered check in Rider.** Parsing theme JSON and resolving its bundled XML resource do not verify
-either difference. Do not treat a headless load check as visual verification.
+`themeProvider` for each, and every light `.icls` inherits IntelliJ's built-in `Default` scheme
+(`parent_scheme="Default"`) where the dark ones inherit `Darcula`. Every light `theme.json`'s four
+`Checkbox.*` icon keys drop the `.Dark` suffix the dark copies carry, per JetBrains' icon palette
+convention (a bare key is the light-icon asset, `.Dark` overrides it for the dark one). **The light
+scheme inheritance and checkbox icons still need a rendered check in Rider.** Parsing theme JSON
+and resolving its bundled XML resource do not verify either difference. Do not treat a headless
+load check as visual verification.
 
 **Each seasonal theme is another `themeProvider` rendered from that season's palette, and it does
 not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
 the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas`,
 `dracula-tufte-chartreuse`, `dracula-tufte-st-patrick` and
 `dracula-tufte-independence-day` are
-picked by hand from the theme list, the way the light one is. Each uses the season's dark block,
-not its light block, and keeps the `.Dark` icon keys because it is dark-family.
+picked by hand from the theme list, the way the light one is.
 `scripts/create-themes.nu` renders each with its season name as `scheme`, which is the same
 `--dump` key `.github/palette-check.py` derives for Mermaid's `init<Season>` set.
+
+**Rider ships a light variant of every season as well**, so all twelve appearances are available
+in one plugin: the dark seasonal theme from the season's dark block, and a `-light` theme beside
+it from `light-<season>`, which is the palette `.github/palette-check.py` already derives. The
+light variant is a separate template rendered with that prefix, the same second-file shape VS
+Code and Ghostty use for their light theme, because one `theme.json` still holds one appearance.
+Both variants are selected by hand, and neither reads the date. Do not collapse the pair into one
+theme, and do not project a light season from the season's dark block.
 
 **Keep `since-build="223"` without an `until-build`.** The range includes Rider 2026.3's
 [branch 263](https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html).
@@ -1248,9 +1255,10 @@ plugin that rewrote the selected theme by date would override the reader's own c
 whose template carries no appearance name inside it (CotEditor, opencode) points its seasonal row
 at the dark template rather than duplicating an identical file; the output name is the whole
 difference. Ghostty and Rider keep their shipped `xmas` file names, and new seasons take the full
-season name. **Do not ship a light seasonal variant without a new decision**: the seasonal theme
-is a hand-picked dark-family appearance by precedent, while the calendar-driven blocks on the page
-already carry their own light pair.
+season name. **Rider is the one target that also ships a light seasonal variant**: its plugin
+already carries every appearance as its own theme, so a season lands as a dark and a light
+`themeProvider` pair rendered from `<season>` and `light-<season>`. The other targets keep one
+variant per season, projected from the season's dark block.
 
 ## Mermaid
 
