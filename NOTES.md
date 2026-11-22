@@ -727,9 +727,9 @@ defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs fourteen checks: (1) hex projections in all eight Mermaid palettes; (2) the
+`.github/palette-check.py` runs fourteen checks: (1) hex projections in all ten Mermaid palettes; (2) the
 `classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
-stray hex in `mermaid.js`; (5) the contrast floor in all ten modes against three grounds, plus rules
+stray hex in `mermaid.js`; (5) the contrast floor in all sixteen modes against three grounds, plus rules
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
 and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for every parsed token
 in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
@@ -1203,7 +1203,7 @@ object renders unchanged and the light one, alongside it in the same template, p
 placeholder with `light:`. Do not invent a third shape for a future target before checking which of
 these two its schema actually is.
 
-**Rider ships twelve complete themes, not one that follows the system or the calendar**:
+**Rider ships fourteen complete themes, not one that follows the system or the calendar**:
 IntelliJ Platform themes are one appearance per `theme.json`, so `plugin.xml` registers a
 `themeProvider` for each, and every light `.icls` inherits IntelliJ's built-in `Default` scheme
 (`parent_scheme="Default"`) where the dark ones inherit `Darcula`. Every light `theme.json`'s four
@@ -1216,13 +1216,13 @@ load check as visual verification.
 **Each seasonal theme is another `themeProvider` rendered from that season's palette, and it does
 not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
 the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas`,
-`dracula-tufte-chartreuse`, `dracula-tufte-st-patrick` and
-`dracula-tufte-independence-day` are
+`dracula-tufte-chartreuse`, `dracula-tufte-st-patrick`,
+`dracula-tufte-independence-day` and `dracula-tufte-poland` are
 picked by hand from the theme list, the way the light one is.
 `scripts/create-themes.nu` renders each with its season name as `scheme`, which is the same
 `--dump` key `.github/palette-check.py` derives for Mermaid's `init<Season>` set.
 
-**Rider ships a light variant of every season as well**, so all twelve appearances are available
+**Rider ships a light variant of every season as well**, so all fourteen appearances are available
 in one plugin: the dark seasonal theme from the season's dark block, and a `-light` theme beside
 it from `light-<season>`, which is the palette `.github/palette-check.py` already derives. The
 light variant is a separate template rendered with that prefix, the same second-file shape VS
@@ -1913,6 +1913,13 @@ November through 28 December, all inclusive. The fourth Thursday is Thanksgiving
 except in a year where 1 November is a Friday. Rows are checked in order and the first match wins,
 so Thanksgiving keeps those days and Christmas starts the day after its end. The rows live in `SEASON_RANGES` in
 `scripts/build-sample.nu`, so the fixtures, the preview pair and the display name all follow one edit.
+
+**A date inside an existing range belongs in `SEASON_OVERRIDES`, not in a second range.** Overrides
+are emitted before the base rows, so the first-match rule lets them carve one day out of whichever
+range holds it: Poland owns May 3, August 15, November 11 and December 6, and two of those days sit
+inside Thanksgiving and Christmas. This is a priority rule over the same calendar rows, not an
+override API: nothing reads a URL, a query string or a storage key, and the payload still never
+reads a date.
 **The payload stays four files.** A fifth file would change the contract for every consumer, and
 `filter.js` loads only on a page with a filter box, so neither can carry a check that every page
 needs.
@@ -1921,7 +1928,9 @@ needs.
 `type="module"`, `defer` or `async` script, and do not place it after the payload.** `mermaid.js`
 reads `--mermaid-scheme` once, when its module evaluates, so a snippet that loses that race draws a
 default diagram on a Christmas page. **Do not add a manual override API.** The scheme toggle was
-refused for the same reason: a second theming convention for one request.
+refused for the same reason: a second theming convention for one request. An `SEASON_OVERRIDES`
+row is not that API: it is another calendar row with a higher priority, and it still only runs in
+the snippet the consumer pastes.
 
 **The season yields to contrast and print by media condition, not by cascade order.** The attribute
 selector outranks the contrast and print `:root` blocks on specificity, so the guard is the
@@ -1962,6 +1971,14 @@ gold `--orange` for the caution role. Both blocks hold the mode floor, the pinne
 the light accent band. Dark `--purple` sits at a lower lightness than the other seasons so its
 `--purple-bright` derivation still fits the P3 ceiling at L + 0.07.
 
+**Poland overrides four single days and turns the surfaces flag red and white.** May 3, August 15,
+November 11 and December 6 are rows in `SEASON_OVERRIDES`, so they win the first match against
+Chartreuse, Thanksgiving or Christmas. Red and white dominate: the dark ground is deep crimson
+(`#371111`), the light ground a pale rose (`#fceae8`), and the eagle's gold carries the link and
+caution roles. The data ramp is gold, crimson, rose and white-gold, so it stays inside the crest
+rather than importing a categorical blue. Both blocks restate every token they change and hold the
+mode's floor, the pinned data fractions and the light accent band.
+
 **Chartreuse starts from the swatches and is muted for this palette.** Dark is green chartreuse:
 the surface is a shade of Vintage Chartreuse (`#9BA434`, rendered `#4d5208`), `--purple` is the
 Yellow-Green swatch (`#9ACD32`, rendered `#b5df76`), and `--green` is Vintage Chartreuse at accent
@@ -1975,14 +1992,15 @@ rather than a near-black, so every accent in both blocks is darkened or lightene
 The dark block also restates `--highlight` at `calc(l - 0.10)` of its orange, because a wash of the
 lighter accent behind light text measured below 4.5:1 at the inherited shift.
 
-**`--mermaid-scheme` takes twelve values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
-`chartreuse`, `light-chartreuse`, `independence-day`, `light-independence-day`, `christmas`,
-`light-christmas`, `thanksgiving`, `light-thanksgiving`), and `mermaid.js` carries twelve hex maps. There is no seasonal
+**`--mermaid-scheme` takes fourteen values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
+`chartreuse`, `light-chartreuse`, `independence-day`, `light-independence-day`, `poland`,
+`light-poland`, `christmas`, `light-christmas`, `thanksgiving`, `light-thanksgiving`), and
+`mermaid.js` carries fourteen hex maps. There is no seasonal
 `classDef` set: the ban on a `classDef` hex line for a page that follows appearance covers a page
 that follows the date too.
 
 **Three kinds of page carry a season.** The dark fixtures carry the snippet, so each turns seasonal
-inside a window. The four light previews never show one. The ten season previews set the attribute
+inside a window. The four light previews never show one. The twelve season previews set the attribute
 in markup and rewrite the season conditions to `@media screen`, so the date and the contrast setting
 stop mattering and print keeps its own palette. `.github/season-probe.py` runs the verbatim snippet
 against a mocked clock at every window edge in three time zones, and it must keep doing so: a bound

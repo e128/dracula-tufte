@@ -38,7 +38,7 @@ paints without error, and an image a person can look at.
 The season modes (`season`, `season-light`, `season-thanksgiving`,
 `season-thanksgiving-light`, `season-chartreuse`, `season-chartreuse-light`,
 `season-st-patrick`, `season-st-patrick-light`, `season-independence-day`,
-`season-independence-day-light`) add their
+`season-independence-day-light`, `season-poland`, `season-poland-light`) add their
 `data-season` value to the scratch copy's `<html>`
 by hand, because the head snippet that sets it in a real page is a script and every
 script is stripped. A season light mode also switches on the plain light block, the way a
@@ -104,6 +104,8 @@ MODES = {
     "season-st-patrick-light": ((LIGHT, SEASON, SEASON_LIGHT), "st-patrick", "#d6f7dc"),
     "season-independence-day": ((SEASON,), "independence-day", "#101d38"),
     "season-independence-day-light": ((LIGHT, SEASON, SEASON_LIGHT), "independence-day", "#e8f3ff"),
+    "season-poland": ((SEASON,), "poland", "#371111"),
+    "season-poland-light": ((LIGHT, SEASON, SEASON_LIGHT), "poland", "#fceae8"),
 }
 
 # Chrome renders the oklch() surface through its own conversion, which lands a

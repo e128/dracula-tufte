@@ -486,6 +486,8 @@ SEASON_MODES = {
     "season-st-patrick-light": ("light-st-patrick", "initStPatrickLight"),
     "season-independence-day": ("independence-day", "initIndependenceDay"),
     "season-independence-day-light": ("light-independence-day", "initIndependenceDayLight"),
+    "season-poland": ("poland", "initPoland"),
+    "season-poland-light": ("light-poland", "initPolandLight"),
 }
 
 
@@ -592,7 +594,7 @@ def main():
         sections = [plots[section] for _, section in SEASON_MODES.values()]
         for key in ("nodeBorder", "mainBkg", "lineColor", "textColor"):
             if len({section[key]["hex"] for section in sections}) != len(sections):
-                sys.exit(f"mermaid-palette.json {key} is not distinct across the twelve palettes, "
+                sys.exit(f"mermaid-palette.json {key} is not distinct across the season palettes, "
                          f"so a wrong palette would pass the season probe.")
         for mode in SEASON_MODES:
             want = json.dumps(season_want(mode, plots, False))

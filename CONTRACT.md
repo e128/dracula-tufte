@@ -65,9 +65,9 @@ nothing after it.
 
 ### Seasonal Theme (Optional)
 
-`tufte-dracula.css` carries five seasonal palettes that stay off until `<html>` carries
+`tufte-dracula.css` carries six seasonal palettes that stay off until `<html>` carries
 `data-season`. The attribute value names the season: `"st-patrick"`, `"chartreuse"`,
-`"independence-day"`, `"thanksgiving"` or `"christmas"`. The stylesheet never sets that attribute. **A page turns a theme on by date only
+`"independence-day"`, `"thanksgiving"`, `"christmas"` or `"poland"`. The stylesheet never sets that attribute. **A page turns a theme on by date only
 after its generator adds the head snippet below.** Inlining a newer stylesheet into a page that has
 no snippet changes nothing, so no consumer gets a season until it adds the snippet.
 
@@ -83,6 +83,10 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
         return new Date(y, m, 1 + ((w - d.getDay() + 7) % 7) + (n - 1) * 7).getDate();
       }
       var ranges = [
+        [4, 3, 4, 3, 'poland'],
+        [7, 15, 7, 15, 'poland'],
+        [10, 11, 10, 11, 'poland'],
+        [11, 6, 11, 6, 'poland'],
         [2, 1, 2, 17, 'st-patrick'],
         [4, 1, 4, 16, 'chartreuse'],
         [5, 28, 6, 4, 'independence-day'],
@@ -103,7 +107,10 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 - **St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16,
   Independence Day from June 28 through July 4, Thanksgiving from November 1 through the fourth
   Thursday of November, and Christmas from the fourth Friday of November through December 28, all
-  inclusive.** The fourth Thursday is Thanksgiving Day. `nthWeekday` resolves both Thursdays and
+  inclusive.** Poland overrides single days that fall inside those ranges: May 3, August 15,
+  November 11 and December 6. Its rows come first, so they carve those days out of Chartreuse,
+  Thanksgiving or Christmas. The remaining rows are the base calendar. The fourth Thursday is
+  Thanksgiving Day. `nthWeekday` resolves both Thursdays and
   Fridays in the visitor's own year, so the Thanksgiving and Christmas windows track the calendar.
   That also covers the years where November 1 is a Friday and the fourth Friday falls before the
   fourth Thursday: rows are checked in order and the first match wins, so Thanksgiving keeps those
@@ -121,8 +128,8 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
   reader states no contrast preference, so high contrast and print keep their own palettes.
 - **Omit the snippet to opt out.** To force a season on every date, write
   `data-season="st-patrick"`, `data-season="chartreuse"`, `data-season="independence-day"`,
-  `data-season="thanksgiving"` or `data-season="christmas"` on `<html>` and omit the snippet, which
-  is how the season preview pages work. A page under a `script-src` policy needs a nonce or a hash
+  `data-season="thanksgiving"`, `data-season="christmas"` or `data-season="poland"` on `<html>` and
+  omit the snippet, which is how the season preview pages work. A page under a `script-src` policy needs a nonce or a hash
   for the snippet. A blocked snippet leaves the standard palette, with no error visible to the
   reader.
 - **The fixtures carry the snippet.** All four dark fixtures include it (in `samples/dark.html`,
@@ -135,7 +142,7 @@ compares it with the one above, and runs it in a browser against a mocked clock.
 
 ### Adding a New Date-Range Palette
 
-A season beyond the five shipped follows the same shape, and the mode names are a convention the
+A season beyond the six shipped follows the same shape, and the mode names are a convention the
 drift gate depends on: the attribute value is the season name, `--mermaid-scheme` takes `<season>` and
 `light-<season>`, and `.github/palette-check.py` keys its `SEASONS` row by the season name. The
 steps, in order:
@@ -156,10 +163,12 @@ steps, in order:
    `Christmas`, `new-year` becomes `NewYear`).
 4. No edit is needed to `.github/palette-check.py`'s expectations: both sections derive from the
    row. Run `palette-check.py` and fix whatever it measures.
-5. Add the season's row to `SEASON_RANGES` in `scripts/build-sample.nu`. It emits the
-   `<season>-dark.html` and `<season>-light.html` pair, sets the attribute in markup, rewrites the
-   season conditions to `@media screen`, and derives the display name. Register both pages in
-   `SEASON_PREVIEWS` in `scripts/maintain.nu` and add their date cases to `.github/season-probe.py`.
+5. Add the season's rows to `scripts/build-sample.nu`. A base range goes in `SEASON_RANGES`; a
+   single day that falls inside an existing range goes in `SEASON_OVERRIDES`, which is emitted
+   before the base rows so it wins the first match. Either list emits the `<season>-dark.html` and
+   `<season>-light.html` pair, sets the attribute in markup, rewrites the season conditions to
+   `@media screen`, and derives the display name. Register both pages in `SEASON_PREVIEWS` in
+   `scripts/maintain.nu` and add their date cases to `.github/season-probe.py`.
 6. Every template-bearing theme target ships the season. Add `THEMES` rows with
    `scheme: "<season>"` for Rider (`.icls` and `theme.json`), VS Code, Ghostty, CotEditor,
    opencode and tmux, add the iTerm2 pair row, and add the season's theme object to Zed's one
@@ -553,6 +562,7 @@ release that changed nothing: add the row in the release commit itself.
 
 | since | your generator must now |
 | --- | --- |
+| v1.72.0 | nothing is required. **A Poland palette ships behind `data-season`, and the calendar gains override rows.** May 3, August 15, November 11 and December 6 select `poland`; November 11 and December 6 sit inside the Thanksgiving and Christmas ranges, and the override rows come first so they win. A page that pasted the v1.70 snippet keeps its old calendar until it copies the block in § 1 again. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a Poland variant, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
 | v1.70.0 | nothing is required. **Three seasonal palettes ship behind `data-season` values, and nothing you already emit changes.** St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16, and Independence Day from June 28 through July 4. A page without the head snippet in § 1 never turns them on; to follow the calendar, paste the updated snippet before the `<style>` block. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains one dark-family variant per season, selected by hand. None of them is part of the payload. |
 | v1.68.0 | nothing. **The seasonal date windows move and the theme targets gain season variants.** Thanksgiving now runs from November 1 through the fourth Thursday of November, and Christmas from the fourth Friday of November through December 28, resolved in the visitor's local year. A page that pasted the v1.63 snippet keeps its old fixed windows until it copies the block in § 1 again; the palette blocks themselves are unchanged. December 29 through 31 now belong to no season. `themes/` adds a Thanksgiving variant in every template-bearing target, and a Christmas variant where one was missing. None of them is part of the payload. |
 | v1.63.0 | nothing is required. **A seasonal Christmas palette ships behind `data-season="christmas"`, and nothing you already emit changes.** A page without the head snippet in § 1 never turns it on, so inlining the new stylesheet alone is a no-op. To get the palette by date, paste that snippet before the `<style>` block. It covers 11 November to 26 December in the reader's local calendar. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Keep the snippet a classic script and keep it first: `mermaid.js` reads `--mermaid-scheme` once at load, so a snippet that runs later paints a default diagram on a Christmas page. The ban on a `classDef name fill:#hex` line on a page that follows appearance now covers a page that follows the date as well. |

@@ -46,6 +46,11 @@
         "label": "Dracula-Tufte (muted) Independence Day",
         "uiTheme": "vs-dark",
         "path": "./themes/dracula-tufte-independence-day-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Poland",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-poland-color-theme.json"
       }
     ]
   },

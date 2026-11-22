@@ -55,8 +55,10 @@ load, in the visitor's local year. Read in date order, the seasons take effect:
    Thanksgiving Day.
 5. **The fourth Friday of November through December 28**: Christmas.
 
-Every other day shows the plain palette. The windows are inclusive and both November boundaries are
-resolved in the visitor's local year. December 29 through 31 belong to no season.
+Poland is an override rather than a range. Its single days win even inside another season's range:
+May 3, August 15, November 11 and December 6. Red and white dominate, with the eagle's gold in the
+accents. Every other day shows the plain palette. The windows are inclusive and both November
+boundaries are resolved in the visitor's local year. December 29 through 31 belong to no season.
 
 Each season also has a pair of preview pages that force it for any date and any system setting:
 
@@ -67,6 +69,7 @@ Each season also has a pair of preview pages that force it for any date and any 
 | Independence Day | `independence-day` | June 28 through July 4 | [dark](https://e128.github.io/dracula-tufte/samples/independence-day-dark.html), [light](https://e128.github.io/dracula-tufte/samples/independence-day-light.html) |
 | Thanksgiving | `thanksgiving` | November 1 through the fourth Thursday of November | [dark](https://e128.github.io/dracula-tufte/samples/thanksgiving-dark.html), [light](https://e128.github.io/dracula-tufte/samples/thanksgiving-light.html) |
 | Christmas | `christmas` | the fourth Friday of November through December 28 | [dark](https://e128.github.io/dracula-tufte/samples/christmas-dark.html), [light](https://e128.github.io/dracula-tufte/samples/christmas-light.html) |
+| Poland | `poland` | May 3, August 15, November 11 and December 6 (overrides the ranges above) | [dark](https://e128.github.io/dracula-tufte/samples/poland-dark.html), [light](https://e128.github.io/dracula-tufte/samples/poland-light.html) |
 
 A preview page is not the payload, and each says so in a banner.
 
@@ -74,7 +77,7 @@ A preview page is not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.71.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.72.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -93,7 +96,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.71.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.72.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -249,11 +252,11 @@ time zones, and checks that the season previews hold under any system setting.
 **One palette feeds several projections.** The `:root` block is the only source of color truth.
 `.github/palette-check.py` runs fourteen checks over it:
 
-1. Hex projections in all eight Mermaid palettes.
+1. Hex projections in all ten Mermaid palettes.
 2. The `classdef` fills, dark and light, and the letter each set paints on its own fill.
 3. The `/* was */` provenance comments.
 4. Stray hex in `mermaid.js`.
-5. Contrast floors in all ten modes.
+5. Contrast floors in all sixteen modes.
 6. `--mermaid-scheme` in both directions, and the scroll breakpoint pinned across two files.
 7. The sRGB gamut ceiling.
 8. The vividness bands.
