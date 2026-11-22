@@ -19,17 +19,22 @@ const SEASON_DARK = "@media screen and (prefers-contrast: no-preference)"
 const SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefers-contrast: no-preference)"
 
 # The calendar ranges the head snippet emits, one row per season. Month numbers are
-# zero-based because the snippet hands them straight to `getMonth()`: 10 is November and
-# 11 is December. Dates are inclusive. An end can be a fixed day (`to`) or the nth
+# zero-based because the snippet hands them straight to `getMonth()`: 4 is May, 10 is
+# November and 11 is December. Dates are inclusive. An end can be a fixed day (`to`) or the nth
 # weekday of a month (`to_nth`, month, weekday, n), and a start can be fixed (`from`) or
 # the nth weekday (`from_nth`), in the same zero-based and `getDay()` conventions:
-# Thanksgiving runs from November 1 through the fourth Thursday, weekday 4, and Christmas
+# St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16,
+# Independence Day from June 28 through July 4, Thanksgiving from November 1 through the
+# fourth Thursday, weekday 4, and Christmas
 # from the fourth Friday, weekday 5, through December 28. Rows are checked in order and
 # the first match wins, so they never overlap: where the fourth Friday falls before the
 # fourth Thursday, November 1 is a Friday and Thanksgiving keeps the days up to its own
 # end. Add a row and a pair of CSS blocks, and the snippet, the preview pair and the
 # display name all follow.
 const SEASON_RANGES = [
+  {season: "st-patrick", from: [2 1], to: [2 17]}
+  {season: "chartreuse", from: [4 1], to: [4 16]}
+  {season: "independence-day", from: [5 28], to: [6 4]}
   {season: "thanksgiving", from: [10 1], to_nth: [10 4 4]}
   {season: "christmas", from_nth: [10 5 4], to: [11 28]}
 ]
@@ -142,9 +147,10 @@ def season-snippet [] {
   ] | str join "\n"
 }
 
-# `christmas` -> `Christmas`, the display form the preview banner and title use.
+# `christmas` -> `Christmas`, `st-patrick` -> `St Patrick`: the display form the preview
+# banner and title use.
 def season-title [season: string] {
-  $season | split row "-" | each {|word| $word | str capitalize } | str join ""
+  $season | split row "-" | each {|word| $word | str capitalize } | str join " "
 }
 
 # Replace each condition in `rewrites`, and raise when one is missing. Every condition is
@@ -357,7 +363,7 @@ def conn-map-body [] {
 # alpha the number on top of the band requires, the four ramp members land within Lc 2
 # of each other, so a band cannot carry a category (see NOTES.md, CSS charts). The
 # number stays `--on-surface` over the wash, which check 12 of palette-check.py
-# measures in all four modes.
+# measures in every mode.
 def charts-body [] {
   [
     "  <dialog class=\"mermaid-overlay\" id=\"mermaid-zoom\"></dialog>"

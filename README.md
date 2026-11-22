@@ -40,33 +40,47 @@ so it is locked to light and it is not the payload. Each light page says so in a
 contrast has no preview page. CI renders it and attaches the image to each pull request. See
 [Appearance modes](NOTES.md#appearance-modes).
 
-The four fixtures above also carry the optional seasonal head snippet, so they follow the
-calendar by the visitor's local date at page load.
-
 ### Seasonal previews
 
-Each season also has a pair of preview pages that force it for any date and any system setting.
-One row per season:
+The four fixtures above carry the optional seasonal head snippet and follow the calendar at page
+load, in the visitor's local year. Read in date order, the seasons take effect:
+
+1. **March 1 through March 17**: St Patrick. Deep shamrock green in the dark palette and pale
+   mint in the light one, anchored on `#02331d`, `#d6f7dc` and the gold `#e4b24d`.
+2. **May 1 through May 16**: Chartreuse. Green chartreuse in the dark palette, yellow chartreuse
+   in the light one, anchored on `#9BA434` and `#CDE62E`.
+3. **June 28 through July 4**: Independence Day. Navy and red in the dark palette, pale blue in
+   the light one, anchored on `#101d38`, `#e8f3ff` and the flag red.
+4. **November 1 through the fourth Thursday of November**: Thanksgiving. That Thursday is
+   Thanksgiving Day.
+5. **The fourth Friday of November through December 28**: Christmas.
+
+Every other day shows the plain palette. The windows are inclusive and both November boundaries are
+resolved in the visitor's local year. December 29 through 31 belong to no season.
+
+Each season also has a pair of preview pages that force it for any date and any system setting:
 
 | Season | `data-season` | Active window | Forced preview |
 | --- | --- | --- | --- |
+| St Patrick | `st-patrick` | March 1 through March 17 | [dark](https://e128.github.io/dracula-tufte/samples/st-patrick-dark.html), [light](https://e128.github.io/dracula-tufte/samples/st-patrick-light.html) |
+| Chartreuse | `chartreuse` | May 1 through May 16 | [dark](https://e128.github.io/dracula-tufte/samples/chartreuse-dark.html), [light](https://e128.github.io/dracula-tufte/samples/chartreuse-light.html) |
+| Independence Day | `independence-day` | June 28 through July 4 | [dark](https://e128.github.io/dracula-tufte/samples/independence-day-dark.html), [light](https://e128.github.io/dracula-tufte/samples/independence-day-light.html) |
 | Thanksgiving | `thanksgiving` | November 1 through the fourth Thursday of November | [dark](https://e128.github.io/dracula-tufte/samples/thanksgiving-dark.html), [light](https://e128.github.io/dracula-tufte/samples/thanksgiving-light.html) |
 | Christmas | `christmas` | the fourth Friday of November through December 28 | [dark](https://e128.github.io/dracula-tufte/samples/christmas-dark.html), [light](https://e128.github.io/dracula-tufte/samples/christmas-light.html) |
 
-The windows are inclusive and resolved in the visitor's local year. December 29 through 31 belong
-to no season. A preview page is not the payload, and each says so in a banner.
+A preview page is not the payload, and each says so in a banner.
 
 ## The twelve files
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.69.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.70.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
 | `mermaid-palette.json` | Mermaid's hex palette for each `themeVariables` key, in dark, light and one variant per season, plus the `classDef` node roles. Mermaid cannot read `oklch()` or `var()`. Each entry names its `:root` source, and CI recomputes every hex. |
 | `tokens.css` | Palette reference. Generated from the `:root` block. Do not edit it by hand. |
-| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css`, the eight fixtures and the season previews. Run it after any payload change. |
+| `scripts/build-sample.nu` | The regenerator. It rebuilds `tokens.css`, the fixtures and the season previews. Run it after any payload change. |
 | `samples/dark.html` | Living style fixture, and the executable specification. Generated. Do not edit it by hand. |
 | `samples/dark-conn-map.html` | Conn-map fixture. It uses `<body class="conn-map">` with the sections in Links-then-Graph order. Generated. |
 | `samples/dark-timeline.html` | Timeline fixture, and the only one built from real content. Generated. |
@@ -79,7 +93,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.69.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.70.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -228,17 +242,17 @@ its correctness is not a color.
 
 **A second check does the same for the seasonal snippet.** `.github/season-probe.py` extracts the
 head snippet from the generated fixtures and compares it with the copy in CONTRACT.md. It then runs
-the snippet in headless Chrome against a mocked clock across both windows' boundary dates and three
+the snippet in headless Chrome against a mocked clock across every window's boundary dates and three
 time zones, and checks that the season previews hold under any system setting.
 
 **One palette feeds several projections.** The `:root` block is the only source of color truth.
 `.github/palette-check.py` runs fourteen checks over it:
 
-1. Hex projections in all four Mermaid palettes.
+1. Hex projections in all eight Mermaid palettes.
 2. The `classdef` fills, dark and light, and the letter each set paints on its own fill.
 3. The `/* was */` provenance comments.
 4. Stray hex in `mermaid.js`.
-5. Contrast floors in all six modes.
+5. Contrast floors in all ten modes.
 6. `--mermaid-scheme` in both directions, and the scroll breakpoint pinned across two files.
 7. The sRGB gamut ceiling.
 8. The vividness bands.

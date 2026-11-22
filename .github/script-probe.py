@@ -22,7 +22,7 @@ behaviour. It is the only check in the repo that runs the payload rather than re
   mermaid.js  every `pre.mermaid` renders an `<svg>` and gains its own zoom button, a
               click on the live diagram opens the `<dialog>`, and the pre carries no
               `role="region"` at a width where it cannot scroll
-  mermaid.js  (seasons) in each of dark, light, Christmas dark and Christmas light, the
+  mermaid.js  (seasons) in dark, light and each season's dark and light palettes, the
               `--mermaid-scheme` token resolves to the mode's name, and the rendered diagram
               paints that mode's own palette: node fill and border, edge line and label text
               from `mermaid-palette.json`, `darkMode` matching the scheme, and the xychart
@@ -422,10 +422,10 @@ FIDELITY_DRIVER = """
   </script>
 """
 
-# mermaid.js reads --mermaid-scheme once, at init, and picks one of six hex maps. The base
+# mermaid.js reads --mermaid-scheme once, at init, and picks one of eight hex maps. The base
 # driver proves a diagram renders and zooms, and says nothing about WHICH palette it painted,
 # so a seasonal token that fell through to the dark map would pass every assertion above. This
-# renders the fixture in each of the six modes with the same condition rewrite render-modes.py
+# renders the fixture in each of the eight modes with the same condition rewrite render-modes.py
 # uses, and reads the painted result back out of the live SVG instead of trusting the source:
 # the computed stroke and fill of a flowchart node, the edge line, the label text, and the
 # xychart line, each against the hex `mermaid-palette.json` declares for that mode.
@@ -480,6 +480,12 @@ SEASON_MODES = {
     "season-light": ("light-christmas", "initChristmasLight"),
     "season-thanksgiving": ("thanksgiving", "initThanksgiving"),
     "season-thanksgiving-light": ("light-thanksgiving", "initThanksgivingLight"),
+    "season-chartreuse": ("chartreuse", "initChartreuse"),
+    "season-chartreuse-light": ("light-chartreuse", "initChartreuseLight"),
+    "season-st-patrick": ("st-patrick", "initStPatrick"),
+    "season-st-patrick-light": ("light-st-patrick", "initStPatrickLight"),
+    "season-independence-day": ("independence-day", "initIndependenceDay"),
+    "season-independence-day-light": ("light-independence-day", "initIndependenceDayLight"),
 }
 
 
@@ -586,13 +592,13 @@ def main():
         sections = [plots[section] for _, section in SEASON_MODES.values()]
         for key in ("nodeBorder", "mainBkg", "lineColor", "textColor"):
             if len({section[key]["hex"] for section in sections}) != len(sections):
-                sys.exit(f"mermaid-palette.json {key} is not distinct across the six palettes, "
+                sys.exit(f"mermaid-palette.json {key} is not distinct across the twelve palettes, "
                          f"so a wrong palette would pass the season probe.")
         for mode in SEASON_MODES:
             want = json.dumps(season_want(mode, plots, False))
             body = in_mode(html, mode, FIXTURE.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
             results += run(body, 6, f"{mode} palette")
-        for mode in ("season", "season-thanksgiving"):
+        for mode in ("season", "season-thanksgiving", "season-chartreuse", "season-st-patrick", "season-independence-day"):
             want = json.dumps(season_want(mode, plots, True))
             body = in_mode(charts, mode, CHARTS.name).replace("</body>", flag + SEASON_DRIVER.replace("__WANT__", want) + "\n</body>", 1)
             results += run(body, 3, f"{mode} xychart")

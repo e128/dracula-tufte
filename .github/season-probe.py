@@ -3,8 +3,9 @@
 
 Consumers opt in by pasting a classic inline script before the stylesheet. It sets
 `data-season` on `<html>` from the visitor's local calendar, with one row per season:
-Thanksgiving from November 1 through the fourth Thursday of November, and Christmas from
-the fourth Friday of November through December 28, all inclusive, at page load. Rows are
+St Patrick from March 1 through March 17, Chartreuse from May 1 through May 16, Independence Day
+from June 28 through July 4, Thanksgiving from November 1 through the fourth Thursday of November,
+and Christmas from the fourth Friday of November through December 28, all inclusive, at page load. Rows are
 checked in order and the first match wins, so in a year where November 1 is a Friday the
 fourth Friday falls before the fourth Thursday and Thanksgiving keeps those days.
 Nothing else in the repo runs that script. `maintain.nu check` counts `<script>` blocks, `palette-check.py` measures
@@ -29,8 +30,8 @@ carries, and then drives it in real headless Chrome:
               `data-season` and `--mermaid-scheme` when a module first evaluates, which is
               when `mermaid.js` reads the token. In a window both name that season, out of
               one neither does.
-  previews    `christmas-*.html` and `thanksgiving-*.html` paint their season
-              palette whatever the system scheme and contrast, and `light.html` stays
+  previews    every `<season>-*.html` paints its season palette whatever the system
+              scheme and contrast, and `light.html` stays
               plain light under the same settings. The settings reach Chrome through
               `--blink-settings`, and the run reads them back through `matchMedia`, so a
               Chrome that ignores them is reported as a SKIP instead of a pass.
@@ -65,7 +66,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DARK = ["samples/dark.html", "samples/dark-conn-map.html",
         "samples/dark-timeline.html", "samples/dark-charts.html"]
 MAIN = "samples/dark.html"
-SEASONS = ["christmas", "thanksgiving"]
+SEASONS = ["chartreuse", "christmas", "independence-day", "st-patrick", "thanksgiving"]
 PREVIEWS = {(season, mode): f"samples/{season}-{mode}.html"
             for season in SEASONS for mode in ("dark", "light")}
 PLAIN_LIGHT = "samples/light.html"
@@ -78,6 +79,30 @@ ZONES = {"UTC": 0, "Pacific/Kiritimati": -840, "Pacific/Pago_Pago": 660}
 # the calendar's own, 1 to 12. The expectations are literals on purpose: deriving them
 # from the rule would restate the snippet's own logic and could not disagree with it.
 CASES = [
+    ("Feb 28 end of day", 2026, 2, 28, 23, 59, 59, None),
+    ("Mar 1 start of day", 2026, 3, 1, 0, 0, 0, "st-patrick"),
+    ("Mar 1 noon", 2026, 3, 1, 12, 0, 0, "st-patrick"),
+    ("Mar 8", 2026, 3, 8, 12, 0, 0, "st-patrick"),
+    ("Mar 17 end of day", 2026, 3, 17, 23, 59, 59, "st-patrick"),
+    ("Mar 18 start of day", 2026, 3, 18, 0, 0, 0, None),
+    ("2024 Mar 1", 2024, 3, 1, 12, 0, 0, "st-patrick"),
+    ("2027 Mar 17 end of day", 2027, 3, 17, 23, 59, 59, "st-patrick"),
+    ("Apr 30 end of day", 2026, 4, 30, 23, 59, 59, None),
+    ("May 1 start of day", 2026, 5, 1, 0, 0, 0, "chartreuse"),
+    ("May 1 noon", 2026, 5, 1, 12, 0, 0, "chartreuse"),
+    ("May 8", 2026, 5, 8, 12, 0, 0, "chartreuse"),
+    ("May 16 end of day", 2026, 5, 16, 23, 59, 59, "chartreuse"),
+    ("May 17 start of day", 2026, 5, 17, 0, 0, 0, None),
+    ("2024 May 1", 2024, 5, 1, 12, 0, 0, "chartreuse"),
+    ("2027 May 16 end of day", 2027, 5, 16, 23, 59, 59, "chartreuse"),
+    ("Jun 27 end of day", 2026, 6, 27, 23, 59, 59, None),
+    ("Jun 28 start of day", 2026, 6, 28, 0, 0, 0, "independence-day"),
+    ("Jun 28 noon", 2026, 6, 28, 12, 0, 0, "independence-day"),
+    ("Jul 1", 2026, 7, 1, 12, 0, 0, "independence-day"),
+    ("Jul 4 end of day", 2026, 7, 4, 23, 59, 59, "independence-day"),
+    ("Jul 5 start of day", 2026, 7, 5, 0, 0, 0, None),
+    ("2024 Jun 28", 2024, 6, 28, 12, 0, 0, "independence-day"),
+    ("2027 Jul 4 end of day", 2027, 7, 4, 23, 59, 59, "independence-day"),
     ("Oct 1", 2026, 10, 1, 0, 0, 0, None),
     ("Oct 11, a day number inside both windows", 2026, 10, 11, 12, 0, 0, None),
     ("Oct 31 end of day", 2026, 10, 31, 23, 59, 59, None),
@@ -303,7 +328,10 @@ def main():
 
     # ordering, in the real fixture
     page = read(MAIN)
-    for tag, when, want in (("thanksgiving", (2026, 11, 15), "thanksgiving"),
+    for tag, when, want in (("st-patrick", (2026, 3, 8), "st-patrick"),
+                            ("chartreuse", (2026, 5, 8), "chartreuse"),
+                            ("independence-day", (2026, 7, 1), "independence-day"),
+                            ("thanksgiving", (2026, 11, 15), "thanksgiving"),
                             ("christmas", (2026, 12, 1), "christmas"),
                             ("out-of-window", (2027, 1, 15), None)):
         mock = f"  <script>{MOCK % (when[0], when[1] - 1, when[2], 12, 0, 0)}</script>\n"

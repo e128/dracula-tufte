@@ -36,7 +36,10 @@ already fails on a weakened value. What the contrast render adds is that the mod
 paints without error, and an image a person can look at.
 
 The season modes (`season`, `season-light`, `season-thanksgiving`,
-`season-thanksgiving-light`) add their `data-season` value to the scratch copy's `<html>`
+`season-thanksgiving-light`, `season-chartreuse`, `season-chartreuse-light`,
+`season-st-patrick`, `season-st-patrick-light`, `season-independence-day`,
+`season-independence-day-light`) add their
+`data-season` value to the scratch copy's `<html>`
 by hand, because the head snippet that sets it in a real page is a script and every
 script is stripped. A season light mode also switches on the plain light block, the way a
 reader on a light system sees both blocks match.
@@ -95,6 +98,12 @@ MODES = {
     "season-light": ((LIGHT, SEASON, SEASON_LIGHT), "christmas", "#fdf9ea"),
     "season-thanksgiving": ((SEASON,), "thanksgiving", "#291b0f"),
     "season-thanksgiving-light": ((LIGHT, SEASON, SEASON_LIGHT), "thanksgiving", "#feedd8"),
+    "season-chartreuse": ((SEASON,), "chartreuse", "#4d5208"),
+    "season-chartreuse-light": ((LIGHT, SEASON, SEASON_LIGHT), "chartreuse", "#cce630"),
+    "season-st-patrick": ((SEASON,), "st-patrick", "#02331d"),
+    "season-st-patrick-light": ((LIGHT, SEASON, SEASON_LIGHT), "st-patrick", "#d6f7dc"),
+    "season-independence-day": ((SEASON,), "independence-day", "#101d38"),
+    "season-independence-day-light": ((LIGHT, SEASON, SEASON_LIGHT), "independence-day", "#e8f3ff"),
 }
 
 # Chrome renders the oklch() surface through its own conversion, which lands a

@@ -19,7 +19,7 @@ const ROOT = $SCRIPTS | path dirname
 # loop below names this list instead of repeating it, so a new fixture is added once.
 const DARK_FIXTURES = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html]
 const LIGHT_FIXTURES = [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html]
-const SEASON_PREVIEWS = [samples/christmas-dark.html samples/christmas-light.html samples/thanksgiving-dark.html samples/thanksgiving-light.html]
+const SEASON_PREVIEWS = [samples/chartreuse-dark.html samples/chartreuse-light.html samples/christmas-dark.html samples/christmas-light.html samples/independence-day-dark.html samples/independence-day-light.html samples/st-patrick-dark.html samples/st-patrick-light.html samples/thanksgiving-dark.html samples/thanksgiving-light.html]
 const FIXTURES = $DARK_FIXTURES ++ $LIGHT_FIXTURES ++ $SEASON_PREVIEWS
 
 # `dark` -> init, `light` -> initLight, `christmas` -> initChristmas, and
@@ -348,7 +348,7 @@ def "main cdn-pins" [] {
 # Mirrors .github/workflows/contract-check.yml locally, step for step: the payload
 # files exist, the wrapper is one line at each end, mermaid.js agrees with
 # mermaid-palette.json key by key, the hex projections still match the oklch
-# source, all six palettes hold their contrast floor, exactly one <style> and three
+# source, every palette holds its contrast floor, exactly one <style> and three
 # <script> per fixture, each appearance mode paints its own surface, generated
 # files match the current CSS/JS.
 #
@@ -416,7 +416,7 @@ def "main check" [] {
     if $styles != 1 { print $"($f): expected 1 <style>, found ($styles)"; $ok = false }
     # The dark fixtures carry the three payload scripts plus the seasonal head snippet
     # (CONTRACT.md section 1). The previews are generated without it: a light page is never
-    # seasonal and a Christmas page forces the attribute in markup.
+    # seasonal and a seasonal preview forces the attribute in markup.
     let want = (if ($f in $DARK_FIXTURES) { 4 } else { 3 })
     if $scripts != $want { print $"($f): expected ($want) <script> blocks, found ($scripts)"; $ok = false }
   }

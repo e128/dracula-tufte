@@ -5,12 +5,12 @@
   <vendor>e128</vendor>
 
   <description><![CDATA[
-    Dark, light and Christmas UI themes and editor colour schemes derived from the
+    Dark, light and seasonal UI themes and editor colour schemes derived from the
     Dracula-Tufte (muted) HTML template. Every colour is the sRGB rendering of a
     <code>tufte-dracula.css</code> <code>:root</code> <code>oklch()</code> token, dark
     from the base palette, light from its <code>prefers-color-scheme: light</code>
-    override, and Christmas from the seasonal block behind
-    <code>data-season="christmas"</code>.
+    override, and each season from the seasonal block behind
+    <code>data-season="&lt;season&gt;"</code>.
   ]]></description>
 
   <depends>com.intellij.modules.platform</depends>
@@ -21,5 +21,8 @@
     <themeProvider id="com.e128.dracula-tufte-light" path="/dracula-tufte-light.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-xmas" path="/dracula-tufte-xmas.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-thanksgiving" path="/dracula-tufte-thanksgiving.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-chartreuse" path="/dracula-tufte-chartreuse.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-st-patrick" path="/dracula-tufte-st-patrick.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-independence-day" path="/dracula-tufte-independence-day.theme.json" />
   </extensions>
 </idea-plugin>

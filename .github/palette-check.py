@@ -204,6 +204,27 @@ SEASONS = {
         "p3": True,
         "light_accents": True,
     },
+    "chartreuse": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
+    "st-patrick": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
+    "independence-day": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
 }
 season_blocks = {}
 season_overrides = {}

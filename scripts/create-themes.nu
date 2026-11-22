@@ -74,31 +74,52 @@ const THEMES = [
   {template: "themes/coteditor/Dracula-Tufte (Light).cottheme.in", output: "themes/coteditor/Dracula-Tufte (Light).cottheme", scheme: "light"}
   {template: "themes/coteditor/Dracula-Tufte (Dark).cottheme.in", output: "themes/coteditor/Dracula-Tufte Christmas (Dark).cottheme", scheme: "christmas"}
   {template: "themes/coteditor/Dracula-Tufte (Dark).cottheme.in", output: "themes/coteditor/Dracula-Tufte Thanksgiving (Dark).cottheme", scheme: "thanksgiving"}
+  {template: "themes/coteditor/Dracula-Tufte (Dark).cottheme.in", output: "themes/coteditor/Dracula-Tufte Chartreuse (Dark).cottheme", scheme: "chartreuse"}
+  {template: "themes/coteditor/Dracula-Tufte (Dark).cottheme.in", output: "themes/coteditor/Dracula-Tufte St Patrick (Dark).cottheme", scheme: "st-patrick"}
+  {template: "themes/coteditor/Dracula-Tufte (Dark).cottheme.in", output: "themes/coteditor/Dracula-Tufte Independence Day (Dark).cottheme", scheme: "independence-day"}
   {template: "themes/ghostty/dracula-tufte.in", output: "themes/ghostty/dracula-tufte", scheme: "dark"}
   {template: "themes/ghostty/dracula-tufte-light.in", output: "themes/ghostty/dracula-tufte-light", scheme: "light"}
   {template: "themes/ghostty/dracula-tufte-xmas.in", output: "themes/ghostty/dracula-tufte-xmas", scheme: "christmas"}
   {template: "themes/ghostty/dracula-tufte-thanksgiving.in", output: "themes/ghostty/dracula-tufte-thanksgiving", scheme: "thanksgiving"}
+  {template: "themes/ghostty/dracula-tufte-chartreuse.in", output: "themes/ghostty/dracula-tufte-chartreuse", scheme: "chartreuse"}
+  {template: "themes/ghostty/dracula-tufte-st-patrick.in", output: "themes/ghostty/dracula-tufte-st-patrick", scheme: "st-patrick"}
+  {template: "themes/ghostty/dracula-tufte-independence-day.in", output: "themes/ghostty/dracula-tufte-independence-day", scheme: "independence-day"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte.json", scheme: "dark"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-christmas.json", scheme: "christmas"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-thanksgiving.json", scheme: "thanksgiving"}
+  {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-chartreuse.json", scheme: "chartreuse"}
+  {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-st-patrick.json", scheme: "st-patrick"}
+  {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-independence-day.json", scheme: "independence-day"}
   {template: "themes/rider/dracula-tufte.icls.in", output: "themes/rider/dracula-tufte.icls", scheme: "dark"}
   {template: "themes/rider/dracula-tufte-light.icls.in", output: "themes/rider/dracula-tufte-light.icls", scheme: "light"}
   {template: "themes/rider/dracula-tufte-xmas.icls.in", output: "themes/rider/dracula-tufte-xmas.icls", scheme: "christmas"}
   {template: "themes/rider/dracula-tufte-thanksgiving.icls.in", output: "themes/rider/dracula-tufte-thanksgiving.icls", scheme: "thanksgiving"}
+  {template: "themes/rider/dracula-tufte-chartreuse.icls.in", output: "themes/rider/dracula-tufte-chartreuse.icls", scheme: "chartreuse"}
+  {template: "themes/rider/dracula-tufte-st-patrick.icls.in", output: "themes/rider/dracula-tufte-st-patrick.icls", scheme: "st-patrick"}
+  {template: "themes/rider/dracula-tufte-independence-day.icls.in", output: "themes/rider/dracula-tufte-independence-day.icls", scheme: "independence-day"}
   {template: "themes/rider/dracula-tufte.theme.json.in", output: "themes/rider/dracula-tufte.theme.json", scheme: "dark"}
   {template: "themes/rider/dracula-tufte-light.theme.json.in", output: "themes/rider/dracula-tufte-light.theme.json", scheme: "light"}
   {template: "themes/rider/dracula-tufte-xmas.theme.json.in", output: "themes/rider/dracula-tufte-xmas.theme.json", scheme: "christmas"}
   {template: "themes/rider/dracula-tufte-thanksgiving.theme.json.in", output: "themes/rider/dracula-tufte-thanksgiving.theme.json", scheme: "thanksgiving"}
+  {template: "themes/rider/dracula-tufte-chartreuse.theme.json.in", output: "themes/rider/dracula-tufte-chartreuse.theme.json", scheme: "chartreuse"}
+  {template: "themes/rider/dracula-tufte-st-patrick.theme.json.in", output: "themes/rider/dracula-tufte-st-patrick.theme.json", scheme: "st-patrick"}
+  {template: "themes/rider/dracula-tufte-independence-day.theme.json.in", output: "themes/rider/dracula-tufte-independence-day.theme.json", scheme: "independence-day"}
   {template: "themes/rider/META-INF/plugin.xml.in", output: "themes/rider/META-INF/plugin.xml", scheme: "dark"}
   {template: "themes/tmux/dracula-tufte.conf.in", output: "themes/tmux/dracula-tufte.conf", scheme: "dark"}
   {template: "themes/tmux/dracula-tufte-christmas.conf.in", output: "themes/tmux/dracula-tufte-christmas.conf", scheme: "christmas"}
   {template: "themes/tmux/dracula-tufte-thanksgiving.conf.in", output: "themes/tmux/dracula-tufte-thanksgiving.conf", scheme: "thanksgiving"}
+  {template: "themes/tmux/dracula-tufte-chartreuse.conf.in", output: "themes/tmux/dracula-tufte-chartreuse.conf", scheme: "chartreuse"}
+  {template: "themes/tmux/dracula-tufte-st-patrick.conf.in", output: "themes/tmux/dracula-tufte-st-patrick.conf", scheme: "st-patrick"}
+  {template: "themes/tmux/dracula-tufte-independence-day.conf.in", output: "themes/tmux/dracula-tufte-independence-day.conf", scheme: "independence-day"}
   {template: "themes/vscode/extension.vsixmanifest.in", output: "themes/vscode/extension.vsixmanifest", scheme: "dark"}
   {template: "themes/vscode/package.json.in", output: "themes/vscode/package.json", scheme: "dark"}
   {template: "themes/vscode/themes/dracula-tufte-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-color-theme.json", scheme: "dark"}
   {template: "themes/vscode/themes/dracula-tufte-light-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-light-color-theme.json", scheme: "light"}
   {template: "themes/vscode/themes/dracula-tufte-christmas-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-christmas-color-theme.json", scheme: "christmas"}
   {template: "themes/vscode/themes/dracula-tufte-thanksgiving-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-thanksgiving-color-theme.json", scheme: "thanksgiving"}
+  {template: "themes/vscode/themes/dracula-tufte-chartreuse-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-chartreuse-color-theme.json", scheme: "chartreuse"}
+  {template: "themes/vscode/themes/dracula-tufte-st-patrick-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-st-patrick-color-theme.json", scheme: "st-patrick"}
+  {template: "themes/vscode/themes/dracula-tufte-independence-day-color-theme.json.in", output: "themes/vscode/themes/dracula-tufte-independence-day-color-theme.json", scheme: "independence-day"}
   {template: "themes/zed/dracula-tufte.json.in", output: "themes/zed/dracula-tufte.json", scheme: "dark"}
 ]
 
@@ -155,6 +176,9 @@ def main [
     {out: $ITERM_LIGHT_OUT, scheme: "light"}
     {out: "themes/iterm2/dracula-tufte-christmas.itermcolors", scheme: "christmas"}
     {out: "themes/iterm2/dracula-tufte-thanksgiving.itermcolors", scheme: "thanksgiving"}
+    {out: "themes/iterm2/dracula-tufte-chartreuse.itermcolors", scheme: "chartreuse"}
+    {out: "themes/iterm2/dracula-tufte-st-patrick.itermcolors", scheme: "st-patrick"}
+    {out: "themes/iterm2/dracula-tufte-independence-day.itermcolors", scheme: "independence-day"}
   ] {
     let iterm_path = ($ROOT | path join $pair.out)
     let iterm_rendered = (render-itermcolors $palette $version $pair.scheme)
@@ -258,7 +282,7 @@ def render [text: string, palette: record, version: string, scheme: string = "da
 
 # `key` resolves against the palette named by `scheme` (`dark`, `light`, or a season such as
 # `christmas`), unless it carries a palette name as its prefix (`light:`, `dark:`,
-# `christmas:`, `thanksgiving:`), which wins regardless of `scheme`. See the THEMES
+# `christmas:`, `thanksgiving:`, `chartreuse:`, `st-patrick:`, `independence-day:`), which wins regardless of `scheme`. See the THEMES
 # placeholder comment above for which templates need the prefix.
 def resolve [key: string, palette: record, version: string, scheme: string = "dark"]: nothing -> string {
   if $key == "version" { return $version }
@@ -311,7 +335,10 @@ def mix [base: string, accent: string, percent: float]: nothing -> string {
 }
 
 def channel [hex: string, i: int]: nothing -> int {
-  $hex | str substring ($i * 2)..<($i * 2 + 2) | into int --radix 16
+  # One digit at a time: a pair such as `0b` reads as a binary prefix to `into int --radix 16`.
+  let hi = ($hex | str substring ($i * 2)..<($i * 2 + 1) | into int --radix 16)
+  let lo = ($hex | str substring ($i * 2 + 1)..<($i * 2 + 2) | into int --radix 16)
+  $hi * 16 + $lo
 }
 
 def byte-hex []: int -> string {
@@ -434,9 +461,10 @@ def package [out: path, version: string] {
   let stage = ($dist | path join "stage")
   let jar_name = $"dracula-tufte-rider-($version).jar"
 
-  # Inner jar first, out of its own staging tree. Four theme.json/icls pairs go in,
-  # dark, light, Christmas and Thanksgiving, since a JetBrains theme is one appearance
-  # per theme.json and plugin.xml registers each as its own themeProvider.
+  # Inner jar first, out of its own staging tree. Seven theme.json/icls pairs go in,
+  # dark, light, Christmas, Thanksgiving, Chartreuse, St Patrick and Independence Day,
+  # since a JetBrains theme is one
+  # appearance per theme.json and plugin.xml registers each as its own themeProvider.
   let jstage = ($stage | path join "jar")
   rm --recursive --force $stage
   mkdir ($jstage | path join "META-INF")
@@ -449,6 +477,12 @@ def package [out: path, version: string] {
   cp ($dir | path join "dracula-tufte-xmas.icls") ($jstage | path join "dracula-tufte-xmas.xml")
   cp ($dir | path join "dracula-tufte-thanksgiving.theme.json") ($jstage | path join "dracula-tufte-thanksgiving.theme.json")
   cp ($dir | path join "dracula-tufte-thanksgiving.icls") ($jstage | path join "dracula-tufte-thanksgiving.xml")
+  cp ($dir | path join "dracula-tufte-chartreuse.theme.json") ($jstage | path join "dracula-tufte-chartreuse.theme.json")
+  cp ($dir | path join "dracula-tufte-chartreuse.icls") ($jstage | path join "dracula-tufte-chartreuse.xml")
+  cp ($dir | path join "dracula-tufte-st-patrick.theme.json") ($jstage | path join "dracula-tufte-st-patrick.theme.json")
+  cp ($dir | path join "dracula-tufte-st-patrick.icls") ($jstage | path join "dracula-tufte-st-patrick.xml")
+  cp ($dir | path join "dracula-tufte-independence-day.theme.json") ($jstage | path join "dracula-tufte-independence-day.theme.json")
+  cp ($dir | path join "dracula-tufte-independence-day.icls") ($jstage | path join "dracula-tufte-independence-day.xml")
   [ "Manifest-Version: 1.0"
     "Implementation-Title: Dracula-Tufte (muted)"
     $"Implementation-Version: ($version)"
@@ -460,7 +494,10 @@ def package [out: path, version: string] {
     "META-INF/MANIFEST.MF" "META-INF/plugin.xml" "dracula-tufte.theme.json" "dracula-tufte.xml"
     "dracula-tufte-light.theme.json" "dracula-tufte-light.xml"
     "dracula-tufte-xmas.theme.json" "dracula-tufte-xmas.xml"
-    "dracula-tufte-thanksgiving.theme.json" "dracula-tufte-thanksgiving.xml" "META-INF"
+    "dracula-tufte-thanksgiving.theme.json" "dracula-tufte-thanksgiving.xml"
+    "dracula-tufte-chartreuse.theme.json" "dracula-tufte-chartreuse.xml"
+    "dracula-tufte-st-patrick.theme.json" "dracula-tufte-st-patrick.xml"
+    "dracula-tufte-independence-day.theme.json" "dracula-tufte-independence-day.xml" "META-INF"
   ] {
     ^touch -t 198001010000 ($jstage | path join $f)
   }
@@ -471,7 +508,10 @@ def package [out: path, version: string] {
   let jz = (^zip -q -X $jar "META-INF/" META-INF/MANIFEST.MF META-INF/plugin.xml
     dracula-tufte.theme.json dracula-tufte.xml dracula-tufte-light.theme.json dracula-tufte-light.xml
     dracula-tufte-xmas.theme.json dracula-tufte-xmas.xml
-    dracula-tufte-thanksgiving.theme.json dracula-tufte-thanksgiving.xml | complete)
+    dracula-tufte-thanksgiving.theme.json dracula-tufte-thanksgiving.xml
+    dracula-tufte-chartreuse.theme.json dracula-tufte-chartreuse.xml
+    dracula-tufte-st-patrick.theme.json dracula-tufte-st-patrick.xml
+    dracula-tufte-independence-day.theme.json dracula-tufte-independence-day.xml | complete)
   cd $ROOT
   if $jz.exit_code != 0 {
     rm --recursive --force $stage
@@ -567,12 +607,15 @@ def package-vscode [out: path, version: string] {
   cp ($dir | path join "themes" "dracula-tufte-light-color-theme.json") ($extension | path join "themes" "dracula-tufte-light-color-theme.json")
   cp ($dir | path join "themes" "dracula-tufte-christmas-color-theme.json") ($extension | path join "themes" "dracula-tufte-christmas-color-theme.json")
   cp ($dir | path join "themes" "dracula-tufte-thanksgiving-color-theme.json") ($extension | path join "themes" "dracula-tufte-thanksgiving-color-theme.json")
+  cp ($dir | path join "themes" "dracula-tufte-chartreuse-color-theme.json") ($extension | path join "themes" "dracula-tufte-chartreuse-color-theme.json")
+  cp ($dir | path join "themes" "dracula-tufte-st-patrick-color-theme.json") ($extension | path join "themes" "dracula-tufte-st-patrick-color-theme.json")
+  cp ($dir | path join "themes" "dracula-tufte-independence-day-color-theme.json") ($extension | path join "themes" "dracula-tufte-independence-day-color-theme.json")
   cp ($dir | path join "extension.vsixmanifest") ($stage | path join "extension.vsixmanifest")
   content-types | save --force --raw ($stage | path join "[Content_Types].xml")
 
   for f in [
     "extension/themes/dracula-tufte-color-theme.json" "extension/themes/dracula-tufte-light-color-theme.json"
-    "extension/themes/dracula-tufte-christmas-color-theme.json" "extension/themes/dracula-tufte-thanksgiving-color-theme.json" "extension/themes"
+    "extension/themes/dracula-tufte-christmas-color-theme.json" "extension/themes/dracula-tufte-thanksgiving-color-theme.json" "extension/themes/dracula-tufte-chartreuse-color-theme.json" "extension/themes/dracula-tufte-st-patrick-color-theme.json" "extension/themes/dracula-tufte-independence-day-color-theme.json" "extension/themes"
     "extension/package.json" "extension/readme.md" "extension"
     "extension.vsixmanifest" "[Content_Types].xml"
   ] {
@@ -584,7 +627,7 @@ def package-vscode [out: path, version: string] {
   let z = (^zip -q -X $out "[Content_Types].xml" "extension.vsixmanifest"
     "extension/" "extension/package.json" "extension/readme.md"
     "extension/themes/" "extension/themes/dracula-tufte-color-theme.json" "extension/themes/dracula-tufte-light-color-theme.json"
-    "extension/themes/dracula-tufte-christmas-color-theme.json" "extension/themes/dracula-tufte-thanksgiving-color-theme.json" | complete)
+    "extension/themes/dracula-tufte-christmas-color-theme.json" "extension/themes/dracula-tufte-thanksgiving-color-theme.json" "extension/themes/dracula-tufte-chartreuse-color-theme.json" "extension/themes/dracula-tufte-st-patrick-color-theme.json" "extension/themes/dracula-tufte-independence-day-color-theme.json" | complete)
   cd $ROOT
   rm --recursive --force $stage
   if $z.exit_code != 0 {
