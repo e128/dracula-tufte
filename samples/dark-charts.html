@@ -33,7 +33,7 @@
     })();
   </script>
   <style>
-    /* Dracula-Tufte (muted) v1.72.0 */
+    /* Dracula-Tufte (muted) v1.72.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -1776,7 +1776,7 @@
 
     <section>
       <h2 id="bars">Bar chart</h2>
-      <p>A bar chart here is a real table with a class on it. The bar is a background band inside the cell that already holds the number, sized by a <code>--bar</code> percentage the generator sets, so the value is text in the markup and the bar is a second reading of it. Nothing is added to the accessibility tree and nothing is lost when the band does not paint.</p>
+      <p>A bar chart here is a real table with a class on it. The bar is a background band inside the cell that already holds the number, sized by a <code translate="no">--bar</code> percentage the generator sets, so the value is text in the markup and the bar is a second reading of it. Nothing is added to the accessibility tree and nothing is lost when the band does not paint.</p>
       <dl class="stat-strip">
         <div><dt>Files</dt><dd class="v">4</dd><dd class="s">in the payload</dd></div>
         <div><dt>Largest share</dt><dd class="v">52%</dd><dd class="s">the stylesheet</dd></div>
@@ -1786,15 +1786,15 @@
         <caption><span class="label">Payload share by file</span>Illustrative shares across four files. Each value is a share of their combined total. Guides mark 25 percentage points.<span class="byline">Source: fixture data, not measured file sizes.</span></caption>
         <thead><tr><th scope="col">File</th><th scope="col">Share</th></tr></thead>
         <tbody>
-          <tr><td><code>tufte-dracula.css</code></td><td class="bar lead" style="--bar: 52%">52%</td></tr>
-          <tr><td><code>mermaid.js</code></td><td class="bar" style="--bar: 21%">21%</td></tr>
-          <tr><td><code>filter.js</code></td><td class="bar" style="--bar: 15%">15%</td></tr>
-          <tr><td><code>mermaid-palette.json</code></td><td class="bar" style="--bar: 12%">12%</td></tr>
+          <tr><td><code translate="no">tufte-dracula.css</code></td><td class="bar lead" style="--bar: 52%">52%</td></tr>
+          <tr><td><code translate="no">mermaid.js</code></td><td class="bar" style="--bar: 21%">21%</td></tr>
+          <tr><td><code translate="no">filter.js</code></td><td class="bar" style="--bar: 15%">15%</td></tr>
+          <tr><td><code translate="no">mermaid-palette.json</code></td><td class="bar" style="--bar: 12%">12%</td></tr>
         </tbody>
         <tfoot><tr><td>Total</td><td>100%</td></tr></tfoot>
       </table>
       <p class="chart-takeaway"><strong>Read:</strong> the stylesheet has the largest share in this example.<span class="more">Compare bar length for rank, and keep the percentage for exact values.</span></p>
-      <p>Every band uses one hue, and the row label carries the category. Per-row colors from the <code>--data-*</code> ramp were tried and measured out: at the 0.3 alpha that keeps each number legible, the four ramp members land within Lc 2 of each other, so color cannot identify a category (see NOTES.md, <em>CSS charts</em>). The next table uses a different scale: each bar is a share of the largest value, not a share of the total.</p>
+      <p>Every band uses one hue, and the row label carries the category. Per-row colors from the <code translate="no">--data-*</code> ramp were tried and measured out: at the 0.3 alpha that keeps each number legible, the four ramp members land within Lc 2 of each other, so color cannot identify a category (see NOTES.md, <em>CSS charts</em>). The next table uses a different scale: each bar is a share of the largest value, not a share of the total.</p>
       <table class="bar-chart" tabindex="0">
         <caption>Illustrative counts. Bar length is a share of the largest value, 480, not a share of the total. Guides mark 25 percentage points.<span class="byline">Source: fixture data.</span></caption>
         <thead><tr><th scope="col">Category</th><th scope="col">Count</th><th scope="col" class="num">Versus prior run</th></tr></thead>
@@ -1820,8 +1820,8 @@
 
     <section>
       <h2 id="meter">Meter</h2>
-      <p>A meter is a value against a known limit: storage, a quota, a budget window. It is a <code>dl.meter</code> with the label in <code>dt</code>, the value as text in <code>dd.v</code>, and an optional gloss in <code>dd.s</code>. The band paints on the definition list itself, sized by a <code>--bar</code> percentage that states the same number the text states, so the graphic is a second reading and nothing is lost when it does not paint. The track is a one pixel rule ring, the token the sheet holds at the 3:1 graphic floor, because the extent is what makes the fill readable as a share of a whole.</p>
-      <p>Meters stack as plain siblings, and their value columns align on their own: each <code>dl.meter</code> is a full width grid with the label track sized to the remainder, so every band starts at the same left edge and every value ends at the same right edge. A meter states a percent: a bare number with no limit belongs in a <code>.stat-strip</code> or a plain table instead. The band carries one hue at full strength, the sparkline's rule, because no text sits on it. A state such as full or paused is text beside the value, never a second band color.</p>
+      <p>A meter is a value against a known limit: storage, a quota, a budget window. It is a <code translate="no">dl.meter</code> with the label in <code translate="no">dt</code>, the value as text in <code translate="no">dd.v</code>, and an optional gloss in <code translate="no">dd.s</code>. The band paints on the definition list itself, sized by a <code translate="no">--bar</code> percentage that states the same number the text states, so the graphic is a second reading and nothing is lost when it does not paint. The track is a one pixel rule ring, the token the sheet holds at the 3:1 graphic floor, because the extent is what makes the fill readable as a share of a whole.</p>
+      <p>Meters stack as plain siblings, and their value columns align on their own: each <code translate="no">dl.meter</code> is a full width grid with the label track sized to the remainder, so every band starts at the same left edge and every value ends at the same right edge. A meter states a percent: a bare number with no limit belongs in a <code translate="no">.stat-strip</code> or a plain table instead. The band carries one hue at full strength, the sparkline's rule, because no text sits on it. A state such as full or paused is text beside the value, never a second band color.</p>
       <dl class="meter" style="--bar: 2%">
         <dt>Rolling</dt><dd class="v">2% used</dd><dd class="s">resets in 4h 20m</dd>
       </dl>
@@ -1839,7 +1839,7 @@
 
     <section>
       <h2 id="dot">Dot plot</h2>
-      <p>The dot plot is the bar chart's lighter cousin: the same <code>table.bar-chart</code>, with <code>td.dot</code> in place of <code>td.bar</code>. A full strength dot sits at the value's position on the shared scale, in its own text free cell, and the value states itself in the next cell as <code>td.num</code>. The cell keeps the same guides and zero edge the bar draws, so a position reads against the same scale. Choose it when many rows on one scale make a wall of bands feel heavy, and keep the bar when the rows are few or a fill reads more plainly than a mark.</p>
+      <p>The dot plot is the bar chart's lighter cousin: the same <code translate="no">table.bar-chart</code>, with <code translate="no">td.dot</code> in place of <code translate="no">td.bar</code>. A full strength dot sits at the value's position on the shared scale, in its own text free cell, and the value states itself in the next cell as <code translate="no">td.num</code>. The cell keeps the same guides and zero edge the bar draws, so a position reads against the same scale. Choose it when many rows on one scale make a wall of bands feel heavy, and keep the bar when the rows are few or a fill reads more plainly than a mark.</p>
       <table class="bar-chart" tabindex="0">
         <caption><span class="label">Counts on one shared scale</span>Each dot sits at its count's share of the largest value, 480, the same data as the second bar chart above. Guides mark 25 percentage points.<span class="byline">Source: fixture data.</span></caption>
         <thead><tr><th scope="col">Category</th><th scope="col">Share</th><th scope="col" class="num">Count</th></tr></thead>
@@ -1855,24 +1855,24 @@
 
     <section>
       <h2 id="spark">Sparklines</h2>
-      <p>A sparkline is a word-sized graphic that sits in a table cell or a sentence and shows the shape of a series next to the numbers that state it. Here it is a row of <code>i</code> columns inside <code>span.spark</code>, each sized by a <code>--h</code> percentage the generator sets. Every column stands on one zero baseline, so a falling series looks like a fall and never like a stretched range, and the final column is drawn in <code>--on-surface</code> so the latest value is the one mark a reader finds first. The first and latest values are text in the cells that flank the sparkline, and the whole series is a <code>data-values</code> attribute, so the shape is a second reading and the numbers stay the source. Order rows by the latest value unless the rows have a natural order of their own.</p>
+      <p>A sparkline is a word-sized graphic that sits in a table cell or a sentence and shows the shape of a series next to the numbers that state it. Here it is a row of <code translate="no">i</code> columns inside <code translate="no">span.spark</code>, each sized by a <code translate="no">--h</code> percentage the generator sets. Every column stands on one zero baseline, so a falling series looks like a fall and never like a stretched range, and the final column is drawn in <code translate="no">--on-surface</code> so the latest value is the one mark a reader finds first. The first and latest values are text in the cells that flank the sparkline, and the whole series is a <code translate="no">data-values</code> attribute, so the shape is a second reading and the numbers stay the source. Order rows by the latest value unless the rows have a natural order of their own.</p>
       <table class="bar-chart" tabindex="0">
         <caption><span class="label">Payload share across six releases</span>Each column is a file's share of the combined total in one release, oldest on the left. Full height is 60 percent for every row, so the rows compare with each other.<span class="byline">Source: fixture data.</span></caption>
         <thead><tr><th scope="col">File</th><th scope="col" class="num">First</th><th scope="col">Trend</th><th scope="col" class="num">Latest</th></tr></thead>
         <tbody>
-          <tr><td><code>tufte-dracula.css</code></td><td class="num">30%</td><td><span class="spark" data-values="30%, 34%, 38%, 44%, 49%, 52%"><i style="--h: 50%"></i><i style="--h: 57%"></i><i style="--h: 63%"></i><i style="--h: 73%"></i><i style="--h: 82%"></i><i style="--h: 87%"></i></span></td><td class="num">52%</td></tr>
-          <tr><td><code>mermaid.js</code></td><td class="num">40%</td><td><span class="spark" data-values="40%, 36%, 32%, 27%, 24%, 21%"><i style="--h: 67%"></i><i style="--h: 60%"></i><i style="--h: 53%"></i><i style="--h: 45%"></i><i style="--h: 40%"></i><i style="--h: 35%"></i></span></td><td class="num">21%</td></tr>
-          <tr><td><code>filter.js</code></td><td class="num">20%</td><td><span class="spark" data-values="20%, 19%, 18%, 17%, 16%, 15%"><i style="--h: 33%"></i><i style="--h: 32%"></i><i style="--h: 30%"></i><i style="--h: 28%"></i><i style="--h: 27%"></i><i style="--h: 25%"></i></span></td><td class="num">15%</td></tr>
-          <tr><td><code>mermaid-palette.json</code></td><td class="num">10%</td><td><span class="spark" data-values="10%, 11%, 12%, 12%, 11%, 12%"><i style="--h: 17%"></i><i style="--h: 18%"></i><i style="--h: 20%"></i><i style="--h: 20%"></i><i style="--h: 18%"></i><i style="--h: 20%"></i></span></td><td class="num">12%</td></tr>
+          <tr><td><code translate="no">tufte-dracula.css</code></td><td class="num">30%</td><td><span class="spark" data-values="30%, 34%, 38%, 44%, 49%, 52%"><i style="--h: 50%"></i><i style="--h: 57%"></i><i style="--h: 63%"></i><i style="--h: 73%"></i><i style="--h: 82%"></i><i style="--h: 87%"></i></span></td><td class="num">52%</td></tr>
+          <tr><td><code translate="no">mermaid.js</code></td><td class="num">40%</td><td><span class="spark" data-values="40%, 36%, 32%, 27%, 24%, 21%"><i style="--h: 67%"></i><i style="--h: 60%"></i><i style="--h: 53%"></i><i style="--h: 45%"></i><i style="--h: 40%"></i><i style="--h: 35%"></i></span></td><td class="num">21%</td></tr>
+          <tr><td><code translate="no">filter.js</code></td><td class="num">20%</td><td><span class="spark" data-values="20%, 19%, 18%, 17%, 16%, 15%"><i style="--h: 33%"></i><i style="--h: 32%"></i><i style="--h: 30%"></i><i style="--h: 28%"></i><i style="--h: 27%"></i><i style="--h: 25%"></i></span></td><td class="num">15%</td></tr>
+          <tr><td><code translate="no">mermaid-palette.json</code></td><td class="num">10%</td><td><span class="spark" data-values="10%, 11%, 12%, 12%, 11%, 12%"><i style="--h: 17%"></i><i style="--h: 18%"></i><i style="--h: 20%"></i><i style="--h: 20%"></i><i style="--h: 18%"></i><i style="--h: 20%"></i></span></td><td class="num">12%</td></tr>
         </tbody>
       </table>
       <p class="chart-takeaway"><strong>Read:</strong> the stylesheet's share climbs every release while the Mermaid script's falls.<span class="more">Compare the shapes for direction and the first and latest values for size.</span></p>
-      <p>A sparkline also reads inside a sentence. The stylesheet's share rose from 30% to 52% <span class="spark" data-values="30%, 34%, 38%, 44%, 49%, 52%"><i style="--h: 50%"></i><i style="--h: 57%"></i><i style="--h: 63%"></i><i style="--h: 73%"></i><i style="--h: 82%"></i><i style="--h: 87%"></i></span> across the six releases.<label for="mn-spark" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-spark" class="margin-toggle"/><span class="marginnote">The Mermaid script fell from 40% to 21% <span class="spark fit" data-values="40%, 36%, 32%, 27%, 24%, 21%"><i style="--h: 100%"></i><i style="--h: 81%"></i><i style="--h: 62%"></i><i style="--h: 38%"></i><i style="--h: 24%"></i><i style="--h: 10%"></i></span> stretched to its own range, with a dashed baseline.</span> The same graphic fits a margin note, which is where Tufte set small figures beside the text they support. Add <code>fit</code> when the shape matters more than the size: the columns stretch from the series' lowest to its highest value, and the dashed baseline tells a reader that the bottom is not zero.</p>
+      <p>A sparkline also reads inside a sentence. The stylesheet's share rose from 30% to 52% <span class="spark" data-values="30%, 34%, 38%, 44%, 49%, 52%"><i style="--h: 50%"></i><i style="--h: 57%"></i><i style="--h: 63%"></i><i style="--h: 73%"></i><i style="--h: 82%"></i><i style="--h: 87%"></i></span> across the six releases.<label for="mn-spark" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-spark" class="margin-toggle"/><span class="marginnote">The Mermaid script fell from 40% to 21% <span class="spark fit" data-values="40%, 36%, 32%, 27%, 24%, 21%"><i style="--h: 100%"></i><i style="--h: 81%"></i><i style="--h: 62%"></i><i style="--h: 38%"></i><i style="--h: 24%"></i><i style="--h: 10%"></i></span> stretched to its own range, with a dashed baseline.</span> The same graphic fits a margin note, which is where Tufte set small figures beside the text they support. Add <code translate="no">fit</code> when the shape matters more than the size: the columns stretch from the series' lowest to its highest value, and the dashed baseline tells a reader that the bottom is not zero.</p>
     </section>
 
     <section>
       <h2 id="multiples">Small multiples</h2>
-      <p>Small multiples repeat one chart design across a series of cases, so a reader learns the encoding once and spends the rest of the page comparing. <code>div.multiples</code> lays ordinary <code>table.bar-chart</code> children in a grid that wraps by available width. Every panel must share one scale, and the shared scale belongs in the paragraph above the grid. The first panel carries the row labels once, and each later panel keeps only its caption, its bars and its source. Every panel lists the same rows in the same order, and a later panel is indented by the label column so its bars line up with the first.</p>
+      <p>Small multiples repeat one chart design across a series of cases, so a reader learns the encoding once and spends the rest of the page comparing. <code translate="no">div.multiples</code> lays ordinary <code translate="no">table.bar-chart</code> children in a grid that wraps by available width. Every panel must share one scale, and the shared scale belongs in the paragraph above the grid. The first panel carries the row labels once, and each later panel keeps only its caption, its bars and its source. Every panel lists the same rows in the same order, and a later panel is indented by the label column so its bars line up with the first.</p>
       <div class="multiples">
         <table class="bar-chart" tabindex="0">
           <caption><span class="label">Release 1</span>Share of the combined total. Guides mark 25 percentage points.</caption>
@@ -1910,8 +1910,8 @@
 
     <section>
       <h2 id="line">Line chart</h2>
-      <p>A time series is a line chart: one hue, no legend, no gridlines, and the axes drawn in the muted rule color so the data is the heaviest ink on the page. It is a Mermaid <code>xychart</code> fence with a single <code>line</code> series, themed per palette in <code>mermaid.js</code>. A line may start above zero because it shows shape, but this one stands on zero so it shares the scale of the sparklines above. Draw one only beside a table that states every value, the same rule as the radar chart below.</p>
-      <pre class="mermaid">---
+      <p>A time series is a line chart: one hue, no legend, no gridlines, and the axes drawn in the muted rule color so the data is the heaviest ink on the page. It is a Mermaid <code translate="no">xychart</code> fence with a single <code translate="no">line</code> series, themed per palette in <code translate="no">mermaid.js</code>. A line may start above zero because it shows shape, but this one stands on zero so it shares the scale of the sparklines above. Draw one only beside a table that states every value, the same rule as the radar chart below.</p>
+      <pre translate="no" class="mermaid">---
 accTitle: Stylesheet share by release
 accDescr: The stylesheet share of the combined payload rises from 30 percent in release 1 to 52 percent in release 6.
 config:
@@ -1934,8 +1934,8 @@ xychart
 
     <section>
       <h2 id="derived">Stored and derived</h2>
-      <p>A dashed outline marks a node a system derives instead of stores, the way a dashed edge already marks a conceptual connection. State the convention once, in a legend node or in the sentence above the fence, and never as a label on each node. The dash is a <code>stroke-dasharray</code> in a <code>classDef</code> and carries no color, so one line serves both palettes.</p>
-      <pre class="mermaid">flowchart LR
+      <p>A dashed outline marks a node a system derives instead of stores, the way a dashed edge already marks a conceptual connection. State the convention once, in a legend node or in the sentence above the fence, and never as a label on each node. The dash is a <code translate="no">stroke-dasharray</code> in a <code translate="no">classDef</code> and carries no color, so one line serves both palettes.</p>
+      <pre translate="no" class="mermaid">flowchart LR
   accTitle: Stored and derived nodes
   accDescr: A changeset is stored in the metadata store, while its root tree is derived by the server and drawn with a dashed outline. A legend node states that a dashed outline means derived.
   cs[Changeset] --> next[Parent changeset]
@@ -1948,9 +1948,9 @@ xychart
 
     <section>
       <h2 id="more">More diagram types</h2>
-      <p>Twelve more Mermaid fences, each rendered against this palette and verified by <code>getComputedStyle</code> rather than by reading the exported SVG's own attributes, which can carry a stale literal hex even after CSS has already repainted it (see NOTES.md, Diagram types).</p>
+      <p>Twelve more Mermaid fences, each rendered against this palette and verified by <code translate="no">getComputedStyle</code> rather than by reading the exported SVG's own attributes, which can carry a stale literal hex even after CSS has already repainted it (see NOTES.md, Diagram types).</p>
       <h3>Class diagram</h3>
-      <pre class="mermaid">classDiagram
+      <pre translate="no" class="mermaid">classDiagram
   accTitle: Class diagram sample
   accDescr: An Animal base class with a name and a sound, and a Dog subclass that inherits from it.
   class Animal {
@@ -1960,19 +1960,19 @@ xychart
   class Dog
   Animal <|-- Dog</pre>
       <h3>State diagram</h3>
-      <pre class="mermaid">stateDiagram-v2
+      <pre translate="no" class="mermaid">stateDiagram-v2
   accTitle: State diagram sample
   accDescr: A job that starts idle, moves to running when started, and returns to idle when stopped.
   [*] --> Idle
   Idle --> Running: start
   Running --> Idle: stop</pre>
       <h3>Entity relationship diagram</h3>
-      <pre class="mermaid">erDiagram
+      <pre translate="no" class="mermaid">erDiagram
   accTitle: Entity relationship diagram sample
   accDescr: A customer who places zero or more orders.
   CUSTOMER ||--o{ ORDER : places</pre>
       <h3>Requirement diagram</h3>
-      <pre class="mermaid">requirementDiagram
+      <pre translate="no" class="mermaid">requirementDiagram
   accTitle: Requirement diagram sample
   accDescr: A high-risk requirement satisfied by a simulation element.
   requirement req1 {
@@ -1986,8 +1986,8 @@ xychart
   }
   sim - satisfies -> req1</pre>
       <h3>Kanban board</h3>
-      <p>A kanban board: two tasks in a <code>Todo</code> column and one task in a <code>Done</code> column.</p>
-      <pre class="mermaid">---
+      <p>A kanban board: two tasks in a <code translate="no">Todo</code> column and one task in a <code translate="no">Done</code> column.</p>
+      <pre translate="no" class="mermaid">---
 accTitle: Kanban board sample
 accDescr: Two tasks in a Todo column and one task in a Done column.
 ---
@@ -1998,14 +1998,14 @@ kanban
   Done
     task3[Ship it]</pre>
       <h3>Radar chart</h3>
-      <pre class="mermaid">radar-beta
+      <pre translate="no" class="mermaid">radar-beta
   accTitle: Radar chart sample
   accDescr: One series scored across three axes.
   axis a["Speed"], b["Cost"], c["Quality"]
   curve x["Current"]{3,4,2}</pre>
       <p>A radar chart asks a reader to compare areas and angles, which readers judge poorly, and the area changes with the order of the axes. Draw one only beside a table that states every value on every axis.</p>
       <h3>Git graph</h3>
-      <pre class="mermaid">gitGraph
+      <pre translate="no" class="mermaid">gitGraph
   accTitle: Git graph sample
   accDescr: A develop branch committed once and merged back into main.
   commit
@@ -2014,7 +2014,7 @@ kanban
   checkout main
   merge develop</pre>
       <h3>Treemap</h3>
-      <pre class="mermaid">treemap-beta
+      <pre translate="no" class="mermaid">treemap-beta
   accTitle: Treemap sample
   accDescr: Two categories under one root, each sized by its own value.
   "Root"
@@ -2022,8 +2022,8 @@ kanban
     "B": 20</pre>
       <p>A treemap compares rectangle areas, which readers judge poorly. Draw one only beside a table of the same values, and prefer a bar chart for a ranking.</p>
       <h3>Timeline</h3>
-      <p>Mermaid's own <code>timeline</code> keyword: unrelated to this template's <code>dl.timeline</code> component (see NOTES.md, Diagram types). Three release years, each naming the versions that shipped that year: 2024 shipped v1.20.0 and v1.30.0, 2025 shipped v1.40.0 and v1.47.0, and 2026 shipped v1.48.0.</p>
-      <pre class="mermaid">---
+      <p>Mermaid's own <code translate="no">timeline</code> keyword: unrelated to this template's <code translate="no">dl.timeline</code> component (see NOTES.md, Diagram types). Three release years, each naming the versions that shipped that year: 2024 shipped v1.20.0 and v1.30.0, 2025 shipped v1.40.0 and v1.47.0, and 2026 shipped v1.48.0.</p>
+      <pre translate="no" class="mermaid">---
 accTitle: Timeline diagram sample
 accDescr: Three release years plotted on Mermaid's own timeline diagram, each naming the versions that shipped that year.
 ---
@@ -2033,7 +2033,7 @@ timeline
   2025 : v1.40.0 : v1.47.0
   2026 : v1.48.0</pre>
       <h3>Gantt chart</h3>
-      <pre class="mermaid">gantt
+      <pre translate="no" class="mermaid">gantt
   tickInterval 1day
   accTitle: Gantt chart sample
   accDescr: Two sequential tasks against a dated axis.
@@ -2043,7 +2043,7 @@ timeline
   Task A :a1, 2026-01-01, 3d
   Task B :after a1, 3d</pre>
       <h3>Architecture diagram</h3>
-      <pre class="mermaid">architecture-beta
+      <pre translate="no" class="mermaid">architecture-beta
   accTitle: Architecture diagram sample
   accDescr: A database and a server grouped inside one API boundary.
   group api(cloud)[API]
@@ -2052,7 +2052,7 @@ timeline
   db:L -- R:server</pre>
       <h3>User journey</h3>
       <p>Task and section fills theme from this palette. The actor band and the per-task mood face keep Mermaid's own fixed colors on purpose, because a mood face reads as a fixed emotional scale rather than a brand category (see NOTES.md, Diagram types).</p>
-      <pre class="mermaid">journey
+      <pre translate="no" class="mermaid">journey
   accTitle: User journey sample
   accDescr: One day rated across two sections, Work and Home.
   title My day
@@ -2074,7 +2074,7 @@ timeline
         <li>Many rows on one shared scale with less ink than bars: the dot plot variant.</li>
         <li>A trend inside a table row or a sentence: a column sparkline, with the first and latest values as text beside it.</li>
         <li>The same chart across several cases: small multiples on one shared scale.</li>
-        <li>A full time series: a Mermaid <code>xychart</code> fence with one <code>line</code> series, beside a table of its values.</li>
+        <li>A full time series: a Mermaid <code translate="no">xychart</code> fence with one <code translate="no">line</code> series, beside a table of its values.</li>
       </ul>
     </section>
   </article>

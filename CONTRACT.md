@@ -107,9 +107,10 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 - **St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16,
   Independence Day from June 28 through July 4, Thanksgiving from November 1 through the fourth
   Thursday of November, and Christmas from the fourth Friday of November through December 28, all
-  inclusive.** Poland overrides single days that fall inside those ranges: May 3, August 15,
-  November 11 and December 6. Its rows come first, so they carve those days out of Chartreuse,
-  Thanksgiving or Christmas. The remaining rows are the base calendar. The fourth Thursday is
+  inclusive.** Poland ships four single days: May 3, August 15, November 11 and December 6.
+  May 3, November 11 and December 6 fall inside Chartreuse, Thanksgiving and Christmas, and
+  Poland's rows come first so they win those days. August 15 falls outside every base range, so
+  it stands on its own. The remaining rows are the base calendar. The fourth Thursday is
   Thanksgiving Day. `nthWeekday` resolves both Thursdays and
   Fridays in the visitor's own year, so the Thanksgiving and Christmas windows track the calendar.
   That also covers the years where November 1 is a Friday and the fourth Friday falls before the
@@ -164,8 +165,8 @@ steps, in order:
 4. No edit is needed to `.github/palette-check.py`'s expectations: both sections derive from the
    row. Run `palette-check.py` and fix whatever it measures.
 5. Add the season's rows to `scripts/build-sample.nu`. A base range goes in `SEASON_RANGES`; a
-   single day that falls inside an existing range goes in `SEASON_OVERRIDES`, which is emitted
-   before the base rows so it wins the first match. Either list emits the `<season>-dark.html` and
+   single day goes in `SEASON_OVERRIDES`, which is emitted before the base rows so it wins
+   wherever it overlaps a base range. Either list emits the `<season>-dark.html` and
    `<season>-light.html` pair, sets the attribute in markup, rewrites the season conditions to
    `@media screen`, and derives the display name. Register both pages in `SEASON_PREVIEWS` in
    `scripts/maintain.nu` and add their date cases to `.github/season-probe.py`.
@@ -222,7 +223,7 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
 - [ ] `data-depth` on every row of a `<table class="tree">`, counting from `0`, in document order
       (in `samples/dark.html`, search `<table class="tree" tabindex="0">`).
 - [ ] `tabindex="0"` plus `role="region"` plus a label on anything that scrolls sideways: `pre`
-      (in `samples/dark.html`, search `<pre tabindex="0" role="region" aria-label="Code block">`)
+      (in `samples/dark.html`, search `aria-label="Code block"`)
       and a `<math display="block">` (in `samples/dark.html`, search
       `<math display="block" tabindex="0" role="region"`), a pandoc `span.math.display` (in
       `samples/dark.html`, search `<span class="math display" tabindex="0" role="region"`), and any `.table-scroll` wrapper (in
@@ -233,14 +234,17 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       stylesheet hands it a sideways-scroll axis of its own below 1000px.
 - [ ] A code block you want highlighted in the browser is `<pre><code class="language-NAME">` with
       the source as escaped text, and nothing else (in `samples/dark.html`, search
-      `<code class="language-python">`). The `language-` class on a `code` inside a `pre` is the
+      `class="language-python"`). The `language-` class on a `code` inside a `pre` is the
       opt-in: `highlight.js` skips a `code` with no such class, never guesses a language, and
       skips a block that already carries `hljs` spans from a server-side highlighter (in
       `samples/dark.html`, search `class="language-csharp hljs"`). The block still takes the
       `tabindex`, `role` and label from the scroll requirement above. Name a language the pinned
       `highlight.js` common bundle ships. The script loads from a CDN, so an offline reader sees the
       same block as plain, readable code. Use no class of your own, and inline `highlight.js` only on
-      a page that holds one.
+      a page that holds one. Put `translate="no"` on every `<pre>` and `<code>` you emit
+      (in `samples/dark.html`, search `translate="no"`): Chrome's page translation otherwise
+      rewrites identifiers inside the sample, so the code a reader sees stops matching the
+      source.
 - [ ] `--timeline-date` on an ancestor when a page carries **more than one** `dl.timeline`, set in
       `ch` against the widest date label in the whole document (in `samples/dark-timeline.html`,
       search `--timeline-date: 16ch`). Each
@@ -339,15 +343,16 @@ wrong by v1.38.1, and every check stayed green. A search string survives regener
       **may** still take a `--data-*` color, because neither puts text on the fill. No CSS rule can
       enforce this, because the color arrives in an inline `style` attribute (in `samples/dark.html`,
       search `class="step-node" style="--icon-color: var(--orange)"`).
-- [ ] **No `classDef name fill:#hex` line inside a ` ```mermaid ` fence on a page that follows the
-      reader's appearance.** A fence is diagram source, so it has no CSS to read and no `var()` it
-      can resolve: one literal hex cannot serve both palettes, and the set in
-      `mermaid-palette.json` under `classdef` is the **dark** projection. Emitted onto a page a
-      reader opens in light mode, those fills land at 1.69 to 2.15:1 against the light card, which
-      is the failure the `--data-*` light values exist to prevent everywhere else. Let the nodes
-      take the themed default instead, which `mermaid.js` already picks per scheme. Only a page
-      **locked** to one palette (the way `samples/light.html` is) may carry the hex, and then it
-      takes the matching set: `classdef` when locked to dark, `classdefLight` when locked to light.
+- [ ] **No `classDef name fill:#hex` line inside a ` ```mermaid ` fence on a page that can switch
+      palette, whether by the reader's appearance or by the date.** A fence is diagram source, so
+      it has no CSS to read and no `var()` it can resolve: one literal hex cannot serve both
+      palettes, and the set in `mermaid-palette.json` under `classdef` is the **dark**
+      projection. Emitted onto a page a reader opens in light mode, those fills land at 1.69 to
+      2.15:1 against the light card, which is the failure the `--data-*` light values exist to
+      prevent everywhere else. Let the nodes take the themed default instead, which `mermaid.js`
+      already picks per scheme. Only a page **locked** to one palette (the way
+      `samples/light.html` is) may carry the hex, and then it takes the matching set: `classdef`
+      when locked to dark, `classdefLight` when locked to light.
       The one `classDef` a fixture emits sets `stroke-dasharray` and nothing else, which carries
       no color and serves both palettes (in `samples/dark-charts.html`, search
       `stroke-dasharray:6 4`). No fixture shows the hex case.
@@ -557,22 +562,22 @@ regeneration re-inlines fresh CSS around whatever markup you already emitted.
 row for a new release, delete the oldest. Every rule a deleted row introduced lives in § 1, § 2, § 5 or
 § 6, and the "Rules that outlive their release row" paragraph at the end of § 2 holds the ones that
 fit no requirement. If your pin is older than the oldest row, read those sections in full instead of
-looking for a row. Nothing checks this table's coverage, so a skipped row reads exactly like a
-release that changed nothing: add the row in the release commit itself.
+looking for a row. `nu scripts/maintain.nu check` and the `contract` workflow compare this table
+with `git tag`, so a skipped row fails the build. Add the row in the release commit itself.
 
 | since | your generator must now |
 | --- | --- |
-| v1.72.0 | nothing is required. **A Poland palette ships behind `data-season`, and the calendar gains override rows.** May 3, August 15, November 11 and December 6 select `poland`; November 11 and December 6 sit inside the Thanksgiving and Christmas ranges, and the override rows come first so they win. A page that pasted the v1.70 snippet keeps its old calendar until it copies the block in § 1 again. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a Poland variant, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
+| v1.72.1 | nothing breaks. **The contract history is corrected and the fixtures now demonstrate `translate="no"`.** The release table is rebuilt to the last ten tags, with the missing rows for `v1.71.0`, `v1.68.1`, `v1.67.0`, `v1.66.0` and `v1.65.0`. § 2 now requires `translate="no"` on every `<pre>` and `<code>`, and every fixture carries it. `check` and the `contract` workflow compare the table with `git tag`, so a skipped row fails the build. The payload changes only in its version stamp; regenerate pages whose inline stylesheet predates this payload. |
+| v1.72.0 | nothing is required. **A Poland palette ships behind `data-season`, and the calendar gains override rows.** May 3, August 15, November 11 and December 6 select `poland`; May 3, November 11 and December 6 sit inside the Chartreuse, Thanksgiving and Christmas ranges, and August 15 stands alone. The override rows come first, so they win the days they share with a base range. A page that pasted the v1.70 snippet keeps its old calendar until it copies the block in § 1 again. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a Poland variant, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
+| v1.71.0 | nothing. **Every Rider season ships a light variant.** Rider was the one target that carried a dark and a light theme plus one dark theme per season, so each season now lands as a pair rendered from its `light-<season>` palette, with the matching `themeProvider` and jar entries. § 1 step 6 records the extra row. None of it is part of the payload. |
 | v1.70.0 | nothing is required. **Three seasonal palettes ship behind `data-season` values, and nothing you already emit changes.** St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16, and Independence Day from June 28 through July 4. A page without the head snippet in § 1 never turns them on; to follow the calendar, paste the updated snippet before the `<style>` block. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains one dark-family variant per season, selected by hand. None of them is part of the payload. |
-| v1.68.0 | nothing. **The seasonal date windows move and the theme targets gain season variants.** Thanksgiving now runs from November 1 through the fourth Thursday of November, and Christmas from the fourth Friday of November through December 28, resolved in the visitor's local year. A page that pasted the v1.63 snippet keeps its old fixed windows until it copies the block in § 1 again; the palette blocks themselves are unchanged. December 29 through 31 now belong to no season. `themes/` adds a Thanksgiving variant in every template-bearing target, and a Christmas variant where one was missing. None of them is part of the payload. |
-| v1.63.0 | nothing is required. **A seasonal Christmas palette ships behind `data-season="christmas"`, and nothing you already emit changes.** A page without the head snippet in § 1 never turns it on, so inlining the new stylesheet alone is a no-op. To get the palette by date, paste that snippet before the `<style>` block. It covers 11 November to 26 December in the reader's local calendar. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Keep the snippet a classic script and keep it first: `mermaid.js` reads `--mermaid-scheme` once at load, so a snippet that runs later paints a default diagram on a Christmas page. The ban on a `classDef name fill:#hex` line on a page that follows appearance now covers a page that follows the date as well. |
-| v1.62.1 | nothing. **Rider compatibility documentation only.** The theme descriptor already includes Rider 2026.3, and the native parser check verifies theme JSON and bundled resource resolution. The stylesheet changes only in its version stamp; the inlined scripts and theme templates keep their payload bytes from v1.62.0. No markup or token change |
-| v1.60.0 | **two new opt-in chart components, and nothing you already emit changes.** A `dl.meter` draws a value against a known limit, and `td.dot` draws the dot plot variant of the bar chart. Each carries a § 2 requirement, and neither adds a token: the meter's band and the dot both paint `--data-1` at full strength, the ramp member and the allowance the palette gate already measures. A page that emits neither owes nothing; regenerate pages whose inline stylesheet predates this payload |
-| v1.59.3 | nothing. **A table shows a soft edge shadow while it hides content.** The base `table` rule and `.table-scroll` both carry four background layers: two `--surface` covers ride the content (`background-attachment: local`) and two `--rule` shadows stay put (`scroll`), so the shadow appears only on the side the reader can scroll toward and clears at either end. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
-| v1.59.2 | nothing. **A `.table-scroll` shows a soft edge shadow while it hides content.** Two `--surface` covers ride the content (`background-attachment: local`) and two `--rule` shadows stay put (`scroll`), so the shadow appears only on the side the reader can scroll toward and clears at either end. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
-| v1.59.1 | nothing. **A recut of the v1.59.0 payload.** v1.59.0 reached `main` by direct push, so this release reissued the same bytes from a commit that landed through a pull request with the contract check green. Only the version stamp and the generated files change: regenerate pages whose inline stylesheet predates this payload |
-| v1.59.0 | nothing. **The sheet sets five type steps and no other size.** Body stays the fluid `clamp(1rem, 0.95rem + 0.25vw, 1.25rem)`, which reads 16 to 18.8px. Small text is `0.8125rem` (13px), captions and interface text `1rem` (16px), a section heading and a lead `1.2em` (23px), display `1.75em` (33px). The intermediate 12, 14, 15, 17, 18, 21 and 25px steps are gone, and the small steps are rem-based so nested text cannot compound into a sixth size. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
-| v1.58.3 | nothing. **A `table.bar-chart` fills the page measure** instead of hugging a `12rem` bar column: the table takes `display: table`, `inline-size: 100%`, and a fixed layout with a 30% label column, so the bars read against the page grid and a long section label wraps rather than widening the table. No markup change, no new token, and no § 2 requirement: regenerate pages whose inline stylesheet predates this payload |
+| v1.69.0 | nothing breaks, and the § 2 text catches up with the fixtures. **The filter box now documents all four keyboard attributes**, three of which the v1.68.2 fixture already carried; `autocomplete="off"` was present earlier. The payload changes arrive on a re-inline: `font-display: optional` in all four `@font-face` rules, `h5` at weight 500, and a visually hidden `role="status"` region in `highlight.js` that announces `Copied`. |
+| v1.68.2 | add `translate="no"` to the `<pre>` and `<code>` elements your generator emits, and add `autocapitalize="off"`, `spellcheck="false"` and `enterkeyhint="search"` to every `input.filter-box`; `autocomplete="off"` was already required. **Chrome page translation rewrites identifiers inside a code sample, and a phone keyboard capitalizes and spell-checks a search query.** § 2 states both rules and the fixtures demonstrate them. The stylesheet is unchanged apart from its version comment. |
+| v1.68.1 | nothing. **Consumer documentation only.** README scales the seasonal theme prose and names one stable filename pattern per target. The stylesheet differs only in its version stamp; no markup, token or script changes. |
+| v1.68.0 | nothing. **The seasonal date windows move and the theme targets gain season variants.** Thanksgiving now runs from November 1 through the fourth Thursday of November, and Christmas from the fourth Friday of November through December 28, resolved in the visitor's local year. A page that pasted the v1.63 or v1.67 snippet keeps its old fixed windows until it copies the block in § 1 again; the palette blocks themselves are unchanged. December 29 through 31 now belong to no season. `themes/` adds a Thanksgiving variant in every template-bearing target, and a Christmas variant where one was missing. None of them is part of the payload. |
+| v1.67.0 | repaste the head snippet. **Thanksgiving ships behind `data-season`, and the date snippet becomes a range table.** Thanksgiving runs from November 1 through November 28, and Christmas moves to November 29 through December 31. A page that pasted the v1.63 snippet keeps Christmas at November 11 through December 26 until it copies the block in § 1 again. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. |
+| v1.66.0 | nothing. **The inlined Mermaid pin moves from 12.2.0 to 12.3.0.** The release clears two DOMPurify advisories, fixes an ELK edge crossing inside subgraphs, and drops the legacy ER renderer. No markup change and no new token: regenerate pages whose inlined `mermaid.js` predates this payload. |
+
 ## 4. Regenerate on a byte compare, not a version string
 
 A version comment is not a staleness signal. A generated file can carry a current comment over

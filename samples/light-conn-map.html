@@ -6,7 +6,7 @@
   <title>Tufte-Dracula connections-map layout: forced light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.72.0 */
+    /* Dracula-Tufte (muted) v1.72.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -1727,7 +1727,7 @@
 <body class="conn-map">
   <div class="markdown-alert markdown-alert-caution">
     <p class="markdown-alert-title">Preview only, not the payload</p>
-    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows a seasonal theme. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href="dark-conn-map.html">dark-conn-map.html</a> is the same fixture with the stylesheet verbatim.</p>
+    <p>This page forces <code translate="no">prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code translate="no">@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows a seasonal theme. Inline <code translate="no">tufte-dracula.css</code> from the repo root, never a page. <a href="dark-conn-map.html">dark-conn-map.html</a> is the same fixture with the stylesheet verbatim.</p>
   </div>
   <dialog class="mermaid-overlay" id="mermaid-zoom"></dialog>
   <main>
@@ -1744,7 +1744,7 @@
     <section>
       <h2>Graph</h2>
       <h3>Small map</h3>
-      <pre class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
+      <pre translate="no" class="mermaid">%%{init: {'flowchart': {'useMaxWidth': false}}}%%
 flowchart BT
   accTitle: Connections map for the focus topic
   accDescr: Antecedents A and B feed the focus topic, which leads to descendants X and Y. The focus label is deliberately long, so its box must not clip its own text or push the graph past the column.
@@ -1754,8 +1754,8 @@ flowchart BT
   focus --> d1[Descendant X]
   focus --> d2[Descendant Y]</pre>
       <h3>Large map</h3>
-      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code>view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code>click</code> directive per node and sets <code>window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code>strict</code>, so it adds no script beyond the three payload scripts and the seasonal head snippet.</p>
-      <pre class="mermaid">---
+      <p>Past roughly 15 to 20 nodes on one rank the small map's flat fan-out sprawls (see NOTES.md, Large maps). This map groups antecedents and descendants into open subgraphs, switches to the ELK layout engine, and states each relationship style once in a legend instead of on every edge. Every node stays clickable: the subgraphs are never collapsed, because <code translate="no">view: collapsed</code> drops a cluster's nodes, and their links, from the render entirely. A consumer wanting real per-node links adds a <code translate="no">click</code> directive per node and sets <code translate="no">window.mermaidSecurityLevel = 'loose'</code> (see NOTES.md, Zoom); this fixture leaves the default <code translate="no">strict</code>, so it adds no script beyond the three payload scripts and the seasonal head snippet.</p>
+      <pre translate="no" class="mermaid">---
 config:
   layout: elk
   flowchart:

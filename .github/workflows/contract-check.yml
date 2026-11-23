@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The release-table gate compares CONTRACT.md section 3 with `git tag`. A
+          # default depth-1 checkout carries no tags, which would make the gate answer
+          # an empty question. History is needed for the tag refs, not for the diff.
+          fetch-depth: 0
 
       - name: Verify the fourteen contract files exist
         run: |
@@ -169,6 +174,13 @@ jobs:
         # ran only in `nu scripts/maintain.nu check` before this step existed, and a
         # gate that runs only locally does not hold a merge.
         run: nu scripts/maintain.nu contract-markup
+
+      - name: CONTRACT.md section 3 must list the last ten releases
+        # A skipped row reads exactly like a release that changed nothing. The table is
+        # written in the release commit, before the tag exists, so the gate accepts a
+        # first row with no tag yet and requires every row after it to equal the latest
+        # nine tags.
+        run: nu scripts/maintain.nu release-table
 
       - name: Every markdown anchor must land on a heading
         # A link of the form `[text](NOTES.md#a-heading)` promises the heading exists, and

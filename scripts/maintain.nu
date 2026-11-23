@@ -52,6 +52,16 @@ def require-semver [version: string] {
   }
 }
 
+# This Nushell build has no version type, so the release-table gate compares the three
+# numbers itself. It only ever asks "is this row newer than the newest tag".
+def semver-gt [a: string, b: string] {
+  let x = ($a | str substring 1.. | split row "." | each {|n| $n | into int })
+  let y = ($b | str substring 1.. | split row "." | each {|n| $n | into int })
+  if $x.0 != $y.0 { return ($x.0 > $y.0) }
+  if $x.1 != $y.1 { return ($x.1 > $y.1) }
+  ($x.2 > $y.2)
+}
+
 # A count in words for the house style, 0 to 99, capitalised. Null outside that range, so a
 # caller fails loudly rather than comparing against a word it cannot read.
 def count-word [n: int] {
@@ -89,7 +99,53 @@ def dash-files [] {
 }
 
 def main [] {
-  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|markdown-links|cdn-pins|hover-guard|bump <version>|release <version>|mermaid <version>|highlight <version>>"
+  print "usage: nu scripts/maintain.nu <check|selftest|contract-markup|release-table|markdown-links|cdn-pins|hover-guard|bump <version>|release <version>|mermaid <version>|highlight <version>>"
+}
+
+# CONTRACT.md section 3 promises the last ten releases, including the ones whose answer
+# is `nothing`. Nothing checked it, so by v1.72.0 the table held ten rows spread over
+# thirteen tags and omitted v1.71.0, and a skipped row read exactly like a release that
+# changed nothing. The table is written in the release commit, before `release` creates
+# the tag, so a first row with no tag yet is the prospective release and is allowed;
+# every row after it must equal the latest nine tags.
+#
+# CI checks out with full history so tags exist. A shallow checkout cannot answer the
+# question, so it fails loudly here rather than passing on an empty list.
+def release-table-ok [] {
+  let contract = (read-root CONTRACT.md)
+  let section = ($contract | split row "## 3. What changed" | get 1 | split row "## 4." | get 0)
+  let rows = ($section | lines | parse --regex '^\| (?<v>v\d+\.\d+\.\d+) ' | get v)
+  let tags = (^git -C $ROOT tag --sort=-v:refname | lines | where {|t| $t =~ '^v\d+\.\d+\.\d+$' })
+  if ($tags | length) < 10 {
+    print $"CONTRACT: section 3 cannot be checked against ($tags | length) version tags. Run `git fetch --tags` or use a full clone."
+    return false
+  }
+  if ($rows | length) != 10 {
+    print $"CONTRACT: section 3 has ($rows | length) release rows, not ten."
+    return false
+  }
+  let stamped = $"v(stamped-version)"
+  if ($rows | first) != $stamped {
+    print $"CONTRACT: section 3 starts at ($rows | first), but the stylesheet stamps ($stamped). The newest row must name the release being cut."
+    return false
+  }
+  let want = ($tags | first 10)
+  if $rows == $want { return true }
+  let head = ($rows | first)
+  let rest = ($rows | skip 1)
+  if ($head in $tags) {
+    print $"CONTRACT: section 3 starts at ($head), which is already tagged, but its rows do not match the latest ten tags (($want | str join ', '))."
+    return false
+  }
+  if $rest != ($tags | first 9) {
+    print $"CONTRACT: section 3 rows after ($head) must be the latest nine tags (($tags | first 9 | str join ', ')), but they are (($rest | str join ', '))."
+    return false
+  }
+  if not (semver-gt $head ($tags | first)) {
+    print $"CONTRACT: section 3 starts at ($head), which is not newer than the newest tag ($tags | first)."
+    return false
+  }
+  true
 }
 
 # CONTRACT.md section 2 points at a fixture for most of its requirements, so a reader
@@ -213,6 +269,12 @@ def contract-markup-ok [] {
 # step, so the gate holds a merge rather than only a local run.
 def "main contract-markup" [] {
   if not (contract-markup-ok) { exit 1 }
+}
+
+# The CI entry point for the release table. contract-check.yml checks out full history
+# so `git tag` can answer it, and runs this as its own step.
+def "main release-table" [] {
+  if not (release-table-ok) { exit 1 }
 }
 
 # GitHub's heading id: lowercase, punctuation dropped, spaces to hyphens. Derived from the
@@ -422,6 +484,7 @@ def "main check" [] {
   }
 
   if not (contract-markup-ok) { $ok = false }
+  if not (release-table-ok) { $ok = false }
 
   # Documentation is part of the payload here: CONTRACT.md is what a consumer's generator
   # is written against, and it is read through the same anchors an agent follows. A dead
