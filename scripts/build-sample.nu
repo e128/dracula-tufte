@@ -53,6 +53,21 @@ const SEASON_RANGES = [
   {season: "christmas", from_nth: [10 5 4], to: [11 28]}
 ]
 
+# Chrome page translation rewrites identifiers inside a code sample, so CONTRACT.md
+# section 2 asks for translate="no" on every pre and code element. Applied once to the
+# assembled page, before the light and season previews derive from it. Those previews
+# add their own banner after this pass, so the banner's code tags carry the attribute
+# in the strings below. Attribute-bearing tags are matched before bare ones, because the
+# attribute pass output (`<pre translate="no" `) still starts with the bare tag's name
+# but not with its exact `<pre>` form, so no tag takes the attribute twice.
+def mark-untranslatable [html: string] {
+  $html
+  | str replace --all '<pre ' '<pre translate="no" '
+  | str replace --all '<pre>' '<pre translate="no">'
+  | str replace --all '<code ' '<code translate="no" '
+  | str replace --all '<code>' '<code translate="no">'
+}
+
 def main [] {
   let css = (open --raw ($ROOT | path join "tufte-dracula.css") | str trim --right)
   let mermaid = (open --raw ($ROOT | path join "mermaid.js") | str trim --right)
@@ -70,7 +85,7 @@ def main [] {
     ["dark-timeline.html" "<body>" "Tufte-Dracula timeline layout" (timeline-body) "light-timeline.html"]
     ["dark-charts.html" "<body>" "Tufte-Dracula chart components" (charts-body) "light-charts.html"]
   ] | each {|p|
-    let html = ([
+    let html = (mark-untranslatable ([
       "<!DOCTYPE html>"
       "<html lang=\"en\">"
       "<head>"
@@ -88,7 +103,7 @@ def main [] {
       $p.3
       "</body>"
       "</html>"
-    ] | str join "\n")
+    ] | str join "\n"))
     let out = ($ROOT | path join "samples" $p.0)
     $html | save -f $out
     ^git -C $ROOT add $out
@@ -235,7 +250,7 @@ def preview [html: string, fixture: string, title: string, name: string] {
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
     "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
-    $"    <p>This page forces <code>prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows a seasonal theme. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
+    $"    <p>This page forces <code translate=\"no\">prefers-color-scheme: light</code>, so the light palette shows on any system. Its copy of the stylesheet has had the <code translate=\"no\">@media</code> conditions rewritten to do that, which makes it <strong>locked to light</strong> and <strong>not the payload</strong>. It also carries no seasonal head snippet and never shows a seasonal theme. Inline <code translate=\"no\">tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim.</p>"
     "  </div>"
   ] | str join "\n")
   let out = ($ROOT | path join "samples" $name)
@@ -281,7 +296,7 @@ def season-preview [html: string, fixture: string, title: string, name: string, 
   let banner = ([
     "  <div class=\"markdown-alert markdown-alert-caution\">"
     "    <p class=\"markdown-alert-title\">Preview only, not the payload</p>"
-    $"    <p>This page forces the ($display) theme in the ($mode) palette, whatever the date and the system appearance. It carries <code>data-season=\"($season)\"</code> on <code>&lt;html&gt;</code> and no head snippet, and its copy of the stylesheet has had the <code>@media</code> conditions rewritten to do that, which makes it <strong>locked to ($display) ($mode)</strong> and <strong>not the payload</strong>. Inline <code>tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim and the date-driven snippet.</p>"
+    $"    <p>This page forces the ($display) theme in the ($mode) palette, whatever the date and the system appearance. It carries <code translate=\"no\">data-season=\"($season)\"</code> on <code translate=\"no\">&lt;html&gt;</code> and no head snippet, and its copy of the stylesheet has had the <code translate=\"no\">@media</code> conditions rewritten to do that, which makes it <strong>locked to ($display) ($mode)</strong> and <strong>not the payload</strong>. Inline <code translate=\"no\">tufte-dracula.css</code> from the repo root, never a page. <a href=\"($fixture)\">($fixture)</a> is the same fixture with the stylesheet verbatim and the date-driven snippet.</p>"
     "  </div>"
   ] | str join "\n")
   let out = ($ROOT | path join "samples" $name)

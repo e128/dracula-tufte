@@ -33,7 +33,7 @@
     })();
   </script>
   <style>
-    /* Dracula-Tufte (muted) v1.72.0 */
+    /* Dracula-Tufte (muted) v1.72.1 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -1789,9 +1789,9 @@
       <h4>Fourth level: body size, label tier</h4>
       <h5>Fifth level: body size, muted tier</h5>
       <h6>Sixth level: muted and italic</h6>
-      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (weight 600)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <code>src/theme/tokens.css:14</code>, and inline <code>code()</code>.</p>
+      <p><span class="newthought">A new thought</span> opens in small-caps. Body copy is Source Serif 4 at weight 450, with <strong>strong (weight 600)</strong>, <em>emphasis (inherits its surroundings)</em>, an <a href="#">internal hyperlink</a>, an <a href="https://example.com">outbound link</a> carrying its marker, a source citation <code translate="no">src/theme/tokens.css:14</code>, and inline <code translate="no">code()</code>.</p>
       <p>Status spans: <span class="verified">verified</span>, <span class="unverified">unverified</span>, <span class="correction">correction</span>.</p>
-      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd>, a ringed chip distinct from inline <code>code()</code>.</p>
+      <p>Annotation elements: <mark>a marked passage</mark> takes a translucent orange wash, and a shortcut renders as <kbd>Ctrl</kbd> <kbd>K</kbd>, a ringed chip distinct from inline <code translate="no">code()</code>.</p>
       <p>Markdown inline output: <del>struck through</del> drops to the muted tier, <samp>program output</samp> takes the mono face without the code chip, an <abbr title="HyperText Markup Language">HTML</abbr> abbreviation carries a dotted rule, and H<sub>2</sub>O sits beside 10<sup>3</sup> without opening the line. An emoji image <img class="emoji" alt="&#128578;" title=":slightly_smiling_face:" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23e6c84f%22/%3E%3Ccircle cx=%225.5%22 cy=%226.5%22 r=%221%22/%3E%3Ccircle cx=%2210.5%22 cy=%226.5%22 r=%221%22/%3E%3Cpath d=%22M5 10q3 2.5 6 0%22 fill=%22none%22 stroke=%22%23000%22/%3E%3C/svg%3E"> sets at text size with no frame.</p>
       <details class="deep"><summary>Why weight 450 and not 400</summary><p>The webfont exists for the weight axis. A system serif ships 400 and 700 and nothing between, so nothing else renders the 450 that light-on-dark body copy wants.</p></details>
       <p>A sidenote lives here.<label for="sn-1" class="margin-toggle sidenote-number"></label><input type="checkbox" id="sn-1" class="margin-toggle"/><span class="sidenote">This is a Tufte sidenote. It floats to the right margin and auto-numbers.</span> And a margin note follows.<label for="mn-1" class="margin-toggle">&#8853;</label><input type="checkbox" id="mn-1" class="margin-toggle"/><span class="marginnote">A margin note carries no number.</span></p>
@@ -1799,22 +1799,22 @@
 
     <section>
       <h2>Code block</h2>
-      <pre tabindex="0" role="region" aria-label="Code block"><code>def greet [name: string] {
+      <pre translate="no" tabindex="0" role="region" aria-label="Code block"><code translate="no">def greet [name: string] {
     print $"hello ($name)"
 }</code></pre>
       <p>A highlighted block takes the same slot map the editor themes use: keywords pink, strings green, numbers orange, comments muted, functions link, types purple, fields label.</p>
-      <pre tabindex="0" role="region" aria-label="Highlighted code block"><code class="language-csharp hljs"><span class="hljs-comment">// highlighter classes, not hand-written spans</span>
+      <pre translate="no" tabindex="0" role="region" aria-label="Highlighted code block"><code translate="no" class="language-csharp hljs"><span class="hljs-comment">// highlighter classes, not hand-written spans</span>
 <span class="hljs-keyword">public</span> <span class="hljs-type">Result</span> <span class="hljs-title hljs-function">Parse</span>(<span class="hljs-type">string</span> <span class="hljs-params">source</span>) {
     <span class="hljs-keyword">var</span> <span class="hljs-variable">count</span> = <span class="hljs-number">42</span>;
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-type">Result</span>(<span class="hljs-string">"ok"</span>, <span class="hljs-variable">count</span>);
 }</code></pre>
-      <p>An unhighlighted block that names its language is highlighted in the browser by <code>highlight.js</code>. Emit <code>pre &gt; code.language-python</code> and nothing else: the script skips a block that already carries <code>hljs</code> spans, and a block with no <code>language-</code> class stays plain.</p>
-      <pre tabindex="0" role="region" aria-label="Runtime-highlighted code block"><code class="language-python"># highlighted in the browser, not by the generator
+      <p>An unhighlighted block that names its language is highlighted in the browser by <code translate="no">highlight.js</code>. Emit <code translate="no">pre &gt; code.language-python</code> and nothing else: the script skips a block that already carries <code translate="no">hljs</code> spans, and a block with no <code translate="no">language-</code> class stays plain.</p>
+      <pre translate="no" tabindex="0" role="region" aria-label="Runtime-highlighted code block"><code translate="no" class="language-python"># highlighted in the browser, not by the generator
 def parse(source: str) -&gt; Result:
     count = 42
     return Result("ok", total=count)</code></pre>
       <p>Pygments names the same slots one and two letters, so Sphinx, MkDocs, Quarto and a notebook export land in the same registers.</p>
-      <div class="highlight"><pre tabindex="0" role="region" aria-label="Pygments code block"><span class="c1"># pygments classes, not hand-written spans</span>
+      <div class="highlight"><pre translate="no" tabindex="0" role="region" aria-label="Pygments code block"><span class="c1"># pygments classes, not hand-written spans</span>
 <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="kt">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nc">Result</span><span class="p">:</span>
     <span class="n">count</span> <span class="o">=</span> <span class="mi">42</span>
     <span class="k">return</span> <span class="nc">Result</span><span class="p">(</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="na">total</span><span class="o">=</span><span class="n">count</span><span class="p">)</span></pre></div>
@@ -1823,7 +1823,7 @@ def parse(source: str) -&gt; Result:
     <section>
       <h2>Table</h2>
       <table tabindex="0">
-        <caption>Table caption: annotation register, start-aligned like every other block. An unwrapped table carries <code>tabindex</code>, because the escape hatch below 1000px hands it a sideways-scroll axis no keyboard could otherwise reach.</caption>
+        <caption>Table caption: annotation register, start-aligned like every other block. An unwrapped table carries <code translate="no">tabindex</code>, because the escape hatch below 1000px hands it a sideways-scroll axis no keyboard could otherwise reach.</caption>
         <thead><tr><th scope="col">Column</th><th scope="col" class="num">Value</th><th scope="col">Note</th></tr></thead>
         <!-- mock: the figures exist to demonstrate tabular-nums alignment, not to state data -->
         <tbody>
@@ -1836,9 +1836,9 @@ def parse(source: str) -&gt; Result:
 
     <section>
       <h2>Tree table</h2>
-      <p>Depth comes from <code>data-depth</code> on the row, not from nesting. No <code>role</code>, no script.</p>
+      <p>Depth comes from <code translate="no">data-depth</code> on the row, not from nesting. No <code translate="no">role</code>, no script.</p>
       <table class="tree" tabindex="0">
-        <caption>Requirement tree: an unwrapped table, so it takes the sideways-scroll escape hatch below 1000px and carries <code>tabindex</code> to be reachable there.</caption>
+        <caption>Requirement tree: an unwrapped table, so it takes the sideways-scroll escape hatch below 1000px and carries <code translate="no">tabindex</code> to be reachable there.</caption>
         <thead><tr><th scope="col">Id</th><th scope="col">Title</th><th scope="col">State</th></tr></thead>
         <tbody>
           <tr data-depth="0"><td>Epic 1</td><td>root row, tinted and bold</td><td>New</td></tr>
@@ -1853,7 +1853,7 @@ def parse(source: str) -&gt; Result:
 
     <section>
       <h2>Wide table in a scroll wrapper</h2>
-      <p>A wide table wrapped in <code>.table-scroll</code> scrolls on both axes inside the wrapper, so the document never scrolls sideways, and the header stays pinned because the wrapper is the scrollport. The wrapper carries <code>tabindex="0"</code>, <code>role="region"</code> and a label. The table keeps its own row and column semantics, because the role sits on the wrapper and never on the table.</p>
+      <p>A wide table wrapped in <code translate="no">.table-scroll</code> scrolls on both axes inside the wrapper, so the document never scrolls sideways, and the header stays pinned because the wrapper is the scrollport. The wrapper carries <code translate="no">tabindex="0"</code>, <code translate="no">role="region"</code> and a label. The table keeps its own row and column semantics, because the role sits on the wrapper and never on the table.</p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Quarterly totals by region">
         <table>
           <caption>Twenty-four rows across eight columns: past the 70vh cap and past the body width at once.</caption>
@@ -1892,20 +1892,20 @@ def parse(source: str) -&gt; Result:
     <section>
       <h2>Blockquote, aside, details</h2>
       <blockquote><p><span lang="la">Stat crux dum volvitur orbis.</span> The Cross stands while the world turns.</p></blockquote>
-      <blockquote class="pull"><p>A <code>blockquote.pull</code> carries a large faint opening quote mark over the same accent bar. Opt-in, because the plain blockquote above is used too densely for citations to carry the glyph everywhere.</p></blockquote>
+      <blockquote class="pull"><p>A <code translate="no">blockquote.pull</code> carries a large faint opening quote mark over the same accent bar. Opt-in, because the plain blockquote above is used too densely for citations to carry the glyph everywhere.</p></blockquote>
       <aside>An aside: orange accent-bar, no fill. For asides and callouts. A <mark>marked passage inside the label tier</mark> keeps body-copy text, since the wash carries nothing dimmer.</aside>
       <details><summary>Collapsible summary</summary><p>Hidden content revealed on click.</p></details>
     </section>
 
     <section>
       <h2>Icon rows and a step chain</h2>
-      <p>A tag-dot marks a categorical value that already has a color elsewhere, never a rank. The class carries only the dot, never the label, because it paints <code>currentColor</code> and would otherwise recolor the text beside it: <span class="tag-dot" style="color: var(--data-1)"></span>Rust, <span class="tag-dot" style="color: var(--data-3)"></span>Go, <span class="tag-dot" style="color: var(--data-2)"></span>Python. A live-dot is the sheet's first animation, two beats and then still, because a loop that never ends owes the reader a way to stop it: <span class="live-dot"></span> streaming.</p>
+      <p>A tag-dot marks a categorical value that already has a color elsewhere, never a rank. The class carries only the dot, never the label, because it paints <code translate="no">currentColor</code> and would otherwise recolor the text beside it: <span class="tag-dot" style="color: var(--data-1)"></span>Rust, <span class="tag-dot" style="color: var(--data-3)"></span>Go, <span class="tag-dot" style="color: var(--data-2)"></span>Python. A live-dot is the sheet's first animation, two beats and then still, because a loop that never ends owes the reader a way to stop it: <span class="live-dot"></span> streaming.</p>
       <ul class="icon-list" role="list">
-        <li style="--icon-color: var(--orange)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Implement</strong><code>implement the functionality</code></div></li>
-        <li style="--icon-color: var(--link)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Identify</strong><code>identify the bottleneck</code></div></li>
-        <li style="--icon-color: var(--green)"><span class="icon-chip" aria-hidden="true">V</span><div><strong>Validate</strong><code>verify behavioral correctness</code></div></li>
+        <li style="--icon-color: var(--orange)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Implement</strong><code translate="no">implement the functionality</code></div></li>
+        <li style="--icon-color: var(--link)"><span class="icon-chip" aria-hidden="true">I</span><div><strong>Identify</strong><code translate="no">identify the bottleneck</code></div></li>
+        <li style="--icon-color: var(--green)"><span class="icon-chip" aria-hidden="true">V</span><div><strong>Validate</strong><code translate="no">verify behavioral correctness</code></div></li>
       </ul>
-      <p>A step chain is for a flow too trivial to justify a Mermaid diagram. A graph with a branch or a loop still belongs in <code>pre.mermaid</code>. Its <code>--icon-color</code> takes a prose accent, never a <code>--data-*</code> slot: the node fills at full strength and the letter is <code>--surface</code> on top of it, so a ramp scoped to the 3:1 diagram floor lands that pair at 3.5:1 in light mode. A <code>.tag-dot</code> or an <code>.icon-chip</code> may still carry a <code>--data-*</code> color, because neither puts text on the fill. The chain below runs Specify, Implement, Optimize, Verify, one letter to a node. A node is a circle with room for one character, so the words belong in the sentence that introduces the chain, the way this one does. Each <code>.step-arrow</code> is <code>aria-hidden</code>, because a screen reader otherwise reads the glyph between every pair of steps.</p>
+      <p>A step chain is for a flow too trivial to justify a Mermaid diagram. A graph with a branch or a loop still belongs in <code translate="no">pre.mermaid</code>. Its <code translate="no">--icon-color</code> takes a prose accent, never a <code translate="no">--data-*</code> slot: the node fills at full strength and the letter is <code translate="no">--surface</code> on top of it, so a ramp scoped to the 3:1 diagram floor lands that pair at 3.5:1 in light mode. A <code translate="no">.tag-dot</code> or an <code translate="no">.icon-chip</code> may still carry a <code translate="no">--data-*</code> color, because neither puts text on the fill. The chain below runs Specify, Implement, Optimize, Verify, one letter to a node. A node is a circle with room for one character, so the words belong in the sentence that introduces the chain, the way this one does. Each <code translate="no">.step-arrow</code> is <code translate="no">aria-hidden</code>, because a screen reader otherwise reads the glyph between every pair of steps.</p>
       <div class="step-chain">
         <span class="step-node" style="--icon-color: var(--orange)">S</span>
         <span class="step-hop"><span class="step-arrow" aria-hidden="true">&rarr;</span><span class="step-node" style="--icon-color: var(--link)">I</span></span>
@@ -1916,13 +1916,13 @@ def parse(source: str) -&gt; Result:
 
     <section>
       <h2>Layer stack and coverage matrix</h2>
-      <p>A layer stack draws a path that a request crosses in order. Each <code>li.layer</code> holds a name, a caption, and one or more <code>.layer-card</code> children. A dashed <code>.optional</code> card says so in its text, because a dashed border alone fails in forced-colors mode. The CSS draws the arrow between layers, and <code>.layer-end</code> inverts the last one.</p>
+      <p>A layer stack draws a path that a request crosses in order. Each <code translate="no">li.layer</code> holds a name, a caption, and one or more <code translate="no">.layer-card</code> children. A dashed <code translate="no">.optional</code> card says so in its text, because a dashed border alone fails in forced-colors mode. The CSS draws the arrow between layers, and <code translate="no">.layer-end</code> inverts the last one.</p>
       <ol class="layer-stack" role="list">
         <li class="layer"><div class="layer-name"><strong>On the network</strong><span>the company web security service</span></div><div class="layer-cards"><div class="layer-card"><strong>Network check</strong><span>Stops requests (in the path)</span></div></div></li>
         <li class="layer"><div class="layer-name"><strong>In the app</strong><span>the software that sends the request</span></div><div class="layer-cards"><div class="layer-card"><strong>Platform hook</strong><span>Stops requests (in the path)</span></div><div class="layer-card optional"><strong>Check the app calls</strong><span>Optional. Gives an answer; the app decides</span></div></div></li>
         <li class="layer layer-end"><div class="layer-name"><strong>The AI model</strong><span>reads the request and answers</span></div></li>
       </ol>
-      <p>A coverage matrix is a <code>table.matrix</code> in a <code>.table-scroll</code> wrapper. Each cell holds a dot and a count, or a muted <code>&middot;</code> when none is documented. The first column stays pinned while the rest scrolls. The count is never summed across a row.</p>
+      <p>A coverage matrix is a <code translate="no">table.matrix</code> in a <code translate="no">.table-scroll</code> wrapper. Each cell holds a dot and a count, or a muted <code translate="no">&middot;</code> when none is documented. The first column stays pinned while the rest scrolls. The count is never summed across a row.</p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Checks that reach each kind of AI">
         <table class="matrix">
           <thead><tr><th>Kind of AI</th><th>Admission gate</th><th>Browser extension</th><th>Endpoint agent</th><th>AI gateway</th><th>Response after detection</th></tr></thead>
@@ -1935,7 +1935,7 @@ def parse(source: str) -&gt; Result:
         </table>
       </div>
 
-      <p>A heatmap is a <code>table.heatmap</code> in a <code>.table-scroll</code> wrapper. A <code>span.hm</code> is one square. <code>full</code> fills it, <code>part</code> fills the lower part, <code>hatch</code> stripes it, and <code>ring</code> outlines it, so no state rests on color alone. Column headers read bottom to top, and a band row above them names each group. A score cell draws a bar under its number. A row never sums its squares.</p>
+      <p>A heatmap is a <code translate="no">table.heatmap</code> in a <code translate="no">.table-scroll</code> wrapper. A <code translate="no">span.hm</code> is one square. <code translate="no">full</code> fills it, <code translate="no">part</code> fills the lower part, <code translate="no">hatch</code> stripes it, and <code translate="no">ring</code> outlines it, so no state rests on color alone. Column headers read bottom to top, and a band row above them names each group. A score cell draws a bar under its number. A row never sums its squares.</p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Coverage heatmap by kind of AI">
         <table class="heatmap">
           <thead>
@@ -1968,17 +1968,17 @@ def parse(source: str) -&gt; Result:
 
     <section>
       <h2>Timeline</h2>
-      <p>A <code>dl</code> carrying <code>class="timeline"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code>max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>
+      <p>A <code translate="no">dl</code> carrying <code translate="no">class="timeline"</code> becomes a two-column date spine: dates right-aligned on tabular figures, entries against a hairline. The date column is <code translate="no">max-content</code>, so the longest label sets the width for every row. Below 600px it collapses to one column and drops the rule.</p>
       <p>Deep links carry an arrival cue: jump to <a href="#e-802">the 802 entry</a> or to <a href="#fn-1">footnote 1</a> and the destination takes an orange outline, distinct from the link-blue focus ring, and lands clear of the viewport edge.</p>
       <dl class="timeline">
         <dt id="e-802">c. 802</dt>
-        <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code>dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class="footnote-ref"><a href="#fn-1">1</a></sup></dd>
+        <dd><strong>An approximate year.</strong> Entry text sits at the primary tier, not the caption tier a plain <code translate="no">dd</code> takes, because a timeline entry is the content rather than an annotation.<sup class="footnote-ref"><a href="#fn-1">1</a></sup></dd>
         <dt id="e-928">928-944</dt>
         <dd><strong>A range.</strong> The widest label in the column, so it sets the date width. Its digits still align with the rows above and below.</dd>
         <dt id="e-1431"><time datetime="1431">1431</time></dt>
-        <dd><strong>A single year.</strong> Cite with a <code>sup</code> link into the sources list, never a floated <code>.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>
+        <dd><strong>A single year.</strong> Cite with a <code translate="no">sup</code> link into the sources list, never a floated <code translate="no">.sidenote</code>: a float cannot escape a grid item, so the note would land inside this column instead of the page margin.</dd>
       </dl>
-      <p>Era groups are separate lists, so <code>max-content</code> would give each one its own date width and step the spine left down the page. Setting <code>--timeline-date</code> on an ancestor pins one axis across all of them.</p>
+      <p>Era groups are separate lists, so <code translate="no">max-content</code> would give each one its own date width and step the spine left down the page. Setting <code translate="no">--timeline-date</code> on an ancestor pins one axis across all of them.</p>
       <div style="--timeline-date: 11ch">
         <h3>First era</h3>
         <dl class="timeline">
@@ -1994,7 +1994,7 @@ def parse(source: str) -&gt; Result:
 
     <section>
       <h2>Markdown callouts, math &amp; footnotes</h2>
-      <p>GitHub alert blocks share the <code>aside</code> form (one accent bar, no fill) and carry the hue on the title line only.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>
+      <p>GitHub alert blocks share the <code translate="no">aside</code> form (one accent bar, no fill) and carry the hue on the title line only.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>
       <div class="markdown-alert markdown-alert-note"><p class="markdown-alert-title">Note</p><p>Link-blue bar. Neutral information.</p></div>
       <div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title">Tip</p><p>Green bar. Optional advice.</p></div>
       <div class="markdown-alert markdown-alert-important"><p class="markdown-alert-title">Important</p><p>Purple bar. Do not skip this.</p></div>
@@ -2007,7 +2007,7 @@ def parse(source: str) -&gt; Result:
       </table>
       <p>Math converted to MathML needs no script and no CDN: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> sets inline without opening the line box, and a display block scrolls on its own axis rather than widening the page.</p>
       <math display="block" tabindex="0" role="region" aria-label="Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6"><mrow><munderover><mo>&sum;</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi>&infin;</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>&pi;</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow></math>
-      <p>Pandoc&#8217;s MathJax output is a <code>span.math.display</code> instead. It scrolls the same way, and CSS cannot give it a tab stop, so it takes the same three attributes.</p>
+      <p>Pandoc&#8217;s MathJax output is a <code translate="no">span.math.display</code> instead. It scrolls the same way, and CSS cannot give it a tab stop, so it takes the same three attributes.</p>
       <span class="math display" tabindex="0" role="region" aria-label="Display equation: the sum from n equals 1 to infinity of 1 over n squared equals pi squared over 6">\[\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}\]</span>
       <section class="footnotes" data-footnotes>
         <ol><li id="fn-1"><p>The footnote block sits behind a hairline at the caption tier, tightened to the annotation register. <a href="#fnref-1" class="footnote-backref" aria-label="Back to reference 1">&#8617;</a></p></li></ol>
@@ -2016,7 +2016,7 @@ def parse(source: str) -&gt; Result:
 
     <section class="indented">
       <h2>Indented paragraphs (opt-in)</h2>
-      <p>A container carrying <code>class="indented"</code> sets its paragraphs the way a book does: no gap between them, and every paragraph after the first opens with a 1.5em indent. The first paragraph is never indented, because nothing precedes it to break from.</p>
+      <p>A container carrying <code translate="no">class="indented"</code> sets its paragraphs the way a book does: no gap between them, and every paragraph after the first opens with a 1.5em indent. The first paragraph is never indented, because nothing precedes it to break from.</p>
       <p>This paragraph is the second, so it indents. The break is carried by the indent rather than by white space, which is the convention the rest of the page deliberately does not use. The default remains spaced paragraphs with no indent, and this class is the only way to get the other one.</p>
       <p>Lists keep their own margin here, as they do everywhere else, so they do not butt against the paragraph above even though the paragraphs themselves carry none.</p>
       <ul><li>A list inside the indented container</li><li>Second item</li></ul>
@@ -2031,7 +2031,7 @@ def parse(source: str) -&gt; Result:
         <span class="sc-label">P4 Coherence of the profile the method inherits</span><span class="verdict verdict-neutral">N/A</span><span class="sc-note">not assessed</span>
         <span class="sc-full">Full verdict spans all three columns for a summary line.</span>
       </div>
-      <p>A longer graded list takes a real <code>table</code> instead of <code>.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code>.verdict verdict-neutral</code> badge reading <code>See below</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>
+      <p>A longer graded list takes a real <code translate="no">table</code> instead of <code translate="no">.scorecard</code>. A row that rolls up sub-rows rather than carrying its own verdict, method 1 below, still gets a <code translate="no">.verdict verdict-neutral</code> badge reading <code translate="no">See below</code>, never bare punctuation: a badge next to every other row's badge is what makes the rollup read as deliberate instead of as a rendering gap.</p>
       <table tabindex="0">
         <caption>Proof-test scorecard, table form</caption>
         <thead><tr><th scope="col">#</th><th scope="col">Method</th><th scope="col">Verdict</th><th scope="col">Bearing</th></tr></thead>
@@ -2099,7 +2099,7 @@ def parse(source: str) -&gt; Result:
         <figcaption>
           <span class="label">Template component</span>
           <h3>An image tile with a headline and one call to action</h3>
-          <p>The image reserves its box through <code>aspect-ratio</code>, so nothing below it moves when the file arrives.</p>
+          <p>The image reserves its box through <code translate="no">aspect-ratio</code>, so nothing below it moves when the file arrives.</p>
           <a href="#headings">See the headings and text section</a>
         </figcaption>
       </figure>
@@ -2131,7 +2131,7 @@ def parse(source: str) -&gt; Result:
     <section>
       <h2>Mermaid diagram (click to zoom)</h2>
       <figure>
-      <pre class="mermaid">flowchart TD
+      <pre translate="no" class="mermaid">flowchart TD
   accTitle: Decision flow sample
   accDescr: Start leads to a decision; yes does the thing, no skips it, and both reach done.
   A[Start] --> B{Decision}
@@ -2141,7 +2141,7 @@ def parse(source: str) -&gt; Result:
   D --> E</pre>
       <figcaption><span class="label">Caption tiers</span>A figure caption sits in the annotation register and stays start-aligned under a centred diagram.<span class="byline">Source: the flowchart above, rendered at the template's pinned Mermaid version.</span></figcaption>
       </figure>
-      <pre class="mermaid">sequenceDiagram
+      <pre translate="no" class="mermaid">sequenceDiagram
   accTitle: Sequence diagram sample
   accDescr: The caller sends a request, the service stores it, and a note records that a label box must fit its own monospace text.
   participant C as Caller
@@ -2150,7 +2150,7 @@ def parse(source: str) -&gt; Result:
   S->>S: Store it
   Note over S: This note is wider than the actor box.<br/>Its rect must contain the rendered text.
   S->>C: Result</pre>
-      <pre class="mermaid">quadrantChart
+      <pre translate="no" class="mermaid">quadrantChart
   accTitle: Quadrant chart sample
   accDescr: Four labelled points near the chart edges, where long labels would otherwise be clipped by the fixed chart viewBox.
   x-axis Narrow --> Wide
@@ -2161,7 +2161,7 @@ def parse(source: str) -&gt; Result:
   quadrant-4 Wide but shallow
   A label long enough to reach past the edge: [0.9, 0.9]
   Another deliberately overlong point label: [0.1, 0.1]</pre>
-      <pre class="mermaid">packet-beta
+      <pre translate="no" class="mermaid">packet-beta
   accTitle: Packet diagram sample
   accDescr: A UDP header split into four labelled byte ranges, styled through tufte-dracula.css because mermaid's own packet themeVariables are a documented no-op.
   title UDP Header
@@ -2169,7 +2169,7 @@ def parse(source: str) -&gt; Result:
   16-31: "Destination Port"
   32-47: "Length"
   48-63: "Checksum"</pre>
-      <pre class="mermaid">usecase-beta
+      <pre translate="no" class="mermaid">usecase-beta
   accTitle: Use case diagram sample
   accDescr: A reader actor reaching a system boundary that groups a use case and the diagram zoom it includes.
   direction LR
