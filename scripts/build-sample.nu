@@ -677,7 +677,7 @@ def body [] {
     "    </nav>"
     ""
     "    <section>"
-    "      <h2 id=\"headings\">Headings &amp; text <a class=\"headerlink\" href=\"#headings\" aria-label=\"Permalink to this heading\">&#182;</a></h2>"
+    "      <h2 id=\"headings\">Headings &amp; text <a class=\"headerlink\" href=\"#headings\" aria-label=\"Permalink to this heading\"><svg aria-hidden=\"true\" focusable=\"false\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/></svg></a></h2>"
     "      <h3 id=\"third-level\">Third-level heading <a class=\"anchor\" href=\"#third-level\" aria-label=\"Permalink to this heading\">#</a></h3>"
     "      <h4>Fourth level: body size, label tier</h4>"
     "      <h5>Fifth level: body size, muted tier</h5>"
