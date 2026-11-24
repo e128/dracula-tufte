@@ -134,9 +134,13 @@
       font-variant-caps: normal; font-weight: 400; letter-spacing: normal; }
     .newthought :is(.sidenote, .marginnote) { font-size: 0.8125rem; }
     a { color: var(--link); text-decoration: underline; text-decoration-thickness: max(1px, 0.07em); text-underline-offset: 0.15em; text-decoration-color: var(--muted); text-decoration-skip-ink: auto; overflow-wrap: break-word; transition: text-decoration-color 0.15s ease-out; }
-    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { opacity: 0; font-size: 0.8125rem;
-      text-decoration: none; margin-inline-start: 0.35em; transition: opacity 0.15s ease-out; }
-    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor):focus-visible { opacity: 1; }
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) { font-size: 0.8125rem;
+      text-decoration: none; margin-inline-start: 0.35em; }
+    :is(h1, h2, h3, h4, h5, h6) :is(a.headerlink, a.anchor) > svg { inline-size: 0.8125rem;
+      block-size: 0.8125rem; vertical-align: -0.08em; }
+    :is(h1, h2, h3, h4, h5, h6) a.anchor { opacity: 0; transition: opacity 0.15s ease-out; }
+    :is(h1, h2, h3, h4, h5, h6) a.anchor:focus-visible { opacity: 1; }
+    :is(h1, h2, h3, h4, h5, h6) a.headerlink { color: var(--link); }
     a:focus-visible, summary:focus-visible, .filter-box:focus-visible,
     .mermaid-zoom:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
     :target { scroll-margin-block-start: var(--space-6); }
@@ -565,7 +569,7 @@
     }
     @media (hover: hover) {
       a:hover { text-decoration-color: var(--link); }
-      :is(h1, h2, h3, h4, h5, h6):hover :is(a.headerlink, a.anchor) { opacity: 1; }
+      :is(h1, h2, h3, h4, h5, h6):hover a.anchor { opacity: 1; }
       tbody tr:hover td { background: var(--surface-alt); }
       table.tree tbody tr:hover td { background: var(--surface-alt); }
       summary:hover { color: var(--on-surface); }

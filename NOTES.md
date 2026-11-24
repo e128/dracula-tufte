@@ -565,13 +565,15 @@ unreachable on paper).
 **Heading permalinks (`a.headerlink`, `a.anchor`) stay glyph-sized, about 10 by 20px.** WCAG 2.5.8
 passes through its spacing exception: the nearest other target sits 38px or more from each glyph's
 centre at 1280px and 320px, so no 24px circle touches another. Do not pad them toward 44px: the
-padding would push the heading's last line wider for a control that is only revealed on hover or focus.
+padding would push the heading's last line wider, and the headerlink is already visible at rest
+while the anchor reveals on hover or focus.
 
 **The copy button and the Mermaid zoom button meet the 44 by 44 usability target; the heading
 permalinks deliberately do not.** The copy button is `2.75rem` square and the zoom button carries
 `min-height: 44px`. `script-probe.py` asserts both from the rendered rectangle, mutated to confirm
 each fails at the old size. The permalinks stay glyph-sized on the spacing exception above, because
-padding them would widen the heading's last line for a control revealed only on hover or focus.
+padding them would widen the heading's last line. The headerlink stays visible at rest; the anchor
+reveals on hover or focus.
 
 **The copy confirmation is a status message, not only a label change.** `highlight.js` appends one
 visually hidden `role="status"` span to `<body>` and sets its text to `Copied` after a successful
@@ -2315,10 +2317,12 @@ doesn't reduce min-content contribution).
 **`position: sticky` is scoped to `thead th`**: unscoped, a `tfoot` header cell would pin to the top
 too (a totals row stuck in the header's place).
 
-**Permalink anchors reveal on hover, and the `:focus-visible` half is not optional.** Sphinx, MkDocs
-and markdown-it-anchor emit them visible by default; `opacity: 0` hides them, lifting on `:hover` of
-the heading **and** `:focus-visible` of the link: without the focus half, the link stays in tab
-order while invisible, a keyboard stop nobody can see.
+**The heading permalink stays visible as a chain-link icon, while the section anchor reveals on
+hover or focus.** `a.headerlink` carries an inline SVG at `0.8125rem`, stroke `currentColor`,
+`aria-hidden` on the icon and its `aria-label` on the anchor, so it reads as a link on touch and at
+rest. **Do not restore the pilcrow or set the headerlink back to `opacity: 0`.** The section anchor
+(`a.anchor`, a hash) still reveals on hover and `:focus-visible`, and that focus half is not
+optional: without it the link stays in tab order while invisible, a keyboard stop nobody can see.
 
 **Form controls take `font: inherit` and a `1rem` floor, nothing else**: `.filter-box` was the only
 control that set a family; every other one fell to a small sans-serif below the iOS Safari zoom
