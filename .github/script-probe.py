@@ -488,6 +488,8 @@ SEASON_MODES = {
     "season-independence-day-light": ("light-independence-day", "initIndependenceDayLight"),
     "season-poland": ("poland", "initPoland"),
     "season-poland-light": ("light-poland", "initPolandLight"),
+    "season-bois-jacques": ("bois-jacques", "initBoisJacques"),
+    "season-bois-jacques-light": ("light-bois-jacques", "initBoisJacquesLight"),
 }
 
 

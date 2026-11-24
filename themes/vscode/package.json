@@ -2,7 +2,7 @@
   "name": "dracula-tufte",
   "displayName": "Dracula-Tufte (muted)",
   "description": "The muted Dracula-Tufte palette as a VS Code color theme.",
-  "version": "1.72.1",
+  "version": "1.73.0",
   "publisher": "dracula-tufte",
   "engines": {
     "vscode": "^1.75.0"
@@ -51,6 +51,11 @@
         "label": "Dracula-Tufte (muted) Poland",
         "uiTheme": "vs-dark",
         "path": "./themes/dracula-tufte-poland-color-theme.json"
+      },
+      {
+        "label": "Dracula-Tufte (muted) Bois Jacques",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dracula-tufte-bois-jacques-color-theme.json"
       }
     ]
   },

@@ -1,15 +1,16 @@
 # Dracula-Tufte (muted): VS Code theme
 
-Ten files: `package.json` (the extension manifest), `extension.vsixmanifest`
-(the VSIX container manifest), and eight color themes under `themes/`: dark
+Eleven files: `package.json` (the extension manifest), `extension.vsixmanifest`
+(the VSIX container manifest), and nine color themes under `themes/`: dark
 (`dracula-tufte-color-theme.json`), light (`dracula-tufte-light-color-theme.json`),
 Christmas (`dracula-tufte-christmas-color-theme.json`), Thanksgiving
 (`dracula-tufte-thanksgiving-color-theme.json`), Chartreuse
 (`dracula-tufte-chartreuse-color-theme.json`), St Patrick
 (`dracula-tufte-st-patrick-color-theme.json`), Independence Day
-(`dracula-tufte-independence-day-color-theme.json`) and Poland
-(`dracula-tufte-poland-color-theme.json`), each holding workbench colors plus
-TextMate scopes. `package.json`'s `contributes.themes` lists all eight, light with
+(`dracula-tufte-independence-day-color-theme.json`), Poland
+(`dracula-tufte-poland-color-theme.json`) and Bois Jacques
+(`dracula-tufte-bois-jacques-color-theme.json`), each holding workbench colors plus
+TextMate scopes. `package.json`'s `contributes.themes` lists all nine, light with
 `uiTheme: vs` and the rest with `uiTheme: vs-dark`; VS Code's own "Auto Detect Color
 Scheme" setting is what switches between dark and light with the OS, same as any other
 extension shipping both appearances. A seasonal theme is selected by hand and does not
@@ -42,7 +43,8 @@ the file. Either way, reload when prompted, then `Ctrl/Cmd+K Ctrl/Cmd+T` and
 pick **Dracula-Tufte (muted)**, **Dracula-Tufte (muted) Light**,
 **Dracula-Tufte (muted) Christmas**, **Dracula-Tufte (muted) Thanksgiving**,
 **Dracula-Tufte (muted) Chartreuse**, **Dracula-Tufte (muted) St Patrick**,
-**Dracula-Tufte (muted) Independence Day** or **Dracula-Tufte (muted) Poland**.
+**Dracula-Tufte (muted) Independence Day**, **Dracula-Tufte (muted) Poland** or
+**Dracula-Tufte (muted) Bois Jacques**.
 
 There is still no marketplace listing, so this is the only install path aside
 from the unpacked folder below.

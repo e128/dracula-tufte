@@ -8,7 +8,8 @@ Twenty-eight artefacts, one palette, fourteen appearances:
   `dracula-tufte-chartreuse-light.icls` / `dracula-tufte-st-patrick.icls` /
   `dracula-tufte-st-patrick-light.icls` / `dracula-tufte-independence-day.icls` /
   `dracula-tufte-independence-day-light.icls` / `dracula-tufte-poland.icls` /
-  `dracula-tufte-poland-light.icls`: editor colour scheme
+  `dracula-tufte-poland-light.icls` / `dracula-tufte-bois-jacques.icls` /
+  `dracula-tufte-bois-jacques-light.icls`: editor colour scheme
   (syntax, gutter, diff, console ANSI).
 - `dracula-tufte.theme.json` / `dracula-tufte-light.theme.json` /
   `dracula-tufte-xmas.theme.json` / `dracula-tufte-xmas-light.theme.json` /
@@ -17,7 +18,8 @@ Twenty-eight artefacts, one palette, fourteen appearances:
   `dracula-tufte-st-patrick.theme.json` / `dracula-tufte-st-patrick-light.theme.json` /
   `dracula-tufte-independence-day.theme.json` /
   `dracula-tufte-independence-day-light.theme.json` /
-  `dracula-tufte-poland.theme.json` / `dracula-tufte-poland-light.theme.json`: IDE chrome
+  `dracula-tufte-poland.theme.json` / `dracula-tufte-poland-light.theme.json` /
+  `dracula-tufte-bois-jacques.theme.json` / `dracula-tufte-bois-jacques-light.theme.json`: IDE chrome
   (tool windows, tabs, menus, popups, icons).
 
 Every hex here is the sRGB rendering of a `tufte-dracula.css` `:root` `oklch()` token:
@@ -38,7 +40,7 @@ convention. Those differences still need a rendered check in Rider.
 
 ## Rider 2026.3 Compatibility
 
-The generated dark, light, and dark plus light Christmas, Thanksgiving, Chartreuse, St Patrick, Independence Day and Poland theme JSON files load through
+The generated dark, light, and dark plus light Christmas, Thanksgiving, Chartreuse, St Patrick, Independence Day, Poland and Bois Jacques theme JSON files load through
 Rider 2026.3's native `UITheme` parser (build `263.7307.258`). Their UI color keys apply, and their
 `editorScheme` paths resolve to the packaged XML resources. This headless check
 verifies parsing and resource resolution, not scheme inheritance, icons, or rendered appearance.

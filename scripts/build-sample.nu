@@ -25,12 +25,14 @@ const SEASON_LIGHT = "@media screen and (prefers-color-scheme: light) and (prefe
 # the nth weekday (`from_nth`), in the same zero-based and `getDay()` conventions:
 # St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16,
 # Independence Day from June 28 through July 4, Thanksgiving from November 1 through the
-# fourth Thursday, weekday 4, and Christmas
-# from the fourth Friday, weekday 5, through December 28. Rows are checked in order and
-# the first match wins, so they never overlap: where the fourth Friday falls before the
-# fourth Thursday, November 1 is a Friday and Thanksgiving keeps the days up to its own
-# end. Add a row and a pair of CSS blocks, and the snippet, the preview pair and the
-# display name all follow.
+# fourth Thursday, weekday 4, Christmas from the fourth Friday, weekday 5, through
+# December 28, and Bois Jacques from December 29 through January 13. The year boundary is
+# two rows of one season rather than a wrapping range: the snippet compares months
+# linearly, and January is a normal month in the visitor's current year. Rows are checked
+# in order and the first match wins, so they never overlap: where the fourth Friday falls
+# before the fourth Thursday, November 1 is a Friday and Thanksgiving keeps the days up to
+# its own end. Add a row and a pair of CSS blocks, and the snippet, the preview pair and
+# the display name all follow.
 
 # Single-day overrides of the base calendar. They are emitted first because the snippet
 # checks rows in order and the first match wins, so an override carves its day out of
@@ -51,6 +53,8 @@ const SEASON_RANGES = [
   {season: "independence-day", from: [5 28], to: [6 4]}
   {season: "thanksgiving", from: [10 1], to_nth: [10 4 4]}
   {season: "christmas", from_nth: [10 5 4], to: [11 28]}
+  {season: "bois-jacques", from: [11 29], to: [11 31]}
+  {season: "bois-jacques", from: [0 1], to: [0 13]}
 ]
 
 # Chrome page translation rewrites identifiers inside a code sample, so CONTRACT.md

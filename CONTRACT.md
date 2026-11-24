@@ -47,8 +47,10 @@ light and can never follow a reader's system appearance. Each says so in a banne
 `samples/christmas-dark.html`, `samples/christmas-light.html`, `samples/thanksgiving-dark.html`,
 `samples/thanksgiving-light.html`, `samples/chartreuse-dark.html`,
 `samples/chartreuse-light.html`, `samples/st-patrick-dark.html`,
-`samples/st-patrick-light.html`, `samples/independence-day-dark.html` and
-`samples/independence-day-light.html` are the same kind of page for the
+`samples/st-patrick-light.html`, `samples/independence-day-dark.html`,
+`samples/independence-day-light.html`, `samples/poland-dark.html`,
+`samples/poland-light.html`, `samples/bois-jacques-dark.html` and
+`samples/bois-jacques-light.html` are the same kind of page for the
 [seasonal theme](#seasonal-theme-optional): each pair forces one season for any date and any system
 setting, so a copy taken from one of them is locked to that season. None is the payload.
 `samples/dark.html`, `samples/dark-conn-map.html`, `samples/dark-timeline.html` and
@@ -65,9 +67,10 @@ nothing after it.
 
 ### Seasonal Theme (Optional)
 
-`tufte-dracula.css` carries six seasonal palettes that stay off until `<html>` carries
+`tufte-dracula.css` carries seven seasonal palettes that stay off until `<html>` carries
 `data-season`. The attribute value names the season: `"st-patrick"`, `"chartreuse"`,
-`"independence-day"`, `"thanksgiving"`, `"christmas"` or `"poland"`. The stylesheet never sets that attribute. **A page turns a theme on by date only
+`"independence-day"`, `"thanksgiving"`, `"christmas"`, `"poland"` or `"bois-jacques"`. The
+stylesheet never sets that attribute. **A page turns a theme on by date only
 after its generator adds the head snippet below.** Inlining a newer stylesheet into a page that has
 no snippet changes nothing, so no consumer gets a season until it adds the snippet.
 
@@ -92,6 +95,8 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
         [5, 28, 6, 4, 'independence-day'],
         [10, 1, 10, nthWeekday(year, 10, 4, 4), 'thanksgiving'],
         [10, nthWeekday(year, 10, 5, 4), 11, 28, 'christmas'],
+        [11, 29, 11, 31, 'bois-jacques'],
+        [0, 1, 0, 13, 'bois-jacques'],
       ];
       for (var i = 0; i < ranges.length; i++) {
         r = ranges[i];
@@ -106,20 +111,25 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
 
 - **St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16,
   Independence Day from June 28 through July 4, Thanksgiving from November 1 through the fourth
-  Thursday of November, and Christmas from the fourth Friday of November through December 28, all
-  inclusive.** Poland ships four single days: May 3, August 15, November 11 and December 6.
+  Thursday of November, Christmas from the fourth Friday of November through December 28, and
+  Bois Jacques from December 29 through January 13, all inclusive.** Poland ships four single
+  days: May 3, August 15, November 11 and December 6.
   May 3, November 11 and December 6 fall inside Chartreuse, Thanksgiving and Christmas, and
   Poland's rows come first so they win those days. August 15 falls outside every base range, so
-  it stands on its own. The remaining rows are the base calendar. The fourth Thursday is
-  Thanksgiving Day. `nthWeekday` resolves both Thursdays and
-  Fridays in the visitor's own year, so the Thanksgiving and Christmas windows track the calendar.
+  it stands on its own. The remaining rows are the base calendar. Bois Jacques crosses the year
+  boundary, so it is two rows of the same season: December 29 through 31 and January 1 through 13.
+  The snippet compares months linearly, and January is an ordinary month in the visitor's current
+  year. The fourth Thursday is Thanksgiving Day. `nthWeekday` resolves both Thursdays and Fridays
+  in the visitor's own year, so the Thanksgiving and Christmas windows track the calendar.
   That also covers the years where November 1 is a Friday and the fourth Friday falls before the
   fourth Thursday: rows are checked in order and the first match wins, so Thanksgiving keeps those
-  days and Christmas starts the day after its end. December 29 through 31 belong to no season. The
+  days and Christmas starts the day after its end. January 14 through February 28 belong to no
+  season. The
   snippet reads the visitor's local calendar once, at page load. A page left open past midnight
   keeps its theme until the next load. To change a window, edit that row in `ranges`. `getMonth()`
-  counts from zero, so `4` is May, `10` is November and `11` is December, and `getDay()` counts
-  from Sunday, so `4` is Thursday and `5` is Friday. A date in no row leaves the attribute off.
+  counts from zero, so `0` is January, `4` is May, `10` is November and `11` is December, and
+  `getDay()` counts from Sunday, so `4` is Thursday and `5` is Friday. A date in no row leaves the
+  attribute off.
 - **Keep the snippet classic and first.** `mermaid.js` reads `--mermaid-scheme` once, when its
   module evaluates. A classic inline script runs as the parser reaches it, so the attribute is on
   `<html>` before any module runs. A `type="module"`, `defer` or `async` snippet, or one placed
@@ -129,8 +139,9 @@ Emit the snippet as a classic inline `<script>`, before the `<style>` block and 
   reader states no contrast preference, so high contrast and print keep their own palettes.
 - **Omit the snippet to opt out.** To force a season on every date, write
   `data-season="st-patrick"`, `data-season="chartreuse"`, `data-season="independence-day"`,
-  `data-season="thanksgiving"`, `data-season="christmas"` or `data-season="poland"` on `<html>` and
-  omit the snippet, which is how the season preview pages work. A page under a `script-src` policy needs a nonce or a hash
+  `data-season="thanksgiving"`, `data-season="christmas"`, `data-season="poland"` or
+  `data-season="bois-jacques"` on `<html>` and omit the snippet, which is how the season preview
+  pages work. A page under a `script-src` policy needs a nonce or a hash
   for the snippet. A blocked snippet leaves the standard palette, with no error visible to the
   reader.
 - **The fixtures carry the snippet.** All four dark fixtures include it (in `samples/dark.html`,
@@ -567,6 +578,7 @@ with `git tag`, so a skipped row fails the build. Add the row in the release com
 
 | since | your generator must now |
 | --- | --- |
+| v1.73.0 | repaste the head snippet to gain the Bois Jacques window. **A Bois Jacques palette ships behind `data-season="bois-jacques"`.** December 29 through January 13 select it, as two rows of one season because the window crosses the year boundary. Christmas still ends December 28, and January 14 through February 28 belong to no season. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a Bois Jacques variant, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
 | v1.72.1 | nothing breaks. **The contract history is corrected and the fixtures now demonstrate `translate="no"`.** The release table is rebuilt to the last ten tags, with the missing rows for `v1.71.0`, `v1.68.1`, `v1.67.0`, `v1.66.0` and `v1.65.0`. § 2 now requires `translate="no"` on every `<pre>` and `<code>`, and every fixture carries it. `check` and the `contract` workflow compare the table with `git tag`, so a skipped row fails the build. The payload changes only in its version stamp; regenerate pages whose inline stylesheet predates this payload. |
 | v1.72.0 | nothing is required. **A Poland palette ships behind `data-season`, and the calendar gains override rows.** May 3, August 15, November 11 and December 6 select `poland`; May 3, November 11 and December 6 sit inside the Chartreuse, Thanksgiving and Christmas ranges, and August 15 stands alone. The override rows come first, so they win the days they share with a base range. A page that pasted the v1.70 snippet keeps its old calendar until it copies the block in § 1 again. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a Poland variant, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
 | v1.71.0 | nothing. **Every Rider season ships a light variant.** Rider was the one target that carried a dark and a light theme plus one dark theme per season, so each season now lands as a pair rendered from its `light-<season>` palette, with the matching `themeProvider` and jar entries. § 1 step 6 records the extra row. None of it is part of the payload. |
@@ -576,7 +588,6 @@ with `git tag`, so a skipped row fails the build. Add the row in the release com
 | v1.68.1 | nothing. **Consumer documentation only.** README scales the seasonal theme prose and names one stable filename pattern per target. The stylesheet differs only in its version stamp; no markup, token or script changes. |
 | v1.68.0 | nothing. **The seasonal date windows move and the theme targets gain season variants.** Thanksgiving now runs from November 1 through the fourth Thursday of November, and Christmas from the fourth Friday of November through December 28, resolved in the visitor's local year. A page that pasted the v1.63 or v1.67 snippet keeps its old fixed windows until it copies the block in § 1 again; the palette blocks themselves are unchanged. December 29 through 31 now belong to no season. `themes/` adds a Thanksgiving variant in every template-bearing target, and a Christmas variant where one was missing. None of them is part of the payload. |
 | v1.67.0 | repaste the head snippet. **Thanksgiving ships behind `data-season`, and the date snippet becomes a range table.** Thanksgiving runs from November 1 through November 28, and Christmas moves to November 29 through December 31. A page that pasted the v1.63 snippet keeps Christmas at November 11 through December 26 until it copies the block in § 1 again. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. |
-| v1.66.0 | nothing. **The inlined Mermaid pin moves from 12.2.0 to 12.3.0.** The release clears two DOMPurify advisories, fixes an ELK edge crossing inside subgraphs, and drops the legacy ER renderer. No markup change and no new token: regenerate pages whose inlined `mermaid.js` predates this payload. |
 
 ## 4. Regenerate on a byte compare, not a version string
 
