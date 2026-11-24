@@ -727,9 +727,9 @@ defect here, and a flat Lc threshold misapplies APCA, whose threshold falls with
 
 ### What is gated, and what is open
 
-`.github/palette-check.py` runs fourteen checks: (1) hex projections in all ten Mermaid palettes; (2) the
+`.github/palette-check.py` runs fourteen checks: (1) hex projections in all twelve Mermaid palettes; (2) the
 `classdef` fills in both sets plus their painted letter; (3) `/* was */` provenance comments; (4)
-stray hex in `mermaid.js`; (5) the contrast floor in all sixteen modes against three grounds, plus rules
+stray hex in `mermaid.js`; (5) the contrast floor in all eighteen modes against three grounds, plus rules
 and the data ramp; (6) `--mermaid-scheme` both directions, no `prefers-color-scheme` in `mermaid.js`,
 and the `(max-width: 600px)` breakpoint pinned in both files; (7) sRGB gamut for every parsed token
 in every mode; (8) the vividness bands; (9) the inverted accent-as-ground pairs; (10) the two
@@ -1203,7 +1203,7 @@ object renders unchanged and the light one, alongside it in the same template, p
 placeholder with `light:`. Do not invent a third shape for a future target before checking which of
 these two its schema actually is.
 
-**Rider ships fourteen complete themes, not one that follows the system or the calendar**:
+**Rider ships sixteen complete themes, not one that follows the system or the calendar**:
 IntelliJ Platform themes are one appearance per `theme.json`, so `plugin.xml` registers a
 `themeProvider` for each, and every light `.icls` inherits IntelliJ's built-in `Default` scheme
 (`parent_scheme="Default"`) where the dark ones inherit `Darcula`. Every light `theme.json`'s four
@@ -1217,12 +1217,12 @@ load check as visual verification.
 not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
 the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas`,
 `dracula-tufte-chartreuse`, `dracula-tufte-st-patrick`,
-`dracula-tufte-independence-day` and `dracula-tufte-poland` are
+`dracula-tufte-independence-day`, `dracula-tufte-poland` and `dracula-tufte-bois-jacques` are
 picked by hand from the theme list, the way the light one is.
 `scripts/create-themes.nu` renders each with its season name as `scheme`, which is the same
 `--dump` key `.github/palette-check.py` derives for Mermaid's `init<Season>` set.
 
-**Rider ships a light variant of every season as well**, so all fourteen appearances are available
+**Rider ships a light variant of every season as well**, so all sixteen appearances are available
 in one plugin: the dark seasonal theme from the season's dark block, and a `-light` theme beside
 it from `light-<season>`, which is the palette `.github/palette-check.py` already derives. The
 light variant is a separate template rendered with that prefix, the same second-file shape VS
@@ -1979,6 +1979,22 @@ caution roles. The data ramp is gold, crimson, rose and white-gold, so it stays 
 rather than importing a categorical blue. Both blocks restate every token they change and hold the
 mode's floor, the pinned data fractions and the light accent band.
 
+**Bois Jacques turns the dark surfaces frozen slate and the light ones snow shadow.** The window is
+December 29 through January 13, the Ardennes winter the 101st Airborne held at the Bois Jacques
+forest. The dark ground is a cold near-black (`#11161d`), the light ground a blue-grey snow shadow
+(`#dfe7ef`), and the accents are frost blue (`--link`), lantern amber (`--orange`) and a pale
+conifer green (`--green`). The data ramp stays inside that weather: ice blue, sky blue, conifer and
+a dull gold. Both blocks restate every token they change and hold the mode's floor, the pinned data
+fractions and the light accent band.
+
+**The year boundary is two rows of one season, not a wrapping range.** December 29 through 31 and
+January 1 through 13 are separate rows with the same `season` value. The snippet compares months
+linearly, and January is an ordinary month in the visitor's current year, so a wrap rule would be a
+second calendar convention for one boundary. **Do not add wrap arithmetic to the snippet.** The
+light surface is deliberately darker than the other light grounds: Independence Day's pale blue
+`#e8f3ff` sits inside twice the render tolerance of a lighter snow shade, and `render-modes.py`
+would then let the wrong palette pass.
+
 **Chartreuse starts from the swatches and is muted for this palette.** Dark is green chartreuse:
 the surface is a shade of Vintage Chartreuse (`#9BA434`, rendered `#4d5208`), `--purple` is the
 Yellow-Green swatch (`#9ACD32`, rendered `#b5df76`), and `--green` is Vintage Chartreuse at accent
@@ -1992,15 +2008,16 @@ rather than a near-black, so every accent in both blocks is darkened or lightene
 The dark block also restates `--highlight` at `calc(l - 0.10)` of its orange, because a wash of the
 lighter accent behind light text measured below 4.5:1 at the inherited shift.
 
-**`--mermaid-scheme` takes fourteen values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
+**`--mermaid-scheme` takes sixteen values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
 `chartreuse`, `light-chartreuse`, `independence-day`, `light-independence-day`, `poland`,
-`light-poland`, `christmas`, `light-christmas`, `thanksgiving`, `light-thanksgiving`), and
-`mermaid.js` carries fourteen hex maps. There is no seasonal
+`light-poland`, `bois-jacques`, `light-bois-jacques`, `christmas`, `light-christmas`,
+`thanksgiving`, `light-thanksgiving`), and
+`mermaid.js` carries sixteen hex maps. There is no seasonal
 `classDef` set: the ban on a `classDef` hex line for a page that follows appearance covers a page
 that follows the date too.
 
 **Three kinds of page carry a season.** The dark fixtures carry the snippet, so each turns seasonal
-inside a window. The four light previews never show one. The twelve season previews set the attribute
+inside a window. The four light previews never show one. The fourteen season previews set the attribute
 in markup and rewrite the season conditions to `@media screen`, so the date and the contrast setting
 stop mattering and print keeps its own palette. `.github/season-probe.py` runs the verbatim snippet
 against a mocked clock at every window edge in three time zones, and it must keep doing so: a bound

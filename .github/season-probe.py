@@ -5,7 +5,9 @@ Consumers opt in by pasting a classic inline script before the stylesheet. It se
 `data-season` on `<html>` from the visitor's local calendar, with one row per season:
 St Patrick from March 1 through March 17, Chartreuse from May 1 through May 16, Independence Day
 from June 28 through July 4, Thanksgiving from November 1 through the fourth Thursday of November,
-and Christmas from the fourth Friday of November through December 28, all inclusive, at page load.
+and Christmas from the fourth Friday of November through December 28, and Bois Jacques from December 29
+through January 13, all inclusive, at page load. Bois Jacques crosses the year boundary as two rows
+of one season, December 29 through 31 and January 1 through 13.
 Poland overrides 3 May, 15 August, 11 November and 6 December, and those override rows come first
 so they carve their days out of Chartreuse, Thanksgiving or Christmas. Rows are checked in order and
 the first match wins, so in a year where November 1 is a Friday the fourth Friday falls before the
@@ -68,7 +70,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DARK = ["samples/dark.html", "samples/dark-conn-map.html",
         "samples/dark-timeline.html", "samples/dark-charts.html"]
 MAIN = "samples/dark.html"
-SEASONS = ["chartreuse", "christmas", "independence-day", "poland", "st-patrick", "thanksgiving"]
+SEASONS = ["bois-jacques", "chartreuse", "christmas", "independence-day", "poland", "st-patrick", "thanksgiving"]
 PREVIEWS = {(season, mode): f"samples/{season}-{mode}.html"
             for season in SEASONS for mode in ("dark", "light")}
 PLAIN_LIGHT = "samples/light.html"
@@ -134,10 +136,12 @@ CASES = [
     ("Dec 7, base range resumes", 2026, 12, 7, 0, 0, 0, "christmas"),
     ("Dec 25", 2026, 12, 25, 12, 0, 0, "christmas"),
     ("Dec 28 end of day", 2026, 12, 28, 23, 59, 59, "christmas"),
-    ("Dec 29 start of day", 2026, 12, 29, 0, 0, 0, None),
-    ("Dec 31", 2026, 12, 31, 12, 0, 0, None),
-    ("Jan 1", 2027, 1, 1, 0, 0, 0, None),
-    ("Jan 11, a day number inside the old windows", 2027, 1, 11, 12, 0, 0, None),
+    ("Dec 29 start of day", 2026, 12, 29, 0, 0, 0, "bois-jacques"),
+    ("Dec 31", 2026, 12, 31, 12, 0, 0, "bois-jacques"),
+    ("Jan 1", 2027, 1, 1, 0, 0, 0, "bois-jacques"),
+    ("Jan 13 end of day", 2027, 1, 13, 23, 59, 59, "bois-jacques"),
+    ("Jan 14 start of day", 2027, 1, 14, 0, 0, 0, None),
+    ("Jan 11, a day number inside the old windows", 2027, 1, 11, 12, 0, 0, "bois-jacques"),
     ("Jan 26, a day number inside the old windows", 2027, 1, 26, 12, 0, 0, None),
     ("Jun 15", 2026, 6, 15, 12, 0, 0, None),
     ("Leap year Feb 29", 2024, 2, 29, 12, 0, 0, None),
@@ -145,7 +149,9 @@ CASES = [
     ("2024 Nov 28 end of day, fourth Thursday", 2024, 11, 28, 23, 59, 59, "thanksgiving"),
     ("2024 Nov 29 start of day", 2024, 11, 29, 0, 0, 0, "christmas"),
     ("2024 Dec 28", 2024, 12, 28, 12, 0, 0, "christmas"),
-    ("2024 Dec 29", 2024, 12, 29, 12, 0, 0, None),
+    ("2024 Dec 29", 2024, 12, 29, 12, 0, 0, "bois-jacques"),
+    ("2025 Jan 13 end of day", 2025, 1, 13, 23, 59, 59, "bois-jacques"),
+    ("2025 Jan 14 start of day", 2025, 1, 14, 0, 0, 0, None),
     ("Next year Nov 1", 2027, 11, 1, 0, 0, 0, "thanksgiving"),
     ("Next year Nov 25 end of day, fourth Thursday", 2027, 11, 25, 23, 59, 59, "thanksgiving"),
     ("Next year Nov 26 start of day, fourth Friday", 2027, 11, 26, 0, 0, 0, "christmas"),
@@ -350,6 +356,7 @@ def main():
                             ("independence-day", (2026, 7, 1), "independence-day"),
                             ("thanksgiving", (2026, 11, 15), "thanksgiving"),
                             ("christmas", (2026, 12, 1), "christmas"),
+                            ("bois-jacques", (2027, 1, 5), "bois-jacques"),
                             ("out-of-window", (2027, 1, 15), None)):
         mock = f"  <script>{MOCK % (when[0], when[1] - 1, when[2], 12, 0, 0)}</script>\n"
         timed = page.replace("<head>", "<head>\n" + mock, 1)

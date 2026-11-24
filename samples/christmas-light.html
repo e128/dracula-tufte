@@ -6,7 +6,7 @@
   <title>Tufte-Dracula component sample: forced Christmas light preview</title>
   <meta name="generated-by" content="scripts/build-sample.nu"/>
   <style>
-    /* Dracula-Tufte (muted) v1.72.1 */
+    /* Dracula-Tufte (muted) v1.73.0 */
     @layer tufte-dracula {
     @font-face {
       font-family: 'Source Serif 4'; font-style: normal; font-weight: 200 900;
@@ -888,6 +888,50 @@
         --mermaid-scheme: light-poland;
       }
     }
+    @media screen {
+      :root[data-season="bois-jacques"] {
+        --surface:     oklch(0.200 0.016 255);
+        --surface-alt: oklch(0.150 0.014 255);
+        --on-surface:  oklch(0.965 0.008 240);
+        --code-bg:     oklch(0.258 0.020 255);
+        --label:       oklch(0.800 0.025 245);
+        --muted:       oklch(0.730 0.028 245);
+        --rule-light:  oklch(0.560 0.030 250);
+        --link:        oklch(0.790 0.075 235);
+        --orange:      oklch(0.800 0.135 72);
+        --red:         oklch(0.720 0.194 25);
+        --purple:      oklch(0.720 0.085 285);
+        --pink:        oklch(0.760 0.090 350);
+        --green:       oklch(0.790 0.090 150);
+        --data-1:      oklch(0.790 0.083 255);
+        --data-2:      oklch(0.760 0.093 230);
+        --data-3:      oklch(0.775 0.162 155);
+        --data-4:      oklch(0.790 0.106 90);
+        --mermaid-scheme: bois-jacques;
+      }
+    }
+    @media screen {
+      :root[data-season="bois-jacques"] {
+        --surface:     oklch(0.925 0.014 250);
+        --surface-alt: oklch(0.888 0.018 250);
+        --on-surface:  oklch(0.190 0.012 250);
+        --code-bg:     oklch(0.945 0.012 250);
+        --label:       oklch(0.430 0.030 250);
+        --muted:       oklch(0.478 0.030 250);
+        --rule-light:  oklch(0.590 0.030 250);
+        --link:        oklch(0.465 0.056 230);
+        --orange:      oklch(0.480 0.068 70);
+        --red:         oklch(0.505 0.201 25);
+        --purple:      oklch(0.465 0.166 285);
+        --pink:        oklch(0.495 0.139 350);
+        --green:       oklch(0.465 0.107 150);
+        --data-1:      oklch(0.600 0.169 255);
+        --data-2:      oklch(0.570 0.085 230);
+        --data-3:      oklch(0.585 0.122 155);
+        --data-4:      oklch(0.585 0.079 90);
+        --mermaid-scheme: light-bois-jacques;
+      }
+    }
     @media (forced-colors: active) {
       code, kbd, .verdict, .badge, .kicker, .icon-chip, .step-node, .layer-end { border: 1px solid currentColor; }
       .hm { border: 1px solid CanvasText; }
@@ -1537,7 +1581,75 @@
         plotColorPalette:   '#9f7e32',
       },
     };
-    const mermaidVars = new Map([['light', mermaidLightVars], ['christmas', mermaidChristmas], ['light-christmas', mermaidChristmasLight], ['thanksgiving', mermaidThanksgiving], ['light-thanksgiving', mermaidThanksgivingLight], ['chartreuse', mermaidChartreuse], ['light-chartreuse', mermaidChartreuseLight], ['st-patrick', mermaidStPatrick], ['light-st-patrick', mermaidStPatrickLight], ['independence-day', mermaidIndependenceDay], ['light-independence-day', mermaidIndependenceDayLight], ['poland', mermaidPoland], ['light-poland', mermaidPolandLight]]);
+    const mermaidBoisJacques = {
+      background:           '#1d242d',
+      mainBkg:              '#1d242d',
+      primaryColor:         '#1d242d',
+      primaryTextColor:     '#eff4f8',
+      primaryBorderColor:   '#9f9dd8',
+      lineColor:            '#9aaab9',
+      textColor:            '#eff4f8',
+      secondaryColor:       '#070b11',
+      clusterBkg:           '#1d242d',
+      clusterBorder:        '#687686',
+      nodeBorder:           '#9f9dd8',
+      edgeLabelBackground:  '#1d242d',
+      noteBkgColor:         '#1d242d',
+      noteTextColor:        '#eff4f8',
+      noteBorderColor:      '#687686',
+      archEdgeColor:        '#9aaab9',
+      archGroupBorderColor: '#687686',
+      xyChart: {
+        backgroundColor:    '#11161d',
+        titleColor:         '#b1c0cd',
+        dataLabelColor:     '#eff4f8',
+        legendTextColor:    '#eff4f8',
+        xAxisLabelColor:    '#eff4f8',
+        yAxisLabelColor:    '#eff4f8',
+        xAxisTitleColor:    '#eff4f8',
+        yAxisTitleColor:    '#eff4f8',
+        xAxisTickColor:     '#9aaab9',
+        yAxisTickColor:     '#9aaab9',
+        xAxisLineColor:     '#9aaab9',
+        yAxisLineColor:     '#9aaab9',
+        plotColorPalette:   '#97bef0',
+      },
+    };
+    const mermaidBoisJacquesLight = {
+      background:           '#e7eef5',
+      mainBkg:              '#e7eef5',
+      primaryColor:         '#e7eef5',
+      primaryTextColor:     '#101419',
+      primaryBorderColor:   '#5443b0',
+      lineColor:            '#515f6e',
+      textColor:            '#101419',
+      secondaryColor:       '#d1dbe6',
+      clusterBkg:           '#e7eef5',
+      clusterBorder:        '#707f8f',
+      nodeBorder:           '#5443b0',
+      edgeLabelBackground:  '#e7eef5',
+      noteBkgColor:         '#e7eef5',
+      noteTextColor:        '#101419',
+      noteBorderColor:      '#707f8f',
+      archEdgeColor:        '#515f6e',
+      archGroupBorderColor: '#707f8f',
+      xyChart: {
+        backgroundColor:    '#dfe7ef',
+        titleColor:         '#445160',
+        dataLabelColor:     '#101419',
+        legendTextColor:    '#101419',
+        xAxisLabelColor:    '#101419',
+        yAxisLabelColor:    '#101419',
+        xAxisTitleColor:    '#101419',
+        yAxisTitleColor:    '#101419',
+        xAxisTickColor:     '#515f6e',
+        yAxisTickColor:     '#515f6e',
+        xAxisLineColor:     '#515f6e',
+        yAxisLineColor:     '#515f6e',
+        plotColorPalette:   '#2b80e2',
+      },
+    };
+    const mermaidVars = new Map([['light', mermaidLightVars], ['christmas', mermaidChristmas], ['light-christmas', mermaidChristmasLight], ['thanksgiving', mermaidThanksgiving], ['light-thanksgiving', mermaidThanksgivingLight], ['chartreuse', mermaidChartreuse], ['light-chartreuse', mermaidChartreuseLight], ['st-patrick', mermaidStPatrick], ['light-st-patrick', mermaidStPatrickLight], ['independence-day', mermaidIndependenceDay], ['light-independence-day', mermaidIndependenceDayLight], ['poland', mermaidPoland], ['light-poland', mermaidPolandLight], ['bois-jacques', mermaidBoisJacques], ['light-bois-jacques', mermaidBoisJacquesLight]]);
     mermaid.initialize({
       startOnLoad: true, theme: 'base', look: 'classic',
       securityLevel: window.mermaidSecurityLevel || 'strict',
