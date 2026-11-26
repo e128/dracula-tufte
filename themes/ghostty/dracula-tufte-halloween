@@ -1,0 +1,37 @@
+# Dracula-Tufte (muted) Halloween: Ghostty theme
+#
+# Every value is the sRGB rendering of a tufte-dracula.css :root oklch() token,
+# computed with .github/palette-check.py's oklch_to_hex. Values come from the
+# seasonal block behind data-season="halloween". Bright ANSI slots that have no
+# token of their own are the same hue and chroma at L + 0.07.
+#
+# This is a seasonal theme selected by hand, not a calendar switch.
+#
+# Install: copy this file to ~/.config/ghostty/themes/, then set
+#          `theme = dracula-tufte-halloween` in ~/.config/ghostty/config.
+
+background = #271326
+foreground = #f8f3e9
+
+cursor-color = #e881b4
+cursor-text = #271326
+
+selection-background = #493147
+selection-foreground = #f8f3e9
+
+palette = 0=#1a0919
+palette = 1=#ff7a7b
+palette = 2=#a7c470
+palette = 3=#dab567
+palette = 4=#c4acf1
+palette = 5=#c190e5
+palette = 6=#8cc5e6
+palette = 7=#d4c2a4
+palette = 8=#846b81
+palette = 9=#ffa2a0
+palette = 10=#bddb86
+palette = 11=#fb9d59
+palette = 12=#d9c6ff
+palette = 13=#e881b4
+palette = 14=#a2dbfd
+palette = 15=#fffbf4

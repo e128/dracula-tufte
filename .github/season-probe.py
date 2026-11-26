@@ -3,10 +3,12 @@
 
 Consumers opt in by pasting a classic inline script before the stylesheet. It sets
 `data-season` on `<html>` from the visitor's local calendar, with one row per season:
+Bois Jacques from December 29 through January 13, Aurora from January 14 through February 28,
 St Patrick from March 1 through March 17, Chartreuse from May 1 through May 16, Independence Day
-from June 28 through July 4, Thanksgiving from November 1 through the fourth Thursday of November,
-and Christmas from the fourth Friday of November through December 28, and Bois Jacques from December 29
-through January 13, all inclusive, at page load. Bois Jacques crosses the year boundary as two rows
+from June 28 through July 4, Birthday from August 25 through 27, Oktoberfest from September 20
+through October 5, Halloween from October 24 through 31, Thanksgiving from November 1 through the
+fourth Thursday of November, and Christmas from the fourth Friday of November through December 28,
+all inclusive, at page load. Bois Jacques crosses the year boundary as two rows
 of one season, December 29 through 31 and January 1 through 13.
 Poland overrides 3 May, 15 August, 11 November and 6 December, and those override rows come first
 so they carve their days out of Chartreuse, Thanksgiving or Christmas. Rows are checked in order and
@@ -70,7 +72,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DARK = ["samples/dark.html", "samples/dark-conn-map.html",
         "samples/dark-timeline.html", "samples/dark-charts.html"]
 MAIN = "samples/dark.html"
-SEASONS = ["bois-jacques", "chartreuse", "christmas", "independence-day", "poland", "st-patrick", "thanksgiving"]
+SEASONS = ["aurora", "birthday", "bois-jacques", "chartreuse", "christmas", "halloween", "independence-day", "oktoberfest", "poland", "st-patrick", "thanksgiving"]
 PREVIEWS = {(season, mode): f"samples/{season}-{mode}.html"
             for season in SEASONS for mode in ("dark", "light")}
 PLAIN_LIGHT = "samples/light.html"
@@ -83,7 +85,9 @@ ZONES = {"UTC": 0, "Pacific/Kiritimati": -840, "Pacific/Pago_Pago": 660}
 # the calendar's own, 1 to 12. The expectations are literals on purpose: deriving them
 # from the rule would restate the snippet's own logic and could not disagree with it.
 CASES = [
-    ("Feb 28 end of day", 2026, 2, 28, 23, 59, 59, None),
+    ("Jan 13 end of day", 2026, 1, 13, 23, 59, 59, "bois-jacques"),
+    ("Jan 14 start of day", 2026, 1, 14, 0, 0, 0, "aurora"),
+    ("Feb 28 end of day", 2026, 2, 28, 23, 59, 59, "aurora"),
     ("Mar 1 start of day", 2026, 3, 1, 0, 0, 0, "st-patrick"),
     ("Mar 1 noon", 2026, 3, 1, 12, 0, 0, "st-patrick"),
     ("Mar 8", 2026, 3, 8, 12, 0, 0, "st-patrick"),
@@ -103,6 +107,19 @@ CASES = [
     ("May 17 start of day", 2026, 5, 17, 0, 0, 0, None),
     ("2024 May 1", 2024, 5, 1, 12, 0, 0, "chartreuse"),
     ("2027 May 16 end of day", 2027, 5, 16, 23, 59, 59, "chartreuse"),
+    ("Aug 24 end of day", 2026, 8, 24, 23, 59, 59, None),
+    ("Aug 25 start of day", 2026, 8, 25, 0, 0, 0, "birthday"),
+    ("Aug 26", 2026, 8, 26, 12, 0, 0, "birthday"),
+    ("Aug 27 end of day", 2026, 8, 27, 23, 59, 59, "birthday"),
+    ("Aug 28 start of day", 2026, 8, 28, 0, 0, 0, None),
+    ("Sep 19 end of day", 2026, 9, 19, 23, 59, 59, None),
+    ("Sep 20 start of day", 2026, 9, 20, 0, 0, 0, "oktoberfest"),
+    ("Oct 5 end of day", 2026, 10, 5, 23, 59, 59, "oktoberfest"),
+    ("Oct 6 start of day", 2026, 10, 6, 0, 0, 0, None),
+    ("Oct 23 end of day", 2026, 10, 23, 23, 59, 59, None),
+    ("Oct 24 start of day", 2026, 10, 24, 0, 0, 0, "halloween"),
+    ("Oct 30", 2026, 10, 30, 12, 0, 0, "halloween"),
+    ("Nov 1 start of day", 2026, 11, 1, 0, 0, 0, "thanksgiving"),
     ("Jun 27 end of day", 2026, 6, 27, 23, 59, 59, None),
     ("Aug 14, before the override", 2026, 8, 14, 23, 59, 59, None),
     ("Aug 15, Poland Armed Forces Day", 2026, 8, 15, 12, 0, 0, "poland"),
@@ -114,10 +131,9 @@ CASES = [
     ("Jul 5 start of day", 2026, 7, 5, 0, 0, 0, None),
     ("2024 Jun 28", 2024, 6, 28, 12, 0, 0, "independence-day"),
     ("2027 Jul 4 end of day", 2027, 7, 4, 23, 59, 59, "independence-day"),
-    ("Oct 1", 2026, 10, 1, 0, 0, 0, None),
-    ("Oct 11, a day number inside both windows", 2026, 10, 11, 12, 0, 0, None),
-    ("Oct 31 end of day", 2026, 10, 31, 23, 59, 59, None),
-    ("Nov 1 start of day", 2026, 11, 1, 0, 0, 0, "thanksgiving"),
+    ("Oct 1", 2026, 10, 1, 0, 0, 0, "oktoberfest"),
+    ("Oct 11, after Oktoberfest", 2026, 10, 11, 12, 0, 0, None),
+    ("Oct 31 end of day", 2026, 10, 31, 23, 59, 59, "halloween"),
     ("Nov 10, before the override", 2026, 11, 10, 23, 59, 59, "thanksgiving"),
     ("Nov 11, Poland Independence Day", 2026, 11, 11, 0, 0, 0, "poland"),
     ("Nov 11 noon, carving Thanksgiving", 2026, 11, 11, 12, 0, 0, "poland"),
@@ -140,9 +156,9 @@ CASES = [
     ("Dec 31", 2026, 12, 31, 12, 0, 0, "bois-jacques"),
     ("Jan 1", 2027, 1, 1, 0, 0, 0, "bois-jacques"),
     ("Jan 13 end of day", 2027, 1, 13, 23, 59, 59, "bois-jacques"),
-    ("Jan 14 start of day", 2027, 1, 14, 0, 0, 0, None),
+    ("Jan 14 start of day", 2027, 1, 14, 0, 0, 0, "aurora"),
     ("Jan 11, a day number inside the old windows", 2027, 1, 11, 12, 0, 0, "bois-jacques"),
-    ("Jan 26, a day number inside the old windows", 2027, 1, 26, 12, 0, 0, None),
+    ("Jan 26, a day number inside the old windows", 2027, 1, 26, 12, 0, 0, "aurora"),
     ("Jun 15", 2026, 6, 15, 12, 0, 0, None),
     ("Leap year Feb 29", 2024, 2, 29, 12, 0, 0, None),
     ("2024 Nov 22, fourth Friday before the fourth Thursday", 2024, 11, 22, 12, 0, 0, "thanksgiving"),
@@ -151,7 +167,7 @@ CASES = [
     ("2024 Dec 28", 2024, 12, 28, 12, 0, 0, "christmas"),
     ("2024 Dec 29", 2024, 12, 29, 12, 0, 0, "bois-jacques"),
     ("2025 Jan 13 end of day", 2025, 1, 13, 23, 59, 59, "bois-jacques"),
-    ("2025 Jan 14 start of day", 2025, 1, 14, 0, 0, 0, None),
+    ("2025 Jan 14 start of day", 2025, 1, 14, 0, 0, 0, "aurora"),
     ("Next year Nov 1", 2027, 11, 1, 0, 0, 0, "thanksgiving"),
     ("Next year Nov 25 end of day, fourth Thursday", 2027, 11, 25, 23, 59, 59, "thanksgiving"),
     ("Next year Nov 26 start of day, fourth Friday", 2027, 11, 26, 0, 0, 0, "christmas"),
@@ -357,7 +373,11 @@ def main():
                             ("thanksgiving", (2026, 11, 15), "thanksgiving"),
                             ("christmas", (2026, 12, 1), "christmas"),
                             ("bois-jacques", (2027, 1, 5), "bois-jacques"),
-                            ("out-of-window", (2027, 1, 15), None)):
+                            ("aurora", (2027, 1, 20), "aurora"),
+                            ("birthday", (2026, 8, 26), "birthday"),
+                            ("oktoberfest", (2026, 9, 25), "oktoberfest"),
+                            ("halloween", (2026, 10, 28), "halloween"),
+                            ("out-of-window", (2027, 3, 20), None)):
         mock = f"  <script>{MOCK % (when[0], when[1] - 1, when[2], 12, 0, 0)}</script>\n"
         timed = page.replace("<head>", "<head>\n" + mock, 1)
         timed = re.sub(r'<script type="module">.*?</script>', "", timed, flags=re.S)

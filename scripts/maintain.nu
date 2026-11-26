@@ -19,7 +19,7 @@ const ROOT = $SCRIPTS | path dirname
 # loop below names this list instead of repeating it, so a new fixture is added once.
 const DARK_FIXTURES = [samples/dark.html samples/dark-conn-map.html samples/dark-timeline.html samples/dark-charts.html]
 const LIGHT_FIXTURES = [samples/light.html samples/light-conn-map.html samples/light-timeline.html samples/light-charts.html]
-const SEASON_PREVIEWS = [samples/bois-jacques-dark.html samples/bois-jacques-light.html samples/chartreuse-dark.html samples/chartreuse-light.html samples/christmas-dark.html samples/christmas-light.html samples/independence-day-dark.html samples/independence-day-light.html samples/poland-dark.html samples/poland-light.html samples/st-patrick-dark.html samples/st-patrick-light.html samples/thanksgiving-dark.html samples/thanksgiving-light.html]
+const SEASON_PREVIEWS = [samples/aurora-dark.html samples/aurora-light.html samples/birthday-dark.html samples/birthday-light.html samples/bois-jacques-dark.html samples/bois-jacques-light.html samples/chartreuse-dark.html samples/chartreuse-light.html samples/christmas-dark.html samples/christmas-light.html samples/halloween-dark.html samples/halloween-light.html samples/independence-day-dark.html samples/independence-day-light.html samples/oktoberfest-dark.html samples/oktoberfest-light.html samples/poland-dark.html samples/poland-light.html samples/st-patrick-dark.html samples/st-patrick-light.html samples/thanksgiving-dark.html samples/thanksgiving-light.html]
 const FIXTURES = $DARK_FIXTURES ++ $LIGHT_FIXTURES ++ $SEASON_PREVIEWS
 
 # `dark` -> init, `light` -> initLight, `christmas` -> initChristmas, and

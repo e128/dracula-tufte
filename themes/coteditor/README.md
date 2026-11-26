@@ -4,7 +4,9 @@ Two `.cottheme` files for the plain palette, one per appearance, plus one season
 file per season: `Dracula-Tufte St Patrick (Dark).cottheme`,
 `Dracula-Tufte Chartreuse (Dark).cottheme`, `Dracula-Tufte Independence Day (Dark).cottheme`,
 `Dracula-Tufte Christmas (Dark).cottheme`, `Dracula-Tufte Thanksgiving (Dark).cottheme`,
-`Dracula-Tufte Poland (Dark).cottheme` and `Dracula-Tufte Bois Jacques (Dark).cottheme`. CotEditor pairs two themes whose names differ
+`Dracula-Tufte Poland (Dark).cottheme`, `Dracula-Tufte Bois Jacques (Dark).cottheme`,
+`Dracula-Tufte Aurora (Dark).cottheme`, `Dracula-Tufte Birthday (Dark).cottheme`,
+`Dracula-Tufte Oktoberfest (Dark).cottheme` and `Dracula-Tufte Halloween (Dark).cottheme`. CotEditor pairs two themes whose names differ
 only by a trailing ` (Dark)` or ` (Light)`, so the plain pair switches with the window
 appearance once both are installed and Appearance is set to Match System. The space before
 the parenthesis is part of the name. A seasonal file carries the ` (Dark)` suffix because

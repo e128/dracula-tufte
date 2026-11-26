@@ -45,23 +45,32 @@ contrast has no preview page. CI renders it and attaches the image to each pull 
 The four fixtures above carry the optional seasonal head snippet and follow the calendar at page
 load, in the visitor's local year. Read in date order, the seasons take effect:
 
-1. **March 1 through March 17**: St Patrick. Deep shamrock green in the dark palette and pale
+1. **January 14 through February 28**: Aurora. A violet polar night in the dark palette and a pale
+   aurora green in the light one, anchored on `#0f0528`, `#c7fde4` and an ice-blue link.
+2. **March 1 through March 17**: St Patrick. Deep shamrock green in the dark palette and pale
    mint in the light one, anchored on `#02331d`, `#d6f7dc` and the gold `#e4b24d`.
-2. **May 1 through May 16**: Chartreuse. Green chartreuse in the dark palette, yellow chartreuse
+3. **May 1 through May 16**: Chartreuse. Green chartreuse in the dark palette, yellow chartreuse
    in the light one, anchored on `#9BA434` and `#CDE62E`.
-3. **June 28 through July 4**: Independence Day. Navy and red in the dark palette, pale blue in
+4. **June 28 through July 4**: Independence Day. Navy and red in the dark palette, pale blue in
    the light one, anchored on `#101d38`, `#e8f3ff` and the flag red.
-4. **November 1 through the fourth Thursday of November**: Thanksgiving. That Thursday is
+5. **August 25 through 27**: Birthday. Candle gold, coral and mint on a deep wine ground in the
+   dark palette, and a pale blue ground in the light one.
+6. **September 20 through October 5**: Oktoberfest. Bavarian blue, wheat gold and hop green on a
+   deep pretzel brown ground in the dark palette, and a wheat ground in the light one.
+7. **October 24 through 31**: Halloween. Pumpkin, bone and witch violet in the dark palette, with
+   a pale lilac ground in the light one.
+8. **November 1 through the fourth Thursday of November**: Thanksgiving. That Thursday is
    Thanksgiving Day.
-5. **The fourth Friday of November through December 28**: Christmas.
-6. **December 29 through January 13**: Bois Jacques. Frozen ground and snow at the Bois Jacques
-   forest in the Ardennes winter, anchored on `#11161d`, `#dfe7ef` and a lantern amber.
+9. **The fourth Friday of November through December 28**: Christmas.
+10. **December 29 through January 13**: Bois Jacques. Frozen ground and snow at the Bois Jacques
+    forest in the Ardennes winter, anchored on `#11161d`, `#dfe7ef` and a lantern amber.
 
 Poland is an override rather than a range. Its single days win even inside another season's range:
 May 3, August 15, November 11 and December 6. Red and white dominate, with the eagle's gold in the
 accents. Every other day shows the plain palette. The windows are inclusive and both November
-boundaries are resolved in the visitor's local year. January 14 through February 28 belong to no
-season.
+boundaries are resolved in the visitor's local year. March 18 through April 30, May 17 through
+June 27, July 5 through August 24, August 28 through September 19, and October 6 through October 23
+belong to no season.
 
 Each season also has a pair of preview pages that force it for any date and any system setting:
 
@@ -74,6 +83,10 @@ Each season also has a pair of preview pages that force it for any date and any 
 | Christmas | `christmas` | the fourth Friday of November through December 28 | [dark](https://e128.github.io/dracula-tufte/samples/christmas-dark.html), [light](https://e128.github.io/dracula-tufte/samples/christmas-light.html) |
 | Poland | `poland` | May 3, August 15, November 11 and December 6 (overrides the ranges above) | [dark](https://e128.github.io/dracula-tufte/samples/poland-dark.html), [light](https://e128.github.io/dracula-tufte/samples/poland-light.html) |
 | Bois Jacques | `bois-jacques` | December 29 through January 13 | [dark](https://e128.github.io/dracula-tufte/samples/bois-jacques-dark.html), [light](https://e128.github.io/dracula-tufte/samples/bois-jacques-light.html) |
+| Aurora | `aurora` | January 14 through February 28 | [dark](https://e128.github.io/dracula-tufte/samples/aurora-dark.html), [light](https://e128.github.io/dracula-tufte/samples/aurora-light.html) |
+| Birthday | `birthday` | August 25 through 27 | [dark](https://e128.github.io/dracula-tufte/samples/birthday-dark.html), [light](https://e128.github.io/dracula-tufte/samples/birthday-light.html) |
+| Oktoberfest | `oktoberfest` | September 20 through October 5 | [dark](https://e128.github.io/dracula-tufte/samples/oktoberfest-dark.html), [light](https://e128.github.io/dracula-tufte/samples/oktoberfest-light.html) |
+| Halloween | `halloween` | October 24 through 31 | [dark](https://e128.github.io/dracula-tufte/samples/halloween-dark.html), [light](https://e128.github.io/dracula-tufte/samples/halloween-light.html) |
 
 A preview page is not the payload, and each says so in a banner.
 
@@ -81,7 +94,7 @@ A preview page is not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.74.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.75.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -100,7 +113,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.74.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.75.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:

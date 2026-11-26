@@ -39,7 +39,10 @@ The season modes (`season`, `season-light`, `season-thanksgiving`,
 `season-thanksgiving-light`, `season-chartreuse`, `season-chartreuse-light`,
 `season-st-patrick`, `season-st-patrick-light`, `season-independence-day`,
 `season-independence-day-light`, `season-poland`, `season-poland-light`,
-`season-bois-jacques`, `season-bois-jacques-light`) add their
+`season-bois-jacques`, `season-bois-jacques-light`, `season-halloween`,
+`season-halloween-light`, `season-aurora`, `season-aurora-light`,
+`season-oktoberfest`, `season-oktoberfest-light`, `season-birthday`,
+`season-birthday-light`) add their
 `data-season` value to the scratch copy's `<html>`
 by hand, because the head snippet that sets it in a real page is a script and every
 script is stripped. A season light mode also switches on the plain light block, the way a
@@ -109,6 +112,14 @@ MODES = {
     "season-poland-light": ((LIGHT, SEASON, SEASON_LIGHT), "poland", "#fceae8"),
     "season-bois-jacques": ((SEASON,), "bois-jacques", "#11161d"),
     "season-bois-jacques-light": ((LIGHT, SEASON, SEASON_LIGHT), "bois-jacques", "#dfe7ef"),
+    "season-halloween": ((SEASON,), "halloween", "#271326"),
+    "season-halloween-light": ((LIGHT, SEASON, SEASON_LIGHT), "halloween", "#f3e6f9"),
+    "season-aurora": ((SEASON,), "aurora", "#0f0528"),
+    "season-aurora-light": ((LIGHT, SEASON, SEASON_LIGHT), "aurora", "#c7fde4"),
+    "season-oktoberfest": ((SEASON,), "oktoberfest", "#402712"),
+    "season-oktoberfest-light": ((LIGHT, SEASON, SEASON_LIGHT), "oktoberfest", "#fbe9c6"),
+    "season-birthday": ((SEASON,), "birthday", "#29050e"),
+    "season-birthday-light": ((LIGHT, SEASON, SEASON_LIGHT), "birthday", "#d7eaff"),
 }
 
 # Chrome renders the oklch() surface through its own conversion, which lands a

@@ -1,16 +1,20 @@
 # Dracula-Tufte (muted): VS Code theme
 
-Eleven files: `package.json` (the extension manifest), `extension.vsixmanifest`
-(the VSIX container manifest), and nine color themes under `themes/`: dark
+Fifteen files: `package.json` (the extension manifest), `extension.vsixmanifest`
+(the VSIX container manifest), and thirteen color themes under `themes/`: dark
 (`dracula-tufte-color-theme.json`), light (`dracula-tufte-light-color-theme.json`),
 Christmas (`dracula-tufte-christmas-color-theme.json`), Thanksgiving
 (`dracula-tufte-thanksgiving-color-theme.json`), Chartreuse
 (`dracula-tufte-chartreuse-color-theme.json`), St Patrick
 (`dracula-tufte-st-patrick-color-theme.json`), Independence Day
 (`dracula-tufte-independence-day-color-theme.json`), Poland
-(`dracula-tufte-poland-color-theme.json`) and Bois Jacques
-(`dracula-tufte-bois-jacques-color-theme.json`), each holding workbench colors plus
-TextMate scopes. `package.json`'s `contributes.themes` lists all nine, light with
+(`dracula-tufte-poland-color-theme.json`), Bois Jacques
+(`dracula-tufte-bois-jacques-color-theme.json`), Aurora
+(`dracula-tufte-aurora-color-theme.json`), Birthday
+(`dracula-tufte-birthday-color-theme.json`), Oktoberfest
+(`dracula-tufte-oktoberfest-color-theme.json`) and Halloween
+(`dracula-tufte-halloween-color-theme.json`), each holding workbench colors plus
+TextMate scopes. `package.json`'s `contributes.themes` lists all thirteen, light with
 `uiTheme: vs` and the rest with `uiTheme: vs-dark`; VS Code's own "Auto Detect Color
 Scheme" setting is what switches between dark and light with the OS, same as any other
 extension shipping both appearances. A seasonal theme is selected by hand and does not
@@ -18,9 +22,8 @@ follow the calendar.
 
 ## Generated, do not hand-edit
 
-`scripts/create-themes.nu` writes all eight from the `.in` template beside
-each one, then packages `dist/dracula-tufte-vscode-<version>.vsix`, the same
-way it packages the Rider plugin zip. Edit the template, never the rendered
+`scripts/create-themes.nu` writes each one from its `.in` template, then packages
+`dist/dracula-tufte-vscode-<version>.vsix`, the same way it packages the Rider plugin zip. Edit the template, never the rendered
 file or the `.vsix`.
 
 ```sh
@@ -43,8 +46,10 @@ the file. Either way, reload when prompted, then `Ctrl/Cmd+K Ctrl/Cmd+T` and
 pick **Dracula-Tufte (muted)**, **Dracula-Tufte (muted) Light**,
 **Dracula-Tufte (muted) Christmas**, **Dracula-Tufte (muted) Thanksgiving**,
 **Dracula-Tufte (muted) Chartreuse**, **Dracula-Tufte (muted) St Patrick**,
-**Dracula-Tufte (muted) Independence Day**, **Dracula-Tufte (muted) Poland** or
-**Dracula-Tufte (muted) Bois Jacques**.
+**Dracula-Tufte (muted) Independence Day**, **Dracula-Tufte (muted) Poland**,
+**Dracula-Tufte (muted) Bois Jacques**, **Dracula-Tufte (muted) Aurora**,
+**Dracula-Tufte (muted) Birthday**, **Dracula-Tufte (muted) Oktoberfest** or
+**Dracula-Tufte (muted) Halloween**.
 
 There is still no marketplace listing, so this is the only install path aside
 from the unpacked folder below.

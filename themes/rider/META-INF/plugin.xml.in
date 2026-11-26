@@ -33,5 +33,13 @@
     <themeProvider id="com.e128.dracula-tufte-independence-day-light" path="/dracula-tufte-independence-day-light.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-poland-light" path="/dracula-tufte-poland-light.theme.json" />
     <themeProvider id="com.e128.dracula-tufte-bois-jacques-light" path="/dracula-tufte-bois-jacques-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-halloween" path="/dracula-tufte-halloween.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-aurora" path="/dracula-tufte-aurora.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-oktoberfest" path="/dracula-tufte-oktoberfest.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-birthday" path="/dracula-tufte-birthday.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-halloween-light" path="/dracula-tufte-halloween-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-aurora-light" path="/dracula-tufte-aurora-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-oktoberfest-light" path="/dracula-tufte-oktoberfest-light.theme.json" />
+    <themeProvider id="com.e128.dracula-tufte-birthday-light" path="/dracula-tufte-birthday-light.theme.json" />
   </extensions>
 </idea-plugin>

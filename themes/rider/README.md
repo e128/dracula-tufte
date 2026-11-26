@@ -40,7 +40,7 @@ convention. Those differences still need a rendered check in Rider.
 
 ## Rider 2026.3 Compatibility
 
-The generated dark, light, and dark plus light Christmas, Thanksgiving, Chartreuse, St Patrick, Independence Day, Poland and Bois Jacques theme JSON files load through
+The generated dark, light, and dark plus light Christmas, Thanksgiving, Chartreuse, St Patrick, Independence Day, Poland, Bois Jacques, Aurora, Birthday, Oktoberfest and Halloween theme JSON files load through
 Rider 2026.3's native `UITheme` parser (build `263.7307.258`). Their UI color keys apply, and their
 `editorScheme` paths resolve to the packaged XML resources. This headless check
 verifies parsing and resource resolution, not scheme inheritance, icons, or rendered appearance.
