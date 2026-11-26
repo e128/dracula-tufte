@@ -239,6 +239,34 @@ SEASONS = {
         "p3": True,
         "light_accents": True,
     },
+    "halloween": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
+    "aurora": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
+    "oktoberfest": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
+    "birthday": {
+        "tokens": SEASON_TOKENS,
+        "dark_floor": 4.2,
+        "light_floor": 4.5,
+        "p3": True,
+        "light_accents": True,
+    },
 }
 season_blocks = {}
 season_overrides = {}

@@ -1205,7 +1205,7 @@ object renders unchanged and the light one, alongside it in the same template, p
 placeholder with `light:`. Do not invent a third shape for a future target before checking which of
 these two its schema actually is.
 
-**Rider ships sixteen complete themes, not one that follows the system or the calendar**:
+**Rider ships twenty-four complete themes, not one that follows the system or the calendar**:
 IntelliJ Platform themes are one appearance per `theme.json`, so `plugin.xml` registers a
 `themeProvider` for each, and every light `.icls` inherits IntelliJ's built-in `Default` scheme
 (`parent_scheme="Default"`) where the dark ones inherit `Darcula`. Every light `theme.json`'s four
@@ -1219,12 +1219,13 @@ load check as visual verification.
 not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
 the selected theme by date would override the reader's own choice. So `dracula-tufte-xmas`,
 `dracula-tufte-chartreuse`, `dracula-tufte-st-patrick`,
-`dracula-tufte-independence-day`, `dracula-tufte-poland` and `dracula-tufte-bois-jacques` are
-picked by hand from the theme list, the way the light one is.
+`dracula-tufte-independence-day`, `dracula-tufte-poland`, `dracula-tufte-bois-jacques`,
+`dracula-tufte-aurora`, `dracula-tufte-birthday`, `dracula-tufte-oktoberfest` and
+`dracula-tufte-halloween` are picked by hand from the theme list, the way the light one is.
 `scripts/create-themes.nu` renders each with its season name as `scheme`, which is the same
 `--dump` key `.github/palette-check.py` derives for Mermaid's `init<Season>` set.
 
-**Rider ships a light variant of every season as well**, so all sixteen appearances are available
+**Rider ships a light variant of every season as well**, so all twenty-four appearances are available
 in one plugin: the dark seasonal theme from the season's dark block, and a `-light` theme beside
 it from `light-<season>`, which is the palette `.github/palette-check.py` already derives. The
 light variant is a separate template rendered with that prefix, the same second-file shape VS
@@ -2010,16 +2011,44 @@ rather than a near-black, so every accent in both blocks is darkened or lightene
 The dark block also restates `--highlight` at `calc(l - 0.10)` of its orange, because a wash of the
 lighter accent behind light text measured below 4.5:1 at the inherited shift.
 
-**`--mermaid-scheme` takes sixteen values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
+**Aurora turns the dark surfaces violet polar night and the light ones pale aurora green.** The
+window is January 14 through February 28, the stretch between Bois Jacques and St Patrick. The
+dark ground is a cold blue-violet rather than the Bois Jacques slate, and the light ground is a
+green field rather than a blue-grey, so the two winter seasons read as different weather. Accents
+are aurora green, violet, ice blue and solar gold. The data ramp stays inside that light: ice,
+violet, aurora green and a dull gold.
+
+**Birthday turns the dark surfaces deep wine and the light ones pale blue.** The window is
+August 25 through 27. The dark ground is a wine red rather than a neutral near-black, and the
+light ground is a clear blue rather than a warm cream or a pale rose. The light choice is
+deliberate: the cream, parchment and rose surfaces already sit close together, and a fourth warm
+ground would let `render-modes.py` accept the wrong palette. Accents are candle gold, coral, mint
+and sky, so the page reads as celebration without turning the data ramp into confetti.
+
+**Oktoberfest turns the dark surfaces pretzel brown and the light ones wheat.** The window is
+September 20 through October 5. The dark ground is warmer and lighter than the Thanksgiving
+brown, and the light ground is a stronger wheat than the Thanksgiving parchment, so the two
+autumn palettes stay distinguishable. Accents are Bavarian blue, wheat gold, hop green and a
+pretzel crust red. The data ramp stays in that festival: blue, wheat, hop and brown.
+
+**Halloween turns the dark surfaces aubergine and the light ones pale lilac.** The window is
+October 24 through 31, which keeps it clear of Oktoberfest and leaves October 6 through 23
+unseasonal. Accents are pumpkin, bone, witch violet and moss. The dark ground is a purple-black
+rather than the Thanksgiving brown, and the light ground is a lavender rather than the warm
+creams, so the two late-autumn windows do not share a surface. The data ramp is violet, pumpkin,
+moss and bone gold.
+
+**`--mermaid-scheme` takes twenty-four values** (`dark`, `light`, `st-patrick`, `light-st-patrick`,
 `chartreuse`, `light-chartreuse`, `independence-day`, `light-independence-day`, `poland`,
 `light-poland`, `bois-jacques`, `light-bois-jacques`, `christmas`, `light-christmas`,
-`thanksgiving`, `light-thanksgiving`), and
-`mermaid.js` carries sixteen hex maps. There is no seasonal
+`thanksgiving`, `light-thanksgiving`, `aurora`, `light-aurora`, `birthday`, `light-birthday`,
+`oktoberfest`, `light-oktoberfest`, `halloween`, `light-halloween`), and
+`mermaid.js` carries twenty-four hex maps. There is no seasonal
 `classDef` set: the ban on a `classDef` hex line for a page that follows appearance covers a page
 that follows the date too.
 
 **Three kinds of page carry a season.** The dark fixtures carry the snippet, so each turns seasonal
-inside a window. The four light previews never show one. The fourteen season previews set the attribute
+inside a window. The four light previews never show one. The twenty-two season previews set the attribute
 in markup and rewrite the season conditions to `@media screen`, so the date and the contrast setting
 stop mattering and print keeps its own palette. `.github/season-probe.py` runs the verbatim snippet
 against a mocked clock at every window edge in three time zones, and it must keep doing so: a bound

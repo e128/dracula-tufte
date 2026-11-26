@@ -48,13 +48,17 @@ const SEASON_OVERRIDES = [
 ]
 
 const SEASON_RANGES = [
+  {season: "bois-jacques", from: [0 1], to: [0 13]}
+  {season: "aurora", from: [0 14], to: [1 28]}
   {season: "st-patrick", from: [2 1], to: [2 17]}
   {season: "chartreuse", from: [4 1], to: [4 16]}
   {season: "independence-day", from: [5 28], to: [6 4]}
+  {season: "birthday", from: [7 25], to: [7 27]}
+  {season: "oktoberfest", from: [8 20], to: [9 5]}
+  {season: "halloween", from: [9 24], to: [9 31]}
   {season: "thanksgiving", from: [10 1], to_nth: [10 4 4]}
   {season: "christmas", from_nth: [10 5 4], to: [11 28]}
   {season: "bois-jacques", from: [11 29], to: [11 31]}
-  {season: "bois-jacques", from: [0 1], to: [0 13]}
 ]
 
 # Chrome page translation rewrites identifiers inside a code sample, so CONTRACT.md
