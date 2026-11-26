@@ -607,7 +607,7 @@ for `--purple-bright`, the one token putting purple text on `--code-bg` (accepte
 `.hljs-type` pair).
 
 **Relative color syntax has no fallback, and the floor is stated here.** `oklch(from var(--x) l c h / a)`
-is Newly available (web-platform-dx, since 2024-09-16), and the sheet uses it for eight declarations. The
+is Newly available (web-platform-dx, since 2024-09-16), and the sheet uses it for nine declarations. The
 template supports browsers from that date on. A browser without it drops the declaration and keeps the
 base fill. Do not add an `@supports` twin with a hardcoded fallback color: the twin would sit outside
 checks 9 and 10, which resolve the relative form, and it would drift from the token it copies.
