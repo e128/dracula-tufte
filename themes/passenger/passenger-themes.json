@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "themes": [
+    "dracula-tufte.json",
+    "dracula-tufte-christmas.json",
+    "dracula-tufte-thanksgiving.json",
+    "dracula-tufte-chartreuse.json",
+    "dracula-tufte-st-patrick.json",
+    "dracula-tufte-independence-day.json",
+    "dracula-tufte-poland.json",
+    "dracula-tufte-bois-jacques.json",
+    "dracula-tufte-halloween.json",
+    "dracula-tufte-aurora.json",
+    "dracula-tufte-oktoberfest.json",
+    "dracula-tufte-birthday.json"
+  ],
+  "codeColours": []
+}

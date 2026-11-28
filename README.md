@@ -94,7 +94,7 @@ A preview page is not the payload, and each says so in a banner.
 
 | File | What it is |
 | --- | --- |
-| `tufte-dracula.css` | The stylesheet payload (template v1.75.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
+| `tufte-dracula.css` | The stylesheet payload (template v1.76.0, oklch palette). The complete `<style>…</style>` block, with its wrapper tags and its leading indent. Consumers inline it verbatim into every generated file. |
 | `mermaid.js` | The Mermaid init script, with its `<script type="module">` wrapper. It holds the pinned CDN import, the init call, and the zoom overlay. Inline it only when the page has a mermaid fence. Bump the CDN pin here. |
 | `highlight.js` | The code highlighter, with its `<script type="module">` wrapper. It loads a pinned `highlight.js` from a CDN and highlights each `pre > code.language-NAME` block. Inline it only when the page has one. |
 | `filter.js` | The filter-box script, with its wrapper. It wires each `input.filter-box` to the siblings that follow it. Inline it only when the page has a filter box. [CONTRACT.md § 6](CONTRACT.md#6-scope-of-filterjs) states the scope. |
@@ -113,7 +113,7 @@ Both kinds resolve every path from the repo root. See [Repo layout](NOTES.md#rep
 
 ## Consumers
 
-The current release is **`v1.75.0`**. Consumers reach it through a git submodule. To refresh it,
+The current release is **`v1.76.0`**. Consumers reach it through a git submodule. To refresh it,
 run `git submodule update --remote external/dracula-tufte` and then commit the pointer.
 
 **Read [CONTRACT.md](CONTRACT.md) before you wire a generator.** It states five things:
@@ -162,31 +162,35 @@ Six things are worth knowing before you get there:
 
 ## Editor themes
 
-`themes/` projects the same `:root` palette into eight editors and terminals, plus Slack. The
+`themes/` projects the same `:root` palette into nine editors and terminals, plus Slack. The
 editor and terminal files are **not** part of the consumer contract, because no submodule reads
 them. The repo generates and gates them from a `.in` template beside each output, except iTerm2's
-plist, which `scripts/create-themes.nu` builds straight from the palette because a plist color is
-three float components, not a hex string. The Slack entry has no file format to generate: it is a
-hand-copied color string, documented in [`themes/slack/README.md`](themes/slack/README.md).
+plist, which is built from the palette because a plist color is three float components, and
+Passenger's theme index, which is built from the `THEMES` rows because it carries no color at all.
+The Slack entry has no file format to generate: it is a hand-copied color string, documented in
+[`themes/slack/README.md`](themes/slack/README.md).
 
-**Every target ships the appearances its format can hold.** Rider, Zed, Ghostty, iTerm2, VS Code
-and CotEditor ship dark and light, projected from `:root` and its `prefers-color-scheme: light`
-override. opencode and tmux ship dark only: their theme formats have no appearance switch. Slack
-holds a single hand-copied string.
+**Every target ships the appearances its format can hold.** Rider, Zed, Ghostty, iTerm2, VS Code,
+CotEditor and Passenger ship dark and light, projected from `:root` and its
+`prefers-color-scheme: light` override. opencode and tmux ship dark only: their theme formats have
+no appearance switch. Slack holds a single hand-copied string.
 
-**Every target in the table except Slack also ships one variant per season**, projected from that
-season's dark block, so it stays dark-family even in light mode. Rider adds a light variant of
-each season beside the dark one, so its plugin carries every appearance. A season variant is
-selected by hand, not by the calendar. [Seasonal previews](#seasonal-previews) lists the seasons. In the
-table, `<season>` is the season's `data-season` value, except that Rider and Ghostty spell
-Christmas `xmas` in filenames. A new season adds one file per target (two for Rider, dark and
-light), or one more theme object in Zed's single file, plus the steps in CONTRACT.md's
-[Adding a New Date-Range Palette](CONTRACT.md#adding-a-new-date-range-palette).
+**Every target in the table except Slack also ships one variant per season.** Most project it
+from that season's dark block, so it stays dark-family even in light mode. Rider adds a separate
+light variant of each season beside the dark one, so its plugin carries every appearance.
+Passenger carries the season's dark and light palettes in one file, so both appearances are
+available there too. A season variant is selected by hand, not by the calendar.
+[Seasonal previews](#seasonal-previews) lists the seasons. In the table, `<season>` is the
+season's `data-season` value, except that Rider and Ghostty spell Christmas `xmas` in filenames.
+A new season adds one file per target (two for Rider, dark and light), one more theme object in
+Zed's single file, or one more Passenger file holding dark and light, plus the steps in
+CONTRACT.md's [Adding a New Date-Range Palette](CONTRACT.md#adding-a-new-date-range-palette).
 
 | Theme | Files | Modes | Season variants | Install |
 | --- | --- | --- | --- | --- |
 | **Rider** | `dracula-tufte.theme.json`/`.icls` (dark), `dracula-tufte-light.theme.json`/`.icls` (light) | dark + light | `dracula-tufte-<season>.theme.json`/`.icls` and `dracula-tufte-<season>-light.theme.json`/`.icls` | Settings, Plugins, gear, Install Plugin from Disk, `themes/rider/dist/dracula-tufte-rider-<version>.zip`, pick a theme from the theme list |
 | **Zed** | `dracula-tufte.json` (one file, all themes) | dark + light | `Dracula-Tufte (muted) <Season>` object in the same file | Copy to `~/.config/zed/themes/` |
+| **Passenger** | `dracula-tufte.json` (one file, dark and light) | dark + light | `dracula-tufte-<season>.json` (dark and light) | Settings, Appearance, Theme sources, add `themes/passenger/` as a folder, then choose the theme |
 | **Ghostty** | `dracula-tufte`, `dracula-tufte-light` | dark + light | `dracula-tufte-<season>` | Copy to `~/.config/ghostty/themes/`, then set `theme = dark:dracula-tufte,light:dracula-tufte-light`; pick a seasonal theme by hand |
 | **CotEditor** | `Dracula-Tufte (Dark).cottheme`, `Dracula-Tufte (Light).cottheme` | dark + light | `Dracula-Tufte <Season> (Dark).cottheme` | Settings, Appearance, gear, Import the themes you want; the plain pair switches with the window appearance |
 | **iTerm2** | `dracula-tufte.itermcolors`, `dracula-tufte-light.itermcolors` | dark + light | `dracula-tufte-<season>.itermcolors` | Preferences, Profiles, Colors, Color Presets, import the presets you want; check "Use different colors for light and dark mode" and assign each preset to its appearance |
@@ -205,6 +209,11 @@ as a zip that wraps a jar, because Install Plugin from Disk refuses a bare jar. 
 `dracula-tufte-rider-*.jar` from your plugins directory before you install the zip.
 `nu scripts/maintain.nu release` attaches the Rider plugin zip, the VS Code vsix and the themes zip
 to the GitHub release.
+
+**Passenger reads a folder as a theme source when it holds `passenger-themes.json`.**
+`scripts/create-themes.nu` writes that index from the `THEMES` rows, so adding a Passenger row is
+enough; do not edit the index by hand. The themes zip carries `themes/passenger/`, and a checkout
+of this repo can be added as a source by pointing at that same folder.
 
 **The editor slot map is deliberately not the prose slot map.** **Do not answer "the theme looks
 washed out" by a chroma raise in `:root`.** [Editor themes](NOTES.md#editor-themes) holds the
