@@ -197,13 +197,15 @@ steps, in order:
    `scripts/maintain.nu` and add their date cases to `.github/season-probe.py`.
 6. Every template-bearing theme target ships the season. Add `THEMES` rows with
    `scheme: "<season>"` for Rider (`.icls` and `theme.json`), VS Code, Ghostty, CotEditor,
-   opencode and tmux, add the iTerm2 pair row, and add the season's theme object to Zed's one
-   template with every placeholder prefixed `{{<season>:...}}`. Register the Rider
+   opencode, tmux and Passenger, add the iTerm2 pair row, and add the season's theme object to
+   Zed's one template with every placeholder prefixed `{{<season>:...}}`. Register the Rider
    `themeProvider`, the VS Code label and the `.vsix` entry list, and the Rider jar staging list.
    A target whose template carries no appearance name (CotEditor, opencode) reuses its dark
    template for the seasonal row. Rider also gets a second row per season for each of its two
    files, rendered with `scheme: "light-<season>"` from a `-light` template, and the matching
-   `themeProvider` and jar entries. The render already resolves any `--dump` key as a prefix or as
+   `themeProvider` and jar entries. Passenger carries the season's light palette inside the same
+   `dark`/`light` file, so its seasonal template prefixes the light object with `light-<season>:`
+   and needs no second row. The render already resolves any `--dump` key as a prefix or as
    `scheme`.
 7. Add the new season's windows and expectations to `CASES` in `.github/season-probe.py`. The probe
    drives the whole snippet, so its expectations stay literal and it catches a range that is off by
@@ -592,6 +594,7 @@ with `git tag`, so a skipped row fails the build. Add the row in the release com
 
 | since | your generator must now |
 | --- | --- |
+| v1.76.0 | nothing is required. **A Passenger theme target ships, with the base theme and one theme per season, each carrying its dark and light palettes in one file.** The new `themes/passenger/` folder is a Passenger theme source: add it in Settings, Appearance, Theme sources, then choose a theme. Every seasonal theme is selected by hand and never follows the calendar. None of it is part of the payload. |
 | v1.75.0 | repaste the head snippet to gain four seasonal windows. **Aurora, Birthday, Oktoberfest and Halloween ship behind `data-season`.** Aurora runs January 14 through February 28, Birthday from August 25 through 27, Oktoberfest from September 20 through October 5, and Halloween from October 24 through 31. A page that keeps the older snippet keeps its existing calendar until it copies the block in § 1 again. The palettes apply on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a variant per season, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
 | v1.74.0 | nothing breaks. **The heading permalink is always visible and uses a chain-link icon instead of a pilcrow.** Emit `a.headerlink` with the inline SVG shown in the component fixture (in `samples/dark.html`, search `class="headerlink"`): `aria-hidden="true"` and `focusable="false"` on the icon, `aria-label` on the anchor, and `stroke="currentColor"`. A page that keeps the old pilcrow still renders it, because the stylesheet no longer hides the link. Heading label colors are unchanged. Regenerate pages whose inline stylesheet predates this payload. |
 | v1.73.0 | repaste the head snippet to gain the Bois Jacques window. **A Bois Jacques palette ships behind `data-season="bois-jacques"`.** December 29 through January 13 select it, as two rows of one season because the window crosses the year boundary. Christmas still ends December 28, and January 14 through February 28 belong to no season. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains a Bois Jacques variant, and Rider gains a dark and a light one, selected by hand. None of them is part of the payload. |
@@ -601,7 +604,6 @@ with `git tag`, so a skipped row fails the build. Add the row in the release com
 | v1.70.0 | nothing is required. **Three seasonal palettes ship behind `data-season` values, and nothing you already emit changes.** St Patrick runs from March 1 through March 17, Chartreuse from May 1 through May 16, and Independence Day from June 28 through July 4. A page without the head snippet in § 1 never turns them on; to follow the calendar, paste the updated snippet before the `<style>` block. The palette applies on screen only, and a reader who asks for more contrast, and any printed page, keeps the existing palette. Every template-bearing theme target gains one dark-family variant per season, selected by hand. None of them is part of the payload. |
 | v1.69.0 | nothing breaks, and the § 2 text catches up with the fixtures. **The filter box now documents all four keyboard attributes**, three of which the v1.68.2 fixture already carried; `autocomplete="off"` was present earlier. The payload changes arrive on a re-inline: `font-display: optional` in all four `@font-face` rules, `h5` at weight 500, and a visually hidden `role="status"` region in `highlight.js` that announces `Copied`. |
 | v1.68.2 | add `translate="no"` to the `<pre>` and `<code>` elements your generator emits, and add `autocapitalize="off"`, `spellcheck="false"` and `enterkeyhint="search"` to every `input.filter-box`; `autocomplete="off"` was already required. **Chrome page translation rewrites identifiers inside a code sample, and a phone keyboard capitalizes and spell-checks a search query.** § 2 states both rules and the fixtures demonstrate them. The stylesheet is unchanged apart from its version comment. |
-| v1.68.1 | nothing. **Consumer documentation only.** README scales the seasonal theme prose and names one stable filename pattern per target. The stylesheet differs only in its version stamp; no markup, token or script changes. |
 
 ## 4. Regenerate on a byte compare, not a version string
 

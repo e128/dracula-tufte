@@ -33,11 +33,13 @@
 #     one render pass produces both. This is the shape for a format whose own
 #     schema already holds multiple appearances in one document.
 #
-# iTerm2's .itermcolors is the one output with no `.in` template. A plist color is
-# three float components, not a hex string, so there is nothing for `{{}}` substitution
-# to land on. `render-itermcolors` below builds it straight from $palette, the same way
-# `package` builds the Rider zip from code, and it is gated the same way too: rendered
-# in memory and compared to the file on disk.
+# iTerm2's .itermcolors and Passenger's `passenger-themes.json` index are the outputs
+# with no `.in` template. A plist color is three float components, not a hex string, so
+# there is nothing for `{{}}` substitution to land on in the first, and the second is a
+# list of file names with no colour in it at all. `render-itermcolors` builds the plist
+# straight from $palette, the same way `package` builds the Rider zip from code, and
+# `render-passenger-index` builds the index straight from the THEMES rows. Both are
+# gated the same way too: rendered in memory and compared to the file on disk.
 #
 # ponytail: template + substitution, not a themed-file generator. The colours
 # are the only thing that tracks the stylesheet; 20 KB of XML that never moves
@@ -64,8 +66,12 @@ const ROOT = path self | path dirname | path dirname
 # template for those rows; every other target has a seasonal template beside its base
 # one. Zed ships all appearances from the one row above, its own template holding them
 # together (see the placeholder comment above), so its seasonal objects live in that
-# template rather than in extra rows. iTerm2 has no `.in` template at all, so it is
-# not in this list; see `render-itermcolors` below.
+# template rather than in extra rows. Passenger holds dark and light in one file per
+# theme, like Zed, so each theme is one row and its light object prefixes every
+# placeholder with `light:` or `light-<season>:`; the row's `scheme` picks the dark
+# palette. iTerm2 has no `.in` template at all, so it is not in this list; see
+# `render-itermcolors` below. Passenger's theme source also needs an index, which
+# `render-passenger-index` derives from these rows.
 #
 # CotEditor pairs themes by name: two files whose names differ only by a trailing
 # " (Dark)" or " (Light)" switch together when the window appearance changes. The
@@ -162,6 +168,18 @@ const THEMES = [
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-aurora.json", scheme: "aurora"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-oktoberfest.json", scheme: "oktoberfest"}
   {template: "themes/opencode/dracula-tufte.json.in", output: "themes/opencode/dracula-tufte-birthday.json", scheme: "birthday"}
+  {template: "themes/passenger/dracula-tufte.json.in", output: "themes/passenger/dracula-tufte.json", scheme: "dark"}
+  {template: "themes/passenger/dracula-tufte-christmas.json.in", output: "themes/passenger/dracula-tufte-christmas.json", scheme: "christmas"}
+  {template: "themes/passenger/dracula-tufte-thanksgiving.json.in", output: "themes/passenger/dracula-tufte-thanksgiving.json", scheme: "thanksgiving"}
+  {template: "themes/passenger/dracula-tufte-chartreuse.json.in", output: "themes/passenger/dracula-tufte-chartreuse.json", scheme: "chartreuse"}
+  {template: "themes/passenger/dracula-tufte-st-patrick.json.in", output: "themes/passenger/dracula-tufte-st-patrick.json", scheme: "st-patrick"}
+  {template: "themes/passenger/dracula-tufte-independence-day.json.in", output: "themes/passenger/dracula-tufte-independence-day.json", scheme: "independence-day"}
+  {template: "themes/passenger/dracula-tufte-poland.json.in", output: "themes/passenger/dracula-tufte-poland.json", scheme: "poland"}
+  {template: "themes/passenger/dracula-tufte-bois-jacques.json.in", output: "themes/passenger/dracula-tufte-bois-jacques.json", scheme: "bois-jacques"}
+  {template: "themes/passenger/dracula-tufte-halloween.json.in", output: "themes/passenger/dracula-tufte-halloween.json", scheme: "halloween"}
+  {template: "themes/passenger/dracula-tufte-aurora.json.in", output: "themes/passenger/dracula-tufte-aurora.json", scheme: "aurora"}
+  {template: "themes/passenger/dracula-tufte-oktoberfest.json.in", output: "themes/passenger/dracula-tufte-oktoberfest.json", scheme: "oktoberfest"}
+  {template: "themes/passenger/dracula-tufte-birthday.json.in", output: "themes/passenger/dracula-tufte-birthday.json", scheme: "birthday"}
   {template: "themes/rider/dracula-tufte-halloween.icls.in", output: "themes/rider/dracula-tufte-halloween.icls", scheme: "halloween"}
   {template: "themes/rider/dracula-tufte-halloween.theme.json.in", output: "themes/rider/dracula-tufte-halloween.theme.json", scheme: "halloween"}
   {template: "themes/rider/dracula-tufte-halloween-light.icls.in", output: "themes/rider/dracula-tufte-halloween-light.icls", scheme: "light-halloween"}
@@ -226,6 +244,15 @@ def main [
     let template = ($ROOT | path join $row.template)
     let out = ($ROOT | path join $row.output)
     let rendered = (render (open --raw $template) $palette $version $row.scheme)
+    # A Passenger theme is strict JSON, and a stray comma or an unquoted token is a
+    # theme Passenger refuses whole. Byte comparison cannot see that: a malformed
+    # template and its malformed output agree. Parse the rendered text here so the
+    # gate reaches the thing the format actually requires.
+    if ($row.output | str starts-with "themes/passenger/") {
+      if ($row.output | str ends-with ".json") {
+        $rendered | from json | ignore
+      }
+    }
     if $check {
       if (not ($out | path exists)) or (open --raw $out) != $rendered {
         $drift = ($drift | append $row.output)
@@ -234,6 +261,26 @@ def main [
       $rendered | save --force --raw $out
       print $"  → ($row.output)"
     }
+  }
+
+  # Passenger's theme source is a folder holding a passenger-themes.json that lists
+  # its files. Build it from the THEMES rows rather than keep a second list in the
+  # template: a row that renders a theme the index does not name is a theme Passenger
+  # never offers, and the two would drift apart in silence.
+  let passenger_themes = ($THEMES
+    | where {|r| ($r.output | path dirname) == "themes/passenger"}
+    | where {|r| ($r.output | path basename) | str ends-with ".json"}
+    | get output
+    | each {|o| $o | path basename})
+  let passenger_index = (render-passenger-index $passenger_themes)
+  let passenger_index_path = ($ROOT | path join "themes" "passenger" "passenger-themes.json")
+  if $check {
+    if (not ($passenger_index_path | path exists)) or (open --raw $passenger_index_path) != $passenger_index {
+      $drift = ($drift | append "themes/passenger/passenger-themes.json")
+    }
+  } else {
+    $passenger_index | save --force --raw $passenger_index_path
+    print "  → themes/passenger/passenger-themes.json"
   }
 
   for pair in [
@@ -329,6 +376,25 @@ def plugin-path [version: string]: nothing -> path {
 
 def vscode-plugin-path [version: string]: nothing -> path {
   $ROOT | path join "themes" "vscode" "dist" $"dracula-tufte-vscode-($version).vsix"
+}
+
+# Passenger reads a folder as a theme source when it holds passenger-themes.json,
+# a list of the theme files inside it. The list is derived from the same THEMES rows
+# that render the files, so it cannot name a theme that was not written or omit one
+# that was. It is not a .in template: there is nothing in it to substitute, and a
+# second hand-kept list is exactly the drift this avoids.
+def render-passenger-index [themes: list<string>]: nothing -> string {
+  let lines = ($themes | each {|t| "    " + ($t | to json -r)} | str join ",\n")
+  [
+    "{"
+    '  "format": 1,'
+    '  "themes": ['
+    $lines
+    "  ],"
+    '  "codeColours": []'
+    "}"
+    ""
+  ] | str join "\n"
 }
 
 # Line 2 of the stylesheet is machine-read in three places already (build-sample.nu,

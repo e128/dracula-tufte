@@ -1187,9 +1187,9 @@ hex actually lands.
 
 ### Light and dark parity
 
-**Rider, Zed, Ghostty, iTerm2, VS Code and CotEditor ship a light variant**, projected from the
-same `prefers-color-scheme: light` override the page itself uses. opencode and tmux stay dark only:
-neither format has an appearance-switch mechanism to project a second palette into.
+**Rider, Zed, Ghostty, iTerm2, VS Code, CotEditor and Passenger ship a light variant**, projected
+from the same `prefers-color-scheme: light` override the page itself uses. opencode and tmux stay
+dark only: neither format has an appearance-switch mechanism to project a second palette into.
 `.github/palette-check.py --dump` returns `{dark: {...}, light: {...}, christmas: {...},
 light-christmas: {...}}` rather than one flat map, and `scripts/create-themes.nu`'s
 `render`/`resolve` pick a palette per placeholder: bare `{{token}}` resolves against a template's
@@ -1200,10 +1200,10 @@ appearance per file.** A format that does not (Rider's `theme.json`/`.icls`, VS 
 `color-theme.json`, Ghostty's theme file, iTerm2's `.itermcolors`, CotEditor's `.cottheme`) gets a
 second, separately generated file: same template rendered a second time with `--scheme light`, so
 every bare placeholder in it resolves to light with no per-placeholder prefix. A format whose schema already
-holds several appearances in one document (Zed's `themes` array) keeps one file: the dark theme
-object renders unchanged and the light one, alongside it in the same template, prefixes every
-placeholder with `light:`. Do not invent a third shape for a future target before checking which of
-these two its schema actually is.
+holds several appearances in one document (Zed's `themes` array, Passenger's `dark` and `light`
+members) keeps one file: the dark theme object renders unchanged and the light one, alongside it in
+the same template, prefixes every placeholder with `light:`. Do not invent a third shape for a
+future target before checking which of these two its schema actually is.
 
 **Rider ships twenty-four complete themes, not one that follows the system or the calendar**:
 IntelliJ Platform themes are one appearance per `theme.json`, so `plugin.xml` registers a
@@ -1214,6 +1214,18 @@ convention (a bare key is the light-icon asset, `.Dark` overrides it for the dar
 scheme inheritance and checkbox icons still need a rendered check in Rider.** Parsing theme JSON
 and resolving its bundled XML resource do not verify either difference. Do not treat a headless
 load check as visual verification.
+
+**Passenger holds `dark` and `light` in one theme file, so one theme is one file, not a pair.**
+Its format is a `name`, a `dark` object and a `light` object, and the appearance follows the
+system. Each seasonal file carries that season's dark block and its `light-<season>` block, so both
+appearances are present and the season itself is chosen by hand. The format also requires a
+`passenger-themes.json` index at the source folder's root; `scripts/create-themes.nu` derives it
+from the same `THEMES` rows that render the files, rather than keeping a second list that a new row
+could silently outgrow. The theme writes the slot map Rider and VS Code already settled, not a new
+one, and leaves the shape, fonts, background and layout to Passenger's own theme, because this
+addition is about colour and seasons. **Do not split one Passenger theme into a dark file and a
+light file**: its own schema switches with the system, and a dark-only file would throw away the
+season's light palette. **Do not hand-edit `passenger-themes.json`**: it is an output.
 
 **Each seasonal theme is another `themeProvider` rendered from that season's palette, and it does
 not follow the date.** An IntelliJ theme cannot read the calendar, and a plugin that rewrote
@@ -1246,22 +1258,23 @@ checkbox takes two separately imported presets, so `dracula-tufte-light.itermcol
 plist built by the same `render-itermcolors` function with `scheme: "light"`, not a field inside the
 existing file.
 
-**Every template-bearing target ships each season as a theme selected by hand, rendered from that
-season's dark block.** That is Rider, VS Code, Ghostty, CotEditor, opencode, tmux, iTerm2 and Zed.
-A season variant is the same dark-family projection the Christmas theme already used, repeated per
-season through the season name as `scheme` (or as a placeholder prefix; `resolve` treats any
-palette name as one, so Zed's single template holds `{{christmas:...}}`,
-`{{thanksgiving:...}}`, `{{st-patrick:...}}` and `{{independence-day:...}}` objects beside its dark
-and light ones). **Do not make a theme follow the
-calendar**, for the same reason it is not done for Christmas: a theme cannot read the date, and a
-plugin that rewrote the selected theme by date would override the reader's own choice. A target
+**Every template-bearing target ships each season as a theme selected by hand.** That is Rider,
+VS Code, Ghostty, CotEditor, opencode, tmux, iTerm2, Zed and Passenger. Most render it from that
+season's dark block, so it stays dark-family even in light mode. A season variant is the same
+dark-family projection the Christmas theme already used, repeated per season through the season
+name as `scheme` (or as a placeholder prefix; `resolve` treats any palette name as one, so Zed's
+single template holds `{{christmas:...}}`, `{{thanksgiving:...}}`, `{{st-patrick:...}}` and
+`{{independence-day:...}}` objects beside its dark and light ones). **Do not make a theme follow
+the calendar**, for the same reason it is not done for Christmas: a theme cannot read the date, and
+a plugin that rewrote the selected theme by date would override the reader's own choice. A target
 whose template carries no appearance name inside it (CotEditor, opencode) points its seasonal row
 at the dark template rather than duplicating an identical file; the output name is the whole
 difference. Ghostty and Rider keep their shipped `xmas` file names, and new seasons take the full
-season name. **Rider is the one target that also ships a light seasonal variant**: its plugin
-already carries every appearance as its own theme, so a season lands as a dark and a light
-`themeProvider` pair rendered from `<season>` and `light-<season>`. The other targets keep one
-variant per season, projected from the season's dark block.
+season name. **Rider and Passenger also ship a light seasonal variant.** Rider's plugin already
+carries every appearance as its own theme, so a season lands as a dark and a light `themeProvider`
+pair rendered from `<season>` and `light-<season>`. Passenger carries that pair inside one file,
+as its `dark` and `light` objects. The other targets keep one variant per season, projected from
+the season's dark block.
 
 ## Mermaid
 
